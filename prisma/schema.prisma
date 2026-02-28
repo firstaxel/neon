@@ -1,0 +1,260 @@
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String    @id @default(cuid())
+  createdAt     DateTime  @default(now()) @db.Timestamp
+  updatedAt     DateTime  @updatedAt @db.Timestamp
+  email         String    @unique
+  name          String?
+  password      String @default("")
+  sessions      Session[]
+  accounts      Account[]
+   contacts Contact[]
+  campaigns Campaign[]
+  messages Message[]
+  parseJobs ParseJob[]
+  emailVerified Boolean   @default(false)
+  image         String?
+
+  @@map("user")
+
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now()) @db.Timestamp
+  updatedAt DateTime @updatedAt @db.Timestamp
+  userId    String
+  expiresAt DateTime
+  token     String   @unique
+  ipAddress String?
+  userAgent String?
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                String   @id @default(cuid())
+  createdAt         DateTime @default(now()) @db.Timestamp
+  updatedAt         DateTime @updatedAt @db.Timestamp
+  userId            String
+  provider          String
+  providerAccountId String
+  accessToken       String?
+  refreshToken      String?
+  expiresAt         Int?
+  tokenType         String?
+  scope             String?
+  idToken           String?
+  sessionState      String?
+
+  user User @relation(fields: [userId], references: [id])
+
+  accountId             String
+  providerId            String
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  password              String?
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("account")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum MessageChannel {
+  whatsapp
+  sms
+}
+
+enum ContactType {
+  first_timer
+  returning
+  member
+  visitor
+}
+
+enum ParseJobStatus {
+  pending
+  parsing
+  done
+  error
+}
+
+enum JobStatus {
+  pending
+  processing
+  completed
+  failed
+}
+
+enum MessageStatus {
+  pending
+  queued
+  sending
+  sent
+  failed
+  rate_limited
+}
+
+enum Scenario {
+  first_timer
+  follow_up
+  event_invite
+  prayer_request
+  general
+}
+
+// ─── Models ───────────────────────────────────────────────────────────────────
+
+/// Tracks a single Gemini AI parsing job triggered by an image upload.
+/// The image itself lives in Cloudflare R2; this row tracks status + result.
+
+model ParseJob {
+  id     String         @id @default(uuid())
+  status ParseJobStatus @default(pending)
+
+  // Cloudflare R2 reference
+  r2Key            String  @map("r2_key")
+  r2Bucket         String  @map("r2_bucket")
+  originalFilename String? @map("original_filename")
+  mimeType         String  @map("mime_type")
+  fileSizeBytes    Int?    @map("file_size_bytes")
+
+  // Gemini result
+  rawExtractedText String?  @map("raw_extracted_text") @db.Text
+  confidence       Float?
+  warnings         String[] @default([])
+  errorMessage     String?  @map("error_message")
+
+  inngestEventId String? @map("inngest_event_id")
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+  startedAt   DateTime? @map("started_at")
+  completedAt DateTime? @map("completed_at")
+  parsedBy String
+    user User @relation(fields: [parsedBy], references: [id])
+
+
+  // Relations
+  contacts Contact[]
+
+  @@index([status])
+  @@index([createdAt(sort: Desc)])
+  @@map("parse_jobs")
+}
+
+/// Extracted contact from a parsed image. Linked to the ParseJob that created it.
+
+model Contact {
+  id         String   @id @default(uuid())
+  parseJobId String   @map("parse_job_id")
+  parseJob   ParseJob @relation(fields: [parseJobId], references: [id], onDelete: Cascade)
+
+  name    String
+  phone   String
+  channel MessageChannel
+  type    ContactType    @default(visitor)
+  email   String?
+  notes   String?
+  rawRow  String?        @map("raw_row")
+  uploadedBy String
+
+  user User @relation(fields: [uploadedBy], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([parseJobId])
+  @@index([channel])
+  @@index([type])
+  @@map("contacts")
+}
+
+/// Represents one send batch — contacts + scenario + message templates.
+
+model Campaign {
+  id       String    @id @default(uuid())
+  scenario Scenario
+  status   JobStatus @default(pending)
+
+  whatsappTemplate  String  @map("whatsapp_template") @db.Text
+  smsTemplate       String  @map("sms_template") @db.Text
+  useCustomTemplate Boolean @default(false) @map("use_custom_template")
+
+  totalMessages  Int @default(0) @map("total_messages")
+  sentMessages   Int @default(0) @map("sent_messages")
+  failedMessages Int @default(0) @map("failed_messages")
+
+  inngestEventId String? @map("inngest_event_id")
+
+  createdBy String
+    user User @relation(fields: [createdBy], references: [id])
+
+
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+  startedAt   DateTime? @map("started_at")
+  completedAt DateTime? @map("completed_at")
+
+  // Relations
+  messages Message[]
+
+  @@index([status])
+  @@index([createdAt(sort: Desc)])
+  @@map("campaigns")
+}
+
+/// One row per individual message send attempt within a campaign.
+
+model Message {
+  id         String   @id @default(uuid())
+  campaignId String   @map("campaign_id")
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  // Denormalised contact info
+  contactId   String?        @map("contact_id")
+  contactName String         @map("contact_name")
+  phone       String
+  channel     MessageChannel
+  message     String         @db.Text
+
+  status       MessageStatus @default(queued)
+  twilioSid    String?       @map("twilio_sid")
+  errorMessage String?       @map("error_message")
+  retryCount   Int           @default(0) @map("retry_count")
+
+  sentBy String
+    user User @relation(fields: [sentBy], references: [id])
+
+
+  sentAt    DateTime? @map("sent_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  @@index([campaignId])
+  @@index([status])
+  @@index([channel])
+  @@map("messages")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}

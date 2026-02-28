@@ -1,0 +1,37 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import type { ReactNode } from "react";
+import type { AuthContext } from "#/middleware/auth";
+
+let context:
+	| ({
+			queryClient: QueryClient;
+	  } & AuthContext)
+	| undefined;
+
+export function getContext() {
+	if (context) {
+		return context;
+	}
+
+	const queryClient = new QueryClient();
+
+	context = {
+		queryClient,
+		isAuthenticated: false,
+		sessionCookie: null,
+	};
+
+	return context;
+}
+
+export default function TanStackQueryProvider({
+	children,
+}: {
+	children: ReactNode;
+}) {
+	const { queryClient } = getContext();
+
+	return (
+		<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+	);
+}

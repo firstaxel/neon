@@ -365,7 +365,7 @@ export function ContactsTable({
 							<TableHead className="hidden sm:table-cell">Added</TableHead>
 						</TableRow>
 					</TableHeader>
-					<TableBody>
+					<TableBody className="no-scrollbar">
 						{isLoading ? (
 							<TableSkeleton cols={selectable ? 6 : 5} rows={8} />
 						) : null}

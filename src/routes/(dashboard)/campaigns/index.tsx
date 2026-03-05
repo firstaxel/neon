@@ -1,10 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { CampaignView } from "#/features/camapigns/view/campaign-view";
+import { CampaignsView } from "#/features/campaigns/view/campaign-view";
+import { pageHeadMeta } from "#/lib/metadata";
 
 export const Route = createFileRoute("/(dashboard)/campaigns/")({
 	component: RouteComponent,
+	head: () => ({
+		meta: [pageHeadMeta.campaigns],
+	}),
 });
 
 function RouteComponent() {
-	return <CampaignView />;
+	return <CampaignsView />;
 }

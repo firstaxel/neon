@@ -1,5 +1,6 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 import AnimatedHeader from "#/features/dashboard/components/header";
+import { useOnboardingGuard } from "#/features/profile/hooks/use-onboarding-guard";
 import { authMiddleware } from "#/middleware/auth";
 
 export const Route = createFileRoute("/(dashboard)")({
@@ -10,6 +11,7 @@ export const Route = createFileRoute("/(dashboard)")({
 });
 
 function RouteComponent() {
+	useOnboardingGuard();
 	return (
 		<main className="flex w-full flex-col items-center">
 			<AnimatedHeader />

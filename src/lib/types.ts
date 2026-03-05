@@ -71,7 +71,7 @@ export type ScenarioId =
 	| "first_timer"
 	| "follow_up"
 	| "event_invite"
-	| "prayer_request"
+	| "request"
 	| "general";
 
 export interface Scenario {

@@ -32,7 +32,7 @@ export const SCENARIOS: Scenario[] = [
 		},
 	},
 	{
-		id: "prayer_request",
+		id: "request",
 		label: "Prayer & Support",
 		icon: "🙏",
 		description: "Offer prayer and spiritual support",

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { CampaignWizardView } from "#/features/camapigns/view/campaign-wizard-view";
+import { CampaignWizardView } from "#/features/campaigns/view/campaign-wizard-view";
 
 export const Route = createFileRoute("/(dashboard)/campaigns/create/")({
 	component: RouteComponent,

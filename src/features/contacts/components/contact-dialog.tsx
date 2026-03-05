@@ -136,7 +136,7 @@ export function ContactDialog({
 							<Row
 								icon={<MessageCircle className="h-4 w-4" />}
 								label="Channel"
-								value={<span className="capitalize">{contact.channel}</span>}
+								value={<span className="uppercase">{contact.channel}</span>}
 							/>
 							<Row
 								icon={<User className="h-4 w-4" />}

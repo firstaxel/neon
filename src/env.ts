@@ -11,6 +11,17 @@ export const env = createEnv({
 		DATABASE_URL: z.string(),
 		GOOGLE_CLIENT_ID: z.string().min(1),
 		GOOGLE_CLIENT_SECRET: z.string().min(1),
+		TERMII_API_KEY: z.string(),
+		TERMII_SECRET_KEY: z.string(),
+		PAYSTACK_SECRET_KEY: z.string(),
+		PAYSTACK_PUBLIC_KEY: z.string(),
+		SMTP_HOST: z.string(),
+		SMTP_USER: z.string(),
+		SMTP_PASS: z.string(),
+		EMAIL_FROM: z.string(),
+		SMTP_PORT: z.string(),
+		SMTP_SECURE: z.string(),
+		PROD_DATABASE_URL: z.string(),
 	},
 
 	/**
@@ -21,6 +32,7 @@ export const env = createEnv({
 
 	client: {
 		VITE_APP_TITLE: z.string().min(1).optional(),
+		VITE_CLIENT_URL: z.url().min(1).optional(),
 	},
 
 	/**

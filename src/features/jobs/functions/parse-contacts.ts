@@ -75,6 +75,7 @@ export const parseContactList = inngest.createFunction(
 						confidence: geminiResult.confidence,
 						warnings: geminiResult.warnings,
 						completedAt: new Date(),
+						parsedBy,
 					},
 				}),
 			]);

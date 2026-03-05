@@ -187,6 +187,7 @@ export function Uploader({
 	return (
 		<div className={cn("w-full max-w-2xl", className)}>
 			{/* Upload Area */}
+
 			<div
 				className={cn(
 					"relative rounded-lg border border-dashed p-8 text-center transition-colors",
@@ -198,7 +199,6 @@ export function Uploader({
 				onDragLeave={handleDragLeave}
 				onDragOver={handleDragOver}
 				onDrop={handleDrop}
-				type="button"
 			>
 				<input {...getInputProps()} className="sr-only" />
 				<div className="flex flex-col items-center gap-4">

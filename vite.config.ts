@@ -17,6 +17,9 @@ const config = defineConfig({
 			},
 		}),
 	],
+	server: {
+		allowedHosts: ["logical-eagerly-humpback.ngrok-free.app"],
+	},
 });
 
 export default config;

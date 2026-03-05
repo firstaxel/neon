@@ -26,6 +26,11 @@ model User {
 
   @@map("user")
 
+  subscriptions Subscription[]
+  wallets Wallet[]
+  userProfiles UserProfile[]
+  messageTemplates MessageTemplate[]
+  senderNumbers SenderNumber[]
 }
 
 model Session {
@@ -48,8 +53,6 @@ model Account {
   createdAt         DateTime @default(now()) @db.Timestamp
   updatedAt         DateTime @updatedAt @db.Timestamp
   userId            String
-  provider          String
-  providerAccountId String
   accessToken       String?
   refreshToken      String?
   expiresAt         Int?
@@ -66,7 +69,7 @@ model Account {
   refreshTokenExpiresAt DateTime?
   password              String?
 
-  @@unique([provider, providerAccountId])
+  @@unique([providerId, accountId])
   @@index([userId])
   @@map("account")
 }
@@ -98,21 +101,22 @@ enum JobStatus {
   completed
   failed
 }
-
 enum MessageStatus {
   pending
   queued
   sending
   sent
+  delivered
+  read
   failed
   rate_limited
+  opted_out
 }
-
 enum Scenario {
   first_timer
   follow_up
   event_invite
-  prayer_request
+  request
   general
 }
 
@@ -157,59 +161,79 @@ model ParseJob {
 
 /// Extracted contact from a parsed image. Linked to the ParseJob that created it.
 
-model Contact {
-  id         String   @id @default(uuid())
-  parseJobId String   @map("parse_job_id")
-  parseJob   ParseJob @relation(fields: [parseJobId], references: [id], onDelete: Cascade)
 
-  name    String
-  phone   String
-  channel MessageChannel
-  type    ContactType    @default(visitor)
-  email   String?
-  notes   String?
-  rawRow  String?        @map("raw_row")
+model Contact {
+  id          String         @id @default(uuid())
+  parseJobId  String         @map("parse_job_id")
+  parseJob    ParseJob       @relation(fields: [parseJobId], references: [id], onDelete: Cascade)
+
+  name        String
+  phone       String
+  channel     MessageChannel
+  type        ContactType    @default(visitor)
+  email       String?
+  notes       String?
+  rawRow      String?        @map("raw_row")
+
   uploadedBy String
 
   user User @relation(fields: [uploadedBy], references: [id])
 
-  createdAt DateTime @default(now()) @map("created_at")
+  optedOut    Boolean        @default(false) @map("opted_out")
+  optedOutAt  DateTime?      @map("opted_out_at")
+
+  createdAt   DateTime       @default(now()) @map("created_at")
 
   @@index([parseJobId])
   @@index([channel])
   @@index([type])
+  @@index([phone])
   @@map("contacts")
 }
 
+
+
 /// Represents one send batch — contacts + scenario + message templates.
 
+/// How a campaign delivers WhatsApp messages.
+///   marketing         — send approved marketing template directly (standard)
+///   utility_prescreen — send cheap utility consent message first; fire real
+///                       message only when contact replies YES
+///   sms_fallback      — send as plain SMS to the WA phone number via Termii
+enum DeliveryMode {
+  marketing
+  utility_prescreen
+  sms_fallback
+}
+
 model Campaign {
-  id       String    @id @default(uuid())
-  scenario Scenario
-  status   JobStatus @default(pending)
+  id                  String    @id @default(uuid())
+  userId              String    @map("user_id")
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scenario            Scenario
+  status              JobStatus @default(pending)
 
-  whatsappTemplate  String  @map("whatsapp_template") @db.Text
-  smsTemplate       String  @map("sms_template") @db.Text
-  useCustomTemplate Boolean @default(false) @map("use_custom_template")
+  deliveryMode        DeliveryMode @default(marketing) @map("delivery_mode")
 
-  totalMessages  Int @default(0) @map("total_messages")
-  sentMessages   Int @default(0) @map("sent_messages")
-  failedMessages Int @default(0) @map("failed_messages")
+  whatsappTemplate    String    @map("whatsapp_template") @db.Text
+  smsTemplate         String    @map("sms_template") @db.Text
+  useCustomTemplate   Boolean   @default(false) @map("use_custom_template")
 
-  inngestEventId String? @map("inngest_event_id")
+  totalMessages       Int       @default(0) @map("total_messages")
+  sentMessages        Int       @default(0) @map("sent_messages")
+  failedMessages      Int       @default(0) @map("failed_messages")
 
-  createdBy String
-    user User @relation(fields: [createdBy], references: [id])
+  inngestEventId      String?   @map("inngest_event_id")
 
-
-
-  createdAt   DateTime  @default(now()) @map("created_at")
-  startedAt   DateTime? @map("started_at")
-  completedAt DateTime? @map("completed_at")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  startedAt           DateTime? @map("started_at")
+  completedAt         DateTime? @map("completed_at")
 
   // Relations
-  messages Message[]
+  messages            Message[]
+  pendingDeliveries   PendingDelivery[]
 
+  @@index([userId])
   @@index([status])
   @@index([createdAt(sort: Desc)])
   @@map("campaigns")
@@ -217,34 +241,36 @@ model Campaign {
 
 /// One row per individual message send attempt within a campaign.
 
+/// One row per individual message send attempt within a campaign.
 model Message {
-  id         String   @id @default(uuid())
-  campaignId String   @map("campaign_id")
-  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  id            String        @id @default(uuid())
+  campaignId    String        @map("campaign_id")
+  campaign      Campaign      @relation(fields: [campaignId], references: [id], onDelete: Cascade)
 
   // Denormalised contact info
-  contactId   String?        @map("contact_id")
-  contactName String         @map("contact_name")
-  phone       String
-  channel     MessageChannel
-  message     String         @db.Text
+  contactId     String?       @map("contact_id")
+  contactName   String        @map("contact_name")
+  phone         String
+  channel       MessageChannel
+  message       String        @db.Text
 
-  status       MessageStatus @default(queued)
-  twilioSid    String?       @map("twilio_sid")
-  errorMessage String?       @map("error_message")
-  retryCount   Int           @default(0) @map("retry_count")
+  status        MessageStatus @default(queued)
+  twilioSid     String?       @map("twilio_sid")
+  errorMessage  String?       @map("error_message")
+  retryCount    Int           @default(0) @map("retry_count")
 
-  sentBy String
-    user User @relation(fields: [sentBy], references: [id])
-
-
-  sentAt    DateTime? @map("sent_at")
-  createdAt DateTime  @default(now()) @map("created_at")
+  sentAt          DateTime?     @map("sent_at")
+  deliveredAt     DateTime?     @map("delivered_at")
+  fromNumber      String?       @map("from_number")
+  metaMessageId   String?       @unique @map("meta_message_id")  // for WA delivery tracking
+  createdAt       DateTime      @default(now()) @map("created_at")
 
   @@index([campaignId])
   @@index([status])
   @@index([channel])
+  @@index([metaMessageId])
   @@map("messages")
+  users User[]
 }
 
 model Verification {
@@ -257,4 +283,315 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+
+// ─── Billing ──────────────────────────────────────────────────────────────────
+
+enum TransactionType {
+  deposit        // user topped up
+  message_debit  // per-message charge
+  campaign_hold  // pre-authorised hold before campaign
+  campaign_refund // returned on pause/cancel
+  subscription   // monthly plan charge
+  refund         // manual admin refund
+}
+
+enum TransactionStatus {
+  pending
+  completed
+  failed
+  reversed
+}
+
+enum SubscriptionStatus {
+  active
+  paused
+  cancelled
+  expired
+}
+
+enum SubscriptionPlan {
+  starter    // ₦5,000/month — up to 500 msgs
+  growth     // ₦15,000/month — up to 2,000 msgs
+  pro        // ₦35,000/month — unlimited
+}
+
+/// One wallet per user. All amounts stored in kobo (₦1 = 100 kobo).
+/// Never use floats for money — always integer kobo.
+model Wallet {
+  id            String   @id @default(uuid())
+  userId        String   @unique @map("user_id")
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  balanceKobo   Int      @default(0) @map("balance_kobo")
+  heldKobo      Int      @default(0) @map("held_kobo")   // reserved for in-flight campaigns
+
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  transactions  Transaction[]
+
+  @@map("wallets")
+}
+
+/// Immutable ledger entry — one row per financial event.
+model Transaction {
+  id              String            @id @default(uuid())
+  walletId        String            @map("wallet_id")
+  wallet          Wallet            @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  type            TransactionType
+  status          TransactionStatus @default(pending)
+
+  amountKobo      Int               @map("amount_kobo")   // always positive
+  balanceAfterKobo Int              @map("balance_after_kobo")
+
+  description     String
+  reference       String            @unique               // Paystack ref or internal UUID
+  paystackRef     String?           @map("paystack_ref")
+
+  // Campaign linkage (for message debits)
+  campaignId      String?           @map("campaign_id")
+  messageId       String?           @map("message_id")
+
+  createdAt       DateTime          @default(now()) @map("created_at")
+
+  @@index([walletId])
+  @@index([type])
+  @@index([status])
+  @@index([createdAt(sort: Desc)])
+  @@map("transactions")
+}
+
+/// Monthly subscription record for a user.
+model Subscription {
+  id                    String             @id @default(uuid())
+  userId                String             @unique @map("user_id")
+  user                  User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  plan                  SubscriptionPlan
+  status                SubscriptionStatus @default(active)
+
+  // Paystack subscription data
+  paystackCustomerCode  String?            @map("paystack_customer_code")
+  paystackSubCode       String?            @map("paystack_sub_code")   // for cancellation
+  paystackPlanCode      String?            @map("paystack_plan_code")
+
+  // Messaging limits (from plan)
+  monthlyMessageLimit   Int                @map("monthly_message_limit")
+  messagesUsedThisCycle Int                @default(0) @map("messages_used_this_cycle")
+
+  currentPeriodStart    DateTime           @map("current_period_start")
+  currentPeriodEnd      DateTime           @map("current_period_end")
+  cancelledAt           DateTime?          @map("cancelled_at")
+
+  createdAt             DateTime           @default(now()) @map("created_at")
+  updatedAt             DateTime           @updatedAt @map("updated_at")
+
+  @@map("subscriptions")
+}
+
+
+// ─── User Profile (onboarding + settings) ────────────────────────────────────
+
+enum UserRole {
+  admin
+  pastor
+  manager
+  staff
+  volunteer
+  coordinator
+}
+
+/// Extended profile collected during onboarding.
+model UserProfile {
+  id                 String    @id @default(uuid())
+  userId             String    @unique @map("user_id")
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Church info
+  orgType            String?   @map("org_type")    // e.g. "church" | "ngo" | "school" | "business"
+  orgName            String?   @map("org_name")
+  orgSize            String?   @map("org_size")    // "1-50" | "51-200" | "201-500" | "500+"
+  role               UserRole  @default(staff)
+  phone              String?
+
+  // Onboarding state
+  onboardingComplete Boolean   @default(false) @map("onboarding_complete")
+  onboardingStep     Int       @default(0)     @map("onboarding_step")
+
+  // Preferences
+  timezone           String    @default("Africa/Lagos")
+
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt      @map("updated_at")
+
+  @@map("user_profiles")
+}
+
+
+// ─── Message Templates ────────────────────────────────────────────────────────
+
+// ─── WhatsApp Template enums ──────────────────────────────────────────────────
+
+enum WaTemplateCategory {
+  MARKETING
+  UTILITY
+  AUTHENTICATION
+}
+
+enum WaTemplateStatus {
+  DRAFT         // not yet submitted
+  PENDING       // submitted, awaiting Meta review
+  APPROVED      // approved by Meta, ready to send
+  REJECTED      // rejected by Meta
+  PAUSED        // paused by Meta / user
+  DISABLED      // disabled by Meta
+}
+
+enum WaHeaderFormat {
+  TEXT
+  IMAGE
+  VIDEO
+  DOCUMENT
+  LOCATION
+}
+
+enum WaButtonType {
+  QUICK_REPLY
+  URL
+  PHONE_NUMBER
+  COPY_CODE
+}
+
+enum Purpose  {
+	general
+	welcome
+	follow_up
+	reminder
+	event
+	announcement
+	support
+	promotion
+}
+
+// ─── MessageTemplate — full WhatsApp Business API template ────────────────────
+
+/// A WhatsApp Business API message template.
+/// Submitted to Meta for approval before it can be used in campaigns.
+/// Also stores an SMS fallback body for contacts on the SMS channel.
+model MessageTemplate {
+  id         String              @id @default(uuid())
+  userId     String              @map("user_id")
+  user       User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // ── Identity ──
+  name          String            // snake_case, e.g. "first_timer_welcome"
+  displayName   String            @map("display_name")  // human label
+  language      String            @default("en")        // BCP-47: en, en_US, pt_BR …
+  category      WaTemplateCategory @default(MARKETING)
+  purpose      Purpose              @default(general)
+
+  // ── WhatsApp approval state ──
+  status        WaTemplateStatus  @default(DRAFT)
+  waTemplateId  String?           @map("wa_template_id")   // Meta's template ID after submission
+  waAccountId   String?           @map("wa_account_id")    // WABA ID used for submission
+  rejectionReason String?         @map("rejection_reason") @db.Text
+
+  // ── Header component ──
+  headerFormat  WaHeaderFormat?   @map("header_format")
+  headerText    String?           @map("header_text")     // used when format=TEXT
+  headerVars    String[]          @default([]) @map("header_vars")   // named vars in header
+
+  // ── Body component ──
+  bodyText      String            @map("body_text") @db.Text
+  bodyVars      String[]          @default([]) @map("body_vars")   // ordered named vars: ["name","date","amount"]
+
+  // ── Footer component ──
+  footerText    String?           @map("footer_text")
+
+  // ── Buttons (stored as JSON array) ──
+  buttons       Json              @default("[]") // WaButton[]
+
+  // ── Channel ── whatsapp = full WA Business API template; sms = SMS-only template
+  channel       MessageChannel    @default(whatsapp)
+
+  // ── SMS body (fallback for WA templates; primary body for SMS-only templates) ──
+  smsBody       String            @map("sms_body") @db.Text
+  smsVars       String[]          @default([]) @map("sms_vars")
+
+  // ── Usage tracking ──
+  usageCount    Int               @default(0) @map("usage_count")
+  lastUsedAt    DateTime?         @map("last_used_at")
+
+  submittedAt   DateTime?         @map("submitted_at")
+  approvedAt    DateTime?         @map("approved_at")
+  createdAt     DateTime          @default(now()) @map("created_at")
+  updatedAt     DateTime          @updatedAt      @map("updated_at")
+
+
+
+  @@index([userId])
+  @@index([userId, channel])
+  @@index([userId, status])
+  @@index([userId, category])
+  @@map("message_templates")
+}
+
+
+/// Registered sender numbers used for outbound campaigns.
+/// Rotated round-robin across active numbers to spread send volume.
+model SenderNumber {
+  id          String         @id @default(uuid())
+  userId      String         @map("user_id")
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  number      String
+  label       String?
+  channel     MessageChannel
+  isActive    Boolean        @default(true) @map("is_active")
+
+  lastUsedAt  DateTime?      @map("last_used_at")
+  sentCount   Int            @default(0) @map("sent_count")
+
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt      @map("updated_at")
+
+  @@index([userId, channel, isActive])
+  @@map("sender_numbers")
+}
+
+
+// ─── Pending Delivery (utility pre-screen flow) ───────────────────────────────
+
+/// When deliveryMode = utility_prescreen, we send a cheap UTILITY consent
+/// message first. When the contact replies YES, the webhook looks up this
+/// table and fires the real marketing message.
+///
+/// Rows are deleted (or marked replied=true) once the real message is sent.
+/// Expired rows (expiresAt < now) are ignored by the webhook.
+model PendingDelivery {
+  id            String   @id @default(uuid())
+  campaignId    String   @map("campaign_id")
+  campaign      Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  contactId     String?  @map("contact_id")
+  contactName   String   @map("contact_name")
+  phone         String                       // E.164 without +, matches Meta webhook format
+  realMessage   String   @db.Text           // the actual body to send after YES
+
+  // Utility message tracking
+  prescreenMsgId String?  @map("prescreen_msg_id")  // metaMessageId of the consent msg
+
+  replied       Boolean  @default(false)
+  repliedAt     DateTime? @map("replied_at")
+  expiresAt     DateTime  @map("expires_at")         // consent expires after 48h
+
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  @@index([phone])
+  @@index([campaignId])
+  @@index([expiresAt])
+  @@map("pending_deliveries")
 }

@@ -24,6 +24,8 @@ export default function AnimatedHeader() {
 		{ label: "Campaigns", value: "campaigns", href: "/campaigns" },
 		{ label: "Contacts", value: "contacts", href: "/contacts" },
 		{ label: "Messages", value: "messages", href: "/messages" },
+		{ label: "Templates", value: "templates", href: "/templates" },
+		{ label: "Billing", value: "billing", href: "/billing" },
 	];
 
 	return (

@@ -6,9 +6,13 @@ import {
 	useInvalidateParsing,
 } from "#/features/parsing/hooks/useParsing";
 import { Uploader } from "#/features/upload/components";
+import { pageHeadMeta } from "#/lib/metadata";
 
 export const Route = createFileRoute("/(dashboard)/dashboard/")({
 	component: RouteComponent,
+	head: () => ({
+		meta: [pageHeadMeta.dashboard],
+	}),
 });
 
 function RouteComponent() {

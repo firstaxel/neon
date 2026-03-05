@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import type { JSX, SVGProps } from "react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "#/components/ui/button";
 import { Card, CardContent } from "#/components/ui/card";
 import { Input } from "#/components/ui/input";
@@ -272,6 +273,19 @@ function PasswordForm() {
 export default function LoginView() {
 	const [usePassword, setUsePassword] = useState(false);
 
+	const handleSocialLogin = () => {
+		authClient.signIn
+			.social({
+				provider: "google",
+				callbackURL: "",
+				newUserCallbackURL: "/onboarding",
+				requestSignUp: true,
+			})
+			.then(() => {
+				toast.success("Redirecting for social login.");
+			});
+	};
+
 	return (
 		<div className="flex min-h-dvh items-center justify-center">
 			<Card className="w-full max-w-sm rounded-4xl px-6 py-10 pt-14">
@@ -297,6 +311,7 @@ export default function LoginView() {
 						<div className="w-full space-y-4">
 							<Button
 								className="w-full gap-2 rounded-xl"
+								onClick={handleSocialLogin}
 								size="lg"
 								variant="outline"
 							>

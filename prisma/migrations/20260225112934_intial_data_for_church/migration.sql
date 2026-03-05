@@ -14,7 +14,7 @@ CREATE TYPE "JobStatus" AS ENUM ('pending', 'processing', 'completed', 'failed')
 CREATE TYPE "MessageStatus" AS ENUM ('pending', 'queued', 'sending', 'sent', 'failed', 'rate_limited');
 
 -- CreateEnum
-CREATE TYPE "Scenario" AS ENUM ('first_timer', 'follow_up', 'event_invite', 'prayer_request', 'general');
+CREATE TYPE "Scenario" AS ENUM ('first_timer', 'follow_up', 'event_invite', 'request', 'general');
 
 -- CreateTable
 CREATE TABLE "User" (

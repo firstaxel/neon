@@ -3,7 +3,9 @@ import { env } from "./env.js";
 import { PrismaClient } from "./generated/prisma/client.js";
 
 const adapter = new PrismaPg({
-	connectionString: env.DATABASE_URL,
+	connectionString: import.meta.env.PROD
+		? env.PROD_DATABASE_URL
+		: env.DATABASE_URL,
 });
 
 declare global {

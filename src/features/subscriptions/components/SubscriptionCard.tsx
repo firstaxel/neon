@@ -1,5 +1,3 @@
-"use client";
-
 import { CheckCircle2, Loader2, Sparkles, XCircle, Zap } from "lucide-react";
 import { useState } from "react";
 import {

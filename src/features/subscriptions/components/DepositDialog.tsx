@@ -1,5 +1,3 @@
-"use client";
-
 import { Banknote, ExternalLink, Loader2, X } from "lucide-react";
 import { useState } from "react";
 import { useInitDeposit } from "#/features/billing/hooks/use-billing";

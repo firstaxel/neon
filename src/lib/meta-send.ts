@@ -53,7 +53,7 @@ function accessToken() {
 }
 
 function apiVersion() {
-	return process.env.META_API_VERSION ?? "v20.0";
+	return process.env.META_API_VERSION ?? "v22.0";
 }
 
 function baseUrl() {

@@ -1,5 +1,3 @@
-"use client";
-
 import { useForm } from "@tanstack/react-form";
 import { useRouter } from "@tanstack/react-router";
 import {

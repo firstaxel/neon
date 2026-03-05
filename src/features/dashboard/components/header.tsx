@@ -1,5 +1,3 @@
-"use client";
-
 import { GlobeIcon } from "lucide-react";
 
 import { motion } from "motion/react";

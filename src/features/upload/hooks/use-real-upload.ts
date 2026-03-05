@@ -1,5 +1,3 @@
-"use client";
-
 import { useCallback, useRef } from "react";
 import type { Contact } from "#/db";
 import { client } from "#/orpc/client";

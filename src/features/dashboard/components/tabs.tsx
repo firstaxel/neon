@@ -1,5 +1,3 @@
-"use client";
-
 import { Link, useRouterState } from "@tanstack/react-router";
 import { AnimatePresence, motion, type Transition } from "motion/react";
 import React from "react";

@@ -1,5 +1,3 @@
-"use client";
-
 import { Plus, RefreshCw, Wallet } from "lucide-react";
 import { useState } from "react";
 import { useWallet } from "#/features/billing/hooks/use-billing";

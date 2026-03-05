@@ -1,5 +1,3 @@
-"use client";
-
 interface UserAvatarProps {
 	image?: string | null;
 	name: string;

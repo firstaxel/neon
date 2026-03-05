@@ -1,5 +1,3 @@
-"use client";
-
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ScenarioId } from "#/lib/types";
 import { orpc } from "#/orpc/client";

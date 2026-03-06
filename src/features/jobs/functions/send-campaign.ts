@@ -360,7 +360,7 @@ export const sendSingleMessage = inngest.createFunction(
 				await prisma.$transaction(async (tx) => {
 					const campaignDetails = await tx.campaign.findUnique({
 						where: {
-							id: campaignId,
+							id: d.campaignId,
 						},
 						select: {
 							totalMessages: true,
@@ -372,7 +372,7 @@ export const sendSingleMessage = inngest.createFunction(
 						campaignDetails?.totalMessages === campaignDetails?.failedMessages
 					) {
 						await prisma.campaign.update({
-							where: { id: campaignId },
+							where: { id: d.campaignId },
 							data: { status: "failed" },
 						});
 

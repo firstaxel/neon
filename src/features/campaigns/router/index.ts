@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
+import { getTemplate } from "#/features/miscellaneous/scenario";
 import { inngest } from "#/lib/inngest/client";
-import { getTemplate } from "#/lib/scenarios";
 import { protectedProcedure } from "#/orpc";
 
 const ContactSchema = z.object({
@@ -32,6 +32,8 @@ export const sendCampaign = protectedProcedure
 			deliveryMode: z
 				.enum(["marketing", "utility_prescreen", "sms_fallback"])
 				.default("marketing"),
+			/** User-supplied values for template variables that can't be auto-resolved (e.g. date, event, org). */
+			templateVars: z.record(z.string(), z.string()).default({}),
 		})
 	)
 	.handler(async ({ input, context }) => {
@@ -41,15 +43,21 @@ export const sendCampaign = protectedProcedure
 				? input.customTemplate
 				: getTemplate(input.scenario);
 
-		// Fetch org name for pre-screen consent message ("X wants to send you a message")
-		const profile =
-			input.deliveryMode === "utility_prescreen"
-				? await context.db.userProfile.findUnique({
-						where: { userId },
-						select: { orgName: true },
-					})
-				: null;
-		const orgName = profile?.orgName ?? "MessageDesk";
+		// Fetch profile for org name — used in consent messages and as auto-resolved {{org}} var
+		const profile = await context.db.userProfile.findUnique({
+			where: { userId },
+			select: { orgName: true },
+		});
+		const orgName = profile?.orgName ?? "Polyvocal";
+
+		// Merge auto-resolved server vars with user-supplied vars.
+		// Server-side values win over anything the user typed for org/orgName.
+		const resolvedTemplateVars: Record<string, string> = {
+			...input.templateVars,
+			org: orgName,
+			orgName,
+			org_name: orgName,
+		};
 
 		const campaignId = uuidv4();
 
@@ -80,6 +88,7 @@ export const sendCampaign = protectedProcedure
 					realWhatsappMessage: template?.whatsapp ?? "",
 					realSmsMessage: template?.sms ?? "",
 					scenario: input.scenario,
+					templateVars: resolvedTemplateVars,
 				},
 			});
 		} else {
@@ -99,6 +108,7 @@ export const sendCampaign = protectedProcedure
 					whatsappTemplate: template?.whatsapp ?? "",
 					smsTemplate: template?.sms ?? "",
 					scenario: input.scenario,
+					templateVars: resolvedTemplateVars,
 				},
 			});
 		}

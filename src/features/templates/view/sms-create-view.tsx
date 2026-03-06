@@ -13,7 +13,7 @@ export function SmsTemplateCreateView() {
 
 	async function handleSave(values: WaTemplateFormValues) {
 		try {
-			await create(values);
+			await create({ ...values, smsBody: values.smsBody ?? "" });
 			toast.success("SMS template created", {
 				description: `"${values.displayName}" is ready to use.`,
 			});
@@ -31,7 +31,7 @@ export function SmsTemplateCreateView() {
 	}
 
 	return (
-		<div style={{ padding: "32px 28px", maxWidth: 860, margin: "0 auto" }}>
+		<div className="mx-auto w-full max-w-4xl">
 			<div className="mb-6 flex items-center gap-3">
 				<Button
 					className="gap-1.5 rounded-xl"
@@ -53,7 +53,7 @@ export function SmsTemplateCreateView() {
 				description="Create a reusable SMS message with dynamic variables. Ready to use immediately."
 				title="New SMS template"
 			/>
-			<div className="mt-6">
+			<div className="mt-6 w-full">
 				<SmsOnlyTemplateEditor
 					isSaving={isPending}
 					onCancel={() =>

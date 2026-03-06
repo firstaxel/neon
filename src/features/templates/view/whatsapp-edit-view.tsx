@@ -18,7 +18,7 @@ export function WaTemplateEditView({ id }: { id: string }) {
 
 	async function handleSave(values: WaTemplateFormValues) {
 		try {
-			await update({ id, ...values });
+			await update({ id, ...values, smsBody: values.smsBody ?? "" });
 			toast.success("Template saved", {
 				description: `"${values.displayName}" updated.`,
 			});

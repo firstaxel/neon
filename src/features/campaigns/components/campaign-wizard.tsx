@@ -1,3 +1,5 @@
+"use client";
+
 import { useForm } from "@tanstack/react-form";
 import { useRouter } from "@tanstack/react-router";
 import {
@@ -11,6 +13,7 @@ import {
 	Send,
 	Sparkles,
 	Users,
+	Variable,
 	X,
 } from "lucide-react";
 import { useState } from "react";
@@ -24,6 +27,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "#/components/ui/card";
+import { Input } from "#/components/ui/input";
 import { Label } from "#/components/ui/label";
 import { Separator } from "#/components/ui/separator";
 import { Switch } from "#/components/ui/switch";
@@ -34,15 +38,21 @@ import {
 	type SelectedContact,
 } from "#/features/contacts/components/contact-table";
 import { getScenarioMeta } from "#/features/miscellaneous/org";
+import {
+	getManualVars,
+	personalizeMessage,
+	SCENARIOS,
+	VAR_LABELS,
+} from "#/features/miscellaneous/scenario";
 import { useProfile } from "#/features/profile/hooks/use-profile";
 import { DepositDialog } from "#/features/subscriptions/components/DepositDialog";
 import {
+	type ChannelTemplate,
 	TemplatePickerDialog,
-	type WizardTemplate,
+	type WizardTemplatePair,
 } from "#/features/templates/components/template-dialog-picker";
 import { useRecordTemplateUsage } from "#/features/templates/hooks/use-templates";
-import { SCENARIOS } from "#/lib/scenarios";
-import type { Scenario, ScenarioId } from "#/lib/types";
+import type { ScenarioId } from "#/lib/types";
 import { useSendCampaign } from "../hooks/use-campaign";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -56,13 +66,17 @@ interface WizardValues {
 	//   utility_prescreen → send cheap consent message first, real msg on YES (~₦5 + ₦100 for replies only)
 	//   sms_fallback      → send as SMS to their WhatsApp number via Termii (~₦5–8)
 	deliveryMode: "marketing" | "utility_prescreen" | "sms_fallback";
-	savedTemplate: WizardTemplate | null;
+	savedSmsTemplate: ChannelTemplate | null;
+	// Independent per-channel picks. null = fall back to scenario default for that channel.
+	savedWaTemplate: ChannelTemplate | null;
 	scenario: ScenarioId;
 	// Template source — exactly one of these modes is active at a time:
-	//   "scenario"   → use the built-in scenario default (original behaviour)
-	//   "saved"      → use a saved MessageTemplate
+	//   "scenario"   → use the built-in scenario defaults
+	//   "saved"      → user picked templates from saved library (one per channel, independently)
 	//   "custom"     → user typed a one-off override
 	templateSource: "scenario" | "saved" | "custom";
+	/** User-supplied values for manual template vars (non-name vars like org, date, event) */
+	templateVars: Record<string, string>;
 }
 
 const CHANNEL_BADGE = {
@@ -75,16 +89,34 @@ const CHANNEL_BADGE = {
 const STEPS = [
 	{ label: "Scenario", icon: MessageCircle },
 	{ label: "Contacts", icon: Users },
-	{ label: "Review", icon: Send },
+	{ label: "Review", icon: FileText },
+	{ label: "Variables", icon: Variable },
+	{ label: "Send", icon: Send },
 ] as const;
 
-function StepIndicator({ current }: { current: number }) {
+function StepIndicator({
+	current,
+	hasVarsStep,
+}: {
+	current: number;
+	hasVarsStep: boolean;
+}) {
+	// Only show Variables step in the indicator when there are manual vars to fill
+	const visibleSteps = hasVarsStep
+		? STEPS
+		: STEPS.filter((s) => s.label !== "Variables");
+
+	// Map the logical step index to the visible step index
+	const visibleCurrent = hasVarsStep
+		? current
+		: Math.min(current, visibleSteps.length - 1);
+
 	return (
 		<div className="flex items-center gap-1.5">
-			{STEPS.map((step, i) => {
+			{visibleSteps.map((step, i) => {
 				const Icon = step.icon;
-				const done = i < current;
-				const active = i === current;
+				const done = i < visibleCurrent;
+				const active = i === visibleCurrent;
 				return (
 					<div className="flex items-center gap-1.5" key={step.label}>
 						<div
@@ -108,9 +140,9 @@ function StepIndicator({ current }: { current: number }) {
 						>
 							{step.label}
 						</span>
-						{i < STEPS.length - 1 && (
+						{i < visibleSteps.length - 1 && (
 							<div
-								className={`h-px w-6 ${i < current ? "bg-primary" : "bg-border"}`}
+								className={`h-px w-6 ${i < visibleCurrent ? "bg-primary" : "bg-border"}`}
 							/>
 						)}
 					</div>
@@ -215,7 +247,7 @@ const DELIVERY_MODES = [
 		id: "marketing" as const,
 		label: "Direct WhatsApp",
 		sublabel: "Marketing template",
-		cost: "~₦80–100 / contact",
+		cost: "~₦90 / contact",
 		detail:
 			"Send your approved WhatsApp marketing template straight to contacts. Fastest delivery.",
 		color: "border-[#25d36650] bg-[#0d2016] text-[#25d366]",
@@ -226,7 +258,7 @@ const DELIVERY_MODES = [
 		id: "utility_prescreen" as const,
 		label: "Consent first",
 		sublabel: "Utility → Marketing",
-		cost: "~₦5 + ₦100 for replies",
+		cost: "~₦8 + ₦0 for replies",
 		detail:
 			"Send a cheap consent message first. Only contacts who reply YES receive the full message. Best for large lists.",
 		color: "border-[#f59e0b50] bg-[#1a1200] text-[#f59e0b]",
@@ -237,7 +269,7 @@ const DELIVERY_MODES = [
 		id: "sms_fallback" as const,
 		label: "SMS to WA number",
 		sublabel: "Termii SMS",
-		cost: "~₦4–8 / contact",
+		cost: "~₦6 / contact",
 		detail:
 			"Send as a regular SMS to their WhatsApp phone number. No Meta approval needed. Works even if WhatsApp isn't open.",
 		color: "border-[#60a5fa50] bg-[#0d1a2e] text-[#60a5fa]",
@@ -328,35 +360,41 @@ function ReviewStep({
 }) {
 	const [pickerOpen, setPickerOpen] = useState(false);
 
-	const scenario = SCENARIOS.find((s) => s.id === values.scenario) as Scenario;
+	const scenario = SCENARIOS.find((s) => s.id === values.scenario);
 	const waContacts = values.contacts.filter((c) => c.channel === "whatsapp");
 	const smsContacts = values.contacts.filter((c) => c.channel === "sms");
 	const previewName = values.contacts[0]?.name ?? "John";
 
-	// Resolve the active template bodies depending on source
+	// Resolve active template bodies per channel independently.
+	// WA contacts use savedWaTemplate if picked, else scenario default.
+	// SMS contacts use savedSmsTemplate if picked, else scenario default.
 	const activeTemplate = (() => {
-		if (values.templateSource === "saved" && values.savedTemplate) {
-			return {
-				whatsapp: values.savedTemplate.whatsappBody,
-				sms: values.savedTemplate.smsBody,
-			};
-		}
 		if (values.templateSource === "custom") {
 			return { whatsapp: values.customWhatsapp, sms: values.customSms };
 		}
-		return scenario.template;
+		return {
+			whatsapp: values.savedWaTemplate
+				? values.savedWaTemplate.body
+				: scenario?.template.whatsapp,
+			sms: values.savedSmsTemplate
+				? values.savedSmsTemplate.body
+				: scenario?.template.sms,
+		};
 	})();
 
 	const preview = (t: string) =>
-		t.replace(/\{name\}/g, previewName.split(" ")[0]);
+		personalizeMessage(t, previewName, values.templateVars);
 
-	function handleTemplatePick(t: WizardTemplate) {
-		setFieldValue("savedTemplate", t);
-		setFieldValue("templateSource", "saved");
+	function handleTemplatePair(pair: WizardTemplatePair) {
+		const hasAnyPick = pair.wa !== null || pair.sms !== null;
+		setFieldValue("savedWaTemplate", pair.wa);
+		setFieldValue("savedSmsTemplate", pair.sms);
+		setFieldValue("templateSource", hasAnyPick ? "saved" : "scenario");
 	}
 
-	function clearSavedTemplate() {
-		setFieldValue("savedTemplate", null);
+	function clearSavedTemplates() {
+		setFieldValue("savedWaTemplate", null);
+		setFieldValue("savedSmsTemplate", null);
 		setFieldValue("templateSource", "scenario");
 	}
 
@@ -365,7 +403,7 @@ function ReviewStep({
 			{/* Summary chips */}
 			<div className="grid grid-cols-3 gap-3">
 				{[
-					{ label: "Scenario", value: `${scenario.icon} ${scenario.label}` },
+					{ label: "Scenario", value: `${scenario?.icon} ${scenario?.label}` },
 					{
 						label: "Recipients",
 						value: `${values.contacts.length} contact${values.contacts.length !== 1 ? "s" : ""}`,
@@ -399,33 +437,42 @@ function ReviewStep({
 				<div className="flex items-center gap-3 px-4 py-3">
 					<FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
 					<div className="min-w-0 flex-1">
-						<p className="font-medium text-sm">Saved template</p>
+						<p className="font-medium text-sm">Saved templates</p>
 						<p className="text-muted-foreground text-xs">
-							{values.templateSource === "saved" && values.savedTemplate ? (
+							{values.savedWaTemplate || values.savedSmsTemplate ? (
 								<>
-									Using{" "}
-									<span className="font-medium text-foreground">
-										"{values.savedTemplate.displayName}"
-									</span>
+									{values.savedWaTemplate && (
+										<span className="font-medium text-[#25d366]">
+											WA: {values.savedWaTemplate.displayName}
+										</span>
+									)}
+									{values.savedWaTemplate && values.savedSmsTemplate && (
+										<span className="mx-1 text-muted-foreground/50">·</span>
+									)}
+									{values.savedSmsTemplate && (
+										<span className="font-medium text-[#60a5fa]">
+											SMS: {values.savedSmsTemplate.displayName}
+										</span>
+									)}
 								</>
 							) : (
-								"Pick from your saved templates"
+								"Pick independently for WhatsApp and SMS"
 							)}
 						</p>
 					</div>
-					{values.templateSource === "saved" && values.savedTemplate ? (
+					{values.savedWaTemplate || values.savedSmsTemplate ? (
 						<div className="flex items-center gap-1.5">
-							<Badge
-								className="rounded-full text-[10px] capitalize"
-								variant="secondary"
+							<Button
+								className="h-7 rounded-lg text-muted-foreground text-xs"
+								onClick={() => setPickerOpen(true)}
+								size="sm"
+								variant="ghost"
 							>
-								{values.savedTemplate.channel === "sms"
-									? "SMS"
-									: values.savedTemplate.category}
-							</Badge>
+								Change
+							</Button>
 							<Button
 								className="h-6 w-6"
-								onClick={clearSavedTemplate}
+								onClick={clearSavedTemplates}
 								size="icon"
 								variant="ghost"
 							>
@@ -459,7 +506,8 @@ function ReviewStep({
 						onCheckedChange={(v) => {
 							if (v) {
 								setFieldValue("templateSource", "custom");
-								setFieldValue("savedTemplate", null);
+								setFieldValue("savedWaTemplate", null);
+								setFieldValue("savedSmsTemplate", null);
 							} else {
 								setFieldValue("templateSource", "scenario");
 							}
@@ -474,7 +522,7 @@ function ReviewStep({
 					<div className="space-y-1.5">
 						<Label className="text-sm">WhatsApp message</Label>
 						<Textarea
-							className="min-h-[100px] resize-none rounded-xl font-mono text-xs"
+							className="min-h-25 resize-none rounded-xl font-mono text-xs"
 							onChange={(e) => setFieldValue("customWhatsapp", e.target.value)}
 							placeholder="Hi {name}! …"
 							value={values.customWhatsapp}
@@ -483,7 +531,7 @@ function ReviewStep({
 					<div className="space-y-1.5">
 						<Label className="text-sm">SMS message</Label>
 						<Textarea
-							className="min-h-[80px] resize-none rounded-xl font-mono text-xs"
+							className="min-h-20 resize-none rounded-xl font-mono text-xs"
 							onChange={(e) => setFieldValue("customSms", e.target.value)}
 							placeholder="Hi {name}! …"
 							value={values.customSms}
@@ -503,9 +551,9 @@ function ReviewStep({
 			<div className="space-y-2">
 				<p className="font-semibold text-[10px] text-muted-foreground uppercase tracking-wide">
 					Message preview — {previewName.split(" ")[0]}
-					{values.templateSource === "saved" && values.savedTemplate && (
+					{(values.savedWaTemplate || values.savedSmsTemplate) && (
 						<span className="ml-2 font-normal text-muted-foreground normal-case">
-							· from "{values.savedTemplate.displayName}"
+							· saved templates
 						</span>
 					)}
 				</p>
@@ -518,7 +566,7 @@ function ReviewStep({
 							WhatsApp
 						</Badge>
 						<p className="whitespace-pre-wrap text-foreground/80 text-xs leading-relaxed">
-							{preview(activeTemplate.whatsapp) || (
+							{preview(activeTemplate?.whatsapp ?? "") || (
 								<span className="text-muted-foreground italic">
 									No message yet
 								</span>
@@ -535,7 +583,7 @@ function ReviewStep({
 							SMS
 						</Badge>
 						<p className="text-foreground/80 text-xs">
-							{preview(activeTemplate.sms) || (
+							{preview(activeTemplate?.sms ?? "") || (
 								<span className="text-muted-foreground italic">
 									No message yet
 								</span>
@@ -594,8 +642,11 @@ function ReviewStep({
 
 			{/* Template picker dialog */}
 			<TemplatePickerDialog
-				currentId={values.savedTemplate?.id}
-				onConfirm={handleTemplatePick}
+				currentSmsId={values.savedSmsTemplate?.id}
+				currentWaId={values.savedWaTemplate?.id}
+				hasSms={smsContacts.length > 0}
+				hasWa={waContacts.length > 0}
+				onConfirm={handleTemplatePair}
 				onOpenChange={setPickerOpen}
 				open={pickerOpen}
 			/>
@@ -603,7 +654,132 @@ function ReviewStep({
 	);
 }
 
-// ─── Post-send: live progress ─────────────────────────────────────────────────
+// ─── Step 4: Fill template variables ─────────────────────────────────────────
+
+const highlightedRegex = /^\{+[a-zA-Z_]/;
+function VariablesStep({
+	manualVars,
+	templateVars,
+	setFieldValue,
+	activeTemplate,
+	previewName,
+}: {
+	manualVars: string[];
+	templateVars: Record<string, string>;
+	setFieldValue: <K extends keyof WizardValues>(
+		k: K,
+		v: WizardValues[K]
+	) => void;
+	activeTemplate: { whatsapp: string; sms: string };
+	previewName: string;
+}) {
+	function setVar(key: string, value: string) {
+		setFieldValue("templateVars", { ...templateVars, [key]: value });
+	}
+
+	const previewWa = personalizeMessage(
+		activeTemplate.whatsapp,
+		previewName,
+		templateVars
+	);
+	const previewSms = personalizeMessage(
+		activeTemplate.sms,
+		previewName,
+		templateVars
+	);
+
+	// Highlight unfilled vars in the preview
+	function highlightUnfilled(text: string) {
+		// Split on remaining {{var}} or {var} patterns, colour them red
+		const parts = text.split(/(\{+[a-zA-Z_][a-zA-Z0-9_]*\}+)/g);
+		return parts.map((p, i) =>
+			highlightedRegex.test(p) ? (
+				<span
+					className="rounded bg-destructive/20 px-0.5 font-mono text-destructive"
+					key={i.toString()}
+				>
+					{p}
+				</span>
+			) : (
+				p
+			)
+		);
+	}
+
+	return (
+		<div className="space-y-5">
+			<p className="text-muted-foreground text-sm">
+				This template contains variables that need values before sending. Fill
+				them in below — they'll be the same for every recipient.
+			</p>
+
+			{/* Variable fields */}
+			<div className="space-y-3">
+				{manualVars.map((varName) => {
+					const label = VAR_LABELS[varName] ?? varName;
+					const value = templateVars[varName] ?? "";
+					const isFilled = value.trim().length > 0;
+
+					return (
+						<div className="space-y-1.5" key={varName}>
+							<div className="flex items-center gap-2">
+								<Label className="font-medium text-sm">{label}</Label>
+								<code className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
+									{`{{${varName}}}`}
+								</code>
+								{isFilled && (
+									<CheckCircle2 className="h-3.5 w-3.5 text-primary" />
+								)}
+							</div>
+							<Input
+								className="rounded-xl"
+								onChange={(e) => setVar(varName, e.target.value)}
+								placeholder={`Enter ${label.toLowerCase()}…`}
+								value={value}
+							/>
+						</div>
+					);
+				})}
+			</div>
+
+			{/* Live preview */}
+			<div className="space-y-2">
+				<p className="font-semibold text-[10px] text-muted-foreground uppercase tracking-wide">
+					Live preview — {previewName.split(" ")[0]}
+				</p>
+				<div className="space-y-1.5 rounded-xl border bg-[#0d2016] px-4 py-3">
+					<Badge
+						className="border-[#25d36640] px-1.5 text-[#25d366] text-[10px]"
+						variant="outline"
+					>
+						WhatsApp
+					</Badge>
+					<p className="whitespace-pre-wrap text-foreground/80 text-xs leading-relaxed">
+						{highlightUnfilled(previewWa)}
+					</p>
+				</div>
+				<div className="space-y-1.5 rounded-xl border bg-[#0d1a2e] px-4 py-3">
+					<Badge
+						className="border-[#60a5fa40] px-1.5 text-[#60a5fa] text-[10px]"
+						variant="outline"
+					>
+						SMS
+					</Badge>
+					<p className="whitespace-pre-wrap text-foreground/80 text-xs leading-relaxed">
+						{highlightUnfilled(previewSms)}
+					</p>
+				</div>
+				{manualVars.some((v) => !templateVars[v]?.trim()) && (
+					<p className="flex items-center gap-1.5 text-destructive/80 text-xs">
+						<AlertCircle className="h-3.5 w-3.5 shrink-0" />
+						Highlighted placeholders above will appear literally in messages if
+						left blank.
+					</p>
+				)}
+			</div>
+		</div>
+	);
+}
 
 // ─── CampaignWizard ───────────────────────────────────────────────────────────
 
@@ -620,27 +796,30 @@ export function CampaignWizard({ onCancel }: { onCancel?: () => void } = {}) {
 			scenario: "first_timer",
 			contacts: [],
 			templateSource: "scenario",
-			savedTemplate: null,
+			savedWaTemplate: null,
+			savedSmsTemplate: null,
 			customWhatsapp: "",
 			customSms: "",
 			deliveryMode: "marketing",
+			templateVars: {},
 		} as WizardValues,
 		onSubmit: async ({ value }) => {
-			// Resolve what we actually send
 			const useCustom = value.templateSource !== "scenario";
-			// Normalise named {{vars}} to {name} for the existing personalizeMessage function
-			// Only {{name}} is mapped here — other vars will be resolved later when per-user data is available
-			function normalizeVars(text: string): string {
-				return text
-					.replace(/\{\{name\}\}/g, "{name}")
-					.replace(/\{\{firstName\}\}/g, "{name}");
-			}
 
+			const scenario = SCENARIOS.find((s) => s.id === value.scenario);
+
+			// Build the template payload.
+			// WA and SMS bodies are now independent — each can come from a different saved template,
+			// a custom override, or fall back to the scenario default.
 			const customTemplate = useCustom
-				? value.templateSource === "saved" && value.savedTemplate
+				? value.templateSource === "saved"
 					? {
-							whatsapp: normalizeVars(value.savedTemplate.whatsappBody),
-							sms: normalizeVars(value.savedTemplate.smsBody),
+							// Use the picked body for each channel, falling back to scenario default
+							whatsapp:
+								value.savedWaTemplate?.body ??
+								scenario?.template.whatsapp ??
+								"",
+							sms: value.savedSmsTemplate?.body ?? scenario?.template.sms ?? "",
 						}
 					: { whatsapp: value.customWhatsapp, sms: value.customSms }
 				: undefined;
@@ -649,20 +828,36 @@ export function CampaignWizard({ onCancel }: { onCancel?: () => void } = {}) {
 				scenario: value.scenario,
 				contacts: value.contacts,
 				useCustom,
-				customTemplate,
+				customTemplate: customTemplate ?? {
+					whatsapp: "",
+					sms: "",
+				},
 				deliveryMode: value.deliveryMode,
+				templateVars: value.templateVars,
 			});
 
-			// Record usage on the saved template (fire-and-forget)
-			if (value.templateSource === "saved" && value.savedTemplate) {
-				recordUsage({
-					id: value.savedTemplate.id,
-				}).catch(() => {
-					toast.error("Unable to record template usage");
-				});
+			// Record usage on saved templates (fire-and-forget — one per picked channel)
+			if (value.templateSource === "saved") {
+				if (value.savedWaTemplate) {
+					recordUsage({
+						id: value.savedWaTemplate.id,
+					}).catch(() => {
+						toast.error("Failed to record template usage");
+					});
+				}
+				if (
+					value.savedSmsTemplate &&
+					value.savedSmsTemplate.id !== value.savedWaTemplate?.id
+				) {
+					recordUsage({
+						id: value.savedSmsTemplate.id,
+					}).catch(() => {
+						toast.error("Failed to record template usage");
+					});
+				}
 			}
 
-			// Navigate to the campaign detail page — shareable URL with live progress
+			// Navigate	 to the campaign detail page — shareable URL with live progress
 			router.navigate({
 				to: `/campaigns/${result.campaignId}`,
 			});
@@ -674,7 +869,31 @@ export function CampaignWizard({ onCancel }: { onCancel?: () => void } = {}) {
 			<CardHeader className="pb-4">
 				<div className="flex items-center justify-between">
 					<CardTitle className="text-lg">New Campaign</CardTitle>
-					<StepIndicator current={step} />
+					<form.Subscribe
+						selector={(s) => {
+							const scenario__ = SCENARIOS.find(
+								(sc) => sc.id === s.values.scenario
+							);
+							const t =
+								s.values.templateSource === "custom"
+									? { wa: s.values.customWhatsapp, sms: s.values.customSms }
+									: s.values.templateSource === "saved"
+										? {
+												wa:
+													s.values.savedWaTemplate?.body ??
+													scenario__?.template.whatsapp,
+												sms:
+													s.values.savedSmsTemplate?.body ??
+													scenario__?.template.sms,
+											}
+										: { wa: "", sms: "" };
+							return getManualVars(t.wa ?? "", t.sms ?? "").length > 0;
+						}}
+					>
+						{(hasVarsStep) => (
+							<StepIndicator current={step} hasVarsStep={hasVarsStep} />
+						)}
+					</form.Subscribe>
 				</div>
 			</CardHeader>
 
@@ -714,6 +933,52 @@ export function CampaignWizard({ onCancel }: { onCancel?: () => void } = {}) {
 					</form.Subscribe>
 				)}
 
+				{step === 3 && (
+					<form.Subscribe selector={(s) => s.values}>
+						{(values) => {
+							const scenario = SCENARIOS.find((s) => s.id === values.scenario);
+							const activeTemplate = (() => {
+								if (values.templateSource === "custom") {
+									return {
+										whatsapp: values.customWhatsapp,
+										sms: values.customSms,
+									};
+								}
+								if (values.templateSource === "saved") {
+									return {
+										whatsapp:
+											values.savedWaTemplate?.body ??
+											scenario?.template.whatsapp ??
+											"",
+										sms:
+											values.savedSmsTemplate?.body ??
+											scenario?.template.sms ??
+											"",
+									};
+								}
+								return {
+									whatsapp: scenario?.template.whatsapp ?? "",
+									sms: scenario?.template.sms ?? "",
+								};
+							})();
+							const manualVars = getManualVars(
+								activeTemplate.whatsapp,
+								activeTemplate.sms
+							);
+							const previewName = values.contacts[0]?.name ?? "John";
+							return (
+								<VariablesStep
+									activeTemplate={activeTemplate}
+									manualVars={manualVars}
+									previewName={previewName}
+									setFieldValue={(k, v) => form.setFieldValue(k, v as never)}
+									templateVars={values.templateVars}
+								/>
+							);
+						}}
+					</form.Subscribe>
+				)}
+
 				{error && (
 					<div className="mt-4 flex items-start gap-2 rounded-xl border border-destructive/30 bg-destructive/5 px-3 py-2.5">
 						<AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
@@ -730,21 +995,51 @@ export function CampaignWizard({ onCancel }: { onCancel?: () => void } = {}) {
 
 			<form.Subscribe selector={(s) => s.values}>
 				{(values) => {
+					// Resolve the active template so we know how many manual vars there are
+					const scenario_ = SCENARIOS.find((s) => s.id === values.scenario);
+					const activeTemplate_ = (() => {
+						if (values.templateSource === "custom") {
+							return { whatsapp: values.customWhatsapp, sms: values.customSms };
+						}
+						if (values.templateSource === "saved") {
+							return {
+								whatsapp:
+									values.savedWaTemplate?.body ?? scenario_?.template.whatsapp,
+								sms: values.savedSmsTemplate?.body ?? scenario_?.template.sms,
+							};
+						}
+						return scenario_?.template;
+					})();
+					const manualVars_ = getManualVars(
+						activeTemplate_?.whatsapp ?? "",
+						activeTemplate_?.sms ?? ""
+					);
+					const hasManualVars = manualVars_.length > 0;
+
+					// Navigation: skip step 3 (Variables) if there are no manual vars
+					const LAST_STEP = 3; // 0-Scenario 1-Contacts 2-Review 3-Variables(or send)
+					const isLastStep =
+						step === LAST_STEP || (step === 2 && !hasManualVars);
+					const isVariablesStep = step === 3;
+
 					const canProceed =
 						step === 0
 							? !!values.scenario
 							: step === 1
 								? values.contacts.length > 0
-								: values.templateSource === "scenario"
-									? true
-									: values.templateSource === "saved"
-										? !!values.savedTemplate
-										: values.customWhatsapp.trim().length > 0 &&
-											values.customSms.trim().length > 0;
+								: step === 2
+									? values.templateSource === "scenario"
+										? true
+										: values.templateSource === "saved"
+											? true // at least one channel has a saved pick or falls back to scenario default
+											: values.customWhatsapp.trim().length > 0 &&
+												values.customSms.trim().length > 0
+									: isVariablesStep; // variables step — user can proceed even with blanks (warned but not blocked)
 
-					// biome-ignore lint/correctness/useHookAtTopLevel: <need to conditionally fetch cost data only on the review step>
+					// eslint-disable-next-line react-hooks/rules-of-hooks
+					// biome-ignore lint/correctness/useHookAtTopLevel: <need to be imported here to get latest values>
 					const { data: costData } = useCampaignCost(
-						step === 2
+						isLastStep
 							? values.contacts.map((c) => ({ channel: c.channel }))
 							: [],
 						values.deliveryMode
@@ -754,14 +1049,37 @@ export function CampaignWizard({ onCancel }: { onCancel?: () => void } = {}) {
 					const shortfall = costData?.shortfallFormatted;
 					const totalCost = costData?.totalCostFormatted;
 					const isPrescreen = values.deliveryMode === "utility_prescreen";
-					const consentCost = costData?.prescreenConsentCostFormatted; // cost of consent msgs only
-					const fullCost = costData?.prescreenFullCostFormatted; // worst-case if all reply YES
+					const consentCost = costData?.prescreenConsentCostFormatted;
+					const fullCost = costData?.prescreenFullCostFormatted;
+
+					function handleNext() {
+						if (step === 2 && !hasManualVars) {
+							// Skip Variables step — no vars to fill
+							form.handleSubmit();
+						} else if (step < LAST_STEP) {
+							setStep((s) => s + 1);
+						} else {
+							form.handleSubmit();
+						}
+					}
+
+					function handleBack() {
+						if (step === 0) {
+							onCancel?.();
+							return;
+						}
+						if (step === 3 && !hasManualVars) {
+							setStep(2);
+							return;
+						}
+						setStep((s) => s - 1);
+					}
 
 					return (
 						<>
 							<CardFooter className="flex flex-col gap-3 pt-4">
-								{/* Cost info for prescreen mode — show range */}
-								{step === 2 && isPrescreen && consentCost && fullCost && (
+								{/* Cost info for prescreen mode */}
+								{isLastStep && isPrescreen && consentCost && fullCost && (
 									<div className="flex w-full items-start gap-2 rounded-xl border border-primary/20 bg-primary/5 px-3 py-2.5">
 										<AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
 										<p className="text-primary/80 text-xs">
@@ -773,7 +1091,8 @@ export function CampaignWizard({ onCancel }: { onCancel?: () => void } = {}) {
 									</div>
 								)}
 
-								{step === 2 && costData && !canAfford && (
+								{/* Insufficient balance warning */}
+								{isLastStep && costData && !canAfford && (
 									<div className="flex w-full items-start gap-2 rounded-xl border border-amber-500/30 bg-amber-500/5 px-3 py-2.5">
 										<AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
 										<div className="min-w-0 flex-1">
@@ -796,28 +1115,18 @@ export function CampaignWizard({ onCancel }: { onCancel?: () => void } = {}) {
 									<Button
 										className="gap-1 rounded-xl"
 										disabled={isPending}
-										onClick={() =>
-											step === 0 ? onCancel?.() : setStep((s) => s - 1)
-										}
+										onClick={handleBack}
 										variant="outline"
 									>
 										<ChevronLeft className="h-4 w-4" /> Back
 									</Button>
 
-									{step < 2 ? (
-										<Button
-											className="gap-1 rounded-xl"
-											disabled={!canProceed}
-											onClick={() => setStep((s) => s + 1)}
-										>
-											Next <ChevronRight className="h-4 w-4" />
-										</Button>
-									) : (
+									{isLastStep ? (
 										<div className="flex flex-col items-end gap-1">
 											<Button
 												className="gap-2 rounded-xl"
 												disabled={!(canProceed && canAfford) || isPending}
-												onClick={() => form.handleSubmit()}
+												onClick={handleNext}
 											>
 												{isPending ? (
 													<>
@@ -840,6 +1149,15 @@ export function CampaignWizard({ onCancel }: { onCancel?: () => void } = {}) {
 												</p>
 											)}
 										</div>
+									) : (
+										<Button
+											className="gap-1 rounded-xl"
+											disabled={!canProceed}
+											onClick={handleNext}
+										>
+											{step === 2 && hasManualVars ? "Fill variables" : "Next"}
+											<ChevronRight className="h-4 w-4" />
+										</Button>
 									)}
 								</div>
 							</CardFooter>

@@ -6,41 +6,43 @@ import { inngest } from "#/lib/inngest/client";
 export const Route = createFileRoute("/api/webhooks/whatsapp")({
 	server: {
 		handlers: {
-			POST: async ({ request }) => whatsappPostWebhook(request),
+			POST: async ({ request }) => whatsappWebhookPost(request),
 			GET: async ({ request }) => whatsappGetWebhook(request),
 		},
 	},
 });
 
-/**
- * /api/whatsapp/webhook
- *
- * Meta WhatsApp Business Platform webhook handler.
- *
- * Two responsibilities:
- *
- * 1. GET  — Webhook verification challenge (one-time setup)
- *    Meta calls this when you register the webhook URL in the Meta App Dashboard.
- *    It sends hub.mode, hub.challenge, hub.verify_token.
- *    We echo back hub.challenge if the verify_token matches.
- *
- * 2. POST — Inbound event notifications
- *    Meta sends events for:
- *      - message_template_status_update  → approval / rejection status changes
- *      - (future) inbound messages, read receipts, etc.
- *
- * Setup in Meta App Dashboard:
- *   App → WhatsApp → Configuration → Webhook
- *   Callback URL: https://yourdomain.com/api/whatsapp/webhook
- *   Verify token: must match WHATSAPP_WEBHOOK_VERIFY_TOKEN env var
- *   Subscribe to: message_template_status_update
- *
- * Env vars:
- *   WHATSAPP_WEBHOOK_VERIFY_TOKEN  — any secret string you choose
- *   WHATSAPP_WEBHOOK_SECRET        — app secret for payload signature verification (optional but recommended)
- */
+// ─── Status mapper ─────────────────────────────────────────────────────────────
 
-// ─── Types ─────────────────────────────────────────────────────────────────────
+// ─── GET — verification challenge ─────────────────────────────────────────────
+
+export function whatsappGetWebhook(req: Request) {
+	const url = new URL(req.url);
+
+	const mode = url.searchParams.get("hub.mode");
+	const token = url.searchParams.get("hub.verify_token");
+	const challenge = url.searchParams.get("hub.challenge");
+
+	if (
+		mode === "subscribe" &&
+		token === process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN
+	) {
+		console.log("[WA Webhook] Verification successful");
+		return new Response(challenge, {
+			status: 200,
+			headers: { "Content-Type": "text/plain" },
+		});
+	}
+
+	console.warn("[WA Webhook] Verification failed — token mismatch");
+	return new Response("Forbidden", { status: 403 });
+}
+
+// ─── POST — inbound events ─────────────────────────────────────────────────────
+
+const isStopRegex = /^\s*(stop|unsubscribe|quit|cancel|end|opt.?out)\s*$/i;
+const isStartRegex = /^\s*(start|subscribe|unstop)\s*$/i;
+const isYesRegex = /^\s*(yes|yeah|yep|ok|okay|sure|send|1)\s*$/i;
 
 interface MetaTemplateStatusEvent {
 	event:
@@ -140,37 +142,9 @@ const STATUS_MAP: Record<string, string> = {
 	IN_APPEAL: "PENDING", // treat as still pending
 };
 
-// ─── GET — verification challenge ─────────────────────────────────────────────
-
-export function whatsappGetWebhook(req: Request) {
-	const url = new URL(req.url);
-
-	const mode = url.searchParams.get("hub.mode");
-	const token = url.searchParams.get("hub.verify_token");
-	const challenge = url.searchParams.get("hub.challenge");
-
-	if (
-		mode === "subscribe" &&
-		token === process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN
-	) {
-		console.log("[WA Webhook] Verification successful");
-		return new Response(challenge, {
-			status: 200,
-			headers: { "Content-Type": "text/plain" },
-		});
-	}
-
-	console.warn("[WA Webhook] Verification failed — token mismatch");
-	return new Response("Forbidden", { status: 403 });
-}
-
 // ─── POST — inbound events ─────────────────────────────────────────────────────
 
-const isStopRegex = /^\s*(stop|unsubscribe|quit|cancel|end|opt.?out)\s*$/i;
-const isStartRegex = /^\s*(start|subscribe|unstop)\s*$/i;
-const isYesRegex = /^\s*(yes|yeah|yep|ok|okay|sure|send|1)\s*$/i;
-
-export async function whatsappPostWebhook(req: Request) {
+export async function whatsappWebhookPost(req: Request) {
 	// 1. Read raw body for signature verification
 	const rawBody = await req.text();
 
@@ -257,7 +231,7 @@ export async function whatsappPostWebhook(req: Request) {
 						prisma.message.updateMany({
 							where: { metaMessageId: status.id },
 							data: {
-								status: dbStatus,
+								status: dbStatus as "delivered" | "read" | "failed",
 								...(dbStatus === "delivered"
 									? { deliveredAt: new Date() }
 									: {}),
@@ -318,6 +292,55 @@ export async function whatsappPostWebhook(req: Request) {
 								data: { pendingDeliveryId: pending.id, phone },
 							});
 						}
+					}
+
+					// ── Persist all inbound messages to inbox ──────────────────────────
+					// Resolve contact + campaign owner so the message lands in the right inbox
+					const contact = await prisma.contact.findFirst({
+						where: { phone: { in: [phone, `+${phone}`] } },
+						select: { id: true, name: true, uploadedBy: true },
+					});
+
+					// Find the most recent campaign outbound message to this phone to
+					// attribute the inbound reply to the right campaign + userId
+					const lastOutbound = await prisma.message.findFirst({
+						where: { phone: { in: [phone, `+${phone}`] }, channel: "whatsapp" },
+						orderBy: { sentAt: "desc" },
+						select: {
+							campaignId: true,
+							campaign: { select: { userId: true } },
+						},
+					});
+
+					const userId = contact?.uploadedBy ?? lastOutbound?.campaign?.userId;
+					if (!userId) {
+						console.log(
+							`[WA Webhook] Inbound from ${phone} — no userId found, skipping inbox save`
+						);
+						continue;
+					}
+
+					// Dedup by externalId (Meta message ID)
+					const existing = msg.id
+						? await prisma.inboundMessage.findUnique({
+								where: { externalId: msg.id },
+							})
+						: null;
+					if (!existing) {
+						await prisma.inboundMessage.create({
+							data: {
+								userId,
+								phone,
+								contactName: contact?.name ?? null,
+								contactId: contact?.id ?? null,
+								channel: "whatsapp",
+								body,
+								campaignId: lastOutbound?.campaignId ?? null,
+								externalId: msg.id,
+								isKeyword: isStop || isStart || isYes,
+								receivedAt: new Date(Number.parseInt(msg.timestamp, 10) * 1000),
+							},
+						});
 					}
 				}
 			}

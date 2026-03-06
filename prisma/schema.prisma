@@ -31,6 +31,7 @@ model User {
   userProfiles UserProfile[]
   messageTemplates MessageTemplate[]
   senderNumbers SenderNumber[]
+  inboundMessages InboundMessage[]
 }
 
 model Session {
@@ -188,6 +189,7 @@ model Contact {
   @@index([channel])
   @@index([type])
   @@index([phone])
+  @@unique([uploadedBy, phone])
   @@map("contacts")
 }
 
@@ -237,6 +239,7 @@ model Campaign {
   @@index([status])
   @@index([createdAt(sort: Desc)])
   @@map("campaigns")
+  inboundMessages InboundMessage[]
 }
 
 /// One row per individual message send attempt within a campaign.
@@ -594,4 +597,54 @@ model PendingDelivery {
   @@index([campaignId])
   @@index([expiresAt])
   @@map("pending_deliveries")
+}
+
+// ─── Inbound Messages (Inbox) ─────────────────────────────────────────────────
+
+/// Every inbound reply received via WhatsApp or SMS webhook.
+/// Used to power the Inbox tab — shows all conversations a user can reply to.
+/// The service window (24h from receivedAt for WhatsApp) determines whether
+/// a free-form reply can be sent or if a template is needed (and billed higher).
+model InboundMessage {
+  id          String         @id @default(uuid())
+
+  /// The platform user who owns the phone number this came in on
+  userId      String         @map("user_id")
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Sender info (the contact who replied)
+  phone       String                        // E.164 normalised (no leading +)
+  contactName String?        @map("contact_name")   // populated if phone matches a Contact row
+  contactId   String?        @map("contact_id")
+
+  channel     MessageChannel               // whatsapp | sms
+
+  /// The message body we received
+  body        String         @db.Text
+
+  /// The campaign + outbound message this was a reply to (optional — contacts
+  /// can message in unprompted if they have your WA number)
+  campaignId  String?        @map("campaign_id")
+  campaign    Campaign?      @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+
+  /// External message ID from Meta / Termii (for dedup)
+  externalId  String?        @unique @map("external_id")
+
+  /// When the message was received (used for 24h service window countdown)
+  receivedAt  DateTime       @default(now()) @map("received_at")
+
+  /// Whether a reply has been sent from the dashboard for this inbound message
+  replied     Boolean        @default(false)
+  repliedAt   DateTime?      @map("replied_at")
+
+  /// Whether this was a keyword reply (YES / STOP / START) — handled automatically
+  isKeyword   Boolean        @default(false) @map("is_keyword")
+
+  createdAt   DateTime       @default(now()) @map("created_at")
+
+  @@index([userId, receivedAt(sort: Desc)])
+  @@index([phone])
+  @@index([userId, replied])
+  @@index([externalId])
+  @@map("inbound_messages")
 }

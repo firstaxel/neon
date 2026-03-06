@@ -26,9 +26,9 @@ import {
 	resolveMessageType,
 } from "#/features/billing/utils";
 import { sendMail } from "#/features/email/lib/sender";
+import { personalizeMessage } from "#/features/miscellaneous/scenario";
 import { inngest } from "#/lib/inngest/client";
 import { sendWhatsAppMessage } from "#/lib/meta-send";
-import { personalizeMessage } from "#/lib/scenarios";
 import { sendSmsMessage } from "#/lib/termii";
 
 // ─── AI content filter ────────────────────────────────────────────────────────

@@ -307,6 +307,7 @@ export type CampaignWhereInput = {
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   messages?: Prisma.MessageListRelationFilter
   pendingDeliveries?: Prisma.PendingDeliveryListRelationFilter
+  inboundMessages?: Prisma.InboundMessageListRelationFilter
 }
 
 export type CampaignOrderByWithRelationInput = {
@@ -328,6 +329,7 @@ export type CampaignOrderByWithRelationInput = {
   user?: Prisma.UserOrderByWithRelationInput
   messages?: Prisma.MessageOrderByRelationAggregateInput
   pendingDeliveries?: Prisma.PendingDeliveryOrderByRelationAggregateInput
+  inboundMessages?: Prisma.InboundMessageOrderByRelationAggregateInput
 }
 
 export type CampaignWhereUniqueInput = Prisma.AtLeast<{
@@ -352,6 +354,7 @@ export type CampaignWhereUniqueInput = Prisma.AtLeast<{
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   messages?: Prisma.MessageListRelationFilter
   pendingDeliveries?: Prisma.PendingDeliveryListRelationFilter
+  inboundMessages?: Prisma.InboundMessageListRelationFilter
 }, "id">
 
 export type CampaignOrderByWithAggregationInput = {
@@ -416,6 +419,7 @@ export type CampaignCreateInput = {
   user: Prisma.UserCreateNestedOneWithoutCampaignsInput
   messages?: Prisma.MessageCreateNestedManyWithoutCampaignInput
   pendingDeliveries?: Prisma.PendingDeliveryCreateNestedManyWithoutCampaignInput
+  inboundMessages?: Prisma.InboundMessageCreateNestedManyWithoutCampaignInput
 }
 
 export type CampaignUncheckedCreateInput = {
@@ -436,6 +440,7 @@ export type CampaignUncheckedCreateInput = {
   completedAt?: Date | string | null
   messages?: Prisma.MessageUncheckedCreateNestedManyWithoutCampaignInput
   pendingDeliveries?: Prisma.PendingDeliveryUncheckedCreateNestedManyWithoutCampaignInput
+  inboundMessages?: Prisma.InboundMessageUncheckedCreateNestedManyWithoutCampaignInput
 }
 
 export type CampaignUpdateInput = {
@@ -456,6 +461,7 @@ export type CampaignUpdateInput = {
   user?: Prisma.UserUpdateOneRequiredWithoutCampaignsNestedInput
   messages?: Prisma.MessageUpdateManyWithoutCampaignNestedInput
   pendingDeliveries?: Prisma.PendingDeliveryUpdateManyWithoutCampaignNestedInput
+  inboundMessages?: Prisma.InboundMessageUpdateManyWithoutCampaignNestedInput
 }
 
 export type CampaignUncheckedUpdateInput = {
@@ -476,6 +482,7 @@ export type CampaignUncheckedUpdateInput = {
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   messages?: Prisma.MessageUncheckedUpdateManyWithoutCampaignNestedInput
   pendingDeliveries?: Prisma.PendingDeliveryUncheckedUpdateManyWithoutCampaignNestedInput
+  inboundMessages?: Prisma.InboundMessageUncheckedUpdateManyWithoutCampaignNestedInput
 }
 
 export type CampaignCreateManyInput = {
@@ -612,6 +619,11 @@ export type CampaignScalarRelationFilter = {
   isNot?: Prisma.CampaignWhereInput
 }
 
+export type CampaignNullableScalarRelationFilter = {
+  is?: Prisma.CampaignWhereInput | null
+  isNot?: Prisma.CampaignWhereInput | null
+}
+
 export type CampaignCreateNestedManyWithoutUserInput = {
   create?: Prisma.XOR<Prisma.CampaignCreateWithoutUserInput, Prisma.CampaignUncheckedCreateWithoutUserInput> | Prisma.CampaignCreateWithoutUserInput[] | Prisma.CampaignUncheckedCreateWithoutUserInput[]
   connectOrCreate?: Prisma.CampaignCreateOrConnectWithoutUserInput | Prisma.CampaignCreateOrConnectWithoutUserInput[]
@@ -702,6 +714,22 @@ export type CampaignUpdateOneRequiredWithoutPendingDeliveriesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.CampaignUpdateToOneWithWhereWithoutPendingDeliveriesInput, Prisma.CampaignUpdateWithoutPendingDeliveriesInput>, Prisma.CampaignUncheckedUpdateWithoutPendingDeliveriesInput>
 }
 
+export type CampaignCreateNestedOneWithoutInboundMessagesInput = {
+  create?: Prisma.XOR<Prisma.CampaignCreateWithoutInboundMessagesInput, Prisma.CampaignUncheckedCreateWithoutInboundMessagesInput>
+  connectOrCreate?: Prisma.CampaignCreateOrConnectWithoutInboundMessagesInput
+  connect?: Prisma.CampaignWhereUniqueInput
+}
+
+export type CampaignUpdateOneWithoutInboundMessagesNestedInput = {
+  create?: Prisma.XOR<Prisma.CampaignCreateWithoutInboundMessagesInput, Prisma.CampaignUncheckedCreateWithoutInboundMessagesInput>
+  connectOrCreate?: Prisma.CampaignCreateOrConnectWithoutInboundMessagesInput
+  upsert?: Prisma.CampaignUpsertWithoutInboundMessagesInput
+  disconnect?: Prisma.CampaignWhereInput | boolean
+  delete?: Prisma.CampaignWhereInput | boolean
+  connect?: Prisma.CampaignWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.CampaignUpdateToOneWithWhereWithoutInboundMessagesInput, Prisma.CampaignUpdateWithoutInboundMessagesInput>, Prisma.CampaignUncheckedUpdateWithoutInboundMessagesInput>
+}
+
 export type CampaignCreateWithoutUserInput = {
   id?: string
   scenario: $Enums.Scenario
@@ -719,6 +747,7 @@ export type CampaignCreateWithoutUserInput = {
   completedAt?: Date | string | null
   messages?: Prisma.MessageCreateNestedManyWithoutCampaignInput
   pendingDeliveries?: Prisma.PendingDeliveryCreateNestedManyWithoutCampaignInput
+  inboundMessages?: Prisma.InboundMessageCreateNestedManyWithoutCampaignInput
 }
 
 export type CampaignUncheckedCreateWithoutUserInput = {
@@ -738,6 +767,7 @@ export type CampaignUncheckedCreateWithoutUserInput = {
   completedAt?: Date | string | null
   messages?: Prisma.MessageUncheckedCreateNestedManyWithoutCampaignInput
   pendingDeliveries?: Prisma.PendingDeliveryUncheckedCreateNestedManyWithoutCampaignInput
+  inboundMessages?: Prisma.InboundMessageUncheckedCreateNestedManyWithoutCampaignInput
 }
 
 export type CampaignCreateOrConnectWithoutUserInput = {
@@ -804,6 +834,7 @@ export type CampaignCreateWithoutMessagesInput = {
   completedAt?: Date | string | null
   user: Prisma.UserCreateNestedOneWithoutCampaignsInput
   pendingDeliveries?: Prisma.PendingDeliveryCreateNestedManyWithoutCampaignInput
+  inboundMessages?: Prisma.InboundMessageCreateNestedManyWithoutCampaignInput
 }
 
 export type CampaignUncheckedCreateWithoutMessagesInput = {
@@ -823,6 +854,7 @@ export type CampaignUncheckedCreateWithoutMessagesInput = {
   startedAt?: Date | string | null
   completedAt?: Date | string | null
   pendingDeliveries?: Prisma.PendingDeliveryUncheckedCreateNestedManyWithoutCampaignInput
+  inboundMessages?: Prisma.InboundMessageUncheckedCreateNestedManyWithoutCampaignInput
 }
 
 export type CampaignCreateOrConnectWithoutMessagesInput = {
@@ -858,6 +890,7 @@ export type CampaignUpdateWithoutMessagesInput = {
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   user?: Prisma.UserUpdateOneRequiredWithoutCampaignsNestedInput
   pendingDeliveries?: Prisma.PendingDeliveryUpdateManyWithoutCampaignNestedInput
+  inboundMessages?: Prisma.InboundMessageUpdateManyWithoutCampaignNestedInput
 }
 
 export type CampaignUncheckedUpdateWithoutMessagesInput = {
@@ -877,6 +910,7 @@ export type CampaignUncheckedUpdateWithoutMessagesInput = {
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   pendingDeliveries?: Prisma.PendingDeliveryUncheckedUpdateManyWithoutCampaignNestedInput
+  inboundMessages?: Prisma.InboundMessageUncheckedUpdateManyWithoutCampaignNestedInput
 }
 
 export type CampaignCreateWithoutPendingDeliveriesInput = {
@@ -896,6 +930,7 @@ export type CampaignCreateWithoutPendingDeliveriesInput = {
   completedAt?: Date | string | null
   user: Prisma.UserCreateNestedOneWithoutCampaignsInput
   messages?: Prisma.MessageCreateNestedManyWithoutCampaignInput
+  inboundMessages?: Prisma.InboundMessageCreateNestedManyWithoutCampaignInput
 }
 
 export type CampaignUncheckedCreateWithoutPendingDeliveriesInput = {
@@ -915,6 +950,7 @@ export type CampaignUncheckedCreateWithoutPendingDeliveriesInput = {
   startedAt?: Date | string | null
   completedAt?: Date | string | null
   messages?: Prisma.MessageUncheckedCreateNestedManyWithoutCampaignInput
+  inboundMessages?: Prisma.InboundMessageUncheckedCreateNestedManyWithoutCampaignInput
 }
 
 export type CampaignCreateOrConnectWithoutPendingDeliveriesInput = {
@@ -950,6 +986,7 @@ export type CampaignUpdateWithoutPendingDeliveriesInput = {
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   user?: Prisma.UserUpdateOneRequiredWithoutCampaignsNestedInput
   messages?: Prisma.MessageUpdateManyWithoutCampaignNestedInput
+  inboundMessages?: Prisma.InboundMessageUpdateManyWithoutCampaignNestedInput
 }
 
 export type CampaignUncheckedUpdateWithoutPendingDeliveriesInput = {
@@ -969,6 +1006,103 @@ export type CampaignUncheckedUpdateWithoutPendingDeliveriesInput = {
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   messages?: Prisma.MessageUncheckedUpdateManyWithoutCampaignNestedInput
+  inboundMessages?: Prisma.InboundMessageUncheckedUpdateManyWithoutCampaignNestedInput
+}
+
+export type CampaignCreateWithoutInboundMessagesInput = {
+  id?: string
+  scenario: $Enums.Scenario
+  status?: $Enums.JobStatus
+  deliveryMode?: $Enums.DeliveryMode
+  whatsappTemplate: string
+  smsTemplate: string
+  useCustomTemplate?: boolean
+  totalMessages?: number
+  sentMessages?: number
+  failedMessages?: number
+  inngestEventId?: string | null
+  createdAt?: Date | string
+  startedAt?: Date | string | null
+  completedAt?: Date | string | null
+  user: Prisma.UserCreateNestedOneWithoutCampaignsInput
+  messages?: Prisma.MessageCreateNestedManyWithoutCampaignInput
+  pendingDeliveries?: Prisma.PendingDeliveryCreateNestedManyWithoutCampaignInput
+}
+
+export type CampaignUncheckedCreateWithoutInboundMessagesInput = {
+  id?: string
+  userId: string
+  scenario: $Enums.Scenario
+  status?: $Enums.JobStatus
+  deliveryMode?: $Enums.DeliveryMode
+  whatsappTemplate: string
+  smsTemplate: string
+  useCustomTemplate?: boolean
+  totalMessages?: number
+  sentMessages?: number
+  failedMessages?: number
+  inngestEventId?: string | null
+  createdAt?: Date | string
+  startedAt?: Date | string | null
+  completedAt?: Date | string | null
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutCampaignInput
+  pendingDeliveries?: Prisma.PendingDeliveryUncheckedCreateNestedManyWithoutCampaignInput
+}
+
+export type CampaignCreateOrConnectWithoutInboundMessagesInput = {
+  where: Prisma.CampaignWhereUniqueInput
+  create: Prisma.XOR<Prisma.CampaignCreateWithoutInboundMessagesInput, Prisma.CampaignUncheckedCreateWithoutInboundMessagesInput>
+}
+
+export type CampaignUpsertWithoutInboundMessagesInput = {
+  update: Prisma.XOR<Prisma.CampaignUpdateWithoutInboundMessagesInput, Prisma.CampaignUncheckedUpdateWithoutInboundMessagesInput>
+  create: Prisma.XOR<Prisma.CampaignCreateWithoutInboundMessagesInput, Prisma.CampaignUncheckedCreateWithoutInboundMessagesInput>
+  where?: Prisma.CampaignWhereInput
+}
+
+export type CampaignUpdateToOneWithWhereWithoutInboundMessagesInput = {
+  where?: Prisma.CampaignWhereInput
+  data: Prisma.XOR<Prisma.CampaignUpdateWithoutInboundMessagesInput, Prisma.CampaignUncheckedUpdateWithoutInboundMessagesInput>
+}
+
+export type CampaignUpdateWithoutInboundMessagesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  scenario?: Prisma.EnumScenarioFieldUpdateOperationsInput | $Enums.Scenario
+  status?: Prisma.EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
+  deliveryMode?: Prisma.EnumDeliveryModeFieldUpdateOperationsInput | $Enums.DeliveryMode
+  whatsappTemplate?: Prisma.StringFieldUpdateOperationsInput | string
+  smsTemplate?: Prisma.StringFieldUpdateOperationsInput | string
+  useCustomTemplate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  totalMessages?: Prisma.IntFieldUpdateOperationsInput | number
+  sentMessages?: Prisma.IntFieldUpdateOperationsInput | number
+  failedMessages?: Prisma.IntFieldUpdateOperationsInput | number
+  inngestEventId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  user?: Prisma.UserUpdateOneRequiredWithoutCampaignsNestedInput
+  messages?: Prisma.MessageUpdateManyWithoutCampaignNestedInput
+  pendingDeliveries?: Prisma.PendingDeliveryUpdateManyWithoutCampaignNestedInput
+}
+
+export type CampaignUncheckedUpdateWithoutInboundMessagesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  scenario?: Prisma.EnumScenarioFieldUpdateOperationsInput | $Enums.Scenario
+  status?: Prisma.EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus
+  deliveryMode?: Prisma.EnumDeliveryModeFieldUpdateOperationsInput | $Enums.DeliveryMode
+  whatsappTemplate?: Prisma.StringFieldUpdateOperationsInput | string
+  smsTemplate?: Prisma.StringFieldUpdateOperationsInput | string
+  useCustomTemplate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  totalMessages?: Prisma.IntFieldUpdateOperationsInput | number
+  sentMessages?: Prisma.IntFieldUpdateOperationsInput | number
+  failedMessages?: Prisma.IntFieldUpdateOperationsInput | number
+  inngestEventId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutCampaignNestedInput
+  pendingDeliveries?: Prisma.PendingDeliveryUncheckedUpdateManyWithoutCampaignNestedInput
 }
 
 export type CampaignCreateManyUserInput = {
@@ -1005,6 +1139,7 @@ export type CampaignUpdateWithoutUserInput = {
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   messages?: Prisma.MessageUpdateManyWithoutCampaignNestedInput
   pendingDeliveries?: Prisma.PendingDeliveryUpdateManyWithoutCampaignNestedInput
+  inboundMessages?: Prisma.InboundMessageUpdateManyWithoutCampaignNestedInput
 }
 
 export type CampaignUncheckedUpdateWithoutUserInput = {
@@ -1024,6 +1159,7 @@ export type CampaignUncheckedUpdateWithoutUserInput = {
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   messages?: Prisma.MessageUncheckedUpdateManyWithoutCampaignNestedInput
   pendingDeliveries?: Prisma.PendingDeliveryUncheckedUpdateManyWithoutCampaignNestedInput
+  inboundMessages?: Prisma.InboundMessageUncheckedUpdateManyWithoutCampaignNestedInput
 }
 
 export type CampaignUncheckedUpdateManyWithoutUserInput = {
@@ -1051,11 +1187,13 @@ export type CampaignUncheckedUpdateManyWithoutUserInput = {
 export type CampaignCountOutputType = {
   messages: number
   pendingDeliveries: number
+  inboundMessages: number
 }
 
 export type CampaignCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   messages?: boolean | CampaignCountOutputTypeCountMessagesArgs
   pendingDeliveries?: boolean | CampaignCountOutputTypeCountPendingDeliveriesArgs
+  inboundMessages?: boolean | CampaignCountOutputTypeCountInboundMessagesArgs
 }
 
 /**
@@ -1082,6 +1220,13 @@ export type CampaignCountOutputTypeCountPendingDeliveriesArgs<ExtArgs extends ru
   where?: Prisma.PendingDeliveryWhereInput
 }
 
+/**
+ * CampaignCountOutputType without action
+ */
+export type CampaignCountOutputTypeCountInboundMessagesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.InboundMessageWhereInput
+}
+
 
 export type CampaignSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1102,6 +1247,7 @@ export type CampaignSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   messages?: boolean | Prisma.Campaign$messagesArgs<ExtArgs>
   pendingDeliveries?: boolean | Prisma.Campaign$pendingDeliveriesArgs<ExtArgs>
+  inboundMessages?: boolean | Prisma.Campaign$inboundMessagesArgs<ExtArgs>
   _count?: boolean | Prisma.CampaignCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["campaign"]>
 
@@ -1166,6 +1312,7 @@ export type CampaignInclude<ExtArgs extends runtime.Types.Extensions.InternalArg
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   messages?: boolean | Prisma.Campaign$messagesArgs<ExtArgs>
   pendingDeliveries?: boolean | Prisma.Campaign$pendingDeliveriesArgs<ExtArgs>
+  inboundMessages?: boolean | Prisma.Campaign$inboundMessagesArgs<ExtArgs>
   _count?: boolean | Prisma.CampaignCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type CampaignIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1181,6 +1328,7 @@ export type $CampaignPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     user: Prisma.$UserPayload<ExtArgs>
     messages: Prisma.$MessagePayload<ExtArgs>[]
     pendingDeliveries: Prisma.$PendingDeliveryPayload<ExtArgs>[]
+    inboundMessages: Prisma.$InboundMessagePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1595,6 +1743,7 @@ export interface Prisma__CampaignClient<T, Null = never, ExtArgs extends runtime
   user<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   messages<T extends Prisma.Campaign$messagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Campaign$messagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   pendingDeliveries<T extends Prisma.Campaign$pendingDeliveriesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Campaign$pendingDeliveriesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PendingDeliveryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  inboundMessages<T extends Prisma.Campaign$inboundMessagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Campaign$inboundMessagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InboundMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2080,6 +2229,30 @@ export type Campaign$pendingDeliveriesArgs<ExtArgs extends runtime.Types.Extensi
   take?: number
   skip?: number
   distinct?: Prisma.PendingDeliveryScalarFieldEnum | Prisma.PendingDeliveryScalarFieldEnum[]
+}
+
+/**
+ * Campaign.inboundMessages
+ */
+export type Campaign$inboundMessagesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the InboundMessage
+   */
+  select?: Prisma.InboundMessageSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the InboundMessage
+   */
+  omit?: Prisma.InboundMessageOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.InboundMessageInclude<ExtArgs> | null
+  where?: Prisma.InboundMessageWhereInput
+  orderBy?: Prisma.InboundMessageOrderByWithRelationInput | Prisma.InboundMessageOrderByWithRelationInput[]
+  cursor?: Prisma.InboundMessageWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.InboundMessageScalarFieldEnum | Prisma.InboundMessageScalarFieldEnum[]
 }
 
 /**

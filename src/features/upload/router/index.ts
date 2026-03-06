@@ -1,6 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
-import { prisma } from "#/db";
 import { inngest } from "#/lib/inngest/client";
 import { protectedProcedure } from "#/orpc";
 import {
@@ -44,8 +43,7 @@ export const uploadContactImage = protectedProcedure
 	)
 	.handler(async ({ input, context }) => {
 		const jobId = uuidv4();
-		const userId = context.session.user.id;
-		const r2Key = buildR2Key(jobId, input.filename, userId);
+		const r2Key = buildR2Key(jobId, input.filename, context.session.user.id);
 
 		// 1. Upload image bytes to Cloudflare R2
 		const imageBuffer = Buffer.from(input.fileBase64, "base64");
@@ -56,17 +54,17 @@ export const uploadContactImage = protectedProcedure
 			metadata: { jobId, originalFilename: input.filename },
 		});
 
-		// 2. Create ParseJob row in Postgres via Prisma
-		await prisma.parseJob.create({
+		// 2. Create ParseJob row in Postgres via context.db
+		await context.db.parseJob.create({
 			data: {
 				id: jobId,
+				parsedBy: context.session.user.id,
 				status: "pending",
 				r2Key,
 				r2Bucket: BUCKET,
 				originalFilename: input.filename,
 				mimeType: input.mimeType,
 				fileSizeBytes: input.fileSizeBytes,
-				parsedBy: context.session.user.id,
 			},
 		});
 
@@ -113,8 +111,7 @@ export const getUploadPresignedUrl = protectedProcedure
 	)
 	.handler(async ({ input, context }) => {
 		const jobId = uuidv4();
-		const userId = context.session.user.id;
-		const r2Key = buildR2Key(jobId, input.filename, userId);
+		const r2Key = buildR2Key(jobId, input.filename, context.session.user.id);
 		const presignedUrl = await getPresignedUploadUrl(
 			r2Key,
 			input.mimeType,
@@ -127,7 +124,12 @@ export const getUploadPresignedUrl = protectedProcedure
  * confirmDirectUpload
  *
  * Called after the client finishes a direct-to-R2 upload via presigned URL.
- * Creates the Prisma row and fires the Inngest parse job.
+ * Creates the context.db row and fires the Inngest parse job.
+ *
+ * Idempotent — safe to call twice with the same jobId. The upsert ensures
+ * only one DB row is ever created, and the inngestEventId check ensures
+ * the Inngest event is only sent once even if the client calls this endpoint
+ * twice (e.g. React StrictMode double-invoke, network retry, component re-render).
  */
 export const confirmDirectUpload = protectedProcedure
 	.input(
@@ -140,21 +142,25 @@ export const confirmDirectUpload = protectedProcedure
 		})
 	)
 	.handler(async ({ input, context }) => {
-		const job = await prisma.parseJob.upsert({
+		// Try to create the row. If it already exists, do nothing and return it.
+		// This is the clean idempotency pattern: one atomic operation, no races.
+		const job = await context.db.parseJob.upsert({
 			where: { id: input.jobId },
 			create: {
 				id: input.jobId,
+				parsedBy: context.session.user.id,
 				status: "pending",
 				r2Key: input.r2Key,
 				r2Bucket: BUCKET,
 				originalFilename: input.filename,
 				mimeType: input.mimeType,
 				fileSizeBytes: input.fileSizeBytes,
-				parsedBy: context.session.user.id,
 			},
-			update: {},
+			update: {}, // row exists — leave it completely untouched
 		});
 
+		// Only send the Inngest event if no event has been queued yet.
+		// inngestEventId is null on a freshly created row and set after the first send.
 		if (!job.inngestEventId) {
 			const event = await inngest.send({
 				name: "neon/contact-list.parse",
@@ -167,14 +173,55 @@ export const confirmDirectUpload = protectedProcedure
 					parsedBy: context.session.user.id,
 				},
 			});
-			await prisma.parseJob.update({
+
+			// Stamp the eventId so any subsequent duplicate call sees this and skips
+			await context.db.parseJob.update({
 				where: { id: input.jobId },
-				data: { inngestEventId: event.ids[0] },
+				data: { inngestEventId: event.ids[0] ?? "queued" },
 			});
 		}
 
 		return { jobId: input.jobId, message: "Parse job started." };
 	});
+
+/**
+ * listParseJobs
+ *
+ * Returns all parse jobs ordered newest-first.
+ * Used by the dashboard to render the full parsing history list.
+ */
+export const listParseJobs = protectedProcedure.handler(async ({ context }) => {
+	const jobs = await context.db.parseJob.findMany({
+		where: { parsedBy: context.session.user.id },
+		orderBy: { createdAt: "desc" },
+		include: {
+			contacts: { orderBy: { createdAt: "asc" } },
+		},
+	});
+
+	return {
+		data: jobs.map((job) => ({
+			jobId: job.id,
+			status: job.status as "pending" | "parsing" | "done" | "error",
+			progress:
+				job.status === "pending"
+					? 10
+					: job.status === "parsing"
+						? 55
+						: job.status === "done"
+							? 100
+							: 0,
+			originalFilename: job.originalFilename,
+			fileSizeBytes: job.fileSizeBytes,
+			confidence: job.confidence,
+			warnings: job.warnings as string[],
+			contacts: job.status === "done" ? job.contacts : [],
+			totalExtracted: job.status === "done" ? job.contacts.length : 0,
+			error: job.status === "error" ? job.errorMessage : undefined,
+			createdAt: job.createdAt.toISOString(),
+		})),
+	};
+});
 
 /**
  * getParseStatus
@@ -184,9 +231,9 @@ export const confirmDirectUpload = protectedProcedure
  */
 export const getParseStatus = protectedProcedure
 	.input(z.object({ jobId: z.string().uuid() }))
-	.handler(async ({ input }) => {
-		const job = await prisma.parseJob.findUnique({
-			where: { id: input.jobId },
+	.handler(async ({ input, context }) => {
+		const job = await context.db.parseJob.findFirst({
+			where: { id: input.jobId, parsedBy: context.session.user.id },
 			include: {
 				contacts: { orderBy: { createdAt: "asc" } },
 			},
@@ -196,12 +243,14 @@ export const getParseStatus = protectedProcedure
 			throw new Error(`Parse job ${input.jobId} not found`);
 		}
 
-		const progressByStatus: Record<string, number> = {
-			pending: 10,
-			parsing: 55,
-			done: 100,
-		};
-		const progress = progressByStatus[job.status] ?? 0;
+		const progress =
+			job.status === "pending"
+				? 10
+				: job.status === "parsing"
+					? 55
+					: job.status === "done"
+						? 100
+						: 0;
 
 		return {
 			jobId: job.id,

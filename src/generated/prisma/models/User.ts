@@ -217,6 +217,7 @@ export type UserWhereInput = {
   userProfiles?: Prisma.UserProfileListRelationFilter
   messageTemplates?: Prisma.MessageTemplateListRelationFilter
   senderNumbers?: Prisma.SenderNumberListRelationFilter
+  inboundMessages?: Prisma.InboundMessageListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -239,6 +240,7 @@ export type UserOrderByWithRelationInput = {
   userProfiles?: Prisma.UserProfileOrderByRelationAggregateInput
   messageTemplates?: Prisma.MessageTemplateOrderByRelationAggregateInput
   senderNumbers?: Prisma.SenderNumberOrderByRelationAggregateInput
+  inboundMessages?: Prisma.InboundMessageOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -264,6 +266,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   userProfiles?: Prisma.UserProfileListRelationFilter
   messageTemplates?: Prisma.MessageTemplateListRelationFilter
   senderNumbers?: Prisma.SenderNumberListRelationFilter
+  inboundMessages?: Prisma.InboundMessageListRelationFilter
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -314,6 +317,7 @@ export type UserCreateInput = {
   userProfiles?: Prisma.UserProfileCreateNestedManyWithoutUserInput
   messageTemplates?: Prisma.MessageTemplateCreateNestedManyWithoutUserInput
   senderNumbers?: Prisma.SenderNumberCreateNestedManyWithoutUserInput
+  inboundMessages?: Prisma.InboundMessageCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -336,6 +340,7 @@ export type UserUncheckedCreateInput = {
   userProfiles?: Prisma.UserProfileUncheckedCreateNestedManyWithoutUserInput
   messageTemplates?: Prisma.MessageTemplateUncheckedCreateNestedManyWithoutUserInput
   senderNumbers?: Prisma.SenderNumberUncheckedCreateNestedManyWithoutUserInput
+  inboundMessages?: Prisma.InboundMessageUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserUpdateInput = {
@@ -358,6 +363,7 @@ export type UserUpdateInput = {
   userProfiles?: Prisma.UserProfileUpdateManyWithoutUserNestedInput
   messageTemplates?: Prisma.MessageTemplateUpdateManyWithoutUserNestedInput
   senderNumbers?: Prisma.SenderNumberUpdateManyWithoutUserNestedInput
+  inboundMessages?: Prisma.InboundMessageUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -380,6 +386,7 @@ export type UserUncheckedUpdateInput = {
   userProfiles?: Prisma.UserProfileUncheckedUpdateManyWithoutUserNestedInput
   messageTemplates?: Prisma.MessageTemplateUncheckedUpdateManyWithoutUserNestedInput
   senderNumbers?: Prisma.SenderNumberUncheckedUpdateManyWithoutUserNestedInput
+  inboundMessages?: Prisma.InboundMessageUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -657,6 +664,20 @@ export type UserUpdateOneRequiredWithoutSenderNumbersNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutSenderNumbersInput, Prisma.UserUpdateWithoutSenderNumbersInput>, Prisma.UserUncheckedUpdateWithoutSenderNumbersInput>
 }
 
+export type UserCreateNestedOneWithoutInboundMessagesInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutInboundMessagesInput, Prisma.UserUncheckedCreateWithoutInboundMessagesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutInboundMessagesInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutInboundMessagesNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutInboundMessagesInput, Prisma.UserUncheckedCreateWithoutInboundMessagesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutInboundMessagesInput
+  upsert?: Prisma.UserUpsertWithoutInboundMessagesInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutInboundMessagesInput, Prisma.UserUpdateWithoutInboundMessagesInput>, Prisma.UserUncheckedUpdateWithoutInboundMessagesInput>
+}
+
 export type UserCreateWithoutSessionsInput = {
   id?: string
   createdAt?: Date | string
@@ -676,6 +697,7 @@ export type UserCreateWithoutSessionsInput = {
   userProfiles?: Prisma.UserProfileCreateNestedManyWithoutUserInput
   messageTemplates?: Prisma.MessageTemplateCreateNestedManyWithoutUserInput
   senderNumbers?: Prisma.SenderNumberCreateNestedManyWithoutUserInput
+  inboundMessages?: Prisma.InboundMessageCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutSessionsInput = {
@@ -697,6 +719,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   userProfiles?: Prisma.UserProfileUncheckedCreateNestedManyWithoutUserInput
   messageTemplates?: Prisma.MessageTemplateUncheckedCreateNestedManyWithoutUserInput
   senderNumbers?: Prisma.SenderNumberUncheckedCreateNestedManyWithoutUserInput
+  inboundMessages?: Prisma.InboundMessageUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutSessionsInput = {
@@ -734,6 +757,7 @@ export type UserUpdateWithoutSessionsInput = {
   userProfiles?: Prisma.UserProfileUpdateManyWithoutUserNestedInput
   messageTemplates?: Prisma.MessageTemplateUpdateManyWithoutUserNestedInput
   senderNumbers?: Prisma.SenderNumberUpdateManyWithoutUserNestedInput
+  inboundMessages?: Prisma.InboundMessageUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -755,6 +779,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   userProfiles?: Prisma.UserProfileUncheckedUpdateManyWithoutUserNestedInput
   messageTemplates?: Prisma.MessageTemplateUncheckedUpdateManyWithoutUserNestedInput
   senderNumbers?: Prisma.SenderNumberUncheckedUpdateManyWithoutUserNestedInput
+  inboundMessages?: Prisma.InboundMessageUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutAccountsInput = {
@@ -776,6 +801,7 @@ export type UserCreateWithoutAccountsInput = {
   userProfiles?: Prisma.UserProfileCreateNestedManyWithoutUserInput
   messageTemplates?: Prisma.MessageTemplateCreateNestedManyWithoutUserInput
   senderNumbers?: Prisma.SenderNumberCreateNestedManyWithoutUserInput
+  inboundMessages?: Prisma.InboundMessageCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutAccountsInput = {
@@ -797,6 +823,7 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   userProfiles?: Prisma.UserProfileUncheckedCreateNestedManyWithoutUserInput
   messageTemplates?: Prisma.MessageTemplateUncheckedCreateNestedManyWithoutUserInput
   senderNumbers?: Prisma.SenderNumberUncheckedCreateNestedManyWithoutUserInput
+  inboundMessages?: Prisma.InboundMessageUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutAccountsInput = {
@@ -834,6 +861,7 @@ export type UserUpdateWithoutAccountsInput = {
   userProfiles?: Prisma.UserProfileUpdateManyWithoutUserNestedInput
   messageTemplates?: Prisma.MessageTemplateUpdateManyWithoutUserNestedInput
   senderNumbers?: Prisma.SenderNumberUpdateManyWithoutUserNestedInput
+  inboundMessages?: Prisma.InboundMessageUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -855,6 +883,7 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   userProfiles?: Prisma.UserProfileUncheckedUpdateManyWithoutUserNestedInput
   messageTemplates?: Prisma.MessageTemplateUncheckedUpdateManyWithoutUserNestedInput
   senderNumbers?: Prisma.SenderNumberUncheckedUpdateManyWithoutUserNestedInput
+  inboundMessages?: Prisma.InboundMessageUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutParseJobsInput = {
@@ -876,6 +905,7 @@ export type UserCreateWithoutParseJobsInput = {
   userProfiles?: Prisma.UserProfileCreateNestedManyWithoutUserInput
   messageTemplates?: Prisma.MessageTemplateCreateNestedManyWithoutUserInput
   senderNumbers?: Prisma.SenderNumberCreateNestedManyWithoutUserInput
+  inboundMessages?: Prisma.InboundMessageCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutParseJobsInput = {
@@ -897,6 +927,7 @@ export type UserUncheckedCreateWithoutParseJobsInput = {
   userProfiles?: Prisma.UserProfileUncheckedCreateNestedManyWithoutUserInput
   messageTemplates?: Prisma.MessageTemplateUncheckedCreateNestedManyWithoutUserInput
   senderNumbers?: Prisma.SenderNumberUncheckedCreateNestedManyWithoutUserInput
+  inboundMessages?: Prisma.InboundMessageUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutParseJobsInput = {
@@ -934,6 +965,7 @@ export type UserUpdateWithoutParseJobsInput = {
   userProfiles?: Prisma.UserProfileUpdateManyWithoutUserNestedInput
   messageTemplates?: Prisma.MessageTemplateUpdateManyWithoutUserNestedInput
   senderNumbers?: Prisma.SenderNumberUpdateManyWithoutUserNestedInput
+  inboundMessages?: Prisma.InboundMessageUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutParseJobsInput = {
@@ -955,6 +987,7 @@ export type UserUncheckedUpdateWithoutParseJobsInput = {
   userProfiles?: Prisma.UserProfileUncheckedUpdateManyWithoutUserNestedInput
   messageTemplates?: Prisma.MessageTemplateUncheckedUpdateManyWithoutUserNestedInput
   senderNumbers?: Prisma.SenderNumberUncheckedUpdateManyWithoutUserNestedInput
+  inboundMessages?: Prisma.InboundMessageUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutContactsInput = {
@@ -976,6 +1009,7 @@ export type UserCreateWithoutContactsInput = {
   userProfiles?: Prisma.UserProfileCreateNestedManyWithoutUserInput
   messageTemplates?: Prisma.MessageTemplateCreateNestedManyWithoutUserInput
   senderNumbers?: Prisma.SenderNumberCreateNestedManyWithoutUserInput
+  inboundMessages?: Prisma.InboundMessageCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutContactsInput = {
@@ -997,6 +1031,7 @@ export type UserUncheckedCreateWithoutContactsInput = {
   userProfiles?: Prisma.UserProfileUncheckedCreateNestedManyWithoutUserInput
   messageTemplates?: Prisma.MessageTemplateUncheckedCreateNestedManyWithoutUserInput
   senderNumbers?: Prisma.SenderNumberUncheckedCreateNestedManyWithoutUserInput
+  inboundMessages?: Prisma.InboundMessageUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutContactsInput = {
@@ -1034,6 +1069,7 @@ export type UserUpdateWithoutContactsInput = {
   userProfiles?: Prisma.UserProfileUpdateManyWithoutUserNestedInput
   messageTemplates?: Prisma.MessageTemplateUpdateManyWithoutUserNestedInput
   senderNumbers?: Prisma.SenderNumberUpdateManyWithoutUserNestedInput
+  inboundMessages?: Prisma.InboundMessageUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutContactsInput = {
@@ -1055,6 +1091,7 @@ export type UserUncheckedUpdateWithoutContactsInput = {
   userProfiles?: Prisma.UserProfileUncheckedUpdateManyWithoutUserNestedInput
   messageTemplates?: Prisma.MessageTemplateUncheckedUpdateManyWithoutUserNestedInput
   senderNumbers?: Prisma.SenderNumberUncheckedUpdateManyWithoutUserNestedInput
+  inboundMessages?: Prisma.InboundMessageUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutCampaignsInput = {
@@ -1076,6 +1113,7 @@ export type UserCreateWithoutCampaignsInput = {
   userProfiles?: Prisma.UserProfileCreateNestedManyWithoutUserInput
   messageTemplates?: Prisma.MessageTemplateCreateNestedManyWithoutUserInput
   senderNumbers?: Prisma.SenderNumberCreateNestedManyWithoutUserInput
+  inboundMessages?: Prisma.InboundMessageCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutCampaignsInput = {
@@ -1097,6 +1135,7 @@ export type UserUncheckedCreateWithoutCampaignsInput = {
   userProfiles?: Prisma.UserProfileUncheckedCreateNestedManyWithoutUserInput
   messageTemplates?: Prisma.MessageTemplateUncheckedCreateNestedManyWithoutUserInput
   senderNumbers?: Prisma.SenderNumberUncheckedCreateNestedManyWithoutUserInput
+  inboundMessages?: Prisma.InboundMessageUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutCampaignsInput = {
@@ -1134,6 +1173,7 @@ export type UserUpdateWithoutCampaignsInput = {
   userProfiles?: Prisma.UserProfileUpdateManyWithoutUserNestedInput
   messageTemplates?: Prisma.MessageTemplateUpdateManyWithoutUserNestedInput
   senderNumbers?: Prisma.SenderNumberUpdateManyWithoutUserNestedInput
+  inboundMessages?: Prisma.InboundMessageUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCampaignsInput = {
@@ -1155,6 +1195,7 @@ export type UserUncheckedUpdateWithoutCampaignsInput = {
   userProfiles?: Prisma.UserProfileUncheckedUpdateManyWithoutUserNestedInput
   messageTemplates?: Prisma.MessageTemplateUncheckedUpdateManyWithoutUserNestedInput
   senderNumbers?: Prisma.SenderNumberUncheckedUpdateManyWithoutUserNestedInput
+  inboundMessages?: Prisma.InboundMessageUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutMessagesInput = {
@@ -1176,6 +1217,7 @@ export type UserCreateWithoutMessagesInput = {
   userProfiles?: Prisma.UserProfileCreateNestedManyWithoutUserInput
   messageTemplates?: Prisma.MessageTemplateCreateNestedManyWithoutUserInput
   senderNumbers?: Prisma.SenderNumberCreateNestedManyWithoutUserInput
+  inboundMessages?: Prisma.InboundMessageCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutMessagesInput = {
@@ -1197,6 +1239,7 @@ export type UserUncheckedCreateWithoutMessagesInput = {
   userProfiles?: Prisma.UserProfileUncheckedCreateNestedManyWithoutUserInput
   messageTemplates?: Prisma.MessageTemplateUncheckedCreateNestedManyWithoutUserInput
   senderNumbers?: Prisma.SenderNumberUncheckedCreateNestedManyWithoutUserInput
+  inboundMessages?: Prisma.InboundMessageUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutMessagesInput = {
@@ -1253,6 +1296,7 @@ export type UserCreateWithoutWalletsInput = {
   userProfiles?: Prisma.UserProfileCreateNestedManyWithoutUserInput
   messageTemplates?: Prisma.MessageTemplateCreateNestedManyWithoutUserInput
   senderNumbers?: Prisma.SenderNumberCreateNestedManyWithoutUserInput
+  inboundMessages?: Prisma.InboundMessageCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutWalletsInput = {
@@ -1274,6 +1318,7 @@ export type UserUncheckedCreateWithoutWalletsInput = {
   userProfiles?: Prisma.UserProfileUncheckedCreateNestedManyWithoutUserInput
   messageTemplates?: Prisma.MessageTemplateUncheckedCreateNestedManyWithoutUserInput
   senderNumbers?: Prisma.SenderNumberUncheckedCreateNestedManyWithoutUserInput
+  inboundMessages?: Prisma.InboundMessageUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutWalletsInput = {
@@ -1311,6 +1356,7 @@ export type UserUpdateWithoutWalletsInput = {
   userProfiles?: Prisma.UserProfileUpdateManyWithoutUserNestedInput
   messageTemplates?: Prisma.MessageTemplateUpdateManyWithoutUserNestedInput
   senderNumbers?: Prisma.SenderNumberUpdateManyWithoutUserNestedInput
+  inboundMessages?: Prisma.InboundMessageUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutWalletsInput = {
@@ -1332,6 +1378,7 @@ export type UserUncheckedUpdateWithoutWalletsInput = {
   userProfiles?: Prisma.UserProfileUncheckedUpdateManyWithoutUserNestedInput
   messageTemplates?: Prisma.MessageTemplateUncheckedUpdateManyWithoutUserNestedInput
   senderNumbers?: Prisma.SenderNumberUncheckedUpdateManyWithoutUserNestedInput
+  inboundMessages?: Prisma.InboundMessageUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutSubscriptionsInput = {
@@ -1353,6 +1400,7 @@ export type UserCreateWithoutSubscriptionsInput = {
   userProfiles?: Prisma.UserProfileCreateNestedManyWithoutUserInput
   messageTemplates?: Prisma.MessageTemplateCreateNestedManyWithoutUserInput
   senderNumbers?: Prisma.SenderNumberCreateNestedManyWithoutUserInput
+  inboundMessages?: Prisma.InboundMessageCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutSubscriptionsInput = {
@@ -1374,6 +1422,7 @@ export type UserUncheckedCreateWithoutSubscriptionsInput = {
   userProfiles?: Prisma.UserProfileUncheckedCreateNestedManyWithoutUserInput
   messageTemplates?: Prisma.MessageTemplateUncheckedCreateNestedManyWithoutUserInput
   senderNumbers?: Prisma.SenderNumberUncheckedCreateNestedManyWithoutUserInput
+  inboundMessages?: Prisma.InboundMessageUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutSubscriptionsInput = {
@@ -1411,6 +1460,7 @@ export type UserUpdateWithoutSubscriptionsInput = {
   userProfiles?: Prisma.UserProfileUpdateManyWithoutUserNestedInput
   messageTemplates?: Prisma.MessageTemplateUpdateManyWithoutUserNestedInput
   senderNumbers?: Prisma.SenderNumberUpdateManyWithoutUserNestedInput
+  inboundMessages?: Prisma.InboundMessageUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSubscriptionsInput = {
@@ -1432,6 +1482,7 @@ export type UserUncheckedUpdateWithoutSubscriptionsInput = {
   userProfiles?: Prisma.UserProfileUncheckedUpdateManyWithoutUserNestedInput
   messageTemplates?: Prisma.MessageTemplateUncheckedUpdateManyWithoutUserNestedInput
   senderNumbers?: Prisma.SenderNumberUncheckedUpdateManyWithoutUserNestedInput
+  inboundMessages?: Prisma.InboundMessageUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutUserProfilesInput = {
@@ -1453,6 +1504,7 @@ export type UserCreateWithoutUserProfilesInput = {
   wallets?: Prisma.WalletCreateNestedManyWithoutUserInput
   messageTemplates?: Prisma.MessageTemplateCreateNestedManyWithoutUserInput
   senderNumbers?: Prisma.SenderNumberCreateNestedManyWithoutUserInput
+  inboundMessages?: Prisma.InboundMessageCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutUserProfilesInput = {
@@ -1474,6 +1526,7 @@ export type UserUncheckedCreateWithoutUserProfilesInput = {
   wallets?: Prisma.WalletUncheckedCreateNestedManyWithoutUserInput
   messageTemplates?: Prisma.MessageTemplateUncheckedCreateNestedManyWithoutUserInput
   senderNumbers?: Prisma.SenderNumberUncheckedCreateNestedManyWithoutUserInput
+  inboundMessages?: Prisma.InboundMessageUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutUserProfilesInput = {
@@ -1511,6 +1564,7 @@ export type UserUpdateWithoutUserProfilesInput = {
   wallets?: Prisma.WalletUpdateManyWithoutUserNestedInput
   messageTemplates?: Prisma.MessageTemplateUpdateManyWithoutUserNestedInput
   senderNumbers?: Prisma.SenderNumberUpdateManyWithoutUserNestedInput
+  inboundMessages?: Prisma.InboundMessageUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutUserProfilesInput = {
@@ -1532,6 +1586,7 @@ export type UserUncheckedUpdateWithoutUserProfilesInput = {
   wallets?: Prisma.WalletUncheckedUpdateManyWithoutUserNestedInput
   messageTemplates?: Prisma.MessageTemplateUncheckedUpdateManyWithoutUserNestedInput
   senderNumbers?: Prisma.SenderNumberUncheckedUpdateManyWithoutUserNestedInput
+  inboundMessages?: Prisma.InboundMessageUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutMessageTemplatesInput = {
@@ -1553,6 +1608,7 @@ export type UserCreateWithoutMessageTemplatesInput = {
   wallets?: Prisma.WalletCreateNestedManyWithoutUserInput
   userProfiles?: Prisma.UserProfileCreateNestedManyWithoutUserInput
   senderNumbers?: Prisma.SenderNumberCreateNestedManyWithoutUserInput
+  inboundMessages?: Prisma.InboundMessageCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutMessageTemplatesInput = {
@@ -1574,6 +1630,7 @@ export type UserUncheckedCreateWithoutMessageTemplatesInput = {
   wallets?: Prisma.WalletUncheckedCreateNestedManyWithoutUserInput
   userProfiles?: Prisma.UserProfileUncheckedCreateNestedManyWithoutUserInput
   senderNumbers?: Prisma.SenderNumberUncheckedCreateNestedManyWithoutUserInput
+  inboundMessages?: Prisma.InboundMessageUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutMessageTemplatesInput = {
@@ -1611,6 +1668,7 @@ export type UserUpdateWithoutMessageTemplatesInput = {
   wallets?: Prisma.WalletUpdateManyWithoutUserNestedInput
   userProfiles?: Prisma.UserProfileUpdateManyWithoutUserNestedInput
   senderNumbers?: Prisma.SenderNumberUpdateManyWithoutUserNestedInput
+  inboundMessages?: Prisma.InboundMessageUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutMessageTemplatesInput = {
@@ -1632,6 +1690,7 @@ export type UserUncheckedUpdateWithoutMessageTemplatesInput = {
   wallets?: Prisma.WalletUncheckedUpdateManyWithoutUserNestedInput
   userProfiles?: Prisma.UserProfileUncheckedUpdateManyWithoutUserNestedInput
   senderNumbers?: Prisma.SenderNumberUncheckedUpdateManyWithoutUserNestedInput
+  inboundMessages?: Prisma.InboundMessageUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutSenderNumbersInput = {
@@ -1653,6 +1712,7 @@ export type UserCreateWithoutSenderNumbersInput = {
   wallets?: Prisma.WalletCreateNestedManyWithoutUserInput
   userProfiles?: Prisma.UserProfileCreateNestedManyWithoutUserInput
   messageTemplates?: Prisma.MessageTemplateCreateNestedManyWithoutUserInput
+  inboundMessages?: Prisma.InboundMessageCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutSenderNumbersInput = {
@@ -1674,6 +1734,7 @@ export type UserUncheckedCreateWithoutSenderNumbersInput = {
   wallets?: Prisma.WalletUncheckedCreateNestedManyWithoutUserInput
   userProfiles?: Prisma.UserProfileUncheckedCreateNestedManyWithoutUserInput
   messageTemplates?: Prisma.MessageTemplateUncheckedCreateNestedManyWithoutUserInput
+  inboundMessages?: Prisma.InboundMessageUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutSenderNumbersInput = {
@@ -1711,6 +1772,7 @@ export type UserUpdateWithoutSenderNumbersInput = {
   wallets?: Prisma.WalletUpdateManyWithoutUserNestedInput
   userProfiles?: Prisma.UserProfileUpdateManyWithoutUserNestedInput
   messageTemplates?: Prisma.MessageTemplateUpdateManyWithoutUserNestedInput
+  inboundMessages?: Prisma.InboundMessageUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSenderNumbersInput = {
@@ -1732,6 +1794,111 @@ export type UserUncheckedUpdateWithoutSenderNumbersInput = {
   wallets?: Prisma.WalletUncheckedUpdateManyWithoutUserNestedInput
   userProfiles?: Prisma.UserProfileUncheckedUpdateManyWithoutUserNestedInput
   messageTemplates?: Prisma.MessageTemplateUncheckedUpdateManyWithoutUserNestedInput
+  inboundMessages?: Prisma.InboundMessageUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutInboundMessagesInput = {
+  id?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  email: string
+  name?: string | null
+  password?: string
+  emailVerified?: boolean
+  image?: string | null
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  contacts?: Prisma.ContactCreateNestedManyWithoutUserInput
+  campaigns?: Prisma.CampaignCreateNestedManyWithoutUserInput
+  messages?: Prisma.MessageCreateNestedManyWithoutUsersInput
+  parseJobs?: Prisma.ParseJobCreateNestedManyWithoutUserInput
+  subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutUserInput
+  wallets?: Prisma.WalletCreateNestedManyWithoutUserInput
+  userProfiles?: Prisma.UserProfileCreateNestedManyWithoutUserInput
+  messageTemplates?: Prisma.MessageTemplateCreateNestedManyWithoutUserInput
+  senderNumbers?: Prisma.SenderNumberCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutInboundMessagesInput = {
+  id?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  email: string
+  name?: string | null
+  password?: string
+  emailVerified?: boolean
+  image?: string | null
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  contacts?: Prisma.ContactUncheckedCreateNestedManyWithoutUserInput
+  campaigns?: Prisma.CampaignUncheckedCreateNestedManyWithoutUserInput
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutUsersInput
+  parseJobs?: Prisma.ParseJobUncheckedCreateNestedManyWithoutUserInput
+  subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutUserInput
+  wallets?: Prisma.WalletUncheckedCreateNestedManyWithoutUserInput
+  userProfiles?: Prisma.UserProfileUncheckedCreateNestedManyWithoutUserInput
+  messageTemplates?: Prisma.MessageTemplateUncheckedCreateNestedManyWithoutUserInput
+  senderNumbers?: Prisma.SenderNumberUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutInboundMessagesInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutInboundMessagesInput, Prisma.UserUncheckedCreateWithoutInboundMessagesInput>
+}
+
+export type UserUpsertWithoutInboundMessagesInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutInboundMessagesInput, Prisma.UserUncheckedUpdateWithoutInboundMessagesInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutInboundMessagesInput, Prisma.UserUncheckedCreateWithoutInboundMessagesInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutInboundMessagesInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutInboundMessagesInput, Prisma.UserUncheckedUpdateWithoutInboundMessagesInput>
+}
+
+export type UserUpdateWithoutInboundMessagesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  contacts?: Prisma.ContactUpdateManyWithoutUserNestedInput
+  campaigns?: Prisma.CampaignUpdateManyWithoutUserNestedInput
+  messages?: Prisma.MessageUpdateManyWithoutUsersNestedInput
+  parseJobs?: Prisma.ParseJobUpdateManyWithoutUserNestedInput
+  subscriptions?: Prisma.SubscriptionUpdateManyWithoutUserNestedInput
+  wallets?: Prisma.WalletUpdateManyWithoutUserNestedInput
+  userProfiles?: Prisma.UserProfileUpdateManyWithoutUserNestedInput
+  messageTemplates?: Prisma.MessageTemplateUpdateManyWithoutUserNestedInput
+  senderNumbers?: Prisma.SenderNumberUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutInboundMessagesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  contacts?: Prisma.ContactUncheckedUpdateManyWithoutUserNestedInput
+  campaigns?: Prisma.CampaignUncheckedUpdateManyWithoutUserNestedInput
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutUsersNestedInput
+  parseJobs?: Prisma.ParseJobUncheckedUpdateManyWithoutUserNestedInput
+  subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutUserNestedInput
+  wallets?: Prisma.WalletUncheckedUpdateManyWithoutUserNestedInput
+  userProfiles?: Prisma.UserProfileUncheckedUpdateManyWithoutUserNestedInput
+  messageTemplates?: Prisma.MessageTemplateUncheckedUpdateManyWithoutUserNestedInput
+  senderNumbers?: Prisma.SenderNumberUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserUpdateWithoutMessagesInput = {
@@ -1753,6 +1920,7 @@ export type UserUpdateWithoutMessagesInput = {
   userProfiles?: Prisma.UserProfileUpdateManyWithoutUserNestedInput
   messageTemplates?: Prisma.MessageTemplateUpdateManyWithoutUserNestedInput
   senderNumbers?: Prisma.SenderNumberUpdateManyWithoutUserNestedInput
+  inboundMessages?: Prisma.InboundMessageUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutMessagesInput = {
@@ -1774,6 +1942,7 @@ export type UserUncheckedUpdateWithoutMessagesInput = {
   userProfiles?: Prisma.UserProfileUncheckedUpdateManyWithoutUserNestedInput
   messageTemplates?: Prisma.MessageTemplateUncheckedUpdateManyWithoutUserNestedInput
   senderNumbers?: Prisma.SenderNumberUncheckedUpdateManyWithoutUserNestedInput
+  inboundMessages?: Prisma.InboundMessageUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateManyWithoutMessagesInput = {
@@ -1804,6 +1973,7 @@ export type UserCountOutputType = {
   userProfiles: number
   messageTemplates: number
   senderNumbers: number
+  inboundMessages: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1818,6 +1988,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   userProfiles?: boolean | UserCountOutputTypeCountUserProfilesArgs
   messageTemplates?: boolean | UserCountOutputTypeCountMessageTemplatesArgs
   senderNumbers?: boolean | UserCountOutputTypeCountSenderNumbersArgs
+  inboundMessages?: boolean | UserCountOutputTypeCountInboundMessagesArgs
 }
 
 /**
@@ -1907,6 +2078,13 @@ export type UserCountOutputTypeCountSenderNumbersArgs<ExtArgs extends runtime.Ty
   where?: Prisma.SenderNumberWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountInboundMessagesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.InboundMessageWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1928,6 +2106,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   userProfiles?: boolean | Prisma.User$userProfilesArgs<ExtArgs>
   messageTemplates?: boolean | Prisma.User$messageTemplatesArgs<ExtArgs>
   senderNumbers?: boolean | Prisma.User$senderNumbersArgs<ExtArgs>
+  inboundMessages?: boolean | Prisma.User$inboundMessagesArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -1977,6 +2156,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   userProfiles?: boolean | Prisma.User$userProfilesArgs<ExtArgs>
   messageTemplates?: boolean | Prisma.User$messageTemplatesArgs<ExtArgs>
   senderNumbers?: boolean | Prisma.User$senderNumbersArgs<ExtArgs>
+  inboundMessages?: boolean | Prisma.User$inboundMessagesArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1996,6 +2176,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     userProfiles: Prisma.$UserProfilePayload<ExtArgs>[]
     messageTemplates: Prisma.$MessageTemplatePayload<ExtArgs>[]
     senderNumbers: Prisma.$SenderNumberPayload<ExtArgs>[]
+    inboundMessages: Prisma.$InboundMessagePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2411,6 +2592,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   userProfiles<T extends Prisma.User$userProfilesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$userProfilesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserProfilePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   messageTemplates<T extends Prisma.User$messageTemplatesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$messageTemplatesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MessageTemplatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   senderNumbers<T extends Prisma.User$senderNumbersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$senderNumbersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SenderNumberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  inboundMessages<T extends Prisma.User$inboundMessagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$inboundMessagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InboundMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3097,6 +3279,30 @@ export type User$senderNumbersArgs<ExtArgs extends runtime.Types.Extensions.Inte
   take?: number
   skip?: number
   distinct?: Prisma.SenderNumberScalarFieldEnum | Prisma.SenderNumberScalarFieldEnum[]
+}
+
+/**
+ * User.inboundMessages
+ */
+export type User$inboundMessagesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the InboundMessage
+   */
+  select?: Prisma.InboundMessageSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the InboundMessage
+   */
+  omit?: Prisma.InboundMessageOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.InboundMessageInclude<ExtArgs> | null
+  where?: Prisma.InboundMessageWhereInput
+  orderBy?: Prisma.InboundMessageOrderByWithRelationInput | Prisma.InboundMessageOrderByWithRelationInput[]
+  cursor?: Prisma.InboundMessageWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.InboundMessageScalarFieldEnum | Prisma.InboundMessageScalarFieldEnum[]
 }
 
 /**

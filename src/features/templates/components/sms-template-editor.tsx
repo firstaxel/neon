@@ -117,7 +117,7 @@ export function SmsOnlyTemplateEditor({
 	};
 
 	return (
-		<Card className="w-full rounded-2xl">
+		<Card className="w-full max-w-3xl rounded-2xl">
 			<CardHeader className="pb-4">
 				<div className="flex items-center gap-2.5">
 					<div className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#60a5fa25] bg-[#60a5fa15]">

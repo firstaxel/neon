@@ -73,8 +73,8 @@ export interface WaTemplateFormValues {
 	headerVars: string[];
 	language: string;
 	name: string;
-	smsBody: string;
-	smsVars: string[];
+	smsBody?: string;
+	smsVars?: string[];
 }
 
 // ─── Queries ──────────────────────────────────────────────────────────────────

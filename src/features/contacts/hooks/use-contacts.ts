@@ -6,6 +6,7 @@ export type ContactType = "first_timer" | "returning" | "member" | "visitor";
 
 export interface ContactFilters {
 	channel?: ContactChannel;
+	duplicatesOnly?: boolean;
 	page?: number;
 	pageSize?: number;
 	parseJobId?: string;
@@ -15,7 +16,7 @@ export interface ContactFilters {
 
 export function useContacts(filters: ContactFilters = {}) {
 	return useQuery(
-		orpc.contacts.listContacts.queryOptions({
+		orpc.contacts.list.queryOptions({
 			queryKey: ["contacts", filters],
 			input: {
 				search: filters.search || undefined,
@@ -24,6 +25,7 @@ export function useContacts(filters: ContactFilters = {}) {
 				parseJobId: filters.parseJobId || undefined,
 				page: filters.page ?? 1,
 				pageSize: filters.pageSize ?? 20,
+				duplicatesOnly: filters.duplicatesOnly,
 			},
 			placeholderData: (prev) => prev,
 			staleTime: 30_000,

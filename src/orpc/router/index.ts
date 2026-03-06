@@ -8,7 +8,27 @@ import {
 	initSubscription,
 	verifyDeposit,
 } from "#/features/billing/billing.router";
-import { contactRouter } from "#/features/contacts/server/router";
+import {
+	getCampaignStatus,
+	listCampaigns,
+	sendCampaign,
+} from "#/features/campaigns/router";
+import {
+	autoMergeDuplicates,
+	deleteContact,
+	deleteContacts,
+	getContact,
+	getDuplicates,
+	listContacts,
+	mergeContacts,
+	updateContact,
+} from "#/features/contacts/server/router";
+import {
+	getThread,
+	listConversations,
+	markThreadReplied,
+	replyToConversation,
+} from "#/features/messages/router";
 import { parsingRouter } from "#/features/parsing/server/router";
 import {
 	completeOnboarding,
@@ -16,11 +36,6 @@ import {
 	updatePassword,
 	updateProfile,
 } from "#/features/profile/server/router";
-import {
-	getCampaignStatus,
-	listCampaigns,
-	sendCampaign,
-} from "#/features/router";
 import {
 	createTemplate,
 	deleteTemplate,
@@ -62,7 +77,16 @@ export const appRouter = o.router({
 		list: listCampaigns,
 	}),
 
-	contacts: contactRouter,
+	contacts: o.router({
+		get: getContact,
+		list: listContacts,
+		delete: deleteContact,
+		deleteContacts,
+		autoMergeDuplicates,
+		getDuplicates,
+		mergeContacts,
+		updateContact,
+	}),
 	parse: parsingRouter,
 	billing: o.router({
 		getWallet,
@@ -89,6 +113,12 @@ export const appRouter = o.router({
 		submit: submitTemplateForApproval,
 		syncStatus: syncTemplateStatus,
 		recordUsage: recordTemplateUsage,
+	}),
+	inbox: o.router({
+		get: getThread,
+		list: listConversations,
+		reply: replyToConversation,
+		markThread: markThreadReplied,
 	}),
 });
 

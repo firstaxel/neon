@@ -123,3 +123,11 @@ export type SenderNumber = Prisma.SenderNumberModel
  * Expired rows (expiresAt < now) are ignored by the webhook.
  */
 export type PendingDelivery = Prisma.PendingDeliveryModel
+/**
+ * Model InboundMessage
+ * Every inbound reply received via WhatsApp or SMS webhook.
+ * Used to power the Inbox tab — shows all conversations a user can reply to.
+ * The service window (24h from receivedAt for WhatsApp) determines whether
+ * a free-form reply can be sent or if a template is needed (and billed higher).
+ */
+export type InboundMessage = Prisma.InboundMessageModel

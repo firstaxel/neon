@@ -7,6 +7,7 @@ import {
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { NuqsAdapter } from "nuqs/adapters/tanstack-router";
+import { Toaster } from "sonner";
 import { SidebarProvider } from "#/components/ui/sidebar";
 import { TooltipProvider } from "#/components/ui/tooltip";
 import { ThemeProvider } from "#/providers/theme";
@@ -57,6 +58,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 								<SidebarProvider>
 									<NuqsAdapter>{children}</NuqsAdapter>
 								</SidebarProvider>
+								<Toaster richColors />
 							</TooltipProvider>
 						</ThemeProvider>
 

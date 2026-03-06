@@ -65,7 +65,8 @@ export const ModelName = {
   UserProfile: 'UserProfile',
   MessageTemplate: 'MessageTemplate',
   SenderNumber: 'SenderNumber',
-  PendingDelivery: 'PendingDelivery'
+  PendingDelivery: 'PendingDelivery',
+  InboundMessage: 'InboundMessage'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -362,6 +363,26 @@ export const PendingDeliveryScalarFieldEnum = {
 } as const
 
 export type PendingDeliveryScalarFieldEnum = (typeof PendingDeliveryScalarFieldEnum)[keyof typeof PendingDeliveryScalarFieldEnum]
+
+
+export const InboundMessageScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  phone: 'phone',
+  contactName: 'contactName',
+  contactId: 'contactId',
+  channel: 'channel',
+  body: 'body',
+  campaignId: 'campaignId',
+  externalId: 'externalId',
+  receivedAt: 'receivedAt',
+  replied: 'replied',
+  repliedAt: 'repliedAt',
+  isKeyword: 'isKeyword',
+  createdAt: 'createdAt'
+} as const
+
+export type InboundMessageScalarFieldEnum = (typeof InboundMessageScalarFieldEnum)[keyof typeof InboundMessageScalarFieldEnum]
 
 
 export const SortOrder = {

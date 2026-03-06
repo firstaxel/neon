@@ -16,6 +16,7 @@ import { Route as ApiInngestRouteImport } from './routes/api/inngest'
 import { Route as ApiSplatRouteImport } from './routes/api.$'
 import { Route as dashboardTemplatesIndexRouteImport } from './routes/(dashboard)/templates/index'
 import { Route as dashboardOnboardingIndexRouteImport } from './routes/(dashboard)/onboarding/index'
+import { Route as dashboardMessagesIndexRouteImport } from './routes/(dashboard)/messages/index'
 import { Route as dashboardDashboardIndexRouteImport } from './routes/(dashboard)/dashboard/index'
 import { Route as dashboardContactsIndexRouteImport } from './routes/(dashboard)/contacts/index'
 import { Route as dashboardCampaignsIndexRouteImport } from './routes/(dashboard)/campaigns/index'
@@ -67,6 +68,11 @@ const dashboardOnboardingIndexRoute =
     path: '/onboarding/',
     getParentRoute: () => dashboardRouteRoute,
   } as any)
+const dashboardMessagesIndexRoute = dashboardMessagesIndexRouteImport.update({
+  id: '/messages/',
+  path: '/messages/',
+  getParentRoute: () => dashboardRouteRoute,
+} as any)
 const dashboardDashboardIndexRoute = dashboardDashboardIndexRouteImport.update({
   id: '/dashboard/',
   path: '/dashboard/',
@@ -168,6 +174,7 @@ export interface FileRoutesByFullPath {
   '/campaigns/': typeof dashboardCampaignsIndexRoute
   '/contacts/': typeof dashboardContactsIndexRoute
   '/dashboard/': typeof dashboardDashboardIndexRoute
+  '/messages/': typeof dashboardMessagesIndexRoute
   '/onboarding/': typeof dashboardOnboardingIndexRoute
   '/templates/': typeof dashboardTemplatesIndexRoute
   '/billing/verify/': typeof dashboardBillingVerifyIndexRoute
@@ -191,6 +198,7 @@ export interface FileRoutesByTo {
   '/campaigns': typeof dashboardCampaignsIndexRoute
   '/contacts': typeof dashboardContactsIndexRoute
   '/dashboard': typeof dashboardDashboardIndexRoute
+  '/messages': typeof dashboardMessagesIndexRoute
   '/onboarding': typeof dashboardOnboardingIndexRoute
   '/templates': typeof dashboardTemplatesIndexRoute
   '/billing/verify': typeof dashboardBillingVerifyIndexRoute
@@ -217,6 +225,7 @@ export interface FileRoutesById {
   '/(dashboard)/campaigns/': typeof dashboardCampaignsIndexRoute
   '/(dashboard)/contacts/': typeof dashboardContactsIndexRoute
   '/(dashboard)/dashboard/': typeof dashboardDashboardIndexRoute
+  '/(dashboard)/messages/': typeof dashboardMessagesIndexRoute
   '/(dashboard)/onboarding/': typeof dashboardOnboardingIndexRoute
   '/(dashboard)/templates/': typeof dashboardTemplatesIndexRoute
   '/(dashboard)/billing/verify/': typeof dashboardBillingVerifyIndexRoute
@@ -242,6 +251,7 @@ export interface FileRouteTypes {
     | '/campaigns/'
     | '/contacts/'
     | '/dashboard/'
+    | '/messages/'
     | '/onboarding/'
     | '/templates/'
     | '/billing/verify/'
@@ -265,6 +275,7 @@ export interface FileRouteTypes {
     | '/campaigns'
     | '/contacts'
     | '/dashboard'
+    | '/messages'
     | '/onboarding'
     | '/templates'
     | '/billing/verify'
@@ -290,6 +301,7 @@ export interface FileRouteTypes {
     | '/(dashboard)/campaigns/'
     | '/(dashboard)/contacts/'
     | '/(dashboard)/dashboard/'
+    | '/(dashboard)/messages/'
     | '/(dashboard)/onboarding/'
     | '/(dashboard)/templates/'
     | '/(dashboard)/billing/verify/'
@@ -361,6 +373,13 @@ declare module '@tanstack/react-router' {
       path: '/onboarding'
       fullPath: '/onboarding/'
       preLoaderRoute: typeof dashboardOnboardingIndexRouteImport
+      parentRoute: typeof dashboardRouteRoute
+    }
+    '/(dashboard)/messages/': {
+      id: '/(dashboard)/messages/'
+      path: '/messages'
+      fullPath: '/messages/'
+      preLoaderRoute: typeof dashboardMessagesIndexRouteImport
       parentRoute: typeof dashboardRouteRoute
     }
     '/(dashboard)/dashboard/': {
@@ -497,6 +516,7 @@ interface dashboardRouteRouteChildren {
   dashboardCampaignsIndexRoute: typeof dashboardCampaignsIndexRoute
   dashboardContactsIndexRoute: typeof dashboardContactsIndexRoute
   dashboardDashboardIndexRoute: typeof dashboardDashboardIndexRoute
+  dashboardMessagesIndexRoute: typeof dashboardMessagesIndexRoute
   dashboardOnboardingIndexRoute: typeof dashboardOnboardingIndexRoute
   dashboardTemplatesIndexRoute: typeof dashboardTemplatesIndexRoute
   dashboardBillingVerifyIndexRoute: typeof dashboardBillingVerifyIndexRoute
@@ -512,6 +532,7 @@ const dashboardRouteRouteChildren: dashboardRouteRouteChildren = {
   dashboardCampaignsIndexRoute: dashboardCampaignsIndexRoute,
   dashboardContactsIndexRoute: dashboardContactsIndexRoute,
   dashboardDashboardIndexRoute: dashboardDashboardIndexRoute,
+  dashboardMessagesIndexRoute: dashboardMessagesIndexRoute,
   dashboardOnboardingIndexRoute: dashboardOnboardingIndexRoute,
   dashboardTemplatesIndexRoute: dashboardTemplatesIndexRoute,
   dashboardBillingVerifyIndexRoute: dashboardBillingVerifyIndexRoute,

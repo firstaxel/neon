@@ -32,9 +32,9 @@
 import { v4 as uuidv4 } from "uuid";
 import { prisma } from "#/db";
 import { debitForMessage, refundForMessage } from "#/features/billing/utils";
+import { personalizeMessage } from "#/features/miscellaneous/scenario";
 import { inngest } from "#/lib/inngest/client";
 import { sendTemplateMessage, sendTextMessage } from "#/lib/meta-send";
-import { personalizeMessage } from "#/lib/scenarios";
 import { sendSmsMessage } from "#/lib/termii";
 
 const PRESCREEN_TEMPLATE =

@@ -398,7 +398,8 @@ export const ModelName = {
   UserProfile: 'UserProfile',
   MessageTemplate: 'MessageTemplate',
   SenderNumber: 'SenderNumber',
-  PendingDelivery: 'PendingDelivery'
+  PendingDelivery: 'PendingDelivery',
+  InboundMessage: 'InboundMessage'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -414,7 +415,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "session" | "account" | "parseJob" | "contact" | "campaign" | "message" | "verification" | "wallet" | "transaction" | "subscription" | "userProfile" | "messageTemplate" | "senderNumber" | "pendingDelivery"
+    modelProps: "user" | "session" | "account" | "parseJob" | "contact" | "campaign" | "message" | "verification" | "wallet" | "transaction" | "subscription" | "userProfile" | "messageTemplate" | "senderNumber" | "pendingDelivery" | "inboundMessage"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1528,6 +1529,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    InboundMessage: {
+      payload: Prisma.$InboundMessagePayload<ExtArgs>
+      fields: Prisma.InboundMessageFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.InboundMessageFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InboundMessagePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.InboundMessageFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InboundMessagePayload>
+        }
+        findFirst: {
+          args: Prisma.InboundMessageFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InboundMessagePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.InboundMessageFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InboundMessagePayload>
+        }
+        findMany: {
+          args: Prisma.InboundMessageFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InboundMessagePayload>[]
+        }
+        create: {
+          args: Prisma.InboundMessageCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InboundMessagePayload>
+        }
+        createMany: {
+          args: Prisma.InboundMessageCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.InboundMessageCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InboundMessagePayload>[]
+        }
+        delete: {
+          args: Prisma.InboundMessageDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InboundMessagePayload>
+        }
+        update: {
+          args: Prisma.InboundMessageUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InboundMessagePayload>
+        }
+        deleteMany: {
+          args: Prisma.InboundMessageDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.InboundMessageUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.InboundMessageUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InboundMessagePayload>[]
+        }
+        upsert: {
+          args: Prisma.InboundMessageUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InboundMessagePayload>
+        }
+        aggregate: {
+          args: Prisma.InboundMessageAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateInboundMessage>
+        }
+        groupBy: {
+          args: Prisma.InboundMessageGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.InboundMessageGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.InboundMessageCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.InboundMessageCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1845,6 +1920,26 @@ export const PendingDeliveryScalarFieldEnum = {
 } as const
 
 export type PendingDeliveryScalarFieldEnum = (typeof PendingDeliveryScalarFieldEnum)[keyof typeof PendingDeliveryScalarFieldEnum]
+
+
+export const InboundMessageScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  phone: 'phone',
+  contactName: 'contactName',
+  contactId: 'contactId',
+  channel: 'channel',
+  body: 'body',
+  campaignId: 'campaignId',
+  externalId: 'externalId',
+  receivedAt: 'receivedAt',
+  replied: 'replied',
+  repliedAt: 'repliedAt',
+  isKeyword: 'isKeyword',
+  createdAt: 'createdAt'
+} as const
+
+export type InboundMessageScalarFieldEnum = (typeof InboundMessageScalarFieldEnum)[keyof typeof InboundMessageScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -2303,6 +2398,7 @@ export type GlobalOmitConfig = {
   messageTemplate?: Prisma.MessageTemplateOmit
   senderNumber?: Prisma.SenderNumberOmit
   pendingDelivery?: Prisma.PendingDeliveryOmit
+  inboundMessage?: Prisma.InboundMessageOmit
 }
 
 /* Types for Logging */

@@ -70,7 +70,6 @@ import type {
 	WaTemplateButton,
 	WaTemplateFormValues,
 } from "../hooks/use-templates";
-import { SmsTemplateSection } from "./sms-template-section";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -770,16 +769,13 @@ export function WaTemplateEditor({
 			bodyVars: template?.bodyVars ?? [],
 			footerText: template?.footerText ?? "",
 			buttons: (template?.buttons ?? []) as WaTemplateButton[],
-			smsBody: template?.smsBody ?? "",
-			smsVars: template?.smsVars ?? [],
 		} as WaTemplateFormValues,
 		onSubmit: async ({ value }) => {
 			// Auto-extract vars from text before save
 			const bodyVars = extractVars(value.bodyText);
 			const headerVars =
 				value.headerFormat === "TEXT" ? extractVars(value.headerText) : [];
-			const smsVars = extractVars(value.smsBody);
-			await onSave({ ...value, bodyVars, headerVars, smsVars });
+			await onSave({ ...value, bodyVars, headerVars });
 		},
 	});
 
@@ -1277,32 +1273,6 @@ export function WaTemplateEditor({
 							</Section>
 						)}
 					</form.Field>
-
-					<Separator />
-
-					{/* ── SMS Fallback ── */}
-					<Section
-						required
-						subtitle="Sent to contacts on the SMS channel. Plain text with named {{variables}}, auto segment counting."
-						title="SMS Fallback"
-					>
-						<form.Field
-							name="smsBody"
-							validators={{
-								onChange: ({ value }) =>
-									value.trim() ? undefined : "SMS fallback is required",
-							}}
-						>
-							{(field) => (
-								<SmsTemplateSection
-									disabled={isLocked}
-									error={field.state.meta.errors[0] as string | undefined}
-									onChange={(v) => field.handleChange(v)}
-									value={field.state.value}
-								/>
-							)}
-						</form.Field>
-					</Section>
 
 					<Separator />
 

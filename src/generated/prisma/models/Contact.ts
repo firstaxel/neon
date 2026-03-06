@@ -270,6 +270,7 @@ export type ContactOrderByWithRelationInput = {
 
 export type ContactWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  uploadedBy_phone?: Prisma.ContactUploadedByPhoneCompoundUniqueInput
   AND?: Prisma.ContactWhereInput | Prisma.ContactWhereInput[]
   OR?: Prisma.ContactWhereInput[]
   NOT?: Prisma.ContactWhereInput | Prisma.ContactWhereInput[]
@@ -287,7 +288,7 @@ export type ContactWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"Contact"> | Date | string
   parseJob?: Prisma.XOR<Prisma.ParseJobScalarRelationFilter, Prisma.ParseJobWhereInput>
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
-}, "id">
+}, "id" | "uploadedBy_phone">
 
 export type ContactOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -445,6 +446,11 @@ export type ContactListRelationFilter = {
 
 export type ContactOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
+}
+
+export type ContactUploadedByPhoneCompoundUniqueInput = {
+  uploadedBy: string
+  phone: string
 }
 
 export type ContactCountOrderByAggregateInput = {

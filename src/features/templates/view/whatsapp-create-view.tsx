@@ -13,7 +13,12 @@ export function WaTemplateCreateView() {
 
 	async function handleSave(values: WaTemplateFormValues) {
 		try {
-			const result = await create({ ...values, channel: "whatsapp" });
+			const result = await create({
+				...values,
+				channel: "whatsapp",
+				smsBody: "",
+				smsVars: [],
+			});
 			toast.success("Template created", {
 				description: `"${values.displayName}" saved as draft.`,
 			});

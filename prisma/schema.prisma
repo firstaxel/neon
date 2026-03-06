@@ -156,6 +156,7 @@ model ParseJob {
   contacts Contact[]
 
   @@index([status])
+  @@index([parsedBy])
   @@index([createdAt(sort: Desc)])
   @@map("parse_jobs")
 }
@@ -186,6 +187,7 @@ model Contact {
   createdAt   DateTime       @default(now()) @map("created_at")
 
   @@index([parseJobId])
+  @@index([uploadedBy])
   @@index([channel])
   @@index([type])
   @@index([phone])
@@ -269,6 +271,7 @@ model Message {
   createdAt       DateTime      @default(now()) @map("created_at")
 
   @@index([campaignId])
+  @@index([campaignId, status])
   @@index([status])
   @@index([channel])
   @@index([metaMessageId])
@@ -361,6 +364,8 @@ model Transaction {
   createdAt       DateTime          @default(now()) @map("created_at")
 
   @@index([walletId])
+  @@index([campaignId])
+  @@index([walletId, createdAt(sort: Desc)])
   @@index([type])
   @@index([status])
   @@index([createdAt(sort: Desc)])
@@ -536,6 +541,8 @@ model MessageTemplate {
 
 
   @@index([userId])
+  @@index([userId, purpose])
+  @@index([createdAt(sort: Desc)])
   @@index([userId, channel])
   @@index([userId, status])
   @@index([userId, category])

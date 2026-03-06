@@ -357,6 +357,27 @@ export const sendSingleMessage = inngest.createFunction(
 					messageId: d.messageId,
 					reason: `infrastructure failure: ${error.message}`,
 				});
+				await prisma.$transaction(async (tx) => {
+					const campaignDetails = await tx.campaign.findUnique({
+						where: {
+							id: campaignId,
+						},
+						select: {
+							totalMessages: true,
+							failedMessages: true,
+						},
+					});
+
+					if (
+						campaignDetails?.totalMessages === campaignDetails?.failedMessages
+					) {
+						await prisma.campaign.update({
+							where: { id: campaignId },
+							data: { status: "failed" },
+						});
+
+						
+					}
 			} catch (e) {
 				log.error(
 					`[onFailure] REFUND FAILED for messageId=${d.messageId}: ${e}`
@@ -466,27 +487,7 @@ export const sendSingleMessage = inngest.createFunction(
 					data: { status: "failed", errorMessage: result.error },
 				});
 
-				await prisma.$transaction(async (tx) => {
-					const campaignDetails = await tx.campaign.findUnique({
-						where: {
-							id: campaignId,
-						},
-						select: {
-							totalMessages: true,
-							failedMessages: true,
-						},
-					});
-
-					if (
-						campaignDetails?.totalMessages === campaignDetails?.failedMessages
-					) {
-						await prisma.campaign.update({
-							where: { id: campaignId },
-							data: { status: "failed" },
-						});
-
-						
-					}
+				
 				});
 				throw new NonRetriableError(
 							result.error ?? "Error continuing send the message"

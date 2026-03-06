@@ -3,34 +3,26 @@
  *
  * Utility Pre-Screen delivery mode.
  *
+ * ── Bug fixes (v2) ──────────────────────────────────────────────────────────
+ *
+ * Same class of bugs as send-campaign.ts:
+ *  - Removed throw after send failure (was causing failedMessages double-increment)
+ *  - Added idempotency guard on billing-debit-consent step
+ *  - Batched fan-out in chunks of FAN_OUT_BATCH_SIZE
+ *  - Moved AI check to orchestrator level (was missing in prescreen path entirely)
+ *
  * Flow:
- *   1. Orchestrator fans out one "prescreen" event per contact
- *   2. Worker sends a cheap UTILITY consent template:
- *        "Hi {name}, {OrgName} wants to send you a message. Reply YES to receive it."
- *   3. Inserts a PendingDelivery row with the real message body + 48h expiry
- *   4. When the contact replies YES → webhook fires sendPendingMessage (below)
- *   5. sendPendingMessage bills + sends the real marketing message
- *
- * Cost saving:
- *   - Utility template ≈ ₦3–5 per contact
- *   - Marketing template ≈ ₦80–100 per contact (only sent to YES replies)
- *   - e.g. 200 contacts: ₦1,000 utility vs ₦20,000 if all get marketing
- *
- * Env requirements (same as send-campaign.ts):
- *   META_PHONE_NUMBER_ID, META_ACCESS_TOKEN, META_WABA_ID
- *   GEMINI_API_KEY (for AI content check before real send)
- *
- * The UTILITY consent template must be pre-approved on your Meta WABA.
- * Template name: configured via PRESCREEN_TEMPLATE_NAME env var
- * Default:       "neon_consent_v1"
- *
- * Example template body (submit to Meta as UTILITY):
- *   "Hi {{1}}, {{2}} wants to send you a message. Reply YES to receive it."
- *   variables: [contactName, orgName]
+ *   1. Orchestrator AI-checks the real message template body once
+ *   2. Fans out one prescreen event per contact (batched)
+ *   3. Worker sends cheap UTILITY consent template per contact
+ *   4. Inserts PendingDelivery row with 48h expiry
+ *   5. When contact replies YES → sendPendingMessage fires
  */
 
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { v4 as uuidv4 } from "uuid";
 import { prisma } from "#/db";
+import { env } from "#/env";
 import { debitForMessage, refundForMessage } from "#/features/billing/utils";
 import { personalizeMessage } from "#/features/miscellaneous/scenario";
 import { inngest } from "#/lib/inngest/client";
@@ -40,9 +32,30 @@ import { sendSmsMessage } from "#/lib/termii";
 const PRESCREEN_TEMPLATE =
 	process.env.PRESCREEN_TEMPLATE_NAME ?? "neon_consent_v1";
 const PRESCREEN_LANGUAGE = process.env.PRESCREEN_TEMPLATE_LANG ?? "en";
-
-// How long a pending delivery stays valid after the consent message is sent.
 const PENDING_TTL_HOURS = 48;
+const FAN_OUT_BATCH_SIZE = 100;
+
+const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
+
+async function checkContent(
+	message: string
+): Promise<{ safe: boolean; reason?: string }> {
+	try {
+		const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+		const prompt = `You are a messaging compliance checker. Normal marketing outreach is SAFE.
+Mark UNSAFE only for: spam, threats, sexual content, fraud, hate speech.
+Message: """${message.slice(0, 800)}"""
+Reply ONLY with JSON (no markdown): {"safe": true, "reason": null}`;
+		const result = await model.generateContent(prompt);
+		const text = result.response
+			.text()
+			.trim()
+			.replace(/```json\n?|```\n?/g, "");
+		return JSON.parse(text) as { safe: boolean; reason?: string };
+	} catch {
+		return { safe: true };
+	}
+}
 
 // ─── Orchestrator ─────────────────────────────────────────────────────────────
 
@@ -51,7 +64,7 @@ export const sendCampaignPrescreen = inngest.createFunction(
 		id: "send-campaign-prescreen",
 		name: "Send Campaign — Utility Pre-Screen (Orchestrator)",
 		retries: 1,
-		timeouts: { finish: "10m" },
+		timeouts: { finish: "15m" },
 	},
 	{ event: "neon/campaign.prescreen" },
 
@@ -63,19 +76,8 @@ export const sendCampaignPrescreen = inngest.createFunction(
 			realSmsMessage,
 			userId,
 			orgName,
-		} = event.data as {
-			campaignId: string;
-			contacts: Array<{
-				id: string;
-				name: string;
-				phone: string;
-				channel: "whatsapp" | "sms";
-			}>;
-			realWhatsappMessage: string; // the actual body to deliver after YES
-			realSmsMessage: string;
-			userId: string;
-			orgName: string; // shown in the consent message "X wants to send you..."
-		};
+			templateVars,
+		} = event.data;
 
 		logger.info(
 			`[Prescreen] campaignId=${campaignId} contacts=${contacts.length}`
@@ -87,6 +89,31 @@ export const sendCampaignPrescreen = inngest.createFunction(
 				data: { status: "processing", startedAt: new Date() },
 			});
 		});
+
+		// AI check once — on the real message body that will eventually be delivered
+		const contentCheck = await step.run("ai-content-check", () => {
+			const waContacts = contacts.filter((c) => c.channel === "whatsapp");
+			const body = waContacts.length > 0 ? realWhatsappMessage : realSmsMessage;
+			return checkContent(body);
+		});
+
+		if (!contentCheck.safe) {
+			await step.run("block-unsafe-campaign", async () => {
+				logger.warn(
+					`[AI Filter] Blocking prescreen campaign ${campaignId}: ${contentCheck.reason}`
+				);
+				await prisma.campaign.update({
+					where: { id: campaignId },
+					data: {
+						status: "failed",
+						completedAt: new Date(),
+						totalMessages: contacts.length,
+						failedMessages: contacts.length,
+					},
+				});
+			});
+			return { campaignId, blocked: true, reason: contentCheck.reason };
+		}
 
 		// Filter opted-out contacts
 		const eligible = await step.run("filter-opted-out", async () => {
@@ -118,7 +145,7 @@ export const sendCampaignPrescreen = inngest.createFunction(
 			});
 		});
 
-		// Fan out one prescreen event per contact
+		// Batched fan-out
 		await step.run("fan-out", async () => {
 			const events = eligible.map((c) => ({
 				name: "neon/campaign.prescreen-single" as const,
@@ -132,12 +159,17 @@ export const sendCampaignPrescreen = inngest.createFunction(
 					channel: c.channel,
 					realMessage:
 						c.channel === "whatsapp"
-							? personalizeMessage(realWhatsappMessage, c.name)
-							: personalizeMessage(realSmsMessage, c.name),
+							? personalizeMessage(realWhatsappMessage, c.name, templateVars)
+							: personalizeMessage(realSmsMessage, c.name, templateVars),
 				},
 			}));
-			await inngest.send(events);
-			logger.info(`[Prescreen] fanned out ${events.length} prescreen events`);
+
+			for (let i = 0; i < events.length; i += FAN_OUT_BATCH_SIZE) {
+				await inngest.send(events.slice(i, i + FAN_OUT_BATCH_SIZE));
+			}
+			logger.info(
+				`[Prescreen] Fanned out ${events.length} events in ${Math.ceil(events.length / FAN_OUT_BATCH_SIZE)} batch(es)`
+			);
 		});
 
 		return { campaignId, totalQueued: eligible.length };
@@ -151,7 +183,7 @@ export const sendPrescreenSingle = inngest.createFunction(
 	{
 		id: "send-prescreen-single",
 		name: "Send Pre-Screen Consent Message (Worker)",
-		retries: 3,
+		retries: 2,
 		rateLimit: { limit: 10, period: "1s", key: "event.data.channel" },
 		concurrency: { limit: 5, key: "event.data.campaignId" },
 		timeouts: { finish: "30s" },
@@ -179,15 +211,22 @@ export const sendPrescreenSingle = inngest.createFunction(
 			realMessage: string;
 		};
 
-		// For SMS channel in prescreen mode — send directly (SMS to WA number)
-		// No consent gate needed since we're not using WhatsApp
+		// SMS contacts in prescreen mode — send directly (no consent gate needed)
 		if (channel === "sms") {
-			const billing = await step.run("billing-debit-sms", () => {
+			const smsBillingId = `sms_${campaignId}_${phone.replace(/\D/g, "")}`;
+
+			const billing = await step.run("billing-debit-sms", async () => {
+				const existing = await prisma.transaction.findFirst({
+					where: { reference: `msg_${smsBillingId}` },
+				});
+				if (existing) {
+					return { success: true, balanceKobo: 0 };
+				}
 				return debitForMessage({
 					userId,
 					messageType: "sms",
 					campaignId,
-					messageId: `sms_${uuidv4()}`,
+					messageId: smsBillingId,
 				});
 			});
 
@@ -196,9 +235,9 @@ export const sendPrescreenSingle = inngest.createFunction(
 				return { success: false, reason: "insufficient_balance" };
 			}
 
-			const result = await step.run("send-sms", () => {
-				return sendSmsMessage(phone, realMessage);
-			});
+			const result = await step.run("send-sms", async () =>
+				sendSmsMessage(phone, realMessage)
+			);
 
 			if (result.success) {
 				await prisma.campaign.update({
@@ -207,34 +246,52 @@ export const sendPrescreenSingle = inngest.createFunction(
 				});
 				logger.info(`[Prescreen/SMS] ✅ SMS sent to ${contactName}`);
 			} else {
-				// Refund the SMS debit — message never delivered
-				await refundForMessage({
-					userId,
-					messageType: "sms",
-					campaignId,
-					messageId: `sms_${phone}`,
-					reason: result.error ?? "SMS send failed",
+				// Refund guard
+				const alreadyRefunded = await prisma.transaction.findFirst({
+					where: { reference: `refund_${smsBillingId}` },
 				});
+				if (!alreadyRefunded) {
+					await refundForMessage({
+						userId,
+						messageType: "sms",
+						campaignId,
+						messageId: smsBillingId,
+						reason: result.error ?? "SMS send failed",
+					});
+				}
 				await prisma.campaign.update({
 					where: { id: campaignId },
 					data: { failedMessages: { increment: 1 } },
 				});
 				logger.error(
-					`[Prescreen/SMS] ❌ SMS failed for ${contactName}: ${result.error} — refunded`
+					`[Prescreen/SMS] ❌ SMS failed for ${contactName}: ${result.error}`
 				);
+				// ✅ No throw — failure is terminal
 			}
 
 			return { success: result.success };
 		}
 
-		// ── WhatsApp: send the cheap utility consent template ────────────────────
-		// Consent message is always a cheap utility template
-		const billing = await step.run("billing-debit-consent", () => {
+		// Stable billing key for this consent send (not a message row ID)
+		const prescreenBillingId = `prescreen_${campaignId}_${phone.replace(/\D/g, "")}`;
+
+		// ── Billing debit — IDEMPOTENT ───────────────────────────────────────────
+		const billing = await step.run("billing-debit-consent", async () => {
+			// Idempotency: if we already debited for this consent send, skip
+			const existing = await prisma.transaction.findFirst({
+				where: { reference: `msg_${prescreenBillingId}` },
+			});
+			if (existing) {
+				logger.info(
+					`[Prescreen] Already debited consent for ${phone} — skipping`
+				);
+				return { success: true, balanceKobo: 0 };
+			}
 			return debitForMessage({
 				userId,
 				messageType: "whatsapp_utility",
 				campaignId,
-				messageId: `prescreen_${uuidv4()}`,
+				messageId: prescreenBillingId,
 			});
 		});
 
@@ -252,43 +309,59 @@ export const sendPrescreenSingle = inngest.createFunction(
 				phone,
 				PRESCREEN_TEMPLATE,
 				PRESCREEN_LANGUAGE,
-				[contactName, orgName] // {{1}} = name, {{2}} = org name
+				[contactName, orgName]
 			);
 		});
 
 		if (!result.success) {
-			// Refund the utility debit — consent message never delivered
-			logger.error(
-				`[Prescreen] Consent send failed for ${phone}: ${result.error}`
-			);
-			await refundForMessage({
-				userId,
-				messageType: "whatsapp_utility",
-				campaignId,
-				messageId: `prescreen_${phone}`,
-				reason: result.error ?? "consent send failed",
+			// Refund guard — don't double-refund
+			await step.run("refund-consent", async () => {
+				const alreadyRefunded = await prisma.transaction.findFirst({
+					where: { reference: `refund_${prescreenBillingId}` },
+				});
+				if (alreadyRefunded) {
+					return;
+				}
+				await refundForMessage({
+					userId,
+					messageType: "whatsapp_utility",
+					campaignId,
+					messageId: prescreenBillingId,
+					reason: result.error ?? "consent send failed",
+				});
+				await prisma.campaign.update({
+					where: { id: campaignId },
+					data: { failedMessages: { increment: 1 } },
+				});
+				logger.error(
+					`[Prescreen] ❌ Consent failed for ${phone}: ${result.error}`
+				);
 			});
-			await prisma.campaign.update({
-				where: { id: campaignId },
-				data: { failedMessages: { increment: 1 } },
-			});
+			// ✅ Return without throwing — failure is terminal, not retryable
 			return { success: false, error: result.error };
 		}
 
-		// Insert PendingDelivery so webhook can fire the real message on YES reply
 		await step.run("insert-pending-delivery", async () => {
 			const expiresAt = new Date(
 				Date.now() + PENDING_TTL_HOURS * 60 * 60 * 1000
 			);
-			await prisma.pendingDelivery.create({
-				data: {
+			await prisma.pendingDelivery.upsert({
+				where: { id: `pd_${campaignId}_${phone.replace(/\D/g, "")}` },
+				create: {
+					id: `pd_${campaignId}_${phone.replace(/\D/g, "")}`,
 					campaignId,
 					contactId: contactId || null,
 					contactName,
-					phone: phone.replace(phoneRegex, ""), // strip + to match Meta webhook format
+					phone: phone.replace(phoneRegex, ""),
 					realMessage,
 					prescreenMsgId: result.messageId ?? null,
 					expiresAt,
+				},
+				update: {
+					// Idempotent: if consent was re-sent (e.g. step retried), refresh expiry
+					prescreenMsgId: result.messageId ?? null,
+					expiresAt,
+					replied: false,
 				},
 			});
 		});
@@ -306,13 +379,12 @@ export const sendPrescreenSingle = inngest.createFunction(
 );
 
 // ─── Send real message after YES reply ───────────────────────────────────────
-// Called by the WhatsApp webhook when a contact replies YES
 
 export const sendPendingMessage = inngest.createFunction(
 	{
 		id: "send-pending-message",
 		name: "Send Real Message After YES Reply",
-		retries: 3,
+		retries: 2,
 		timeouts: { finish: "30s" },
 	},
 	{ event: "neon/campaign.pending-reply-yes" },
@@ -347,15 +419,22 @@ export const sendPendingMessage = inngest.createFunction(
 
 		const userId = pending.campaign.userId;
 
-		// Debit for the real marketing message
-		// The real message is sent within 24h of the YES reply (service window),
-		// so it costs less than a marketing template.
-		const billing = await step.run("billing-debit-real", () => {
+		// Billing debit — idempotent
+		const billing = await step.run("billing-debit-real", async () => {
+			const existing = await prisma.transaction.findFirst({
+				where: { reference: `msg_${pendingDeliveryId}` },
+			});
+			if (existing) {
+				logger.info(
+					`[PendingDelivery] Already debited ${pendingDeliveryId} — skipping`
+				);
+				return { success: true, balanceKobo: 0 };
+			}
 			return debitForMessage({
 				userId,
 				messageType: "whatsapp_service",
 				campaignId: pending.campaignId,
-				messageId: pending.id,
+				messageId: pendingDeliveryId,
 			});
 		});
 
@@ -372,24 +451,27 @@ export const sendPendingMessage = inngest.createFunction(
 			return { success: false, reason: "insufficient_balance" };
 		}
 
-		// Send the real message as plain text (within 24h session window after their reply)
 		const result = await step.run("send-real-message", () => {
 			return sendTextMessage(phone, pending.realMessage);
 		});
 
-		// Mark as replied + create a Message record; refund if send failed
 		await step.run("finalize", async () => {
 			if (!result.success) {
-				// Refund the service-window debit — real message never delivered
-				await refundForMessage({
-					userId,
-					messageType: "whatsapp_service",
-					campaignId: pending.campaignId,
-					messageId: pending.id,
-					reason: result.error ?? "real message send failed",
+				// Refund guard
+				const alreadyRefunded = await prisma.transaction.findFirst({
+					where: { reference: `refund_${pendingDeliveryId}` },
 				});
+				if (!alreadyRefunded) {
+					await refundForMessage({
+						userId,
+						messageType: "whatsapp_service",
+						campaignId: pending.campaignId,
+						messageId: pendingDeliveryId,
+						reason: result.error ?? "real message send failed",
+					});
+				}
 				logger.warn(
-					`[PendingDelivery] Refunded service debit for pendingId=${pendingDeliveryId}`
+					`[PendingDelivery] Refunded service debit for ${pendingDeliveryId}`
 				);
 			}
 
@@ -422,3 +504,5 @@ export const sendPendingMessage = inngest.createFunction(
 		return { success: result.success, messageId: result.messageId };
 	}
 );
+
+// ─── Helper: direct SMS send ──────────────────────────────────────────────────

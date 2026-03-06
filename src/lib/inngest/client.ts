@@ -4,6 +4,8 @@ import type { MessageChannel, ScenarioId } from "../types";
 
 // ─── Shared payload types ─────────────────────────────────────────────────────
 
+// ─── Shared payload types ─────────────────────────────────────────────────────
+
 export interface ContactPayload {
 	channel: MessageChannel;
 	id: string;
@@ -15,22 +17,10 @@ export interface ContactPayload {
 export type DeliveryMode = "marketing" | "utility_prescreen" | "sms_fallback";
 
 // ─── Event map ────────────────────────────────────────────────────────────────
-//
-// Every Inngest event used in neon is declared here.
-// The `inngest` client is generic over this map, giving full type-safety
-// on event.data inside every function handler.
-//
-// Naming convention:
-//   neon/<resource>.<verb>         -- primary trigger
-//   neon/<resource>.<verb>-single  -- per-item fan-out worker trigger
 
 export interface Events {
 	// ── Billing ──────────────────────────────────────────────────────────────────
 
-	/**
-	 * Fired when a campaign pauses due to insufficient wallet balance.
-	 * Consumed by: handleLowBalancePause (sends email to user)
-	 */
 	"neon/campaign.paused-low-balance": {
 		data: {
 			campaignId: string;
@@ -39,10 +29,6 @@ export interface Events {
 		};
 	};
 
-	/**
-	 * Fired by the WhatsApp webhook when a contact replies YES.
-	 * Consumed by: sendPendingMessage
-	 */
 	"neon/campaign.pending-reply-yes": {
 		data: {
 			pendingDeliveryId: string;
@@ -52,10 +38,6 @@ export interface Events {
 
 	// ── Utility pre-screen flow ──────────────────────────────────────────────────
 
-	/**
-	 * Fired by campaign.router for utility_prescreen mode.
-	 * Consumed by: sendCampaignPrescreen (orchestrator)
-	 */
 	"neon/campaign.prescreen": {
 		data: {
 			campaignId: string;
@@ -65,14 +47,10 @@ export interface Events {
 			realWhatsappMessage: string;
 			realSmsMessage: string;
 			scenario: ScenarioId;
-			prescreenedBy: string;
+			templateVars: Record<string, string>;
 		};
 	};
 
-	/**
-	 * Fan-out: one event per contact in pre-screen mode.
-	 * Consumed by: sendPrescreenSingle
-	 */
 	"neon/campaign.prescreen-single": {
 		data: {
 			campaignId: string;
@@ -83,16 +61,11 @@ export interface Events {
 			phone: string;
 			channel: MessageChannel;
 			realMessage: string;
-			prescrenedBy: string;
 		};
 	};
 
 	// ── Standard campaign ────────────────────────────────────────────────────────
 
-	/**
-	 * Fired by campaign.router for marketing or sms_fallback mode.
-	 * Consumed by: sendCampaign (orchestrator)
-	 */
 	"neon/campaign.send": {
 		data: {
 			campaignId: string;
@@ -101,40 +74,37 @@ export interface Events {
 			whatsappTemplate: string;
 			smsTemplate: string;
 			scenario: ScenarioId;
-			sentBy: string;
+			templateVars: Record<string, string>;
 		};
 	};
 
 	/**
 	 * Fan-out: one event per contact.
-	 * Consumed by: sendSingleMessage (per-message worker)
+	 * messageType is pre-resolved by the orchestrator to avoid redundant DB reads
+	 * and to ensure the worker uses the exact same billing rate as was quoted.
 	 */
 	"neon/campaign.send-single": {
 		data: {
-			sentBy: string;
 			campaignId: string;
 			messageId: string;
 			userId: string;
 			contactName: string;
 			phone: string;
 			channel: MessageChannel;
+			deliveryMode: DeliveryMode;
 			message: string;
+			messageType: MessageType; // pre-resolved — avoids per-worker re-derivation
 		};
 	};
 	// ── Contact parsing ──────────────────────────────────────────────────────────
 
-	/**
-	 * Fired when a contact list image is uploaded to R2.
-	 * Consumed by: parseContactList
-	 */
 	"neon/contact-list.parse": {
 		data: {
-			jobId: string; // parse_jobs.id in DB
-			r2Key: string; // Cloudflare R2 object key
+			jobId: string;
+			r2Key: string;
 			r2Bucket: string;
 			mimeType: string;
 			originalFilename: string;
-			parsedBy: string;
 		};
 	};
 }
@@ -142,29 +112,8 @@ export interface Events {
 export const inngest = new Inngest({
 	id: "neon",
 	schemas: new EventSchemas().fromRecord<{
-		// ── Contact parsing ──────────────────────────────────────────────────────────
-
-		/**
-		 * Fired when a contact list image is uploaded to R2.
-		 * Consumed by: parseContactList
-		 */
-		"neon/contact-list.parse": {
-			data: {
-				jobId: string; // parse_jobs.id in DB
-				r2Key: string; // Cloudflare R2 object key
-				r2Bucket: string;
-				mimeType: string;
-				originalFilename: string;
-				parsedBy: string;
-			};
-		};
-
 		// ── Billing ──────────────────────────────────────────────────────────────────
 
-		/**
-		 * Fired when a campaign pauses due to insufficient wallet balance.
-		 * Consumed by: handleLowBalancePause (sends email to user)
-		 */
 		"neon/campaign.paused-low-balance": {
 			data: {
 				campaignId: string;
@@ -173,10 +122,6 @@ export const inngest = new Inngest({
 			};
 		};
 
-		/**
-		 * Fired by the WhatsApp webhook when a contact replies YES.
-		 * Consumed by: sendPendingMessage
-		 */
 		"neon/campaign.pending-reply-yes": {
 			data: {
 				pendingDeliveryId: string;
@@ -186,10 +131,6 @@ export const inngest = new Inngest({
 
 		// ── Utility pre-screen flow ──────────────────────────────────────────────────
 
-		/**
-		 * Fired by campaign.router for utility_prescreen mode.
-		 * Consumed by: sendCampaignPrescreen (orchestrator)
-		 */
 		"neon/campaign.prescreen": {
 			data: {
 				campaignId: string;
@@ -199,13 +140,10 @@ export const inngest = new Inngest({
 				realWhatsappMessage: string;
 				realSmsMessage: string;
 				scenario: ScenarioId;
+				templateVars: Record<string, string>;
 			};
 		};
 
-		/**
-		 * Fan-out: one event per contact in pre-screen mode.
-		 * Consumed by: sendPrescreenSingle
-		 */
 		"neon/campaign.prescreen-single": {
 			data: {
 				campaignId: string;
@@ -221,10 +159,6 @@ export const inngest = new Inngest({
 
 		// ── Standard campaign ────────────────────────────────────────────────────────
 
-		/**
-		 * Fired by campaign.router for marketing or sms_fallback mode.
-		 * Consumed by: sendCampaign (orchestrator)
-		 */
 		"neon/campaign.send": {
 			data: {
 				campaignId: string;
@@ -233,12 +167,14 @@ export const inngest = new Inngest({
 				whatsappTemplate: string;
 				smsTemplate: string;
 				scenario: ScenarioId;
+				templateVars: Record<string, string>;
 			};
 		};
 
 		/**
 		 * Fan-out: one event per contact.
-		 * Consumed by: sendSingleMessage (per-message worker)
+		 * messageType is pre-resolved by the orchestrator to avoid redundant DB reads
+		 * and to ensure the worker uses the exact same billing rate as was quoted.
 		 */
 		"neon/campaign.send-single": {
 			data: {
@@ -247,10 +183,21 @@ export const inngest = new Inngest({
 				userId: string;
 				contactName: string;
 				phone: string;
-				messageType: MessageType;
 				channel: MessageChannel;
+				deliveryMode: DeliveryMode;
 				message: string;
-				deliveryMode: "marketing" | "utility_prescreen" | "sms_fallback";
+				messageType: MessageType; // pre-resolved — avoids per-worker re-derivation
+			};
+		};
+		// ── Contact parsing ──────────────────────────────────────────────────────────
+
+		"neon/contact-list.parse": {
+			data: {
+				jobId: string;
+				r2Key: string;
+				r2Bucket: string;
+				mimeType: string;
+				originalFilename: string;
 			};
 		};
 	}>(),

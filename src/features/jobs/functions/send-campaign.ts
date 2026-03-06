@@ -378,6 +378,7 @@ export const sendSingleMessage = inngest.createFunction(
 
 						
 					}
+					});
 			} catch (e) {
 				log.error(
 					`[onFailure] REFUND FAILED for messageId=${d.messageId}: ${e}`
@@ -492,7 +493,6 @@ export const sendSingleMessage = inngest.createFunction(
 				throw new NonRetriableError(
 							result.error ?? "Error continuing send the message"
 						);
-			});
 		}
 
 		// ── Step 4: Persist result ───────────────────────────────────────────────

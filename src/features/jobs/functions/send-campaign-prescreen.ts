@@ -20,6 +20,7 @@
  */
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { NonRetriableError } from "inngest";
 import { v4 as uuidv4 } from "uuid";
 import { prisma } from "#/db";
 import { env } from "#/env";
@@ -329,16 +330,43 @@ export const sendPrescreenSingle = inngest.createFunction(
 					messageId: prescreenBillingId,
 					reason: result.error ?? "consent send failed",
 				});
-				await prisma.campaign.update({
-					where: { id: campaignId },
-					data: { failedMessages: { increment: 1 } },
-				});
+
 				logger.error(
 					`[Prescreen] ❌ Consent failed for ${phone}: ${result.error}`
 				);
 			});
-			// ✅ Return without throwing — failure is terminal, not retryable
-			return { success: false, error: result.error };
+
+			await step.run("throw-sending error", async () => {
+				await prisma.message.update({
+					where: { id: prescreenBillingId },
+					data: { status: "failed", errorMessage: result.error },
+				});
+
+				await prisma.$transaction(async (tx) => {
+					const campaignDetails = await tx.campaign.findUnique({
+						where: {
+							id: campaignId,
+						},
+						select: {
+							totalMessages: true,
+							failedMessages: true,
+						},
+					});
+
+					if (
+						campaignDetails?.totalMessages === campaignDetails?.failedMessages
+					) {
+						await prisma.campaign.update({
+							where: { id: campaignId },
+							data: { status: "failed" },
+						});
+
+						throw new NonRetriableError(
+							result.error ?? "Error sending the messages to the contact"
+						);
+					}
+				});
+			});
 		}
 
 		await step.run("insert-pending-delivery", async () => {

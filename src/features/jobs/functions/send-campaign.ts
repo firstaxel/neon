@@ -41,6 +41,7 @@
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import LowBalanceEmail from "emails/low-balance-email";
+import { NonRetriableError } from "inngest";
 import { v4 as uuidv4 } from "uuid";
 import { prisma } from "#/db";
 import { env } from "#/env";
@@ -458,6 +459,39 @@ export const sendSingleMessage = inngest.createFunction(
 			const r = await sendSmsMessage(phone, message);
 			return { success: r.success, externalId: r.messageId, error: r.error };
 		});
+		if (!result.success) {
+			await step.run("throw-sending error", async () => {
+				await prisma.message.update({
+					where: { id: messageId },
+					data: { status: "failed", errorMessage: result.error },
+				});
+
+				await prisma.$transaction(async (tx) => {
+					const campaignDetails = await tx.campaign.findUnique({
+						where: {
+							id: campaignId,
+						},
+						select: {
+							totalMessages: true,
+							failedMessages: true,
+						},
+					});
+
+					if (
+						campaignDetails?.totalMessages === campaignDetails?.failedMessages
+					) {
+						await prisma.campaign.update({
+							where: { id: campaignId },
+							data: { status: "failed" },
+						});
+
+						throw new NonRetriableError(
+							result.error ?? "Error continuing send the message"
+						);
+					}
+				});
+			});
+		}
 
 		// ── Step 4: Persist result ───────────────────────────────────────────────
 		// FIX 1: On send failure, DO NOT THROW. Return { success: false } so Inngest

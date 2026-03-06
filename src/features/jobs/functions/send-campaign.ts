@@ -485,11 +485,12 @@ export const sendSingleMessage = inngest.createFunction(
 							data: { status: "failed" },
 						});
 
-						throw new NonRetriableError(
-							result.error ?? "Error continuing send the message"
-						);
+						
 					}
 				});
+				throw new NonRetriableError(
+							result.error ?? "Error continuing send the message"
+						);
 			});
 		}
 
@@ -516,35 +517,7 @@ export const sendSingleMessage = inngest.createFunction(
 				logger.info(
 					`[Send] ✅ ${contactName} via ${channel} — ID: ${result.externalId}`
 				);
-			} else {
-				// Refund guard: only refund if not already refunded
-				const alreadyRefunded = await prisma.transaction.findFirst({
-					where: { reference: `refund_${messageId}` },
-				});
-				if (!alreadyRefunded) {
-					await refundForMessage({
-						userId,
-						messageType,
-						campaignId,
-						messageId,
-						reason: result.error ?? "send failed",
-					});
-				}
-				await prisma.message.update({
-					where: { id: messageId },
-					data: { status: "failed", errorMessage: result.error },
-				});
-				await prisma.campaign.update({
-					where: { id: campaignId },
-					data: { failedMessages: { increment: 1 } },
-				});
-				logger.error(
-					`[Send] ❌ ${contactName} (${messageId}): ${result.error}`
-				);
-				// ✅ NO throw here — send failure is a terminal outcome, not a retryable error.
-				// Throwing would cause Inngest to retry this function, re-running billing
-				// and double-incrementing failedMessages.
-			}
+			} 
 		});
 
 		// ── Step 5: Check campaign completion ────────────────────────────────────

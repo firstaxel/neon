@@ -82,7 +82,7 @@ export async function sendSmsMessage(
 				from: senderId(),
 				sms: fullBody,
 				type: "plain",
-				channel: "dnd", // DND channel bypasses Nigerian DND registry
+				channel: "generic", // DND channel bypasses Nigerian DND registry
 				media: { url: null, caption: null },
 			}),
 		});

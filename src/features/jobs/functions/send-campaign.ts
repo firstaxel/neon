@@ -283,14 +283,17 @@ export const sendCampaign = inngest.createFunction(
 				},
 			}));
 
-		await step.sendEvent(
+		for (let i = 0; i < events.length; i += FAN_OUT_BATCH_SIZE) {
+  await step.sendEvent(
     `fan-out-batch-${i}`,
     events.slice(i, i + FAN_OUT_BATCH_SIZE)
   );
 			logger.info(
 				`[Campaign] Fanned out ${events.length} events in ${Math.ceil(events.length / FAN_OUT_BATCH_SIZE)} batch(es)`
 			);
-		});
+		}
+			
+	
 
 		return {
 			campaignId,

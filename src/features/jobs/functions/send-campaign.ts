@@ -312,14 +312,14 @@ export const sendSingleMessage = inngest.createFunction(
 		name: "Send Single Message (Worker)",
 		// retries: 1 — only for genuine infrastructure failures (DB down, network timeout).
 		// A send failure (Meta/Termii returns error) is handled gracefully and does NOT retry.
-		retries: 0,
+		retries: 1,
 		rateLimit: {
 			limit: 10,
 			period: "1s",
 			key: "event.data.channel",
 		},
 		concurrency: {
-			limit: 5,
+			limit: 10,
 			key: "event.data.campaignId",
 		},
 		timeouts: { finish: "30s" },
@@ -479,17 +479,7 @@ export const sendSingleMessage = inngest.createFunction(
 			const r = await sendSmsMessage(phone, message);
 			return { success: r.success, externalId: r.messageId, error: r.error };
 		});
-		if (!result.success) {
-			await step.run("throw-sending error", async () => {
-				await prisma.message.update({
-					where: { id: messageId },
-					data: { status: "failed", errorMessage: result.error },
-				});
-			});
-			throw new NonRetriableError(
-				result.error ?? "Error continuing send the message"
-			);
-		}
+		
 
 		// ── Step 4: Persist result ───────────────────────────────────────────────
 		// FIX 1: On send failure, DO NOT THROW. Return { success: false } so Inngest
@@ -498,86 +488,69 @@ export const sendSingleMessage = inngest.createFunction(
 		//   (b) billing-debit running again on retry
 		//   (c) PENDING = total - sent - failed going negative in the UI
 		await step.run("persist-result", async () => {
-			if (result.success) {
-				await prisma.message.update({
-					where: { id: messageId },
-					data: {
-						status: "sent",
-						metaMessageId: result.externalId ?? null,
-						sentAt: new Date(),
-					},
-				});
-				await prisma.campaign.update({
-					where: { id: campaignId },
-					data: { sentMessages: { increment: 1 } },
-				});
-				logger.info(
-					`[Send] ✅ ${contactName} via ${channel} — ID: ${result.externalId}`
-				);
-			}
-		});
+      if (result.success) {
+        await prisma.message.update({
+          where: { id: messageId },
+          data: {
+            status: "sent",
+            metaMessageId: result.externalId ?? null,
+            sentAt: new Date(),
+          },
+        });
+        await prisma.campaign.update({
+          where: { id: campaignId },
+          data: { sentMessages: { increment: 1 } },
+        });
+        logger.info(`[Send] ✅ ${contactName} via ${channel} — ID: ${result.externalId}`);
+      } else {
+        // Send failure is a normal outcome — persist it and fall through to
+        // check-complete so the campaign can still finish.
+        await prisma.message.update({
+          where: { id: messageId },
+          data: { status: "failed", errorMessage: result.error },
+        });
+        
+        logger.warn(`[Send] ❌ ${contactName} via ${channel}: ${result.error}`);
+      }
+    });
 
-		// ── Step 5: Check campaign completion ────────────────────────────────────
-		// Each worker still does a lightweight completion check but uses a DB-level
-		// atomic comparison so only the actual last message triggers the update.
-		await step.run("check-complete", async () => {
-			// Atomic: only mark complete if this increment tips us over the total.
-			// Using updateMany with a WHERE clause ensures only one worker wins.
-			await prisma.campaign.updateMany({
-				where: {
-					id: campaignId,
-					status: "processing",
-					// Match when sent+failed equals total (the last message just finished)
-					AND: [
-						{
-							OR: [
-								// We can't compute sent+failed in a WHERE clause directly,
-								// so we fetch and check — but wrap in a transaction for atomicity
-							],
-						},
-					],
-				},
-				data: {},
-			});
+    // ── FIX: clean completion check — removed the broken empty AND/OR block ──
+    await step.run("check-complete", async () => {
+      const campaign = await prisma.campaign.findUnique({
+        where: { id: campaignId },
+        select: {
+          totalMessages: true,
+          sentMessages: true,
+          failedMessages: true,
+          status: true,
+        },
+      });
+      if (!campaign || campaign.status !== "processing") return;
 
-			// Fetch current state and complete only if fully done
-			const campaign = await prisma.campaign.findUnique({
-				where: { id: campaignId },
-				select: {
-					totalMessages: true,
-					sentMessages: true,
-					failedMessages: true,
-					status: true,
-				},
-			});
-			if (!campaign || campaign.status !== "processing") {
-				return;
-			}
+      const done = campaign.sentMessages + campaign.failedMessages;
+      if (done >= campaign.totalMessages) {
+        const finalStatus =
+          campaign.failedMessages === campaign.totalMessages ? "failed" : "completed";
+        await prisma.campaign.updateMany({
+          where: { id: campaignId, status: "processing" },
+          data: { status: finalStatus, completedAt: new Date() },
+        });
+        logger.info(
+          `[Campaign] ${campaignId} → ${finalStatus} (${done}/${campaign.totalMessages})`
+        );
+      }
+    });
 
-			const done = campaign.sentMessages + campaign.failedMessages;
-			if (done >= campaign.totalMessages) {
-				const finalStatus =
-					campaign.failedMessages === campaign.totalMessages
-						? "failed"
-						: "completed";
-				// Use updateMany with status check to ensure only one worker wins
-				await prisma.campaign.updateMany({
-					where: { id: campaignId, status: "processing" },
-					data: { status: finalStatus, completedAt: new Date() },
-				});
-				logger.info(
-					`[Campaign] ${campaignId} → ${finalStatus} (${done}/${campaign.totalMessages})`
-				);
-			}
-		});
-
-		return {
-			messageId,
-			success: result.success,
-			externalId: result.externalId,
-		};
-	}
+    return {
+      messageId,
+      success: result.success,
+      externalId: result.externalId,
+    };
+    // Note: no throw here. onFailure only fires for true step exceptions
+    // (DB down, network timeout) after the retry is exhausted.
+  }
 );
+
 
 // ─── Low-balance notification ─────────────────────────────────────────────────
 

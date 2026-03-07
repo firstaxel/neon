@@ -184,7 +184,7 @@ export const sendPrescreenSingle = inngest.createFunction(
 	{
 		id: "send-prescreen-single",
 		name: "Send Pre-Screen Consent Message (Worker)",
-		retries: 2,
+		retries: 0,
 		rateLimit: { limit: 10, period: "1s", key: "event.data.channel" },
 		concurrency: { limit: 5, key: "event.data.campaignId" },
 		timeouts: { finish: "30s" },
@@ -360,13 +360,12 @@ export const sendPrescreenSingle = inngest.createFunction(
 							where: { id: campaignId },
 							data: { status: "failed" },
 						});
-
-						throw new NonRetriableError(
-							result.error ?? "Error sending the messages to the contact"
-						);
 					}
 				});
 			});
+			throw new NonRetriableError(
+				result.error ?? "Error sending the messages to the contact"
+			);
 		}
 
 		await step.run("insert-pending-delivery", async () => {

@@ -310,9 +310,9 @@ export const sendSingleMessage = inngest.createFunction(
 	{
 		id: "send-single-message",
 		name: "Send Single Message (Worker)",
-		// retries: 2 — only for genuine infrastructure failures (DB down, network timeout).
+		// retries: 1 — only for genuine infrastructure failures (DB down, network timeout).
 		// A send failure (Meta/Termii returns error) is handled gracefully and does NOT retry.
-		retries: 2,
+		retries: 0,
 		rateLimit: {
 			limit: 10,
 			period: "1s",
@@ -375,10 +375,8 @@ export const sendSingleMessage = inngest.createFunction(
 							where: { id: d.campaignId },
 							data: { status: "failed" },
 						});
-
-						
 					}
-					});
+				});
 			} catch (e) {
 				log.error(
 					`[onFailure] REFUND FAILED for messageId=${d.messageId}: ${e}`
@@ -487,12 +485,10 @@ export const sendSingleMessage = inngest.createFunction(
 					where: { id: messageId },
 					data: { status: "failed", errorMessage: result.error },
 				});
-
-				
-				});
-				throw new NonRetriableError(
-							result.error ?? "Error continuing send the message"
-						);
+			});
+			throw new NonRetriableError(
+				result.error ?? "Error continuing send the message"
+			);
 		}
 
 		// ── Step 4: Persist result ───────────────────────────────────────────────
@@ -518,7 +514,7 @@ export const sendSingleMessage = inngest.createFunction(
 				logger.info(
 					`[Send] ✅ ${contactName} via ${channel} — ID: ${result.externalId}`
 				);
-			} 
+			}
 		});
 
 		// ── Step 5: Check campaign completion ────────────────────────────────────

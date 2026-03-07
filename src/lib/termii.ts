@@ -21,14 +21,10 @@ export interface SmsSendResult {
 
 interface TermiiResponse {
 	balance: number;
+	code: string;
 	message: string;
 	message_id: string;
 	user: string;
-}
-
-interface TermiiErrorResponse {
-	code?: string;
-	message: string;
 }
 
 const BASE_URL = "https://v3.api.termii.com/api/sms/send";
@@ -87,9 +83,9 @@ export async function sendSmsMessage(
 			}),
 		});
 
-		const data = (await res.json()) as TermiiResponse | TermiiErrorResponse;
+		const data = (await res.json()) as TermiiResponse;
 
-		if (!res.ok || "code" in data) {
+		if (!res.ok || data.code !== "ok") {
 			const msg =
 				"message" in data ? String(data.message) : `HTTP ${res.status}`;
 			console.error("[Termii] Send failed:", msg);

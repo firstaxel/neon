@@ -25,6 +25,27 @@ export const parseContactList = inngest.createFunction(
 		retries: 2,
 		concurrency: { limit: 3 },
 		timeouts: { finish: "3m" },
+		onFailure: async ({ event, step }) => {
+			if (event.data.function_id !== "parse-contact-list") {
+				return;
+			}
+
+			const jobId = (event.data.event?.data as { jobId?: string })?.jobId;
+			if (!jobId) {
+				return;
+			}
+
+			await step.run("mark-error", async () => {
+				await prisma.parseJob.update({
+					where: { id: jobId },
+					data: {
+						status: "error",
+						errorMessage: event.data.error?.message ?? "Unknown Inngest error",
+						completedAt: new Date(),
+					},
+				});
+			});
+		},
 	},
 	{ event: "neon/contact-list.parse" },
 
@@ -133,37 +154,5 @@ export const parseContactList = inngest.createFunction(
 			confidence: geminiResult.confidence,
 			warnings: geminiResult.warnings,
 		};
-	}
-);
-
-/**
- * Failure handler — marks ParseJob as "error" in Postgres when all retries fail.
- */
-export const parseContactListOnFailure = inngest.createFunction(
-	{
-		id: "parse-contact-list-on-failure",
-		name: "Parse Job Failure Handler",
-	},
-	{ event: "inngest/function.failed" },
-	async ({ event, step }) => {
-		if (event.data.function_id !== "parse-contact-list") {
-			return;
-		}
-
-		const jobId = (event.data.event?.data as { jobId?: string })?.jobId;
-		if (!jobId) {
-			return;
-		}
-
-		await step.run("mark-error", async () => {
-			await prisma.parseJob.update({
-				where: { id: jobId },
-				data: {
-					status: "error",
-					errorMessage: event.data.error?.message ?? "Unknown Inngest error",
-					completedAt: new Date(),
-				},
-			});
-		});
 	}
 );

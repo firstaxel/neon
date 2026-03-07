@@ -1,9 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { serve } from "inngest/edge";
-import {
-	parseContactList,
-	parseContactListOnFailure,
-} from "#/features/jobs/functions/parse-contacts";
+import { parseContactList } from "#/features/jobs/functions/parse-contacts";
 import {
 	handleLowBalancePause,
 	sendCampaign,
@@ -20,7 +17,6 @@ const handler = serve({
 	client: inngest,
 	functions: [
 		parseContactList, // Gemini AI contact parsing (R2 → Gemini → Postgres)
-		parseContactListOnFailure, // Marks parse_jobs as error on failure
 		sendCampaign, // Campaign orchestrator (fan-out)
 		sendSingleMessage, // Per-message worker (rate-limited, retried)
 		sendCampaignPrescreen, // Campaign orchestrator (fan-out)

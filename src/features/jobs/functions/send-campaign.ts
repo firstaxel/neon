@@ -258,9 +258,7 @@ export const sendCampaign = inngest.createFunction(
 				return c?.deliveryMode ?? "marketing";
 			}
 		);
-
-		await step.run("fan-out", async () => {
-			const events = messageRows.map((m) => ({
+		const events = messageRows.map((m) => ({
 				name: "neon/campaign.send-single" as const,
 				data: {
 					campaignId,
@@ -285,10 +283,10 @@ export const sendCampaign = inngest.createFunction(
 				},
 			}));
 
-			// Batch into chunks — each batch is a separate inngest.send() call
-			for (let i = 0; i < events.length; i += FAN_OUT_BATCH_SIZE) {
-				await inngest.send(events.slice(i, i + FAN_OUT_BATCH_SIZE));
-			}
+		await step.sendEvent(
+    `fan-out-batch-${i}`,
+    events.slice(i, i + FAN_OUT_BATCH_SIZE)
+  );
 			logger.info(
 				`[Campaign] Fanned out ${events.length} events in ${Math.ceil(events.length / FAN_OUT_BATCH_SIZE)} batch(es)`
 			);

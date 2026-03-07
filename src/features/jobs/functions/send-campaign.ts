@@ -314,15 +314,7 @@ export const sendSingleMessage = inngest.createFunction(
 		// retries: 1 — only for genuine infrastructure failures (DB down, network timeout).
 		// A send failure (Meta/Termii returns error) is handled gracefully and does NOT retry.
 		retries: 1,
-		rateLimit: {
-			limit: 10,
-			period: "1s",
-			key: "event.data.channel",
-		},
-		concurrency: {
-			limit: 5,
-			key: "event.data.campaignId",
-		},
+		
 		timeouts: { finish: "30s" },
 		onFailure: async ({ event, error, logger: log }) => {
 			// This only fires when ALL retries are exhausted on an INFRASTRUCTURE error

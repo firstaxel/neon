@@ -320,7 +320,7 @@ export const sendSingleMessage = inngest.createFunction(
 			key: "event.data.channel",
 		},
 		concurrency: {
-			limit: 10,
+			limit: 5,
 			key: "event.data.campaignId",
 		},
 		timeouts: { finish: "30s" },

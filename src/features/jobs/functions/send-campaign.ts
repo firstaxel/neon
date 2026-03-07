@@ -41,7 +41,7 @@
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import LowBalanceEmail from "emails/low-balance-email";
-import { NonRetriableError } from "inngest";
+
 import { v4 as uuidv4 } from "uuid";
 import { prisma } from "#/db";
 import { env } from "#/env";

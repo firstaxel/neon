@@ -11,6 +11,7 @@ import {
 	Text,
 } from "@react-email/components";
 import type { ReactNode } from "react";
+import { env } from "#/env";
 
 interface EmailLayoutProps {
 	children: ReactNode;
@@ -39,7 +40,7 @@ export function EmailLayout({ preview, children }: EmailLayoutProps) {
 								alt="Neon"
 								className="mx-auto"
 								height={44}
-								src={`${process.env.NEXT_PUBLIC_APP_URL}/logo.png`}
+								src={`${env.VITE_CLIENT_URL}/logo.png`}
 								width={36}
 							/>
 						</Section>

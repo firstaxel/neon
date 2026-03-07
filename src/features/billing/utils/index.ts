@@ -226,7 +226,6 @@ export async function debitForMessage({
 export async function refundForMessage({
 	userId,
 	messageType,
-	campaignId,
 	messageId,
 	reason,
 }: {
@@ -244,11 +243,6 @@ export async function refundForMessage({
 		type: "campaign_refund",
 		description: `Refund: ${messageType.replace(/_/g, " ")} message not delivered — ${reason}`,
 		reference: `refund_${messageId}`,
-	});
-
-	await prisma.campaign.update({
-		where: { id: campaignId },
-		data: { failedMessages: { increment: 1 } },
 	});
 }
 

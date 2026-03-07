@@ -259,41 +259,39 @@ export const sendCampaign = inngest.createFunction(
 			}
 		);
 		const events = messageRows.map((m) => ({
-				name: "neon/campaign.send-single" as const,
-				data: {
-					campaignId,
-					userId,
-					messageId: m.id,
-					contactName: m.contactName,
-					phone: m.phone,
-					channel: m.channel,
-					deliveryMode: campaignDeliveryMode as
+			name: "neon/campaign.send-single" as const,
+			data: {
+				campaignId,
+				userId,
+				messageId: m.id,
+				contactName: m.contactName,
+				phone: m.phone,
+				channel: m.channel,
+				deliveryMode: campaignDeliveryMode as
+					| "marketing"
+					| "utility_prescreen"
+					| "sms_fallback",
+				message: m.message,
+				// Pass messageType so workers don't re-derive it (avoids another DB read)
+				messageType: resolveMessageType(
+					m.channel,
+					campaignDeliveryMode as
 						| "marketing"
 						| "utility_prescreen"
-						| "sms_fallback",
-					message: m.message,
-					// Pass messageType so workers don't re-derive it (avoids another DB read)
-					messageType: resolveMessageType(
-						m.channel,
-						campaignDeliveryMode as
-							| "marketing"
-							| "utility_prescreen"
-							| "sms_fallback"
-					),
-				},
-			}));
+						| "sms_fallback"
+				),
+			},
+		}));
 
 		for (let i = 0; i < events.length; i += FAN_OUT_BATCH_SIZE) {
-  await step.sendEvent(
-    `fan-out-batch-${i}`,
-    events.slice(i, i + FAN_OUT_BATCH_SIZE)
-  );
+			await step.sendEvent(
+				`fan-out-batch-${i}`,
+				events.slice(i, i + FAN_OUT_BATCH_SIZE)
+			);
 			logger.info(
 				`[Campaign] Fanned out ${events.length} events in ${Math.ceil(events.length / FAN_OUT_BATCH_SIZE)} batch(es)`
 			);
 		}
-			
-	
 
 		return {
 			campaignId,
@@ -314,7 +312,7 @@ export const sendSingleMessage = inngest.createFunction(
 		// retries: 1 — only for genuine infrastructure failures (DB down, network timeout).
 		// A send failure (Meta/Termii returns error) is handled gracefully and does NOT retry.
 		retries: 1,
-		
+
 		timeouts: { finish: "30s" },
 		onFailure: async ({ event, error, logger: log }) => {
 			// This only fires when ALL retries are exhausted on an INFRASTRUCTURE error
@@ -350,26 +348,7 @@ export const sendSingleMessage = inngest.createFunction(
 					messageId: d.messageId,
 					reason: `infrastructure failure: ${error.message}`,
 				});
-				await prisma.$transaction(async (tx) => {
-					const campaignDetails = await tx.campaign.findUnique({
-						where: {
-							id: d.campaignId,
-						},
-						select: {
-							totalMessages: true,
-							failedMessages: true,
-						},
-					});
-
-					if (
-						campaignDetails?.totalMessages === campaignDetails?.failedMessages
-					) {
-						await prisma.campaign.update({
-							where: { id: d.campaignId },
-							data: { status: "failed" },
-						});
-					}
-				});
+				log.info(`[onFailure] Refund successful for messageId=${d.messageId}`);
 			} catch (e) {
 				log.error(
 					`[onFailure] REFUND FAILED for messageId=${d.messageId}: ${e}`
@@ -472,7 +451,6 @@ export const sendSingleMessage = inngest.createFunction(
 			const r = await sendSmsMessage(phone, message);
 			return { success: r.success, externalId: r.messageId, error: r.error };
 		});
-		
 
 		// ── Step 4: Persist result ───────────────────────────────────────────────
 		// FIX 1: On send failure, DO NOT THROW. Return { success: false } so Inngest
@@ -481,69 +459,86 @@ export const sendSingleMessage = inngest.createFunction(
 		//   (b) billing-debit running again on retry
 		//   (c) PENDING = total - sent - failed going negative in the UI
 		await step.run("persist-result", async () => {
-      if (result.success) {
-        await prisma.message.update({
-          where: { id: messageId },
-          data: {
-            status: "sent",
-            metaMessageId: result.externalId ?? null,
-            sentAt: new Date(),
-          },
-        });
-        await prisma.campaign.update({
-          where: { id: campaignId },
-          data: { sentMessages: { increment: 1 } },
-        });
-        logger.info(`[Send] ✅ ${contactName} via ${channel} — ID: ${result.externalId}`);
-      } else {
-        // Send failure is a normal outcome — persist it and fall through to
-        // check-complete so the campaign can still finish.
-        await prisma.message.update({
-          where: { id: messageId },
-          data: { status: "failed", errorMessage: result.error },
-        });
-        
-        logger.warn(`[Send] ❌ ${contactName} via ${channel}: ${result.error}`);
-      }
-    });
+			if (result.success) {
+				await prisma.message.update({
+					where: { id: messageId },
+					data: {
+						status: "sent",
+						metaMessageId: result.externalId ?? null,
+						sentAt: new Date(),
+					},
+				});
+				await prisma.campaign.update({
+					where: { id: campaignId },
+					data: { sentMessages: { increment: 1 } },
+				});
+				logger.info(
+					`[Send] ✅ ${contactName} via ${channel} — ID: ${result.externalId}`
+				);
+			} else {
+				// Send failure is a normal outcome — persist it and fall through to
+				// check-complete so the campaign can still finish.
+				await prisma.message.update({
+					where: { id: messageId },
+					data: { status: "failed", errorMessage: result.error },
+				});
+				await refundForMessage({
+					userId,
+					messageType,
+					campaignId,
+					messageId,
+					reason: `send failure: ${result.error}`,
+				});
 
-    // ── FIX: clean completion check — removed the broken empty AND/OR block ──
-    await step.run("check-complete", async () => {
-      const campaign = await prisma.campaign.findUnique({
-        where: { id: campaignId },
-        select: {
-          totalMessages: true,
-          sentMessages: true,
-          failedMessages: true,
-          status: true,
-        },
-      });
-      if (!campaign || campaign.status !== "processing") return;
+				await prisma.campaign.update({
+					where: { id: campaignId },
+					data: { failedMessages: { increment: 1 } },
+				});
 
-      const done = campaign.sentMessages + campaign.failedMessages;
-      if (done >= campaign.totalMessages) {
-        const finalStatus =
-          campaign.failedMessages === campaign.totalMessages ? "failed" : "completed";
-        await prisma.campaign.updateMany({
-          where: { id: campaignId, status: "processing" },
-          data: { status: finalStatus, completedAt: new Date() },
-        });
-        logger.info(
-          `[Campaign] ${campaignId} → ${finalStatus} (${done}/${campaign.totalMessages})`
-        );
-      }
-    });
+				logger.warn(`[Send] ❌ ${contactName} via ${channel}: ${result.error}`);
+			}
+		});
 
-    return {
-      messageId,
-      success: result.success,
-      externalId: result.externalId,
-    };
-    // Note: no throw here. onFailure only fires for true step exceptions
-    // (DB down, network timeout) after the retry is exhausted.
-  }
+		// ── FIX: clean completion check — removed the broken empty AND/OR block ──
+		await step.run("check-complete", async () => {
+			const campaign = await prisma.campaign.findUnique({
+				where: { id: campaignId },
+				select: {
+					totalMessages: true,
+					sentMessages: true,
+					failedMessages: true,
+					status: true,
+				},
+			});
+			if (!campaign || campaign.status !== "processing") {
+				return;
+			}
+
+			const done = campaign.sentMessages + campaign.failedMessages;
+			if (done >= campaign.totalMessages) {
+				const finalStatus =
+					campaign.failedMessages === campaign.totalMessages
+						? "failed"
+						: "completed";
+				await prisma.campaign.updateMany({
+					where: { id: campaignId, status: "processing" },
+					data: { status: finalStatus, completedAt: new Date() },
+				});
+				logger.info(
+					`[Campaign] ${campaignId} → ${finalStatus} (${done}/${campaign.totalMessages})`
+				);
+			}
+		});
+
+		return {
+			messageId,
+			success: result.success,
+			externalId: result.externalId,
+		};
+		// Note: no throw here. onFailure only fires for true step exceptions
+		// (DB down, network timeout) after the retry is exhausted.
+	}
 );
-
 
 // ─── Low-balance notification ─────────────────────────────────────────────────
 

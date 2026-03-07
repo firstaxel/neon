@@ -1,4 +1,5 @@
 import { Button, Heading, Section, Text } from "@react-email/components";
+import { env } from "#/env";
 import { EmailLayout } from "./layout";
 
 interface LowBalanceEmailProps {
@@ -20,7 +21,7 @@ export function LowBalanceEmail({
 	campaignId,
 	remainingBalanceKobo,
 }: LowBalanceEmailProps) {
-	const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https:// neon.app";
+	const appUrl = env.VITE_CLIENT_URL ?? "https:// neon.app";
 	return (
 		<EmailLayout preview="Your  neon campaign was paused — wallet balance too low">
 			<Heading className="mt-0 mb-2 text-center font-semibold text-2xl text-[#09090b]">

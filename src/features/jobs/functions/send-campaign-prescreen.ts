@@ -166,8 +166,12 @@ export const sendCampaignPrescreen = inngest.createFunction(
 			}));
 
 			for (let i = 0; i < events.length; i += FAN_OUT_BATCH_SIZE) {
-				await inngest.send(events.slice(i, i + FAN_OUT_BATCH_SIZE));
+				await step.sendEvent(
+					`fan-out-batch-${i}`,
+					events.slice(i, i + FAN_OUT_BATCH_SIZE)
+				);
 			}
+
 			logger.info(
 				`[Prescreen] Fanned out ${events.length} events in ${Math.ceil(events.length / FAN_OUT_BATCH_SIZE)} batch(es)`
 			);
@@ -185,8 +189,7 @@ export const sendPrescreenSingle = inngest.createFunction(
 		id: "send-prescreen-single",
 		name: "Send Pre-Screen Consent Message (Worker)",
 		retries: 0,
-		rateLimit: { limit: 10, period: "1s", key: "event.data.channel" },
-		concurrency: { limit: 5, key: "event.data.campaignId" },
+
 		timeouts: { finish: "30s" },
 	},
 	{ event: "neon/campaign.prescreen-single" },

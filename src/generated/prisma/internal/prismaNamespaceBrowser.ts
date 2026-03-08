@@ -290,6 +290,8 @@ export const UserProfileScalarFieldEnum = {
   orgSize: 'orgSize',
   role: 'role',
   phone: 'phone',
+  senderId: 'senderId',
+  usePlatformSender: 'usePlatformSender',
   onboardingComplete: 'onboardingComplete',
   onboardingStep: 'onboardingStep',
   timezone: 'timezone',

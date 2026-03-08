@@ -436,6 +436,7 @@ function ReviewStep({
 }) {
 	const [pickerOpen, setPickerOpen] = useState(false);
 
+	const scenarioMeta = SCENARIOS.find((s) => s.id === values.scenario);
 	const waContacts = values.contacts.filter((c) => c.channel === "whatsapp");
 	const smsContacts = values.contacts.filter((c) => c.channel === "sms");
 	const previewName = values.contacts[0]?.name ?? "John";
@@ -480,6 +481,12 @@ function ReviewStep({
 			{/* Summary chips */}
 			<div className="grid grid-cols-3 gap-3">
 				{[
+					{
+						label: "Scenario",
+						value: scenarioMeta
+							? `${scenarioMeta.icon} ${scenarioMeta.label}`
+							: values.scenario,
+					},
 					{
 						label: "Recipients",
 						value: `${values.contacts.length} contact${values.contacts.length !== 1 ? "s" : ""}`,
@@ -956,6 +963,43 @@ export function CampaignWizard({ onCancel }: { onCancel?: () => void } = {}) {
 		},
 	});
 
+	// Reactive form state needed for cost calculation — lifted here to satisfy Rules of Hooks
+	const contacts = form.store.state.values.contacts;
+
+	const deliveryMode = form.store.state.values.deliveryMode;
+	const templateSource = form.store.state.values.templateSource;
+	const savedWaTemplate = form.store.state.values.savedWaTemplate;
+	const savedSmsTemplate = form.store.state.values.savedSmsTemplate;
+	const customWhatsapp = form.store.state.values.customWhatsapp;
+	const customSms = form.store.state.values.customSms;
+	const scenarioId = form.store.state.values.scenario;
+
+	const dbDefault0 = scenarioDefaults?.[scenarioId] ?? {
+		whatsapp: "",
+		sms: "",
+	};
+	const activeTemplateForCost =
+		templateSource === "custom"
+			? { whatsapp: customWhatsapp, sms: customSms }
+			: templateSource === "saved"
+				? {
+						whatsapp: savedWaTemplate?.body ?? dbDefault0.whatsapp,
+						sms: savedSmsTemplate?.body ?? dbDefault0.sms,
+					}
+				: dbDefault0;
+	const manualVarsForCost = getManualVars(
+		activeTemplateForCost.whatsapp,
+		activeTemplateForCost.sms
+	);
+	const hasManualVarsForCost = manualVarsForCost.length > 0;
+	const isLastStepForCost = step === 3 || (step === 2 && !hasManualVarsForCost);
+
+	const { data: costData } = useCampaignCost(
+		isLastStepForCost ? contacts.map((c) => ({ channel: c.channel })) : [],
+		deliveryMode,
+		isLastStepForCost ? contacts.map((c) => c.id) : undefined
+	);
+
 	return (
 		<Card className="w-full rounded-2xl">
 			<CardHeader className="pb-4">
@@ -1125,16 +1169,6 @@ export function CampaignWizard({ onCancel }: { onCancel?: () => void } = {}) {
 											: values.customWhatsapp.trim().length > 0 &&
 												values.customSms.trim().length > 0
 									: isVariablesStep; // variables step — user can proceed even with blanks (warned but not blocked)
-
-					// eslint-disable-next-line react-hooks/rules-of-hooks
-					// biome-ignore lint/correctness/useHookAtTopLevel: <need to be imported here to get latest values>
-					const { data: costData } = useCampaignCost(
-						isLastStep
-							? values.contacts.map((c) => ({ channel: c.channel }))
-							: [],
-						values.deliveryMode,
-						isLastStep ? values.contacts.map((c) => c.id) : undefined
-					);
 
 					const canAfford = costData?.canAfford ?? true;
 					const shortfall = costData?.shortfallFormatted;

@@ -423,16 +423,19 @@ model UserProfile {
   userId             String    @unique @map("user_id")
   user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // Church info
+  // Org info
   orgType            String?   @map("org_type")    // e.g. "church" | "ngo" | "school" | "business"
   orgName            String?   @map("org_name")
   orgSize            String?   @map("org_size")    // "1-50" | "51-200" | "201-500" | "500+"
   role               UserRole  @default(staff)
   phone              String?
+  senderId          String?   @map("sender_id")   // custom sender ID for SMS channel (optional)
+  usePlatformSender Boolean   @default(true) @map("use_platform_sender") // whether to use shared platform sender number for SMS channel (instead of custom sender ID)
 
   // Onboarding state
   onboardingComplete Boolean   @default(false) @map("onboarding_complete")
   onboardingStep     Int       @default(0)     @map("onboarding_step")
+
 
   // Preferences
   timezone           String    @default("Africa/Lagos")

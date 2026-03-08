@@ -42,6 +42,8 @@ export type UserProfileMinAggregateOutputType = {
   orgSize: string | null
   role: $Enums.UserRole | null
   phone: string | null
+  senderId: string | null
+  usePlatformSender: boolean | null
   onboardingComplete: boolean | null
   onboardingStep: number | null
   timezone: string | null
@@ -57,6 +59,8 @@ export type UserProfileMaxAggregateOutputType = {
   orgSize: string | null
   role: $Enums.UserRole | null
   phone: string | null
+  senderId: string | null
+  usePlatformSender: boolean | null
   onboardingComplete: boolean | null
   onboardingStep: number | null
   timezone: string | null
@@ -72,6 +76,8 @@ export type UserProfileCountAggregateOutputType = {
   orgSize: number
   role: number
   phone: number
+  senderId: number
+  usePlatformSender: number
   onboardingComplete: number
   onboardingStep: number
   timezone: number
@@ -97,6 +103,8 @@ export type UserProfileMinAggregateInputType = {
   orgSize?: true
   role?: true
   phone?: true
+  senderId?: true
+  usePlatformSender?: true
   onboardingComplete?: true
   onboardingStep?: true
   timezone?: true
@@ -112,6 +120,8 @@ export type UserProfileMaxAggregateInputType = {
   orgSize?: true
   role?: true
   phone?: true
+  senderId?: true
+  usePlatformSender?: true
   onboardingComplete?: true
   onboardingStep?: true
   timezone?: true
@@ -127,6 +137,8 @@ export type UserProfileCountAggregateInputType = {
   orgSize?: true
   role?: true
   phone?: true
+  senderId?: true
+  usePlatformSender?: true
   onboardingComplete?: true
   onboardingStep?: true
   timezone?: true
@@ -229,6 +241,8 @@ export type UserProfileGroupByOutputType = {
   orgSize: string | null
   role: $Enums.UserRole
   phone: string | null
+  senderId: string | null
+  usePlatformSender: boolean
   onboardingComplete: boolean
   onboardingStep: number
   timezone: string
@@ -267,6 +281,8 @@ export type UserProfileWhereInput = {
   orgSize?: Prisma.StringNullableFilter<"UserProfile"> | string | null
   role?: Prisma.EnumUserRoleFilter<"UserProfile"> | $Enums.UserRole
   phone?: Prisma.StringNullableFilter<"UserProfile"> | string | null
+  senderId?: Prisma.StringNullableFilter<"UserProfile"> | string | null
+  usePlatformSender?: Prisma.BoolFilter<"UserProfile"> | boolean
   onboardingComplete?: Prisma.BoolFilter<"UserProfile"> | boolean
   onboardingStep?: Prisma.IntFilter<"UserProfile"> | number
   timezone?: Prisma.StringFilter<"UserProfile"> | string
@@ -283,6 +299,8 @@ export type UserProfileOrderByWithRelationInput = {
   orgSize?: Prisma.SortOrderInput | Prisma.SortOrder
   role?: Prisma.SortOrder
   phone?: Prisma.SortOrderInput | Prisma.SortOrder
+  senderId?: Prisma.SortOrderInput | Prisma.SortOrder
+  usePlatformSender?: Prisma.SortOrder
   onboardingComplete?: Prisma.SortOrder
   onboardingStep?: Prisma.SortOrder
   timezone?: Prisma.SortOrder
@@ -302,6 +320,8 @@ export type UserProfileWhereUniqueInput = Prisma.AtLeast<{
   orgSize?: Prisma.StringNullableFilter<"UserProfile"> | string | null
   role?: Prisma.EnumUserRoleFilter<"UserProfile"> | $Enums.UserRole
   phone?: Prisma.StringNullableFilter<"UserProfile"> | string | null
+  senderId?: Prisma.StringNullableFilter<"UserProfile"> | string | null
+  usePlatformSender?: Prisma.BoolFilter<"UserProfile"> | boolean
   onboardingComplete?: Prisma.BoolFilter<"UserProfile"> | boolean
   onboardingStep?: Prisma.IntFilter<"UserProfile"> | number
   timezone?: Prisma.StringFilter<"UserProfile"> | string
@@ -318,6 +338,8 @@ export type UserProfileOrderByWithAggregationInput = {
   orgSize?: Prisma.SortOrderInput | Prisma.SortOrder
   role?: Prisma.SortOrder
   phone?: Prisma.SortOrderInput | Prisma.SortOrder
+  senderId?: Prisma.SortOrderInput | Prisma.SortOrder
+  usePlatformSender?: Prisma.SortOrder
   onboardingComplete?: Prisma.SortOrder
   onboardingStep?: Prisma.SortOrder
   timezone?: Prisma.SortOrder
@@ -341,6 +363,8 @@ export type UserProfileScalarWhereWithAggregatesInput = {
   orgSize?: Prisma.StringNullableWithAggregatesFilter<"UserProfile"> | string | null
   role?: Prisma.EnumUserRoleWithAggregatesFilter<"UserProfile"> | $Enums.UserRole
   phone?: Prisma.StringNullableWithAggregatesFilter<"UserProfile"> | string | null
+  senderId?: Prisma.StringNullableWithAggregatesFilter<"UserProfile"> | string | null
+  usePlatformSender?: Prisma.BoolWithAggregatesFilter<"UserProfile"> | boolean
   onboardingComplete?: Prisma.BoolWithAggregatesFilter<"UserProfile"> | boolean
   onboardingStep?: Prisma.IntWithAggregatesFilter<"UserProfile"> | number
   timezone?: Prisma.StringWithAggregatesFilter<"UserProfile"> | string
@@ -355,6 +379,8 @@ export type UserProfileCreateInput = {
   orgSize?: string | null
   role?: $Enums.UserRole
   phone?: string | null
+  senderId?: string | null
+  usePlatformSender?: boolean
   onboardingComplete?: boolean
   onboardingStep?: number
   timezone?: string
@@ -371,6 +397,8 @@ export type UserProfileUncheckedCreateInput = {
   orgSize?: string | null
   role?: $Enums.UserRole
   phone?: string | null
+  senderId?: string | null
+  usePlatformSender?: boolean
   onboardingComplete?: boolean
   onboardingStep?: number
   timezone?: string
@@ -385,6 +413,8 @@ export type UserProfileUpdateInput = {
   orgSize?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  senderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usePlatformSender?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onboardingComplete?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onboardingStep?: Prisma.IntFieldUpdateOperationsInput | number
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
@@ -401,6 +431,8 @@ export type UserProfileUncheckedUpdateInput = {
   orgSize?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  senderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usePlatformSender?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onboardingComplete?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onboardingStep?: Prisma.IntFieldUpdateOperationsInput | number
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
@@ -416,6 +448,8 @@ export type UserProfileCreateManyInput = {
   orgSize?: string | null
   role?: $Enums.UserRole
   phone?: string | null
+  senderId?: string | null
+  usePlatformSender?: boolean
   onboardingComplete?: boolean
   onboardingStep?: number
   timezone?: string
@@ -430,6 +464,8 @@ export type UserProfileUpdateManyMutationInput = {
   orgSize?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  senderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usePlatformSender?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onboardingComplete?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onboardingStep?: Prisma.IntFieldUpdateOperationsInput | number
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
@@ -445,6 +481,8 @@ export type UserProfileUncheckedUpdateManyInput = {
   orgSize?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  senderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usePlatformSender?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onboardingComplete?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onboardingStep?: Prisma.IntFieldUpdateOperationsInput | number
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
@@ -470,6 +508,8 @@ export type UserProfileCountOrderByAggregateInput = {
   orgSize?: Prisma.SortOrder
   role?: Prisma.SortOrder
   phone?: Prisma.SortOrder
+  senderId?: Prisma.SortOrder
+  usePlatformSender?: Prisma.SortOrder
   onboardingComplete?: Prisma.SortOrder
   onboardingStep?: Prisma.SortOrder
   timezone?: Prisma.SortOrder
@@ -489,6 +529,8 @@ export type UserProfileMaxOrderByAggregateInput = {
   orgSize?: Prisma.SortOrder
   role?: Prisma.SortOrder
   phone?: Prisma.SortOrder
+  senderId?: Prisma.SortOrder
+  usePlatformSender?: Prisma.SortOrder
   onboardingComplete?: Prisma.SortOrder
   onboardingStep?: Prisma.SortOrder
   timezone?: Prisma.SortOrder
@@ -504,6 +546,8 @@ export type UserProfileMinOrderByAggregateInput = {
   orgSize?: Prisma.SortOrder
   role?: Prisma.SortOrder
   phone?: Prisma.SortOrder
+  senderId?: Prisma.SortOrder
+  usePlatformSender?: Prisma.SortOrder
   onboardingComplete?: Prisma.SortOrder
   onboardingStep?: Prisma.SortOrder
   timezone?: Prisma.SortOrder
@@ -568,6 +612,8 @@ export type UserProfileCreateWithoutUserInput = {
   orgSize?: string | null
   role?: $Enums.UserRole
   phone?: string | null
+  senderId?: string | null
+  usePlatformSender?: boolean
   onboardingComplete?: boolean
   onboardingStep?: number
   timezone?: string
@@ -582,6 +628,8 @@ export type UserProfileUncheckedCreateWithoutUserInput = {
   orgSize?: string | null
   role?: $Enums.UserRole
   phone?: string | null
+  senderId?: string | null
+  usePlatformSender?: boolean
   onboardingComplete?: boolean
   onboardingStep?: number
   timezone?: string
@@ -626,6 +674,8 @@ export type UserProfileScalarWhereInput = {
   orgSize?: Prisma.StringNullableFilter<"UserProfile"> | string | null
   role?: Prisma.EnumUserRoleFilter<"UserProfile"> | $Enums.UserRole
   phone?: Prisma.StringNullableFilter<"UserProfile"> | string | null
+  senderId?: Prisma.StringNullableFilter<"UserProfile"> | string | null
+  usePlatformSender?: Prisma.BoolFilter<"UserProfile"> | boolean
   onboardingComplete?: Prisma.BoolFilter<"UserProfile"> | boolean
   onboardingStep?: Prisma.IntFilter<"UserProfile"> | number
   timezone?: Prisma.StringFilter<"UserProfile"> | string
@@ -640,6 +690,8 @@ export type UserProfileCreateManyUserInput = {
   orgSize?: string | null
   role?: $Enums.UserRole
   phone?: string | null
+  senderId?: string | null
+  usePlatformSender?: boolean
   onboardingComplete?: boolean
   onboardingStep?: number
   timezone?: string
@@ -654,6 +706,8 @@ export type UserProfileUpdateWithoutUserInput = {
   orgSize?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  senderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usePlatformSender?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onboardingComplete?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onboardingStep?: Prisma.IntFieldUpdateOperationsInput | number
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
@@ -668,6 +722,8 @@ export type UserProfileUncheckedUpdateWithoutUserInput = {
   orgSize?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  senderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usePlatformSender?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onboardingComplete?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onboardingStep?: Prisma.IntFieldUpdateOperationsInput | number
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
@@ -682,6 +738,8 @@ export type UserProfileUncheckedUpdateManyWithoutUserInput = {
   orgSize?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  senderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usePlatformSender?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onboardingComplete?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onboardingStep?: Prisma.IntFieldUpdateOperationsInput | number
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
@@ -699,6 +757,8 @@ export type UserProfileSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   orgSize?: boolean
   role?: boolean
   phone?: boolean
+  senderId?: boolean
+  usePlatformSender?: boolean
   onboardingComplete?: boolean
   onboardingStep?: boolean
   timezone?: boolean
@@ -715,6 +775,8 @@ export type UserProfileSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   orgSize?: boolean
   role?: boolean
   phone?: boolean
+  senderId?: boolean
+  usePlatformSender?: boolean
   onboardingComplete?: boolean
   onboardingStep?: boolean
   timezone?: boolean
@@ -731,6 +793,8 @@ export type UserProfileSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   orgSize?: boolean
   role?: boolean
   phone?: boolean
+  senderId?: boolean
+  usePlatformSender?: boolean
   onboardingComplete?: boolean
   onboardingStep?: boolean
   timezone?: boolean
@@ -747,6 +811,8 @@ export type UserProfileSelectScalar = {
   orgSize?: boolean
   role?: boolean
   phone?: boolean
+  senderId?: boolean
+  usePlatformSender?: boolean
   onboardingComplete?: boolean
   onboardingStep?: boolean
   timezone?: boolean
@@ -754,7 +820,7 @@ export type UserProfileSelectScalar = {
   updatedAt?: boolean
 }
 
-export type UserProfileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "orgType" | "orgName" | "orgSize" | "role" | "phone" | "onboardingComplete" | "onboardingStep" | "timezone" | "createdAt" | "updatedAt", ExtArgs["result"]["userProfile"]>
+export type UserProfileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "orgType" | "orgName" | "orgSize" | "role" | "phone" | "senderId" | "usePlatformSender" | "onboardingComplete" | "onboardingStep" | "timezone" | "createdAt" | "updatedAt", ExtArgs["result"]["userProfile"]>
 export type UserProfileInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
@@ -778,6 +844,8 @@ export type $UserProfilePayload<ExtArgs extends runtime.Types.Extensions.Interna
     orgSize: string | null
     role: $Enums.UserRole
     phone: string | null
+    senderId: string | null
+    usePlatformSender: boolean
     onboardingComplete: boolean
     onboardingStep: number
     timezone: string
@@ -1214,6 +1282,8 @@ export interface UserProfileFieldRefs {
   readonly orgSize: Prisma.FieldRef<"UserProfile", 'String'>
   readonly role: Prisma.FieldRef<"UserProfile", 'UserRole'>
   readonly phone: Prisma.FieldRef<"UserProfile", 'String'>
+  readonly senderId: Prisma.FieldRef<"UserProfile", 'String'>
+  readonly usePlatformSender: Prisma.FieldRef<"UserProfile", 'Boolean'>
   readonly onboardingComplete: Prisma.FieldRef<"UserProfile", 'Boolean'>
   readonly onboardingStep: Prisma.FieldRef<"UserProfile", 'Int'>
   readonly timezone: Prisma.FieldRef<"UserProfile", 'String'>

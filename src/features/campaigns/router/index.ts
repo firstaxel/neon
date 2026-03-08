@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
-import { getTemplate } from "#/features/miscellaneous/scenario";
+import { SCENARIO_SEED_TEMPLATES } from "#/features/miscellaneous/scenario";
 import { inngest } from "#/lib/inngest/client";
 import { protectedProcedure } from "#/orpc";
 
@@ -24,6 +24,10 @@ export const sendCampaign = protectedProcedure
 	.input(
 		z.object({
 			scenario: ScenarioSchema,
+			// We accept full contact objects from the wizard (for UI validation/preview)
+			// but we only forward contact IDs to Inngest to stay well under the 256KB event limit.
+			// At ~200 bytes per contact object, 1000 contacts = ~200KB — dangerously close.
+			// At ~40 bytes per UUID, 1000 IDs = ~40KB — safe even at 10k contacts.
 			contacts: z.array(ContactSchema).min(1),
 			useCustom: z.boolean().default(false),
 			customTemplate: z
@@ -38,17 +42,48 @@ export const sendCampaign = protectedProcedure
 	)
 	.handler(async ({ input, context }) => {
 		const userId = context.session.user.id;
-		const template =
-			input.useCustom && input.customTemplate
-				? input.customTemplate
-				: getTemplate(input.scenario);
+		// Resolve template: DB default first, then seed fallback.
+		// Users own their templates post-onboarding and can edit them freely.
+		let template: { whatsapp: string; sms: string };
+
+		if (input.useCustom && input.customTemplate) {
+			template = input.customTemplate;
+		} else {
+			// Look up the user's saved default for this scenario
+			const [waRow, smsRow] = await Promise.all([
+				context.db.messageTemplate.findFirst({
+					where: {
+						userId,
+						scenarioId: input.scenario,
+						isDefault: true,
+						channel: "whatsapp",
+					},
+					select: { bodyText: true, smsBody: true },
+				}),
+				context.db.messageTemplate.findFirst({
+					where: {
+						userId,
+						scenarioId: input.scenario,
+						isDefault: true,
+						channel: "sms",
+					},
+					select: { bodyText: true, smsBody: true },
+				}),
+			]);
+
+			const seedFallback = SCENARIO_SEED_TEMPLATES[input.scenario];
+			template = {
+				whatsapp: waRow?.bodyText ?? seedFallback.whatsapp,
+				sms: smsRow?.bodyText ?? seedFallback.sms,
+			};
+		}
 
 		// Fetch profile for org name — used in consent messages and as auto-resolved {{org}} var
 		const profile = await context.db.userProfile.findUnique({
 			where: { userId },
 			select: { orgName: true },
 		});
-		const orgName = profile?.orgName ?? "Polyvocal";
+		const orgName = profile?.orgName ?? "MessageDesk";
 
 		// Merge auto-resolved server vars with user-supplied vars.
 		// Server-side values win over anything the user typed for org/orgName.
@@ -68,45 +103,43 @@ export const sendCampaign = protectedProcedure
 				scenario: input.scenario,
 				status: "pending",
 				deliveryMode: input.deliveryMode,
-				whatsappTemplate: template?.whatsapp ?? "",
-				smsTemplate: template?.sms ?? "",
+				whatsappTemplate: template.whatsapp,
+				smsTemplate: template.sms,
 				useCustomTemplate: input.useCustom,
 				totalMessages: input.contacts.length,
 			},
 		});
 
+		// Extract only IDs — Inngest functions fetch full contact data from DB.
+		// This keeps event payloads tiny regardless of how many contacts are selected.
+		const contactIds = input.contacts.map((c) => c.id);
+
 		// ── Branch by delivery mode ───────────────────────────────────────────────
 		if (input.deliveryMode === "utility_prescreen") {
-			// Cheap utility consent message first — real message only sent after YES reply
 			await inngest.send({
 				name: "neon/campaign.prescreen",
 				data: {
 					campaignId,
 					userId,
 					orgName,
-					contacts: input.contacts,
-					realWhatsappMessage: template?.whatsapp ?? "",
-					realSmsMessage: template?.sms ?? "",
+					contactIds,
+					realWhatsappMessage: template.whatsapp,
+					realSmsMessage: template.sms,
 					scenario: input.scenario,
 					templateVars: resolvedTemplateVars,
 				},
 			});
 		} else {
-			// Standard (marketing) or sms_fallback — direct send
-			// sms_fallback contacts have channel="whatsapp" in DB but we force SMS delivery
-			const contacts =
-				input.deliveryMode === "sms_fallback"
-					? input.contacts.map((c) => ({ ...c, channel: "sms" as const }))
-					: input.contacts;
-
 			await inngest.send({
 				name: "neon/campaign.send",
 				data: {
 					campaignId,
 					userId,
-					contacts,
-					whatsappTemplate: template?.whatsapp ?? "",
-					smsTemplate: template?.sms ?? "",
+					contactIds,
+					// For sms_fallback we tell Inngest to force SMS channel when fetching
+					forceSmsChannel: input.deliveryMode === "sms_fallback",
+					whatsappTemplate: template.whatsapp,
+					smsTemplate: template.sms,
 					scenario: input.scenario,
 					templateVars: resolvedTemplateVars,
 				},

@@ -54,6 +54,8 @@ export type MessageTemplateMinAggregateOutputType = {
   footerText: string | null
   channel: $Enums.MessageChannel | null
   smsBody: string | null
+  scenarioId: string | null
+  isDefault: boolean | null
   usageCount: number | null
   lastUsedAt: Date | null
   submittedAt: Date | null
@@ -80,6 +82,8 @@ export type MessageTemplateMaxAggregateOutputType = {
   footerText: string | null
   channel: $Enums.MessageChannel | null
   smsBody: string | null
+  scenarioId: string | null
+  isDefault: boolean | null
   usageCount: number | null
   lastUsedAt: Date | null
   submittedAt: Date | null
@@ -110,6 +114,8 @@ export type MessageTemplateCountAggregateOutputType = {
   channel: number
   smsBody: number
   smsVars: number
+  scenarioId: number
+  isDefault: number
   usageCount: number
   lastUsedAt: number
   submittedAt: number
@@ -146,6 +152,8 @@ export type MessageTemplateMinAggregateInputType = {
   footerText?: true
   channel?: true
   smsBody?: true
+  scenarioId?: true
+  isDefault?: true
   usageCount?: true
   lastUsedAt?: true
   submittedAt?: true
@@ -172,6 +180,8 @@ export type MessageTemplateMaxAggregateInputType = {
   footerText?: true
   channel?: true
   smsBody?: true
+  scenarioId?: true
+  isDefault?: true
   usageCount?: true
   lastUsedAt?: true
   submittedAt?: true
@@ -202,6 +212,8 @@ export type MessageTemplateCountAggregateInputType = {
   channel?: true
   smsBody?: true
   smsVars?: true
+  scenarioId?: true
+  isDefault?: true
   usageCount?: true
   lastUsedAt?: true
   submittedAt?: true
@@ -319,6 +331,8 @@ export type MessageTemplateGroupByOutputType = {
   channel: $Enums.MessageChannel
   smsBody: string
   smsVars: string[]
+  scenarioId: string | null
+  isDefault: boolean
   usageCount: number
   lastUsedAt: Date | null
   submittedAt: Date | null
@@ -372,6 +386,8 @@ export type MessageTemplateWhereInput = {
   channel?: Prisma.EnumMessageChannelFilter<"MessageTemplate"> | $Enums.MessageChannel
   smsBody?: Prisma.StringFilter<"MessageTemplate"> | string
   smsVars?: Prisma.StringNullableListFilter<"MessageTemplate">
+  scenarioId?: Prisma.StringNullableFilter<"MessageTemplate"> | string | null
+  isDefault?: Prisma.BoolFilter<"MessageTemplate"> | boolean
   usageCount?: Prisma.IntFilter<"MessageTemplate"> | number
   lastUsedAt?: Prisma.DateTimeNullableFilter<"MessageTemplate"> | Date | string | null
   submittedAt?: Prisma.DateTimeNullableFilter<"MessageTemplate"> | Date | string | null
@@ -403,6 +419,8 @@ export type MessageTemplateOrderByWithRelationInput = {
   channel?: Prisma.SortOrder
   smsBody?: Prisma.SortOrder
   smsVars?: Prisma.SortOrder
+  scenarioId?: Prisma.SortOrderInput | Prisma.SortOrder
+  isDefault?: Prisma.SortOrder
   usageCount?: Prisma.SortOrder
   lastUsedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   submittedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -437,6 +455,8 @@ export type MessageTemplateWhereUniqueInput = Prisma.AtLeast<{
   channel?: Prisma.EnumMessageChannelFilter<"MessageTemplate"> | $Enums.MessageChannel
   smsBody?: Prisma.StringFilter<"MessageTemplate"> | string
   smsVars?: Prisma.StringNullableListFilter<"MessageTemplate">
+  scenarioId?: Prisma.StringNullableFilter<"MessageTemplate"> | string | null
+  isDefault?: Prisma.BoolFilter<"MessageTemplate"> | boolean
   usageCount?: Prisma.IntFilter<"MessageTemplate"> | number
   lastUsedAt?: Prisma.DateTimeNullableFilter<"MessageTemplate"> | Date | string | null
   submittedAt?: Prisma.DateTimeNullableFilter<"MessageTemplate"> | Date | string | null
@@ -468,6 +488,8 @@ export type MessageTemplateOrderByWithAggregationInput = {
   channel?: Prisma.SortOrder
   smsBody?: Prisma.SortOrder
   smsVars?: Prisma.SortOrder
+  scenarioId?: Prisma.SortOrderInput | Prisma.SortOrder
+  isDefault?: Prisma.SortOrder
   usageCount?: Prisma.SortOrder
   lastUsedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   submittedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -506,6 +528,8 @@ export type MessageTemplateScalarWhereWithAggregatesInput = {
   channel?: Prisma.EnumMessageChannelWithAggregatesFilter<"MessageTemplate"> | $Enums.MessageChannel
   smsBody?: Prisma.StringWithAggregatesFilter<"MessageTemplate"> | string
   smsVars?: Prisma.StringNullableListFilter<"MessageTemplate">
+  scenarioId?: Prisma.StringNullableWithAggregatesFilter<"MessageTemplate"> | string | null
+  isDefault?: Prisma.BoolWithAggregatesFilter<"MessageTemplate"> | boolean
   usageCount?: Prisma.IntWithAggregatesFilter<"MessageTemplate"> | number
   lastUsedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"MessageTemplate"> | Date | string | null
   submittedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"MessageTemplate"> | Date | string | null
@@ -535,6 +559,8 @@ export type MessageTemplateCreateInput = {
   channel?: $Enums.MessageChannel
   smsBody: string
   smsVars?: Prisma.MessageTemplateCreatesmsVarsInput | string[]
+  scenarioId?: string | null
+  isDefault?: boolean
   usageCount?: number
   lastUsedAt?: Date | string | null
   submittedAt?: Date | string | null
@@ -566,6 +592,8 @@ export type MessageTemplateUncheckedCreateInput = {
   channel?: $Enums.MessageChannel
   smsBody: string
   smsVars?: Prisma.MessageTemplateCreatesmsVarsInput | string[]
+  scenarioId?: string | null
+  isDefault?: boolean
   usageCount?: number
   lastUsedAt?: Date | string | null
   submittedAt?: Date | string | null
@@ -595,6 +623,8 @@ export type MessageTemplateUpdateInput = {
   channel?: Prisma.EnumMessageChannelFieldUpdateOperationsInput | $Enums.MessageChannel
   smsBody?: Prisma.StringFieldUpdateOperationsInput | string
   smsVars?: Prisma.MessageTemplateUpdatesmsVarsInput | string[]
+  scenarioId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   usageCount?: Prisma.IntFieldUpdateOperationsInput | number
   lastUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -626,6 +656,8 @@ export type MessageTemplateUncheckedUpdateInput = {
   channel?: Prisma.EnumMessageChannelFieldUpdateOperationsInput | $Enums.MessageChannel
   smsBody?: Prisma.StringFieldUpdateOperationsInput | string
   smsVars?: Prisma.MessageTemplateUpdatesmsVarsInput | string[]
+  scenarioId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   usageCount?: Prisma.IntFieldUpdateOperationsInput | number
   lastUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -656,6 +688,8 @@ export type MessageTemplateCreateManyInput = {
   channel?: $Enums.MessageChannel
   smsBody: string
   smsVars?: Prisma.MessageTemplateCreatesmsVarsInput | string[]
+  scenarioId?: string | null
+  isDefault?: boolean
   usageCount?: number
   lastUsedAt?: Date | string | null
   submittedAt?: Date | string | null
@@ -685,6 +719,8 @@ export type MessageTemplateUpdateManyMutationInput = {
   channel?: Prisma.EnumMessageChannelFieldUpdateOperationsInput | $Enums.MessageChannel
   smsBody?: Prisma.StringFieldUpdateOperationsInput | string
   smsVars?: Prisma.MessageTemplateUpdatesmsVarsInput | string[]
+  scenarioId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   usageCount?: Prisma.IntFieldUpdateOperationsInput | number
   lastUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -715,6 +751,8 @@ export type MessageTemplateUncheckedUpdateManyInput = {
   channel?: Prisma.EnumMessageChannelFieldUpdateOperationsInput | $Enums.MessageChannel
   smsBody?: Prisma.StringFieldUpdateOperationsInput | string
   smsVars?: Prisma.MessageTemplateUpdatesmsVarsInput | string[]
+  scenarioId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   usageCount?: Prisma.IntFieldUpdateOperationsInput | number
   lastUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -755,6 +793,8 @@ export type MessageTemplateCountOrderByAggregateInput = {
   channel?: Prisma.SortOrder
   smsBody?: Prisma.SortOrder
   smsVars?: Prisma.SortOrder
+  scenarioId?: Prisma.SortOrder
+  isDefault?: Prisma.SortOrder
   usageCount?: Prisma.SortOrder
   lastUsedAt?: Prisma.SortOrder
   submittedAt?: Prisma.SortOrder
@@ -785,6 +825,8 @@ export type MessageTemplateMaxOrderByAggregateInput = {
   footerText?: Prisma.SortOrder
   channel?: Prisma.SortOrder
   smsBody?: Prisma.SortOrder
+  scenarioId?: Prisma.SortOrder
+  isDefault?: Prisma.SortOrder
   usageCount?: Prisma.SortOrder
   lastUsedAt?: Prisma.SortOrder
   submittedAt?: Prisma.SortOrder
@@ -811,6 +853,8 @@ export type MessageTemplateMinOrderByAggregateInput = {
   footerText?: Prisma.SortOrder
   channel?: Prisma.SortOrder
   smsBody?: Prisma.SortOrder
+  scenarioId?: Prisma.SortOrder
+  isDefault?: Prisma.SortOrder
   usageCount?: Prisma.SortOrder
   lastUsedAt?: Prisma.SortOrder
   submittedAt?: Prisma.SortOrder
@@ -929,6 +973,8 @@ export type MessageTemplateCreateWithoutUserInput = {
   channel?: $Enums.MessageChannel
   smsBody: string
   smsVars?: Prisma.MessageTemplateCreatesmsVarsInput | string[]
+  scenarioId?: string | null
+  isDefault?: boolean
   usageCount?: number
   lastUsedAt?: Date | string | null
   submittedAt?: Date | string | null
@@ -958,6 +1004,8 @@ export type MessageTemplateUncheckedCreateWithoutUserInput = {
   channel?: $Enums.MessageChannel
   smsBody: string
   smsVars?: Prisma.MessageTemplateCreatesmsVarsInput | string[]
+  scenarioId?: string | null
+  isDefault?: boolean
   usageCount?: number
   lastUsedAt?: Date | string | null
   submittedAt?: Date | string | null
@@ -1017,6 +1065,8 @@ export type MessageTemplateScalarWhereInput = {
   channel?: Prisma.EnumMessageChannelFilter<"MessageTemplate"> | $Enums.MessageChannel
   smsBody?: Prisma.StringFilter<"MessageTemplate"> | string
   smsVars?: Prisma.StringNullableListFilter<"MessageTemplate">
+  scenarioId?: Prisma.StringNullableFilter<"MessageTemplate"> | string | null
+  isDefault?: Prisma.BoolFilter<"MessageTemplate"> | boolean
   usageCount?: Prisma.IntFilter<"MessageTemplate"> | number
   lastUsedAt?: Prisma.DateTimeNullableFilter<"MessageTemplate"> | Date | string | null
   submittedAt?: Prisma.DateTimeNullableFilter<"MessageTemplate"> | Date | string | null
@@ -1046,6 +1096,8 @@ export type MessageTemplateCreateManyUserInput = {
   channel?: $Enums.MessageChannel
   smsBody: string
   smsVars?: Prisma.MessageTemplateCreatesmsVarsInput | string[]
+  scenarioId?: string | null
+  isDefault?: boolean
   usageCount?: number
   lastUsedAt?: Date | string | null
   submittedAt?: Date | string | null
@@ -1075,6 +1127,8 @@ export type MessageTemplateUpdateWithoutUserInput = {
   channel?: Prisma.EnumMessageChannelFieldUpdateOperationsInput | $Enums.MessageChannel
   smsBody?: Prisma.StringFieldUpdateOperationsInput | string
   smsVars?: Prisma.MessageTemplateUpdatesmsVarsInput | string[]
+  scenarioId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   usageCount?: Prisma.IntFieldUpdateOperationsInput | number
   lastUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1104,6 +1158,8 @@ export type MessageTemplateUncheckedUpdateWithoutUserInput = {
   channel?: Prisma.EnumMessageChannelFieldUpdateOperationsInput | $Enums.MessageChannel
   smsBody?: Prisma.StringFieldUpdateOperationsInput | string
   smsVars?: Prisma.MessageTemplateUpdatesmsVarsInput | string[]
+  scenarioId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   usageCount?: Prisma.IntFieldUpdateOperationsInput | number
   lastUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1133,6 +1189,8 @@ export type MessageTemplateUncheckedUpdateManyWithoutUserInput = {
   channel?: Prisma.EnumMessageChannelFieldUpdateOperationsInput | $Enums.MessageChannel
   smsBody?: Prisma.StringFieldUpdateOperationsInput | string
   smsVars?: Prisma.MessageTemplateUpdatesmsVarsInput | string[]
+  scenarioId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   usageCount?: Prisma.IntFieldUpdateOperationsInput | number
   lastUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   submittedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1165,6 +1223,8 @@ export type MessageTemplateSelect<ExtArgs extends runtime.Types.Extensions.Inter
   channel?: boolean
   smsBody?: boolean
   smsVars?: boolean
+  scenarioId?: boolean
+  isDefault?: boolean
   usageCount?: boolean
   lastUsedAt?: boolean
   submittedAt?: boolean
@@ -1196,6 +1256,8 @@ export type MessageTemplateSelectCreateManyAndReturn<ExtArgs extends runtime.Typ
   channel?: boolean
   smsBody?: boolean
   smsVars?: boolean
+  scenarioId?: boolean
+  isDefault?: boolean
   usageCount?: boolean
   lastUsedAt?: boolean
   submittedAt?: boolean
@@ -1227,6 +1289,8 @@ export type MessageTemplateSelectUpdateManyAndReturn<ExtArgs extends runtime.Typ
   channel?: boolean
   smsBody?: boolean
   smsVars?: boolean
+  scenarioId?: boolean
+  isDefault?: boolean
   usageCount?: boolean
   lastUsedAt?: boolean
   submittedAt?: boolean
@@ -1258,6 +1322,8 @@ export type MessageTemplateSelectScalar = {
   channel?: boolean
   smsBody?: boolean
   smsVars?: boolean
+  scenarioId?: boolean
+  isDefault?: boolean
   usageCount?: boolean
   lastUsedAt?: boolean
   submittedAt?: boolean
@@ -1266,7 +1332,7 @@ export type MessageTemplateSelectScalar = {
   updatedAt?: boolean
 }
 
-export type MessageTemplateOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "name" | "displayName" | "language" | "category" | "purpose" | "status" | "waTemplateId" | "waAccountId" | "rejectionReason" | "headerFormat" | "headerText" | "headerVars" | "bodyText" | "bodyVars" | "footerText" | "buttons" | "channel" | "smsBody" | "smsVars" | "usageCount" | "lastUsedAt" | "submittedAt" | "approvedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["messageTemplate"]>
+export type MessageTemplateOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "name" | "displayName" | "language" | "category" | "purpose" | "status" | "waTemplateId" | "waAccountId" | "rejectionReason" | "headerFormat" | "headerText" | "headerVars" | "bodyText" | "bodyVars" | "footerText" | "buttons" | "channel" | "smsBody" | "smsVars" | "scenarioId" | "isDefault" | "usageCount" | "lastUsedAt" | "submittedAt" | "approvedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["messageTemplate"]>
 export type MessageTemplateInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
@@ -1304,6 +1370,8 @@ export type $MessageTemplatePayload<ExtArgs extends runtime.Types.Extensions.Int
     channel: $Enums.MessageChannel
     smsBody: string
     smsVars: string[]
+    scenarioId: string | null
+    isDefault: boolean
     usageCount: number
     lastUsedAt: Date | null
     submittedAt: Date | null
@@ -1755,6 +1823,8 @@ export interface MessageTemplateFieldRefs {
   readonly channel: Prisma.FieldRef<"MessageTemplate", 'MessageChannel'>
   readonly smsBody: Prisma.FieldRef<"MessageTemplate", 'String'>
   readonly smsVars: Prisma.FieldRef<"MessageTemplate", 'String[]'>
+  readonly scenarioId: Prisma.FieldRef<"MessageTemplate", 'String'>
+  readonly isDefault: Prisma.FieldRef<"MessageTemplate", 'Boolean'>
   readonly usageCount: Prisma.FieldRef<"MessageTemplate", 'Int'>
   readonly lastUsedAt: Prisma.FieldRef<"MessageTemplate", 'DateTime'>
   readonly submittedAt: Prisma.FieldRef<"MessageTemplate", 'DateTime'>

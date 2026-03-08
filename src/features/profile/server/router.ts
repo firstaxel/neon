@@ -11,6 +11,7 @@
 import { z } from "zod";
 import { auth } from "#/lib/auth";
 import { protectedProcedure } from "#/orpc";
+import { seedScenarioTemplates } from "#/features/miscellaneous/seed-scenario-templates";
 
 // ─── Shared org input ─────────────────────────────────────────────────────────
 
@@ -118,6 +119,11 @@ export const completeOnboarding = protectedProcedure
 				...profileFields,
 			},
 		});
+
+		// Seed the user's personal scenario templates on first completion
+		if (complete) {
+			await seedScenarioTemplates(context.db, context.session.user.id, profileFields.orgType);
+		}
 
 		return { success: true, step, complete, profile };
 	});

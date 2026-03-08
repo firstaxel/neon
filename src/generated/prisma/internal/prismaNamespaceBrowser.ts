@@ -170,6 +170,7 @@ export const ContactScalarFieldEnum = {
   uploadedBy: 'uploadedBy',
   optedOut: 'optedOut',
   optedOutAt: 'optedOutAt',
+  lastInboundAt: 'lastInboundAt',
   createdAt: 'createdAt'
 } as const
 
@@ -321,6 +322,8 @@ export const MessageTemplateScalarFieldEnum = {
   channel: 'channel',
   smsBody: 'smsBody',
   smsVars: 'smsVars',
+  scenarioId: 'scenarioId',
+  isDefault: 'isDefault',
   usageCount: 'usageCount',
   lastUsedAt: 'lastUsedAt',
   submittedAt: 'submittedAt',

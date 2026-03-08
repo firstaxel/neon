@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { BUCKET } from "#/features/upload/lib/s3";
 import { protectedProcedure } from "#/orpc";
 
 const ChannelSchema = z.enum(["whatsapp", "sms"]);
@@ -428,3 +429,80 @@ export const autoMergeDuplicates = protectedProcedure.handler(
 		};
 	}
 );
+
+// ─── createContact ────────────────────────────────────────────────────────────
+
+export const createContact = protectedProcedure
+	.input(
+		z.object({
+			name: z.string().min(1, "Name is required"),
+			phone: z.string().min(7, "Phone is required"),
+			channel: ChannelSchema,
+			type: ContactTypeSchema,
+			email: z.string().email("Invalid email").optional().nullable(),
+			notes: z.string().optional().nullable(),
+		})
+	)
+	.handler(async ({ input, context }) => {
+		const userId = context.session.user.id;
+
+		// Check for duplicate phone for this user
+		const existing = await context.db.contact.findUnique({
+			where: {
+				uploadedBy_phone: {
+					uploadedBy: userId,
+					phone: input.phone,
+				},
+			},
+		});
+		if (existing) {
+			throw new Error(
+				`A contact with phone ${input.phone} already exists ("${existing.name}").`
+			);
+		}
+
+		// Manual contacts need a parse job to satisfy the FK constraint.
+		// We upsert a single "manual-{userId}" parse job so all manual contacts
+		// share one row rather than creating a new job per contact.
+		const parseJobId = `manual-${userId}`;
+		await context.db.parseJob.upsert({
+			where: { id: parseJobId },
+			create: {
+				id: parseJobId,
+				parsedBy: userId,
+				status: "done",
+				originalFilename: "Manual entry",
+				confidence: 1,
+				mimeType: "image/jpeg" as
+					| "image/jpeg"
+					| "image/jpg"
+					| "image/png"
+					| "image/webp"
+					| "image/gif",
+				r2Bucket: BUCKET,
+				r2Key: `manual_entry-by-${userId}-${new Date()}`,
+			},
+			update: {},
+		});
+
+		const contact = await context.db.contact.create({
+			data: {
+				uploadedBy: userId,
+				parseJobId,
+				name: input.name,
+				phone: input.phone,
+				channel: input.channel,
+				type: input.type,
+				email: input.email ?? null,
+				notes: input.notes ?? null,
+			},
+		});
+
+		return {
+			id: contact.id,
+			name: contact.name,
+			phone: contact.phone,
+			channel: contact.channel as "whatsapp" | "sms",
+			type: contact.type as "first_timer" | "returning" | "member" | "visitor",
+		};
+	});

@@ -15,6 +15,7 @@ import {
 } from "#/features/campaigns/router";
 import {
 	autoMergeDuplicates,
+	createContact,
 	deleteContact,
 	deleteContacts,
 	getContact,
@@ -39,9 +40,11 @@ import {
 import {
 	createTemplate,
 	deleteTemplate,
+	getScenarioDefaults,
 	getTemplate,
 	listTemplates,
 	recordTemplateUsage,
+	seedFromLibrary,
 	submitTemplateForApproval,
 	syncTemplateStatus,
 	updateTemplate,
@@ -80,6 +83,7 @@ export const appRouter = o.router({
 	contacts: o.router({
 		get: getContact,
 		list: listContacts,
+		create: createContact,
 		delete: deleteContact,
 		deleteContacts,
 		autoMergeDuplicates,
@@ -113,6 +117,8 @@ export const appRouter = o.router({
 		submit: submitTemplateForApproval,
 		syncStatus: syncTemplateStatus,
 		recordUsage: recordTemplateUsage,
+		getScenarioDefaults,
+		seedFromLibrary,
 	}),
 	inbox: o.router({
 		get: getThread,

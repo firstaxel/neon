@@ -184,6 +184,11 @@ model Contact {
   optedOut    Boolean        @default(false) @map("opted_out")
   optedOutAt  DateTime?      @map("opted_out_at")
 
+  // Set whenever we receive an inbound message from this contact.
+  // Used to detect open 24h service windows — contacts with
+  // lastInboundAt > now-24h can receive free-form WA messages at ₦0.
+  lastInboundAt DateTime?    @map("last_inbound_at")
+
   createdAt   DateTime       @default(now()) @map("created_at")
 
   @@index([parseJobId])
@@ -529,6 +534,13 @@ model MessageTemplate {
   smsBody       String            @map("sms_body") @db.Text
   smsVars       String[]          @default([]) @map("sms_vars")
 
+  // ── Scenario linkage ──
+  // When set, this template is the user's saved default for that scenario.
+  // Null = general-purpose template not tied to any scenario.
+  scenarioId    String?           @map("scenario_id")  // "first_timer" | "follow_up" | etc.
+  isDefault     Boolean           @default(false) @map("is_default")
+  // Only one default per user+scenario+channel combination is enforced at app level.
+
   // ── Usage tracking ──
   usageCount    Int               @default(0) @map("usage_count")
   lastUsedAt    DateTime?         @map("last_used_at")
@@ -542,6 +554,8 @@ model MessageTemplate {
 
   @@index([userId])
   @@index([userId, purpose])
+  @@index([userId, scenarioId])
+  @@index([userId, scenarioId, isDefault])
   @@index([createdAt(sort: Desc)])
   @@index([userId, channel])
   @@index([userId, status])

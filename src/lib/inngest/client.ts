@@ -136,7 +136,7 @@ export const inngest = new Inngest({
 				campaignId: string;
 				userId: string;
 				orgName: string;
-				contacts: ContactPayload[];
+				contactIds: string[];
 				realWhatsappMessage: string;
 				realSmsMessage: string;
 				scenario: ScenarioId;
@@ -163,7 +163,7 @@ export const inngest = new Inngest({
 			data: {
 				campaignId: string;
 				userId: string;
-				contacts: ContactPayload[];
+				contactIds: string[];
 				whatsappTemplate: string;
 				smsTemplate: string;
 				scenario: ScenarioId;

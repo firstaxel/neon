@@ -46,12 +46,13 @@ export function useVerifyDeposit() {
 // ── Campaign cost check ───────────────────────────────────────────────────────
 export function useCampaignCost(
 	contacts: Array<{ channel: "whatsapp" | "sms" }>,
-	deliveryMode: "marketing" | "utility_prescreen" | "sms_fallback" = "marketing"
+	deliveryMode: "marketing" | "utility_prescreen" | "sms_fallback" = "marketing",
+	contactIds?: string[]
 ) {
 	return useQuery(
 		orpc.billing.checkCampaignCost.queryOptions({
-			queryKey: ["campaignCost", contacts, deliveryMode],
-			input: { contacts, deliveryMode },
+			queryKey: ["campaignCost", contacts, deliveryMode, contactIds],
+			input: { contacts, deliveryMode, contactIds },
 			enabled: contacts.length > 0,
 			staleTime: 5000,
 		})

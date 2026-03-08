@@ -197,6 +197,12 @@ function ConversationRow({
 						>
 							{conv.channel === "whatsapp" ? "WA" : "SMS"}
 						</Badge>
+						{"hasInbound" in conv &&
+							!(conv as { hasInbound: boolean }).hasInbound && (
+								<span className="rounded border border-border/40 px-1.5 py-0.5 font-semibold text-[9px] text-muted-foreground/50 uppercase tracking-wide">
+									awaiting reply
+								</span>
+							)}
 						{conv.unreadCount > 0 && (
 							<span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 font-bold text-[10px] text-primary-foreground">
 								{conv.unreadCount}
@@ -229,6 +235,9 @@ type TimelineItem = Thread["timeline"][number];
 
 function ThreadMessage({ item }: { item: TimelineItem }) {
 	const isOut = item.direction === "out";
+	const isCampaignSend =
+		isOut && "source" in item && item.source === "campaign_send";
+	// const isInboxReply = isOut && "source" in item && item.source === "inbox_reply";
 	const time = new Date(item.at).toLocaleString("en-GB", {
 		day: "numeric",
 		month: "short",
@@ -243,11 +252,19 @@ function ThreadMessage({ item }: { item: TimelineItem }) {
 					isOut && "items-end"
 				)}
 			>
+				{isCampaignSend && (
+					<span className="mb-0.5 flex items-center gap-1 px-1 text-[10px] text-muted-foreground/60">
+						<MessageSquare className="h-2.5 w-2.5" />
+						Campaign
+					</span>
+				)}
 				<div
 					className={cn(
 						"rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed",
 						isOut
-							? "rounded-tr-sm bg-primary text-primary-foreground"
+							? isCampaignSend
+								? "rounded-tr-sm bg-primary/80 text-primary-foreground"
+								: "rounded-tr-sm bg-primary text-primary-foreground"
 							: "rounded-tl-sm border border-border/50 bg-muted text-foreground"
 					)}
 				>

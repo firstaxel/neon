@@ -7,13 +7,13 @@ import { ORPCError } from "@orpc/client";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 import {
-	canAffordCampaign,
 	creditWallet,
 	formatNaira,
 	getOrCreateWallet,
 	nairaToKobo,
 	type PlanKey,
 	PRICING,
+	resolveMessageType,
 } from "#/features/billing/utils";
 import {
 	initializeDeposit,
@@ -194,50 +194,90 @@ export const checkCampaignCost = protectedProcedure
 	.input(
 		z.object({
 			contacts: z.array(z.object({ channel: z.enum(["whatsapp", "sms"]) })),
+			contactIds: z.array(z.string()).optional(), // if provided, detect open service windows
 			deliveryMode: z
 				.enum(["marketing", "utility_prescreen", "sms_fallback"])
 				.default("marketing"),
 		})
 	)
 	.handler(async ({ input, context }) => {
-		const result = await canAffordCampaign(
-			context.session.user.id,
-			input.contacts,
-			input.deliveryMode
-		);
+		// Detect which contacts have an open 24h service window (lastInboundAt < 24h ago)
+		// These WhatsApp contacts can receive free-form messages at whatsapp_service rate (₦0)
+		const SERVICE_WINDOW_MS = 24 * 60 * 60 * 1000;
+		let serviceWindowContactIds = new Set<number>(); // index into input.contacts
+
+		if (
+			input.contactIds &&
+			input.contactIds.length > 0 &&
+			input.deliveryMode === "marketing"
+		) {
+			const cutoff = new Date(Date.now() - SERVICE_WINDOW_MS);
+			const openSessions = await context.db.contact.findMany({
+				where: {
+					id: { in: input.contactIds },
+					channel: "whatsapp",
+					lastInboundAt: { gt: cutoff },
+				},
+				select: { id: true },
+			});
+			const openSet = new Set(openSessions.map((c) => c.id));
+			// Map back to indexes in input.contacts (parallel array)
+			input.contactIds.forEach((id, idx) => {
+				if (openSet.has(id)) serviceWindowContactIds.add(idx);
+			});
+		}
+
+		// Cost per contact — service window contacts are priced at ₦0 for marketing mode
+		const totalCostKobo = input.contacts.reduce((sum, c, idx) => {
+			if (
+				serviceWindowContactIds.has(idx) &&
+				input.deliveryMode === "marketing"
+			) {
+				return sum + PRICING.PER_MESSAGE.whatsapp_service; // ₦0
+			}
+			const type = resolveMessageType(c.channel, input.deliveryMode);
+			return sum + PRICING.PER_MESSAGE[type];
+		}, 0);
+
+		const wallet = await getOrCreateWallet(context.session.user.id);
+		const canAfford = wallet.balanceKobo >= totalCostKobo;
+		const serviceWindowCount = serviceWindowContactIds.size;
 
 		// For utility_prescreen: also expose the worst-case full cost (if every contact
 		// replies YES and gets the real message billed at whatsapp_service rate).
-		// This lets the wizard show a cost range: "from ₦X up to ₦Y".
 		let prescreenFullCostKobo: number | null = null;
 		if (input.deliveryMode === "utility_prescreen") {
-			const consentCost = result.totalCostKobo; // already computed as utility rate
+			const consentCost = totalCostKobo;
 			const replyAllCost =
 				input.contacts.filter((c) => c.channel === "whatsapp").length *
 				PRICING.PER_MESSAGE.whatsapp_service;
-			const smsCost =
-				input.contacts.filter((c) => c.channel === "sms").length *
-				PRICING.PER_MESSAGE.sms;
-			prescreenFullCostKobo = consentCost + replyAllCost + smsCost;
+			prescreenFullCostKobo = consentCost + replyAllCost;
 		}
 
 		return {
-			...result,
-			totalCostFormatted: formatNaira(result.totalCostKobo),
+			canAfford,
+			totalCostKobo,
+			shortfallKobo: canAfford ? 0 : totalCostKobo - wallet.balanceKobo,
+			balanceKobo: wallet.balanceKobo,
+			totalCostFormatted: formatNaira(totalCostKobo),
 			shortfallFormatted:
-				result.shortfallKobo > 0 ? formatNaira(result.shortfallKobo) : null,
-			balanceFormatted: formatNaira(result.balanceKobo),
+				totalCostKobo - wallet.balanceKobo > 0
+					? formatNaira(totalCostKobo - wallet.balanceKobo)
+					: null,
+			balanceFormatted: formatNaira(wallet.balanceKobo),
 			deliveryMode: input.deliveryMode,
+			serviceWindowCount, // contacts who can be sent free-form at ₦0
+			serviceWindowCountFormatted:
+				serviceWindowCount > 0 ? `${serviceWindowCount}` : null,
 			rates: {
 				whatsappMarketing: formatNaira(PRICING.PER_MESSAGE.whatsapp_marketing),
 				whatsappUtility: formatNaira(PRICING.PER_MESSAGE.whatsapp_utility),
 				whatsappService: formatNaira(PRICING.PER_MESSAGE.whatsapp_service),
 				sms: formatNaira(PRICING.PER_MESSAGE.sms),
 			},
-			// Only populated for utility_prescreen: worst-case if all contacts reply YES
 			prescreenConsentCostFormatted:
 				input.deliveryMode === "utility_prescreen"
-					? formatNaira(result.totalCostKobo)
+					? formatNaira(totalCostKobo)
 					: null,
 			prescreenFullCostFormatted:
 				prescreenFullCostKobo !== null

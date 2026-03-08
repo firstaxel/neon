@@ -15,6 +15,9 @@ export const parsingRouter = o.router({
 			include: {
 				contacts: { orderBy: { createdAt: "asc" } },
 			},
+			where: {
+				parsedBy: context.session.user.id,
+			},
 		});
 		const response = jobs.map((job) => ({
 			jobId: job.id,

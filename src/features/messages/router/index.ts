@@ -59,23 +59,16 @@ export const listConversations = protectedProcedure
 	.handler(async ({ input, context }) => {
 		try {
 			const userId = context.session.user.id;
+			const channelFilter = input.channel !== "all" ? input.channel as "whatsapp" | "sms" : undefined;
 
-			// Group by phone + channel to get one thread per conversation
-			// Most recent inbound message per thread
-			const threads = await context.db.inboundMessage.groupBy({
+			// ── Inbound threads (contacts who have replied) ─────────────────────
+			const inboundThreads = await context.db.inboundMessage.groupBy({
 				by: ["phone", "channel"],
 				where: {
 					userId,
-					...(input.channel !== "all" && {
-						channel: input.channel as "whatsapp" | "sms",
-					}),
-					...(input.filter === "unread" && {
-						replied: false,
-						isKeyword: false,
-					}),
-					...(input.filter === "keyword" && {
-						isKeyword: true,
-					}),
+					...(channelFilter && { channel: channelFilter }),
+					...(input.filter === "unread" && { replied: false, isKeyword: false }),
+					...(input.filter === "keyword" && { isKeyword: true }),
 				},
 				_max: { receivedAt: true },
 				_count: { id: true },
@@ -83,32 +76,41 @@ export const listConversations = protectedProcedure
 				take: input.limit,
 			});
 
-			// Fetch the latest inbound message for each thread
-			const conversations = await Promise.all(
-				threads.map(async (t) => {
+			// ── Outbound-only threads (campaigns sent, no reply yet) ─────────────
+			// Only show for "all" filter — unread/keyword filters are inbound concepts
+			let outboundOnlyPhones: Array<{ phone: string; channel: string }> = [];
+			if (input.filter === "all") {
+				const inboundPhoneSet = new Set(inboundThreads.map((t) => `${t.phone}:${t.channel}`));
+
+				const recentOutbound = await context.db.message.groupBy({
+					by: ["phone", "channel"],
+					where: {
+						campaign: { userId },
+						status: { in: ["sent", "delivered", "read"] },
+						...(channelFilter && { channel: channelFilter }),
+					},
+					_max: { sentAt: true },
+					orderBy: { _max: { sentAt: "desc" } },
+					take: input.limit,
+				});
+
+				outboundOnlyPhones = recentOutbound
+					.filter((r) => !inboundPhoneSet.has(`${r.phone}:${r.channel}`))
+					.slice(0, input.limit - inboundThreads.length);
+			}
+
+			// ── Build inbound conversation objects ──────────────────────────────
+			const inboundConvs = await Promise.all(
+				inboundThreads.map(async (t) => {
 					const latest = await context.db.inboundMessage.findFirst({
-						where: {
-							userId,
-							phone: t.phone,
-							channel: t.channel,
-						},
+						where: { userId, phone: t.phone, channel: t.channel },
 						orderBy: { receivedAt: "desc" },
 					});
-					if (!latest) {
-						return null;
-					}
+					if (!latest) return null;
 
-					// Count unread (non-keyword, unreplied) in this thread
 					const unreadCount = await context.db.inboundMessage.count({
-						where: {
-							userId,
-							phone: t.phone,
-							channel: t.channel,
-							replied: false,
-							isKeyword: false,
-						},
+						where: { userId, phone: t.phone, channel: t.channel, replied: false, isKeyword: false },
 					});
-
 					const window = getServiceWindow(latest.receivedAt, latest.channel);
 
 					return {
@@ -118,7 +120,7 @@ export const listConversations = protectedProcedure
 						contactId: latest.contactId,
 						lastMessage: latest.body,
 						lastMessageAt: latest.receivedAt.toISOString(),
-						totalMessages: t._count.id,
+						hasInbound: true,
 						unreadCount,
 						replied: latest.replied,
 						...window,
@@ -126,7 +128,44 @@ export const listConversations = protectedProcedure
 				})
 			);
 
-			return conversations.filter(Boolean);
+			// ── Build outbound-only conversation objects ─────────────────────────
+			const outboundConvs = await Promise.all(
+				outboundOnlyPhones.map(async (t) => {
+					const latest = await context.db.message.findFirst({
+						where: {
+							phone: { in: [t.phone, `+${t.phone}`, t.phone.replace(/^\+/, "")] },
+							channel: t.channel as "whatsapp" | "sms",
+							campaign: { userId },
+						},
+						orderBy: { sentAt: "desc" },
+						select: { phone: true, channel: true, message: true, sentAt: true, createdAt: true, contactName: true, contactId: true },
+					});
+					if (!latest) return null;
+
+					return {
+						phone: t.phone,
+						channel: t.channel as "whatsapp" | "sms",
+						contactName: latest.contactName,
+						contactId: latest.contactId,
+						lastMessage: latest.message,
+						lastMessageAt: (latest.sentAt ?? latest.createdAt).toISOString(),
+						hasInbound: false,
+						unreadCount: 0,
+						replied: false,
+						windowOpen: false,
+						windowExpiresAt: null,
+						windowSecondsLeft: 0,
+					};
+				})
+			);
+
+			// ── Merge and sort by lastMessageAt desc ────────────────────────────
+			const all = [...inboundConvs, ...outboundConvs]
+				.filter(Boolean)
+				.sort((a, b) => new Date(b!.lastMessageAt).getTime() - new Date(a!.lastMessageAt).getTime())
+				.slice(0, input.limit);
+
+			return all;
 		} catch (error) {
 			console.log(error);
 		}
@@ -192,6 +231,15 @@ export const getThread = protectedProcedure
 					campaignId: string | null;
 			  };
 
+		// Label each outbound message: campaign_send | inbox_reply
+		// inbox replies have campaignId pointing to a virtual/real campaign but
+		// were sent via replyToConversation (they have no contactId typically)
+		const inboxReplyCampaignIds = new Set(
+			outbound
+				.filter((m) => m.campaignId?.startsWith("inbox_reply_"))
+				.map((m) => m.campaignId)
+		);
+
 		const timeline: TimelineEvent[] = [
 			...inbound.map((m) => ({
 				direction: "in" as const,
@@ -200,6 +248,7 @@ export const getThread = protectedProcedure
 				at: m.receivedAt.toISOString(),
 				isKeyword: m.isKeyword,
 				replied: m.replied,
+				source: "inbound" as const,
 			})),
 			...outbound.map((m) => ({
 				direction: "out" as const,
@@ -208,6 +257,9 @@ export const getThread = protectedProcedure
 				at: (m.sentAt ?? m.createdAt).toISOString(),
 				status: m.status,
 				campaignId: m.campaignId,
+				source: (m.campaignId && inboxReplyCampaignIds.has(m.campaignId))
+					? "inbox_reply" as const
+					: "campaign_send" as const,
 			})),
 		].sort((a, b) => new Date(a.at).getTime() - new Date(b.at).getTime());
 

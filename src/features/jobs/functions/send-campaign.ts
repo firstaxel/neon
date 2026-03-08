@@ -118,7 +118,8 @@ export const sendCampaign = inngest.createFunction(
 	async ({ event, step, logger }) => {
 		const {
 			campaignId,
-			contacts,
+			contactIds,
+			forceSmsChannel,
 			whatsappTemplate,
 			smsTemplate,
 			scenario,
@@ -126,12 +127,9 @@ export const sendCampaign = inngest.createFunction(
 			templateVars,
 		} = event.data as {
 			campaignId: string;
-			contacts: Array<{
-				id: string;
-				name: string;
-				phone: string;
-				channel: "whatsapp" | "sms";
-			}>;
+			// contactIds replaces contacts array — keeps event payload tiny for large lists
+			contactIds: string[];
+			forceSmsChannel?: boolean;
 			whatsappTemplate: string;
 			smsTemplate: string;
 			scenario: string;
@@ -140,7 +138,7 @@ export const sendCampaign = inngest.createFunction(
 		};
 
 		logger.info(
-			`[Campaign] Starting campaignId=${campaignId} userId=${userId} contacts=${contacts.length}`
+			`[Campaign] Starting campaignId=${campaignId} userId=${userId} contactIds=${contactIds.length}`
 		);
 
 		// ── Step 1: Mark processing ──────────────────────────────────────────────
@@ -151,9 +149,23 @@ export const sendCampaign = inngest.createFunction(
 			});
 		});
 
-		// ── Step 2: AI content safety check — ONCE for the whole campaign ────────
-		// Uses the whatsapp template as the representative body. Same check covers SMS
-		// since both bodies come from the same campaign intent.
+		// ── Step 2: Fetch contacts from DB ───────────────────────────────────────
+		// We never pass full contact objects in the event payload — only IDs.
+		// This keeps events tiny (40 bytes/ID vs ~200 bytes/contact object) so
+		// 10k contacts = ~400KB IDs vs ~2MB objects.
+		const contacts = await step.run("fetch-contacts", async () => {
+			const rows = await prisma.contact.findMany({
+				where: { id: { in: contactIds }, uploadedBy: userId },
+				select: { id: true, name: true, phone: true, channel: true, type: true },
+			});
+			// sms_fallback: force every contact to SMS channel
+			if (forceSmsChannel) {
+				return rows.map((c) => ({ ...c, channel: "sms" as const }));
+			}
+			return rows as Array<{ id: string; name: string; phone: string; channel: "whatsapp" | "sms"; type: string }>;
+		});
+
+		// ── Step 3: AI content safety check — ONCE for the whole campaign ────────
 		const contentCheck = await step.run("ai-content-check", () => {
 			const waContacts = contacts.filter((c) => c.channel === "whatsapp");
 			const channel = waContacts.length > 0 ? "whatsapp" : "sms";
@@ -184,7 +196,7 @@ export const sendCampaign = inngest.createFunction(
 			};
 		}
 
-		// ── Step 3: Filter opted-out contacts ────────────────────────────────────
+		// ── Step 4: Filter opted-out contacts ────────────────────────────────────
 		const eligibleContacts = await step.run("filter-opted-out", async () => {
 			const phones = contacts.map((c) => c.phone);
 			const optedOut = await prisma.contact.findMany({
@@ -218,7 +230,7 @@ export const sendCampaign = inngest.createFunction(
 			};
 		}
 
-		// ── Step 4: Build personalised message rows ──────────────────────────────
+		// ── Step 5: Build personalised message rows ──────────────────────────────
 		const messageRows = await step.run("insert-messages", async () => {
 			const rows = eligibleContacts.map((c) => {
 				const template =
@@ -245,9 +257,7 @@ export const sendCampaign = inngest.createFunction(
 			return rows;
 		});
 
-		// ── Step 5: Fan out — BATCHED to respect Inngest 512KB payload limit ─────
-		// Sending all events in one call fails silently at ~5k contacts.
-		// We chunk into batches of FAN_OUT_BATCH_SIZE and send each batch separately.
+		// ── Step 6: Fan out — BATCHED to respect Inngest 512KB payload limit ─────
 		const campaignDeliveryMode = await step.run(
 			"get-delivery-mode",
 			async () => {
@@ -272,7 +282,6 @@ export const sendCampaign = inngest.createFunction(
 					| "utility_prescreen"
 					| "sms_fallback",
 				message: m.message,
-				// Pass messageType so workers don't re-derive it (avoids another DB read)
 				messageType: resolveMessageType(
 					m.channel,
 					campaignDeliveryMode as
@@ -288,10 +297,15 @@ export const sendCampaign = inngest.createFunction(
 				`fan-out-batch-${i}`,
 				events.slice(i, i + FAN_OUT_BATCH_SIZE)
 			);
-			logger.info(
-				`[Campaign] Fanned out ${events.length} events in ${Math.ceil(events.length / FAN_OUT_BATCH_SIZE)} batch(es)`
-			);
+			if (i + FAN_OUT_BATCH_SIZE < events.length) {
+				// Stagger batches to avoid free-plan concurrency cancellations
+				await step.sleep(`fan-out-delay-${i}`, "3s");
+			}
 		}
+
+		logger.info(
+			`[Campaign] Fanned out ${events.length} events in ${Math.ceil(events.length / FAN_OUT_BATCH_SIZE)} batch(es)`
+		);
 
 		return {
 			campaignId,

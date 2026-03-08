@@ -429,3 +429,99 @@ export const recordTemplateUsage = protectedProcedure
     });
     return { success: true };
   });
+
+// ─── getScenarioDefaults ──────────────────────────────────────────────────────
+//
+// Returns the user's default WA + SMS template body for every scenario.
+// The wizard uses this to pre-fill message previews per scenario, instead of
+// reading hardcoded seed content from app code.
+// Falls back to SCENARIO_SEED_TEMPLATES if the user has no row yet.
+
+export const getScenarioDefaults = protectedProcedure.handler(
+  async ({ context }) => {
+    const { SCENARIOS, SCENARIO_SEED_TEMPLATES } = await import(
+      "#/features/miscellaneous/scenario"
+    );
+
+    const rows = await context.db.messageTemplate.findMany({
+      where: {
+        userId: context.session.user.id,
+        isDefault: true,
+        scenarioId: { not: null },
+      },
+      select: { scenarioId: true, channel: true, bodyText: true },
+    });
+
+    // Build lookup: scenarioId → { whatsapp, sms }
+    const map: Record<string, { whatsapp: string; sms: string }> = {};
+    for (const s of SCENARIOS) {
+      const seed = SCENARIO_SEED_TEMPLATES[s.id];
+      map[s.id] = { whatsapp: seed.whatsapp, sms: seed.sms };
+    }
+    for (const row of rows) {
+      if (!row.scenarioId) continue;
+      if (!map[row.scenarioId]) {
+        map[row.scenarioId] = { whatsapp: "", sms: "" };
+      }
+      if (row.channel === "whatsapp") {
+        map[row.scenarioId].whatsapp = row.bodyText;
+      } else {
+        map[row.scenarioId].sms = row.bodyText;
+      }
+    }
+
+    return map;
+  }
+);
+
+// ─── seedFromLibrary ──────────────────────────────────────────────────────────
+// Creates Meta-ready templates from the library for the user's org type.
+// Safe to call multiple times — skips templates whose name already exists.
+// Useful for: existing users who predate onboarding seeding, or users who
+// want to re-seed after changing org type.
+
+export const seedFromLibrary = protectedProcedure.handler(
+  async ({ context }) => {
+    const { getAllMetaTemplatesForOrg } = await import(
+      "#/features/miscellaneous/meta-templates"
+    );
+    const profile = await context.db.userProfile.findUnique({
+      where: { userId: context.session.user.id },
+      select: { orgType: true },
+    });
+
+    const templates = getAllMetaTemplatesForOrg(profile?.orgType);
+
+    // Only create templates whose name doesn't exist yet for this user
+    const existingNames = new Set(
+      (
+        await context.db.messageTemplate.findMany({
+          where: { userId: context.session.user.id },
+          select: { name: true },
+        })
+      ).map((t) => t.name)
+    );
+
+    const toCreate = templates.filter((t) => !existingNames.has(t.name));
+
+    if (toCreate.length === 0) return { created: 0 };
+
+    await context.db.messageTemplate.createMany({
+      data: toCreate.map((t) => ({
+        userId: context.session.user.id,
+        name: t.name,
+        displayName: t.displayName,
+        category: t.category,
+        bodyText: t.bodyText,
+        bodyVars: t.bodyVars,
+        smsBody: t.smsBody,
+        footerText: t.footerText ?? null,
+        channel: "whatsapp" as const,
+        purpose: "general" as const,
+        status: "DRAFT" as const,
+      })),
+    });
+
+    return { created: toCreate.length };
+  }
+);

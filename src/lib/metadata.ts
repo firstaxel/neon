@@ -3,15 +3,15 @@
 import { env } from "#/env";
 
 export const siteConfig = {
-	name: "Neon",
-	tagline: "Church & NGO Messaging Console",
+	name: "MessageDesk",
+	tagline: "Messaging Console",
 	description:
 		"Send personalised WhatsApp and SMS campaigns to your entire contact list — tracked, fast, and affordable.",
-	url: env.VITE_CLIENT_URL ?? "https:// neon.app",
-	ogImage: "/og.png", // place a 1200×630 image at /public/og.png
-	twitterHandle: "@ neon",
+	url: env.VITE_CLIENT_URL ?? "https://messagedesk.app",
+	ogImage: "/og.png",
+	twitterHandle: "@messagedesk",
 	locale: "en_NG",
-	themeColor: "#25d366", // WhatsApp green
+	themeColor: "#25d366",
 } as const;
 
 // ─── Page-title template ──────────────────────────────────────────────────────

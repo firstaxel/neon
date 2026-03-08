@@ -26,6 +26,7 @@ import { prisma } from "#/db";
 import { env } from "#/env";
 import { debitForMessage, refundForMessage } from "#/features/billing/utils";
 import { personalizeMessage } from "#/features/miscellaneous/scenario";
+import { getUtilityTemplate } from "#/features/miscellaneous/meta-templates";
 import { inngest } from "#/lib/inngest/client";
 import { sendTemplateMessage, sendTextMessage } from "#/lib/meta-send";
 import { sendSmsMessage } from "#/lib/termii";
@@ -72,16 +73,17 @@ export const sendCampaignPrescreen = inngest.createFunction(
 	async ({ event, step, logger }) => {
 		const {
 			campaignId,
-			contacts,
+			contactIds,
 			realWhatsappMessage,
 			realSmsMessage,
 			userId,
 			orgName,
 			templateVars,
+			scenario,
 		} = event.data;
 
 		logger.info(
-			`[Prescreen] campaignId=${campaignId} contacts=${contacts.length}`
+			`[Prescreen] campaignId=${campaignId} contactIds=${contactIds.length}`
 		);
 
 		await step.run("mark-processing", async () => {
@@ -89,6 +91,24 @@ export const sendCampaignPrescreen = inngest.createFunction(
 				where: { id: campaignId },
 				data: { status: "processing", startedAt: new Date() },
 			});
+		});
+
+		// Fetch orgType for per-scenario utility template selection
+		const orgType = await step.run("fetch-org-type", async () => {
+			const profile = await prisma.userProfile.findUnique({
+				where: { userId },
+				select: { orgType: true },
+			});
+			return profile?.orgType ?? "other";
+		});
+
+		// Fetch full contact data from DB — event only contains IDs
+		const contacts = await step.run("fetch-contacts", async () => {
+			const rows = await prisma.contact.findMany({
+				where: { id: { in: contactIds }, uploadedBy: userId },
+				select: { id: true, name: true, phone: true, channel: true },
+			});
+			return rows as Array<{ id: string; name: string; phone: string; channel: "whatsapp" | "sms" }>;
 		});
 
 		// AI check once — on the real message body that will eventually be delivered
@@ -146,14 +166,17 @@ export const sendCampaignPrescreen = inngest.createFunction(
 			});
 		});
 
-		// Batched fan-out
-		await step.run("fan-out", async () => {
-			const events = eligible.map((c) => ({
+		// Batched fan-out — stagger to avoid free-plan cancellations
+		for (let i = 0; i < eligible.length; i += FAN_OUT_BATCH_SIZE) {
+			const batch = eligible.slice(i, i + FAN_OUT_BATCH_SIZE);
+			const events = batch.map((c) => ({
 				name: "neon/campaign.prescreen-single" as const,
 				data: {
 					campaignId,
 					userId,
 					orgName,
+					orgType,
+					scenario,
 					contactId: c.id,
 					contactName: c.name,
 					phone: c.phone,
@@ -165,17 +188,16 @@ export const sendCampaignPrescreen = inngest.createFunction(
 				},
 			}));
 
-			for (let i = 0; i < events.length; i += FAN_OUT_BATCH_SIZE) {
-				await step.sendEvent(
-					`fan-out-batch-${i}`,
-					events.slice(i, i + FAN_OUT_BATCH_SIZE)
-				);
-			}
+			await step.sendEvent(`fan-out-batch-${i}`, events);
 
-			logger.info(
-				`[Prescreen] Fanned out ${events.length} events in ${Math.ceil(events.length / FAN_OUT_BATCH_SIZE)} batch(es)`
-			);
-		});
+			if (i + FAN_OUT_BATCH_SIZE < eligible.length) {
+				await step.sleep(`fan-out-delay-${i}`, "3s");
+			}
+		}
+
+		logger.info(
+			`[Prescreen] Fanned out ${eligible.length} events in ${Math.ceil(eligible.length / FAN_OUT_BATCH_SIZE)} batch(es)`
+		);
 
 		return { campaignId, totalQueued: eligible.length };
 	}
@@ -199,6 +221,8 @@ export const sendPrescreenSingle = inngest.createFunction(
 			campaignId,
 			userId,
 			orgName,
+			orgType,
+			scenario,
 			contactId,
 			contactName,
 			phone,
@@ -208,6 +232,8 @@ export const sendPrescreenSingle = inngest.createFunction(
 			campaignId: string;
 			userId: string;
 			orgName: string;
+			orgType: string;
+			scenario: string;
 			contactId: string;
 			contactName: string;
 			phone: string;
@@ -244,9 +270,30 @@ export const sendPrescreenSingle = inngest.createFunction(
 			);
 
 			if (result.success) {
-				await prisma.campaign.update({
-					where: { id: campaignId },
-					data: { sentMessages: { increment: 1 } },
+				await prisma.$transaction(async (tx) => {
+					await tx.campaign.update({
+						where: { id: campaignId },
+						data: { sentMessages: { increment: 1 } },
+					});
+					const camp = await tx.campaign.findUnique({
+						where: { id: campaignId },
+						select: { sentMessages: true, failedMessages: true, totalMessages: true },
+					});
+					if (
+						camp &&
+						camp.sentMessages + camp.failedMessages >= camp.totalMessages
+					) {
+						await tx.campaign.update({
+							where: { id: campaignId },
+							data: {
+								status:
+									camp.failedMessages >= camp.totalMessages
+										? "failed"
+										: "completed",
+								completedAt: new Date(),
+							},
+						});
+					}
 				});
 				logger.info(`[Prescreen/SMS] ✅ SMS sent to ${contactName}`);
 			} else {
@@ -263,9 +310,30 @@ export const sendPrescreenSingle = inngest.createFunction(
 						reason: result.error ?? "SMS send failed",
 					});
 				}
-				await prisma.campaign.update({
-					where: { id: campaignId },
-					data: { failedMessages: { increment: 1 } },
+				await prisma.$transaction(async (tx) => {
+					await tx.campaign.update({
+						where: { id: campaignId },
+						data: { failedMessages: { increment: 1 } },
+					});
+					const camp = await tx.campaign.findUnique({
+						where: { id: campaignId },
+						select: { sentMessages: true, failedMessages: true, totalMessages: true },
+					});
+					if (
+						camp &&
+						camp.sentMessages + camp.failedMessages >= camp.totalMessages
+					) {
+						await tx.campaign.update({
+							where: { id: campaignId },
+							data: {
+								status:
+									camp.failedMessages >= camp.totalMessages
+										? "failed"
+										: "completed",
+								completedAt: new Date(),
+							},
+						});
+					}
 				});
 				logger.error(
 					`[Prescreen/SMS] ❌ SMS failed for ${contactName}: ${result.error}`
@@ -309,9 +377,14 @@ export const sendPrescreenSingle = inngest.createFunction(
 		}
 
 		const result = await step.run("send-consent-template", () => {
+			// Resolve the warm, scenario-specific utility template for this org type.
+			// Falls back to the generic consent template if no match.
+			const utilityTpl = getUtilityTemplate(orgType, scenario as Parameters<typeof getUtilityTemplate>[1]);
+			const templateName = utilityTpl?.name ?? PRESCREEN_TEMPLATE;
+			logger.info(`[Prescreen] Using utility template: ${templateName} (org=${orgType}, scenario=${scenario})`);
 			return sendTemplateMessage(
 				phone,
-				PRESCREEN_TEMPLATE,
+				templateName,
 				PRESCREEN_LANGUAGE,
 				[contactName, orgName]
 			);

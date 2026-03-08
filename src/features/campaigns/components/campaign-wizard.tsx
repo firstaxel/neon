@@ -51,7 +51,10 @@ import {
 	TemplatePickerDialog,
 	type WizardTemplatePair,
 } from "#/features/templates/components/template-dialog-picker";
-import { useRecordTemplateUsage } from "#/features/templates/hooks/use-templates";
+import {
+	useRecordTemplateUsage,
+	useScenarioDefaults,
+} from "#/features/templates/hooks/use-templates";
 import type { ScenarioId } from "#/lib/types";
 import { useSendCampaign } from "../hooks/use-campaign";
 
@@ -282,13 +285,54 @@ function DeliveryModeSelector({
 	value,
 	onChange,
 	hasWhatsappContacts,
+	hasSmsOnlyContacts,
+	hasMixedContacts,
 }: {
 	value: "marketing" | "utility_prescreen" | "sms_fallback";
 	onChange: (v: "marketing" | "utility_prescreen" | "sms_fallback") => void;
 	hasWhatsappContacts: boolean;
+	hasSmsOnlyContacts: boolean; // true = ALL selected contacts are SMS
+	hasMixedContacts: boolean; // true = mix of WA + SMS contacts
 }) {
-	if (!hasWhatsappContacts) {
+	if (!(hasWhatsappContacts || hasSmsOnlyContacts)) {
 		return null;
+	}
+
+	// SMS-only list: only sms_fallback makes sense, hide the WA options entirely
+	if (hasSmsOnlyContacts && !hasWhatsappContacts) {
+		return (
+			<div className="space-y-2">
+				<p className="font-semibold text-[10px] text-muted-foreground uppercase tracking-wide">
+					Delivery method
+				</p>
+				<div className="rounded-xl border border-[#60a5fa50] bg-[#0d1a2e] px-3.5 py-3">
+					<div className="flex items-start justify-between gap-3">
+						<div className="flex min-w-0 items-center gap-2.5">
+							<span className="shrink-0 text-base">📱</span>
+							<div className="min-w-0">
+								<div className="flex flex-wrap items-center gap-2">
+									<span className="font-semibold text-[#60a5fa] text-sm">
+										SMS
+									</span>
+									<span className="rounded border border-[#60a5fa30] bg-[#60a5fa15] px-1.5 py-0.5 font-bold text-[#60a5fa] text-[9px] uppercase tracking-wide">
+										Termii
+									</span>
+								</div>
+								<p className="mt-0.5 text-[11px] text-muted-foreground leading-relaxed">
+									All selected contacts are SMS. Messages are sent via Termii.
+								</p>
+								<p className="mt-1 text-[10px] text-amber-400/80">
+									⚠️ One-way only — SMS contacts cannot reply to these messages.
+								</p>
+							</div>
+						</div>
+						<span className="mt-0.5 shrink-0 font-semibold text-[#60a5fa] text-[11px]">
+							~₦6 / contact
+						</span>
+					</div>
+				</div>
+			</div>
+		);
 	}
 
 	return (
@@ -296,19 +340,38 @@ function DeliveryModeSelector({
 			<p className="font-semibold text-[10px] text-muted-foreground uppercase tracking-wide">
 				WhatsApp delivery method
 			</p>
+			{hasMixedContacts && (
+				<div className="flex items-start gap-1.5 rounded-lg border border-amber-500/20 bg-amber-500/5 px-2.5 py-2">
+					<AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-400" />
+					<p className="text-[11px] text-amber-400/80">
+						SMS contacts in this list are sent directly — they can't participate
+						in the consent flow.
+					</p>
+				</div>
+			)}
 			<div className="grid gap-2">
 				{DELIVERY_MODES.map((mode) => {
 					const active = value === mode.id;
+					const disabled =
+						mode.id === "utility_prescreen" && hasSmsOnlyContacts;
 					return (
 						<button
 							className={[
 								"w-full rounded-xl border px-3.5 py-3 text-left transition-all",
-								active
-									? mode.color
-									: "border-border hover:border-muted-foreground/40",
+								disabled
+									? "cursor-not-allowed border-border opacity-40"
+									: active
+										? mode.color
+										: "border-border hover:border-muted-foreground/40",
 							].join(" ")}
+							disabled={disabled}
 							key={mode.id}
-							onClick={() => onChange(mode.id)}
+							onClick={() => !disabled && onChange(mode.id)}
+							title={
+								disabled
+									? "Consent flow requires WhatsApp contacts — SMS contacts cannot reply"
+									: undefined
+							}
 							type="button"
 						>
 							<div className="flex items-start justify-between gap-3">
@@ -320,20 +383,31 @@ function DeliveryModeSelector({
 												{mode.label}
 											</span>
 											<span
-												className={`rounded border px-1.5 py-0.5 font-bold text-[9px] uppercase tracking-wide ${active ? mode.badge : "border-transparent bg-muted text-muted-foreground"}`}
+												className={`rounded border px-1.5 py-0.5 font-bold text-[9px] uppercase tracking-wide ${active && !disabled ? mode.badge : "border-transparent bg-muted text-muted-foreground"}`}
 											>
 												{mode.sublabel}
 											</span>
+											{mode.id === "sms_fallback" && (
+												<span className="rounded border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 font-bold text-[9px] text-amber-400 uppercase tracking-wide">
+													one-way
+												</span>
+											)}
 										</div>
-										{active && (
+										{active && !disabled && (
 											<p className="mt-0.5 text-[11px] text-muted-foreground leading-relaxed">
 												{mode.detail}
+											</p>
+										)}
+										{mode.id === "sms_fallback" && active && (
+											<p className="mt-1 text-[10px] text-amber-400/80">
+												Recipients cannot reply — Termii uses alphanumeric
+												sender IDs.
 											</p>
 										)}
 									</div>
 								</div>
 								<span
-									className={`mt-0.5 shrink-0 font-semibold text-[11px] ${active ? "" : "text-muted-foreground"}`}
+									className={`mt-0.5 shrink-0 font-semibold text-[11px] ${active && !disabled ? "" : "text-muted-foreground"}`}
 								>
 									{mode.cost}
 								</span>
@@ -351,23 +425,26 @@ function DeliveryModeSelector({
 function ReviewStep({
 	values,
 	setFieldValue,
+	scenarioDefaults,
 }: {
 	values: WizardValues;
 	setFieldValue: <K extends keyof WizardValues>(
 		k: K,
 		v: WizardValues[K]
 	) => void;
+	scenarioDefaults?: Record<string, { whatsapp: string; sms: string }>;
 }) {
 	const [pickerOpen, setPickerOpen] = useState(false);
 
-	const scenario = SCENARIOS.find((s) => s.id === values.scenario);
 	const waContacts = values.contacts.filter((c) => c.channel === "whatsapp");
 	const smsContacts = values.contacts.filter((c) => c.channel === "sms");
 	const previewName = values.contacts[0]?.name ?? "John";
 
-	// Resolve active template bodies per channel independently.
-	// WA contacts use savedWaTemplate if picked, else scenario default.
-	// SMS contacts use savedSmsTemplate if picked, else scenario default.
+	const dbDefault = scenarioDefaults?.[values.scenario] ?? {
+		whatsapp: "",
+		sms: "",
+	};
+
 	const activeTemplate = (() => {
 		if (values.templateSource === "custom") {
 			return { whatsapp: values.customWhatsapp, sms: values.customSms };
@@ -375,10 +452,10 @@ function ReviewStep({
 		return {
 			whatsapp: values.savedWaTemplate
 				? values.savedWaTemplate.body
-				: scenario?.template.whatsapp,
+				: dbDefault.whatsapp,
 			sms: values.savedSmsTemplate
 				? values.savedSmsTemplate.body
-				: scenario?.template.sms,
+				: dbDefault.sms,
 		};
 	})();
 
@@ -403,7 +480,6 @@ function ReviewStep({
 			{/* Summary chips */}
 			<div className="grid grid-cols-3 gap-3">
 				{[
-					{ label: "Scenario", value: `${scenario?.icon} ${scenario?.label}` },
 					{
 						label: "Recipients",
 						value: `${values.contacts.length} contact${values.contacts.length !== 1 ? "s" : ""}`,
@@ -598,14 +674,29 @@ function ReviewStep({
 				)}
 			</div>
 
-			{/* Delivery method selector — only shown when there are WA contacts */}
-			{waContacts.length > 0 && (
+			{/* Delivery method selector */}
+			{(waContacts.length > 0 || smsContacts.length > 0) && (
 				<>
 					<Separator />
 					<DeliveryModeSelector
+						hasMixedContacts={waContacts.length > 0 && smsContacts.length > 0}
+						hasSmsOnlyContacts={
+							smsContacts.length > 0 && waContacts.length === 0
+						}
 						hasWhatsappContacts={waContacts.length > 0}
-						onChange={(v) => setFieldValue("deliveryMode", v)}
-						value={values.deliveryMode}
+						onChange={(v) => {
+							// If user somehow picks prescreen on a SMS-only list, silently ignore
+							if (v === "utility_prescreen" && waContacts.length === 0) {
+								return;
+							}
+							setFieldValue("deliveryMode", v);
+						}}
+						value={
+							// Auto-switch: if all contacts are SMS, force sms_fallback
+							smsContacts.length > 0 && waContacts.length === 0
+								? "sms_fallback"
+								: values.deliveryMode
+						}
 					/>
 				</>
 			)}
@@ -790,6 +881,9 @@ export function CampaignWizard({ onCancel }: { onCancel?: () => void } = {}) {
 
 	const { mutateAsync: sendCampaign, isPending, error } = useSendCampaign();
 	const { mutateAsync: recordUsage } = useRecordTemplateUsage();
+	// User's own DB-stored default template bodies per scenario.
+	// Falls back to seed content if the user hasn't completed onboarding yet.
+	const { data: scenarioDefaults } = useScenarioDefaults();
 
 	const form = useForm({
 		defaultValues: {
@@ -806,20 +900,18 @@ export function CampaignWizard({ onCancel }: { onCancel?: () => void } = {}) {
 		onSubmit: async ({ value }) => {
 			const useCustom = value.templateSource !== "scenario";
 
-			const scenario = SCENARIOS.find((s) => s.id === value.scenario);
+			// Resolve the template body: DB defaults > saved pick > custom override.
+			// scenarioDefaults comes from the DB — the user's own editable templates.
+			const dbDefaults = scenarioDefaults?.[value.scenario] ?? {
+				whatsapp: "",
+				sms: "",
+			};
 
-			// Build the template payload.
-			// WA and SMS bodies are now independent — each can come from a different saved template,
-			// a custom override, or fall back to the scenario default.
 			const customTemplate = useCustom
 				? value.templateSource === "saved"
 					? {
-							// Use the picked body for each channel, falling back to scenario default
-							whatsapp:
-								value.savedWaTemplate?.body ??
-								scenario?.template.whatsapp ??
-								"",
-							sms: value.savedSmsTemplate?.body ?? scenario?.template.sms ?? "",
+							whatsapp: value.savedWaTemplate?.body ?? dbDefaults.whatsapp,
+							sms: value.savedSmsTemplate?.body ?? dbDefaults.sms,
 						}
 					: { whatsapp: value.customWhatsapp, sms: value.customSms }
 				: undefined;
@@ -871,22 +963,19 @@ export function CampaignWizard({ onCancel }: { onCancel?: () => void } = {}) {
 					<CardTitle className="text-lg">New Campaign</CardTitle>
 					<form.Subscribe
 						selector={(s) => {
-							const scenario__ = SCENARIOS.find(
-								(sc) => sc.id === s.values.scenario
-							);
+							const dbDef = scenarioDefaults?.[s.values.scenario] ?? {
+								whatsapp: "",
+								sms: "",
+							};
 							const t =
 								s.values.templateSource === "custom"
 									? { wa: s.values.customWhatsapp, sms: s.values.customSms }
 									: s.values.templateSource === "saved"
 										? {
-												wa:
-													s.values.savedWaTemplate?.body ??
-													scenario__?.template.whatsapp,
-												sms:
-													s.values.savedSmsTemplate?.body ??
-													scenario__?.template.sms,
+												wa: s.values.savedWaTemplate?.body ?? dbDef.whatsapp,
+												sms: s.values.savedSmsTemplate?.body ?? dbDef.sms,
 											}
-										: { wa: "", sms: "" };
+										: { wa: dbDef.whatsapp, sms: dbDef.sms };
 							return getManualVars(t.wa ?? "", t.sms ?? "").length > 0;
 						}}
 					>
@@ -926,6 +1015,7 @@ export function CampaignWizard({ onCancel }: { onCancel?: () => void } = {}) {
 					<form.Subscribe selector={(s) => s.values}>
 						{(values) => (
 							<ReviewStep
+								scenarioDefaults={scenarioDefaults}
 								setFieldValue={(k, v) => form.setFieldValue(k, v as never)}
 								values={values}
 							/>
@@ -936,7 +1026,10 @@ export function CampaignWizard({ onCancel }: { onCancel?: () => void } = {}) {
 				{step === 3 && (
 					<form.Subscribe selector={(s) => s.values}>
 						{(values) => {
-							const scenario = SCENARIOS.find((s) => s.id === values.scenario);
+							const dbDefault = scenarioDefaults?.[values.scenario] ?? {
+								whatsapp: "",
+								sms: "",
+							};
 							const activeTemplate = (() => {
 								if (values.templateSource === "custom") {
 									return {
@@ -947,18 +1040,13 @@ export function CampaignWizard({ onCancel }: { onCancel?: () => void } = {}) {
 								if (values.templateSource === "saved") {
 									return {
 										whatsapp:
-											values.savedWaTemplate?.body ??
-											scenario?.template.whatsapp ??
-											"",
-										sms:
-											values.savedSmsTemplate?.body ??
-											scenario?.template.sms ??
-											"",
+											values.savedWaTemplate?.body ?? dbDefault.whatsapp,
+										sms: values.savedSmsTemplate?.body ?? dbDefault.sms,
 									};
 								}
 								return {
-									whatsapp: scenario?.template.whatsapp ?? "",
-									sms: scenario?.template.sms ?? "",
+									whatsapp: dbDefault.whatsapp,
+									sms: dbDefault.sms,
 								};
 							})();
 							const manualVars = getManualVars(
@@ -996,19 +1084,21 @@ export function CampaignWizard({ onCancel }: { onCancel?: () => void } = {}) {
 			<form.Subscribe selector={(s) => s.values}>
 				{(values) => {
 					// Resolve the active template so we know how many manual vars there are
-					const scenario_ = SCENARIOS.find((s) => s.id === values.scenario);
+					const dbDefault_ = scenarioDefaults?.[values.scenario] ?? {
+						whatsapp: "",
+						sms: "",
+					};
 					const activeTemplate_ = (() => {
 						if (values.templateSource === "custom") {
 							return { whatsapp: values.customWhatsapp, sms: values.customSms };
 						}
 						if (values.templateSource === "saved") {
 							return {
-								whatsapp:
-									values.savedWaTemplate?.body ?? scenario_?.template.whatsapp,
-								sms: values.savedSmsTemplate?.body ?? scenario_?.template.sms,
+								whatsapp: values.savedWaTemplate?.body ?? dbDefault_.whatsapp,
+								sms: values.savedSmsTemplate?.body ?? dbDefault_.sms,
 							};
 						}
-						return scenario_?.template;
+						return dbDefault_;
 					})();
 					const manualVars_ = getManualVars(
 						activeTemplate_?.whatsapp ?? "",
@@ -1042,7 +1132,8 @@ export function CampaignWizard({ onCancel }: { onCancel?: () => void } = {}) {
 						isLastStep
 							? values.contacts.map((c) => ({ channel: c.channel }))
 							: [],
-						values.deliveryMode
+						values.deliveryMode,
+						isLastStep ? values.contacts.map((c) => c.id) : undefined
 					);
 
 					const canAfford = costData?.canAfford ?? true;
@@ -1051,6 +1142,7 @@ export function CampaignWizard({ onCancel }: { onCancel?: () => void } = {}) {
 					const isPrescreen = values.deliveryMode === "utility_prescreen";
 					const consentCost = costData?.prescreenConsentCostFormatted;
 					const fullCost = costData?.prescreenFullCostFormatted;
+					const serviceWindowCount = costData?.serviceWindowCount ?? 0;
 
 					function handleNext() {
 						if (step === 2 && !hasManualVars) {
@@ -1078,6 +1170,21 @@ export function CampaignWizard({ onCancel }: { onCancel?: () => void } = {}) {
 					return (
 						<>
 							<CardFooter className="flex flex-col gap-3 pt-4">
+								{/* Service window notice — contacts who can be sent free */}
+								{isLastStep &&
+									serviceWindowCount > 0 &&
+									!isPrescreen &&
+									values.deliveryMode === "marketing" && (
+										<div className="flex w-full items-start gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/5 px-3 py-2.5">
+											<CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+											<p className="text-emerald-400 text-xs">
+												<strong>{serviceWindowCount}</strong> contact
+												{serviceWindowCount !== 1 ? "s" : ""} replied recently —
+												sent free within their 24h window.
+											</p>
+										</div>
+									)}
+
 								{/* Cost info for prescreen mode */}
 								{isLastStep && isPrescreen && consentCost && fullCost && (
 									<div className="flex w-full items-start gap-2 rounded-xl border border-primary/20 bg-primary/5 px-3 py-2.5">
@@ -1087,6 +1194,7 @@ export function CampaignWizard({ onCancel }: { onCancel?: () => void } = {}) {
 											<strong className="text-primary">{consentCost}</strong>{" "}
 											upfront. If all contacts reply YES, total rises to{" "}
 											<strong className="text-primary">{fullCost}</strong>.
+											WhatsApp only — SMS contacts sent directly.
 										</p>
 									</div>
 								)}

@@ -180,3 +180,32 @@ export function useRecordTemplateUsage() {
 		})
 	);
 }
+
+// ─── useScenarioDefaults ──────────────────────────────────────────────────────
+// Returns the user's default template bodies per scenario from DB.
+// Replaces reading from the hardcoded SCENARIO_SEED_TEMPLATES at runtime.
+
+export function useScenarioDefaults() {
+	return useQuery(
+		orpc.template.getScenarioDefaults.queryOptions({
+			queryKey: ["scenario-defaults"],
+			staleTime: 60_000,
+		})
+	);
+}
+
+// ─── useSeedFromLibrary ───────────────────────────────────────────────────────
+// Creates Meta-ready templates for the user's org type from the library.
+// For existing users who predate onboarding seeding.
+
+export function useSeedFromLibrary() {
+	const qc = useQueryClient();
+	return useMutation(
+		orpc.template.seedFromLibrary.mutationOptions({
+			onSuccess: () => {
+				qc.invalidateQueries({ queryKey: ["templates"] });
+				qc.invalidateQueries({ queryKey: ["scenario-defaults"] });
+			},
+		})
+	);
+}

@@ -37,6 +37,7 @@ export type ContactMinAggregateOutputType = {
   uploadedBy: string | null
   optedOut: boolean | null
   optedOutAt: Date | null
+  lastInboundAt: Date | null
   createdAt: Date | null
 }
 
@@ -53,6 +54,7 @@ export type ContactMaxAggregateOutputType = {
   uploadedBy: string | null
   optedOut: boolean | null
   optedOutAt: Date | null
+  lastInboundAt: Date | null
   createdAt: Date | null
 }
 
@@ -69,6 +71,7 @@ export type ContactCountAggregateOutputType = {
   uploadedBy: number
   optedOut: number
   optedOutAt: number
+  lastInboundAt: number
   createdAt: number
   _all: number
 }
@@ -87,6 +90,7 @@ export type ContactMinAggregateInputType = {
   uploadedBy?: true
   optedOut?: true
   optedOutAt?: true
+  lastInboundAt?: true
   createdAt?: true
 }
 
@@ -103,6 +107,7 @@ export type ContactMaxAggregateInputType = {
   uploadedBy?: true
   optedOut?: true
   optedOutAt?: true
+  lastInboundAt?: true
   createdAt?: true
 }
 
@@ -119,6 +124,7 @@ export type ContactCountAggregateInputType = {
   uploadedBy?: true
   optedOut?: true
   optedOutAt?: true
+  lastInboundAt?: true
   createdAt?: true
   _all?: true
 }
@@ -208,6 +214,7 @@ export type ContactGroupByOutputType = {
   uploadedBy: string
   optedOut: boolean
   optedOutAt: Date | null
+  lastInboundAt: Date | null
   createdAt: Date
   _count: ContactCountAggregateOutputType | null
   _min: ContactMinAggregateOutputType | null
@@ -245,6 +252,7 @@ export type ContactWhereInput = {
   uploadedBy?: Prisma.StringFilter<"Contact"> | string
   optedOut?: Prisma.BoolFilter<"Contact"> | boolean
   optedOutAt?: Prisma.DateTimeNullableFilter<"Contact"> | Date | string | null
+  lastInboundAt?: Prisma.DateTimeNullableFilter<"Contact"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Contact"> | Date | string
   parseJob?: Prisma.XOR<Prisma.ParseJobScalarRelationFilter, Prisma.ParseJobWhereInput>
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
@@ -263,6 +271,7 @@ export type ContactOrderByWithRelationInput = {
   uploadedBy?: Prisma.SortOrder
   optedOut?: Prisma.SortOrder
   optedOutAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  lastInboundAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   parseJob?: Prisma.ParseJobOrderByWithRelationInput
   user?: Prisma.UserOrderByWithRelationInput
@@ -285,6 +294,7 @@ export type ContactWhereUniqueInput = Prisma.AtLeast<{
   uploadedBy?: Prisma.StringFilter<"Contact"> | string
   optedOut?: Prisma.BoolFilter<"Contact"> | boolean
   optedOutAt?: Prisma.DateTimeNullableFilter<"Contact"> | Date | string | null
+  lastInboundAt?: Prisma.DateTimeNullableFilter<"Contact"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Contact"> | Date | string
   parseJob?: Prisma.XOR<Prisma.ParseJobScalarRelationFilter, Prisma.ParseJobWhereInput>
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
@@ -303,6 +313,7 @@ export type ContactOrderByWithAggregationInput = {
   uploadedBy?: Prisma.SortOrder
   optedOut?: Prisma.SortOrder
   optedOutAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  lastInboundAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.ContactCountOrderByAggregateInput
   _max?: Prisma.ContactMaxOrderByAggregateInput
@@ -325,6 +336,7 @@ export type ContactScalarWhereWithAggregatesInput = {
   uploadedBy?: Prisma.StringWithAggregatesFilter<"Contact"> | string
   optedOut?: Prisma.BoolWithAggregatesFilter<"Contact"> | boolean
   optedOutAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Contact"> | Date | string | null
+  lastInboundAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Contact"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Contact"> | Date | string
 }
 
@@ -339,6 +351,7 @@ export type ContactCreateInput = {
   rawRow?: string | null
   optedOut?: boolean
   optedOutAt?: Date | string | null
+  lastInboundAt?: Date | string | null
   createdAt?: Date | string
   parseJob: Prisma.ParseJobCreateNestedOneWithoutContactsInput
   user: Prisma.UserCreateNestedOneWithoutContactsInput
@@ -357,6 +370,7 @@ export type ContactUncheckedCreateInput = {
   uploadedBy: string
   optedOut?: boolean
   optedOutAt?: Date | string | null
+  lastInboundAt?: Date | string | null
   createdAt?: Date | string
 }
 
@@ -371,6 +385,7 @@ export type ContactUpdateInput = {
   rawRow?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   optedOut?: Prisma.BoolFieldUpdateOperationsInput | boolean
   optedOutAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastInboundAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   parseJob?: Prisma.ParseJobUpdateOneRequiredWithoutContactsNestedInput
   user?: Prisma.UserUpdateOneRequiredWithoutContactsNestedInput
@@ -389,6 +404,7 @@ export type ContactUncheckedUpdateInput = {
   uploadedBy?: Prisma.StringFieldUpdateOperationsInput | string
   optedOut?: Prisma.BoolFieldUpdateOperationsInput | boolean
   optedOutAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastInboundAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -405,6 +421,7 @@ export type ContactCreateManyInput = {
   uploadedBy: string
   optedOut?: boolean
   optedOutAt?: Date | string | null
+  lastInboundAt?: Date | string | null
   createdAt?: Date | string
 }
 
@@ -419,6 +436,7 @@ export type ContactUpdateManyMutationInput = {
   rawRow?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   optedOut?: Prisma.BoolFieldUpdateOperationsInput | boolean
   optedOutAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastInboundAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -435,6 +453,7 @@ export type ContactUncheckedUpdateManyInput = {
   uploadedBy?: Prisma.StringFieldUpdateOperationsInput | string
   optedOut?: Prisma.BoolFieldUpdateOperationsInput | boolean
   optedOutAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastInboundAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -466,6 +485,7 @@ export type ContactCountOrderByAggregateInput = {
   uploadedBy?: Prisma.SortOrder
   optedOut?: Prisma.SortOrder
   optedOutAt?: Prisma.SortOrder
+  lastInboundAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -482,6 +502,7 @@ export type ContactMaxOrderByAggregateInput = {
   uploadedBy?: Prisma.SortOrder
   optedOut?: Prisma.SortOrder
   optedOutAt?: Prisma.SortOrder
+  lastInboundAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -498,6 +519,7 @@ export type ContactMinOrderByAggregateInput = {
   uploadedBy?: Prisma.SortOrder
   optedOut?: Prisma.SortOrder
   optedOutAt?: Prisma.SortOrder
+  lastInboundAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -604,6 +626,7 @@ export type ContactCreateWithoutUserInput = {
   rawRow?: string | null
   optedOut?: boolean
   optedOutAt?: Date | string | null
+  lastInboundAt?: Date | string | null
   createdAt?: Date | string
   parseJob: Prisma.ParseJobCreateNestedOneWithoutContactsInput
 }
@@ -620,6 +643,7 @@ export type ContactUncheckedCreateWithoutUserInput = {
   rawRow?: string | null
   optedOut?: boolean
   optedOutAt?: Date | string | null
+  lastInboundAt?: Date | string | null
   createdAt?: Date | string
 }
 
@@ -665,6 +689,7 @@ export type ContactScalarWhereInput = {
   uploadedBy?: Prisma.StringFilter<"Contact"> | string
   optedOut?: Prisma.BoolFilter<"Contact"> | boolean
   optedOutAt?: Prisma.DateTimeNullableFilter<"Contact"> | Date | string | null
+  lastInboundAt?: Prisma.DateTimeNullableFilter<"Contact"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Contact"> | Date | string
 }
 
@@ -679,6 +704,7 @@ export type ContactCreateWithoutParseJobInput = {
   rawRow?: string | null
   optedOut?: boolean
   optedOutAt?: Date | string | null
+  lastInboundAt?: Date | string | null
   createdAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutContactsInput
 }
@@ -695,6 +721,7 @@ export type ContactUncheckedCreateWithoutParseJobInput = {
   uploadedBy: string
   optedOut?: boolean
   optedOutAt?: Date | string | null
+  lastInboundAt?: Date | string | null
   createdAt?: Date | string
 }
 
@@ -736,6 +763,7 @@ export type ContactCreateManyUserInput = {
   rawRow?: string | null
   optedOut?: boolean
   optedOutAt?: Date | string | null
+  lastInboundAt?: Date | string | null
   createdAt?: Date | string
 }
 
@@ -750,6 +778,7 @@ export type ContactUpdateWithoutUserInput = {
   rawRow?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   optedOut?: Prisma.BoolFieldUpdateOperationsInput | boolean
   optedOutAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastInboundAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   parseJob?: Prisma.ParseJobUpdateOneRequiredWithoutContactsNestedInput
 }
@@ -766,6 +795,7 @@ export type ContactUncheckedUpdateWithoutUserInput = {
   rawRow?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   optedOut?: Prisma.BoolFieldUpdateOperationsInput | boolean
   optedOutAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastInboundAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -781,6 +811,7 @@ export type ContactUncheckedUpdateManyWithoutUserInput = {
   rawRow?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   optedOut?: Prisma.BoolFieldUpdateOperationsInput | boolean
   optedOutAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastInboundAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -796,6 +827,7 @@ export type ContactCreateManyParseJobInput = {
   uploadedBy: string
   optedOut?: boolean
   optedOutAt?: Date | string | null
+  lastInboundAt?: Date | string | null
   createdAt?: Date | string
 }
 
@@ -810,6 +842,7 @@ export type ContactUpdateWithoutParseJobInput = {
   rawRow?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   optedOut?: Prisma.BoolFieldUpdateOperationsInput | boolean
   optedOutAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastInboundAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutContactsNestedInput
 }
@@ -826,6 +859,7 @@ export type ContactUncheckedUpdateWithoutParseJobInput = {
   uploadedBy?: Prisma.StringFieldUpdateOperationsInput | string
   optedOut?: Prisma.BoolFieldUpdateOperationsInput | boolean
   optedOutAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastInboundAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -841,6 +875,7 @@ export type ContactUncheckedUpdateManyWithoutParseJobInput = {
   uploadedBy?: Prisma.StringFieldUpdateOperationsInput | string
   optedOut?: Prisma.BoolFieldUpdateOperationsInput | boolean
   optedOutAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastInboundAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -859,6 +894,7 @@ export type ContactSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   uploadedBy?: boolean
   optedOut?: boolean
   optedOutAt?: boolean
+  lastInboundAt?: boolean
   createdAt?: boolean
   parseJob?: boolean | Prisma.ParseJobDefaultArgs<ExtArgs>
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -877,6 +913,7 @@ export type ContactSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   uploadedBy?: boolean
   optedOut?: boolean
   optedOutAt?: boolean
+  lastInboundAt?: boolean
   createdAt?: boolean
   parseJob?: boolean | Prisma.ParseJobDefaultArgs<ExtArgs>
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -895,6 +932,7 @@ export type ContactSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   uploadedBy?: boolean
   optedOut?: boolean
   optedOutAt?: boolean
+  lastInboundAt?: boolean
   createdAt?: boolean
   parseJob?: boolean | Prisma.ParseJobDefaultArgs<ExtArgs>
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -913,10 +951,11 @@ export type ContactSelectScalar = {
   uploadedBy?: boolean
   optedOut?: boolean
   optedOutAt?: boolean
+  lastInboundAt?: boolean
   createdAt?: boolean
 }
 
-export type ContactOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "parseJobId" | "name" | "phone" | "channel" | "type" | "email" | "notes" | "rawRow" | "uploadedBy" | "optedOut" | "optedOutAt" | "createdAt", ExtArgs["result"]["contact"]>
+export type ContactOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "parseJobId" | "name" | "phone" | "channel" | "type" | "email" | "notes" | "rawRow" | "uploadedBy" | "optedOut" | "optedOutAt" | "lastInboundAt" | "createdAt", ExtArgs["result"]["contact"]>
 export type ContactInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   parseJob?: boolean | Prisma.ParseJobDefaultArgs<ExtArgs>
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -949,6 +988,7 @@ export type $ContactPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     uploadedBy: string
     optedOut: boolean
     optedOutAt: Date | null
+    lastInboundAt: Date | null
     createdAt: Date
   }, ExtArgs["result"]["contact"]>
   composites: {}
@@ -1387,6 +1427,7 @@ export interface ContactFieldRefs {
   readonly uploadedBy: Prisma.FieldRef<"Contact", 'String'>
   readonly optedOut: Prisma.FieldRef<"Contact", 'Boolean'>
   readonly optedOutAt: Prisma.FieldRef<"Contact", 'DateTime'>
+  readonly lastInboundAt: Prisma.FieldRef<"Contact", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"Contact", 'DateTime'>
 }
     

@@ -42,7 +42,6 @@ export function whatsappGetWebhook(req: Request) {
 
 const isStopRegex = /^\s*(stop|unsubscribe|quit|cancel|end|opt.?out)\s*$/i;
 const isStartRegex = /^\s*(start|subscribe|unstop)\s*$/i;
-const isYesRegex = /^\s*(yes|yeah|yep|ok|okay|sure|send|1)\s*$/i;
 
 interface MetaTemplateStatusEvent {
 	event:
@@ -254,7 +253,6 @@ export async function whatsappWebhookPost(req: Request) {
 
 					const isStop = isStopRegex.test(body);
 					const isStart = isStartRegex.test(body);
-					const isYes = isYesRegex.test(body);
 
 					if (isStop) {
 						console.log(`[WA Webhook] STOP from ${phone}`);
@@ -272,20 +270,19 @@ export async function whatsappWebhookPost(req: Request) {
 								data: { optedOut: false, optedOutAt: null },
 							})
 						);
-					} else if (isYes) {
-						// Look for a pending pre-screen delivery waiting on this phone's YES
+					}
+
+					// Any non-keyword reply fires any pending pre-screen delivery.
+					// Utility consent templates are warm open questions — any natural
+					// reply ("Thanks!", "What time?", "👍") counts as consent given.
+					if (!(isStop || isStart)) {
 						const pending = await prisma.pendingDelivery.findFirst({
-							where: {
-								phone,
-								replied: false,
-								expiresAt: { gt: new Date() },
-							},
+							where: { phone, replied: false, expiresAt: { gt: new Date() } },
 							orderBy: { createdAt: "desc" },
 						});
-
 						if (pending) {
 							console.log(
-								`[WA Webhook] YES from ${phone} — firing pending delivery ${pending.id}`
+								`[WA Webhook] Reply from ${phone} → pending ${pending.id} ("${body.slice(0, 30)}")`
 							);
 							await inngest.send({
 								name: "neon/campaign.pending-reply-yes",
@@ -337,10 +334,22 @@ export async function whatsappWebhookPost(req: Request) {
 								body,
 								campaignId: lastOutbound?.campaignId ?? null,
 								externalId: msg.id,
-								isKeyword: isStop || isStart || isYes,
+								isKeyword: isStop || isStart,
 								receivedAt: new Date(Number.parseInt(msg.timestamp, 10) * 1000),
 							},
 						});
+
+						// Stamp lastInboundAt so the wizard can detect open service windows
+						if (contact?.id) {
+							await prisma.contact.update({
+								where: { id: contact.id },
+								data: {
+									lastInboundAt: new Date(
+										Number.parseInt(msg.timestamp, 10) * 1000
+									),
+								},
+							});
+						}
 					}
 				}
 			}

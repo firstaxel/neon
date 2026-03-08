@@ -17,7 +17,9 @@
 
 import { useForm } from "@tanstack/react-form";
 import {
+	AlertCircle,
 	Building2,
+	Smartphone,
 	CheckCircle2,
 	ChevronLeft,
 	ChevronRight,
@@ -63,6 +65,8 @@ interface WizardValues {
 	phone: string;
 	role: UserRole;
 	topUpAmount: number;
+	smsSenderId: string;       // Termii alphanumeric sender ID (max 11 chars)
+	usePlatformSender: boolean; // true = use platform default sender
 }
 
 // ─── Step meta ────────────────────────────────────────────────────────────────
@@ -70,6 +74,7 @@ interface WizardValues {
 const STEPS = [
 	{ label: "Welcome", icon: MessageSquare },
 	{ label: "Organisation", icon: Building2 },
+	{ label: "Sender ID", icon: Smartphone },
 	{ label: "Wallet", icon: Wallet },
 	{ label: "All Set", icon: Rocket },
 ] as const;
@@ -400,7 +405,129 @@ function WalletStep({
 	);
 }
 
-// ─── Step 3: All Set ──────────────────────────────────────────────────────────
+// ─── Step 2: Sender ID ────────────────────────────────────────────────────────
+
+const PLATFORM_SENDER_ID = process.env.PLATFORM_SMS_SENDER_ID ?? "MessageDesk";
+
+function SenderIdStep({
+	values,
+	setField,
+}: {
+	values: WizardValues;
+	setField: (k: keyof WizardValues, v: unknown) => void;
+}) {
+	const senderIdRaw = values.smsSenderId.replace(/\s/g, "").slice(0, 11);
+	const senderIdValid = senderIdRaw.length >= 3 && /^[a-zA-Z0-9]+$/.test(senderIdRaw);
+
+	return (
+		<div className="space-y-5">
+			<div>
+				<p className="font-semibold text-foreground text-sm">
+					SMS Sender ID
+				</p>
+				<p className="mt-1 text-muted-foreground text-xs leading-relaxed">
+					Your Sender ID is the name contacts see when they receive an SMS from you (e.g.{" "}
+					<span className="font-mono text-foreground">CovenantChurch</span>). It must be
+					approved by Termii and the NCC before use. If you don't have one yet, use our
+					platform sender — you can register your own anytime from Settings.
+				</p>
+			</div>
+
+			{/* Platform default option */}
+			<button
+				className={[
+					"w-full rounded-xl border px-4 py-3.5 text-left transition-all",
+					values.usePlatformSender
+						? "border-[#60a5fa50] bg-[#0d1a2e] text-[#60a5fa]"
+						: "border-border hover:border-muted-foreground/40",
+				].join(" ")}
+				onClick={() => {
+					setField("usePlatformSender", true);
+					setField("smsSenderId", "");
+				}}
+				type="button"
+			>
+				<div className="flex items-start gap-3">
+					<Smartphone className="mt-0.5 h-4 w-4 shrink-0" />
+					<div className="min-w-0">
+						<p className="font-semibold text-sm">Use platform sender</p>
+						<p className="mt-0.5 text-[11px] text-muted-foreground leading-relaxed">
+							Messages sent from{" "}
+							<span className="font-mono font-medium">{PLATFORM_SENDER_ID}</span>. Ready immediately, no approval needed.
+						</p>
+					</div>
+					<span
+						className={[
+							"ml-auto mt-0.5 shrink-0 rounded border px-1.5 py-0.5 font-bold text-[9px] uppercase tracking-wide",
+							values.usePlatformSender
+								? "border-[#60a5fa30] bg-[#60a5fa15] text-[#60a5fa]"
+								: "border-transparent bg-muted text-muted-foreground",
+						].join(" ")}
+					>
+						recommended
+					</span>
+				</div>
+			</button>
+
+			{/* Own sender ID option */}
+			<button
+				className={[
+					"w-full rounded-xl border px-4 py-3.5 text-left transition-all",
+					!values.usePlatformSender
+						? "border-primary/50 bg-primary/5 text-primary"
+						: "border-border hover:border-muted-foreground/40",
+				].join(" ")}
+				onClick={() => setField("usePlatformSender", false)}
+				type="button"
+			>
+				<div className="flex items-start gap-3">
+					<Smartphone className="mt-0.5 h-4 w-4 shrink-0" />
+					<div className="min-w-0 flex-1">
+						<p className="font-semibold text-sm">Register my own Sender ID</p>
+						<p className="mt-0.5 text-[11px] text-muted-foreground leading-relaxed">
+							Your brand name appears on every SMS. Requires Termii + NCC approval (2–5 business days).
+						</p>
+						{!values.usePlatformSender && (
+							<div className="mt-3 space-y-1.5">
+								<Label className="text-[11px]" htmlFor="smsSenderId">
+									Sender ID (max 11 characters, letters & numbers only)
+								</Label>
+								<Input
+									className="h-9 font-mono text-sm"
+									id="smsSenderId"
+									maxLength={11}
+									onChange={(e) => {
+										const cleaned = e.target.value.replace(/[^a-zA-Z0-9]/g, "").slice(0, 11);
+										setField("smsSenderId", cleaned);
+									}}
+									onClick={(e) => e.stopPropagation()}
+									placeholder="e.g. MyChurch"
+									value={values.smsSenderId}
+								/>
+								{values.smsSenderId.length > 0 && (
+									<p className={`text-[10px] ${senderIdValid ? "text-primary" : "text-destructive"}`}>
+										{senderIdValid
+											? `✓ "${senderIdRaw}" looks good — submit for approval from Settings after onboarding`
+											: "Must be 3–11 alphanumeric characters, no spaces"}
+									</p>
+								)}
+							</div>
+						)}
+					</div>
+				</div>
+			</button>
+
+			<div className="flex items-start gap-2 rounded-xl border border-amber-500/20 bg-amber-500/5 px-3 py-3">
+				<AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
+				<p className="text-[11px] text-amber-400/80 leading-relaxed">
+					WhatsApp messages always use your registered Meta WABA number — Sender ID only applies to SMS via Termii.
+				</p>
+			</div>
+		</div>
+	);
+}
+
+// ─── Step 3: All Set ────────────────────────────────────────────────────────────
 
 function AllSetStep({ orgName }: { orgName: string }) {
 	return (
@@ -475,6 +602,8 @@ export function OnboardingWizard({
 			role: "staff",
 			phone: "",
 			topUpAmount: 5000,
+			smsSenderId: "",
+			usePlatformSender: false,
 		} as WizardValues,
 		onSubmit: async ({ value }) => {
 			await completeStep({
@@ -553,8 +682,20 @@ export function OnboardingWizard({
 					</form.Subscribe>
 				)}
 
-				{/* Step 2 — Wallet (uses Subscribe for topUpAmount) */}
+				{/* Step 2 — Sender ID */}
 				{step === 2 && (
+					<form.Subscribe selector={(s) => s.values}>
+						{(values) => (
+							<SenderIdStep
+								setField={(k, v) => form.setFieldValue(k, v as never)}
+								values={values}
+							/>
+						)}
+					</form.Subscribe>
+				)}
+
+				{/* Step 3 — Wallet */}
+				{step === 3 && (
 					<form.Subscribe selector={(s) => s.values}>
 						{(values) => (
 							<WalletStep
@@ -565,8 +706,8 @@ export function OnboardingWizard({
 					</form.Subscribe>
 				)}
 
-				{/* Step 3 — All Set */}
-				{step === 3 && (
+				{/* Step 4 — All Set */}
+				{step === 4 && (
 					<form.Field name="orgName">
 						{(field) => <AllSetStep orgName={field.state.value} />}
 					</form.Field>

@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { orpc } from "#/orpc/client";
 
 export type ContactChannel = "whatsapp" | "sms";
@@ -41,4 +41,14 @@ export function useContact(id: string | null) {
 			enabled: !!id,
 		})
 	);
+}
+
+export function useCreateContact() {
+	const queryClient = useQueryClient();
+	return useMutation({
+		...orpc.contacts.create.mutationOptions(),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["contacts"] });
+		},
+	});
 }

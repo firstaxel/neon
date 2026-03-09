@@ -228,6 +228,15 @@ function PasswordForm() {
 				>
 					{(field) => (
 						<field.Field id={field.name}>
+							<div className="flex items-center justify-between">
+								<span className="text-muted-foreground text-xs">Password</span>
+								<Link
+									className="text-muted-foreground text-xs hover:text-foreground hover:underline"
+									to="/forgot-password"
+								>
+									Forgot password?
+								</Link>
+							</div>
 							<Input
 								aria-invalid={
 									field.state.meta.isTouched &&
@@ -326,6 +335,17 @@ export default function LoginView() {
 							</div>
 
 							{usePassword ? <PasswordForm /> : <MagicLinkForm />}
+
+							{usePassword && (
+								<div className="text-center">
+									<Link
+										className="text-muted-foreground text-xs hover:text-foreground hover:underline"
+										to="/forgot-password"
+									>
+										Forgot your password?
+									</Link>
+								</div>
+							)}
 
 							<Button
 								className="w-full text-muted-foreground text-sm"

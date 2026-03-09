@@ -460,9 +460,12 @@ const other: Record<ScenarioId, MetaTemplateDefinition> = {
 
 // ─── Utility consent template (shared across all org types) ───────────────────
 //
-// One utility template is registered per app install — this is the pre-screen
-// consent message sent before the real marketing body.
-// Must be pre-approved by Meta under the UTILITY category.
+// Pre-screen message sent before the real marketing body.
+//
+// UTILITY category requires: direct opt-in confirmation, no promotional/
+// engagement language, no check-ins, no curiosity-drivers.
+// Meta approved use-case: "Confirm opt-ins or opt-outs for WhatsApp messages."
+// Bold (*YES*) is allowed in BODY text but keep it plain for max compatibility.
 
 export const UTILITY_CONSENT_TEMPLATE: MetaTemplateDefinition = {
 	name: "messagedesk_consent_v1",
@@ -470,9 +473,9 @@ export const UTILITY_CONSENT_TEMPLATE: MetaTemplateDefinition = {
 	category: "UTILITY",
 	language: "en",
 	bodyText:
-		"Hi {{name}}, {{orgName}} would like to send you a message. Reply *YES* to receive it, or STOP to opt out.",
+		"Hi {{name}}, following your recent interaction with {{orgName}}, we would like to send you a WhatsApp message. Reply YES to receive it or STOP to opt out.",
 	bodyVars: ["name", "orgName"],
-	smsBody: "", // utility templates are WA-only
+	smsBody: "",
 	footerText: undefined,
 };
 
@@ -517,10 +520,19 @@ export function getAllMetaTemplatesForOrg(
 
 // ─── Utility consent templates — per orgType × scenario ───────────────────────
 //
-// These are sent as the UTILITY pre-screen message — cheap (~₦8) and warm.
-// The goal is to make people naturally want to reply — any reply triggers the
-// real message. They must NOT contain promotional language.
-// Each template is a warm check-in / curiosity-driver, not "reply YES to receive".
+// These are sent as the UTILITY pre-screen / consent message before the real
+// marketing body. Meta UTILITY rules (confirmed from Meta docs + July 2025 update):
+//
+//   ✅ Must be a direct opt-in/opt-out confirmation
+//   ✅ Must name what the user is opting into
+//   ✅ Must give clear YES / STOP instruction
+//   ❌ No check-ins ("how are you?")
+//   ❌ No curiosity-drivers ("something exciting is coming up")
+//   ❌ No re-engagement prompts ("we've been thinking of you")
+//   ❌ No mixed content (no promotional language whatsoever)
+//
+// Approved Meta use-case: "Confirm opt-ins or opt-outs for WhatsApp messages."
+// Every template below is strictly an opt-in confirmation — nothing more.
 
 export const UTILITY_TEMPLATES: Record<
 	OrgType,
@@ -533,7 +545,7 @@ export const UTILITY_TEMPLATES: Record<
 			category: "UTILITY",
 			language: "en",
 			bodyText:
-				"Hi {{name}}! 😊 The team at {{orgName}} has been thinking about you since your first visit. How are you settling in?",
+				"Hi {{name}}, following your recent visit to {{orgName}}, we would like to send you a welcome message. Reply YES to receive it or STOP to opt out.",
 			bodyVars: ["name", "orgName"],
 			smsBody: "",
 		},
@@ -543,7 +555,7 @@ export const UTILITY_TEMPLATES: Record<
 			category: "UTILITY",
 			language: "en",
 			bodyText:
-				"Hi {{name}}, it's been a while since we've connected at {{orgName}}. We've been thinking of you — how have you been?",
+				"Hi {{name}}, as a member of {{orgName}}, we would like to send you a message. Reply YES to receive it or STOP to opt out.",
 			bodyVars: ["name", "orgName"],
 			smsBody: "",
 		},
@@ -553,7 +565,7 @@ export const UTILITY_TEMPLATES: Record<
 			category: "UTILITY",
 			language: "en",
 			bodyText:
-				"Hi {{name}}! Something special is coming up at {{orgName}} that we think you'd really enjoy. Can we share the details with you?",
+				"Hi {{name}}, as a member of {{orgName}}, we would like to send you details about an upcoming event. Reply YES to receive them or STOP to opt out.",
 			bodyVars: ["name", "orgName"],
 			smsBody: "",
 		},
@@ -563,7 +575,7 @@ export const UTILITY_TEMPLATES: Record<
 			category: "UTILITY",
 			language: "en",
 			bodyText:
-				"Hi {{name}}, the team at {{orgName}} has been holding you in prayer lately. How are you doing?",
+				"Hi {{name}}, following your recent interaction with {{orgName}}, we would like to send you a message from the team. Reply YES to receive it or STOP to opt out.",
 			bodyVars: ["name", "orgName"],
 			smsBody: "",
 		},
@@ -573,7 +585,7 @@ export const UTILITY_TEMPLATES: Record<
 			category: "UTILITY",
 			language: "en",
 			bodyText:
-				"Hi {{name}}! We have something important to share with you from {{orgName}}. Is now a good time?",
+				"Hi {{name}}, as a member of {{orgName}}, we would like to send you an announcement. Reply YES to receive it or STOP to opt out.",
 			bodyVars: ["name", "orgName"],
 			smsBody: "",
 		},
@@ -586,7 +598,7 @@ export const UTILITY_TEMPLATES: Record<
 			category: "UTILITY",
 			language: "en",
 			bodyText:
-				"Hi {{name}}, welcome to the {{orgName}} family! We'd love to check in on how you're settling in. How are things going?",
+				"Hi {{name}}, following your recent visit to {{orgName}}, we would like to send you a welcome message. Reply YES to receive it or STOP to opt out.",
 			bodyVars: ["name", "orgName"],
 			smsBody: "",
 		},
@@ -596,7 +608,7 @@ export const UTILITY_TEMPLATES: Record<
 			category: "UTILITY",
 			language: "en",
 			bodyText:
-				"Hi {{name}}, the team at {{orgName}} has been thinking about you. How have things been since we last connected?",
+				"Hi {{name}}, as a member of {{orgName}}, we would like to send you a message. Reply YES to receive it or STOP to opt out.",
 			bodyVars: ["name", "orgName"],
 			smsBody: "",
 		},
@@ -606,7 +618,7 @@ export const UTILITY_TEMPLATES: Record<
 			category: "UTILITY",
 			language: "en",
 			bodyText:
-				"Hi {{name}}! We have an upcoming programme at {{orgName}} that might be perfect for you. Can we share the details?",
+				"Hi {{name}}, following your enrolment with {{orgName}}, we would like to send you details about an upcoming programme. Reply YES to receive them or STOP to opt out.",
 			bodyVars: ["name", "orgName"],
 			smsBody: "",
 		},
@@ -616,7 +628,7 @@ export const UTILITY_TEMPLATES: Record<
 			category: "UTILITY",
 			language: "en",
 			bodyText:
-				"Hi {{name}}, the {{orgName}} team wanted to check in on you today. How are you getting on?",
+				"Hi {{name}}, following your recent interaction with {{orgName}}, we would like to send you a message from the team. Reply YES to receive it or STOP to opt out.",
 			bodyVars: ["name", "orgName"],
 			smsBody: "",
 		},
@@ -626,7 +638,7 @@ export const UTILITY_TEMPLATES: Record<
 			category: "UTILITY",
 			language: "en",
 			bodyText:
-				"Hi {{name}}, we have an update from {{orgName}} to share with you. Do you have a moment?",
+				"Hi {{name}}, following your registration with {{orgName}}, we would like to send you an update. Reply YES to receive it or STOP to opt out.",
 			bodyVars: ["name", "orgName"],
 			smsBody: "",
 		},
@@ -639,7 +651,7 @@ export const UTILITY_TEMPLATES: Record<
 			category: "UTILITY",
 			language: "en",
 			bodyText:
-				"Hi {{name}}! The team at {{orgName}} wanted to check in as you settle in with us. How is everything going so far?",
+				"Hi {{name}}, following your recent visit to {{orgName}}, we would like to send you a welcome message. Reply YES to receive it or STOP to opt out.",
 			bodyVars: ["name", "orgName"],
 			smsBody: "",
 		},
@@ -649,7 +661,7 @@ export const UTILITY_TEMPLATES: Record<
 			category: "UTILITY",
 			language: "en",
 			bodyText:
-				"Hi {{name}}, the {{orgName}} team is thinking of you. How have things been going recently?",
+				"Hi {{name}}, as a member of {{orgName}}, we would like to send you a message. Reply YES to receive it or STOP to opt out.",
 			bodyVars: ["name", "orgName"],
 			smsBody: "",
 		},
@@ -659,7 +671,7 @@ export const UTILITY_TEMPLATES: Record<
 			category: "UTILITY",
 			language: "en",
 			bodyText:
-				"Hi {{name}}! {{orgName}} has an upcoming event we think you and your family would enjoy. Can we share the details?",
+				"Hi {{name}}, as a member of the {{orgName}} community, we would like to send you details about an upcoming school event. Reply YES to receive them or STOP to opt out.",
 			bodyVars: ["name", "orgName"],
 			smsBody: "",
 		},
@@ -669,7 +681,7 @@ export const UTILITY_TEMPLATES: Record<
 			category: "UTILITY",
 			language: "en",
 			bodyText:
-				"Hi {{name}}, someone from the {{orgName}} pastoral team wanted to reach out. How are you doing?",
+				"Hi {{name}}, as a member of the {{orgName}} community, we would like to send you a message from the pastoral team. Reply YES to receive it or STOP to opt out.",
 			bodyVars: ["name", "orgName"],
 			smsBody: "",
 		},
@@ -679,7 +691,7 @@ export const UTILITY_TEMPLATES: Record<
 			category: "UTILITY",
 			language: "en",
 			bodyText:
-				"Hi {{name}}, {{orgName}} has an important notice to share with you. Is this a good time?",
+				"Hi {{name}}, as a member of the {{orgName}} community, we would like to send you a school notice. Reply YES to receive it or STOP to opt out.",
 			bodyVars: ["name", "orgName"],
 			smsBody: "",
 		},
@@ -692,7 +704,7 @@ export const UTILITY_TEMPLATES: Record<
 			category: "UTILITY",
 			language: "en",
 			bodyText:
-				"Hi {{name}}! The {{orgName}} team wanted to check in after your first experience with us. How did everything go?",
+				"Hi {{name}}, following your recent visit to {{orgName}}, we would like to send you a welcome message. Reply YES to receive it or STOP to opt out.",
 			bodyVars: ["name", "orgName"],
 			smsBody: "",
 		},
@@ -702,17 +714,17 @@ export const UTILITY_TEMPLATES: Record<
 			category: "UTILITY",
 			language: "en",
 			bodyText:
-				"Hi {{name}}, the team at {{orgName}} is checking in. How has your experience been with us recently?",
+				"Hi {{name}}, as a member of {{orgName}}, we would like to send you a message. Reply YES to receive it or STOP to opt out.",
 			bodyVars: ["name", "orgName"],
 			smsBody: "",
 		},
 		event_invite: {
 			name: "business_consent_event",
-			displayName: "Event / Promo — Consent",
+			displayName: "Event — Consent",
 			category: "UTILITY",
 			language: "en",
 			bodyText:
-				"Hi {{name}}! We have something coming up at {{orgName}} that we thought you might want to know about. Can we share it?",
+				"Hi {{name}}, as a member of {{orgName}}, we would like to send you details about an upcoming event. Reply YES to receive them or STOP to opt out.",
 			bodyVars: ["name", "orgName"],
 			smsBody: "",
 		},
@@ -722,7 +734,7 @@ export const UTILITY_TEMPLATES: Record<
 			category: "UTILITY",
 			language: "en",
 			bodyText:
-				"Hi {{name}}, the {{orgName}} team wanted to reach out and make sure everything is going well for you. How are things?",
+				"Hi {{name}}, following your recent interaction with {{orgName}}, we would like to send you a message from the team. Reply YES to receive it or STOP to opt out.",
 			bodyVars: ["name", "orgName"],
 			smsBody: "",
 		},
@@ -732,7 +744,7 @@ export const UTILITY_TEMPLATES: Record<
 			category: "UTILITY",
 			language: "en",
 			bodyText:
-				"Hi {{name}}, {{orgName}} has an update we'd like to share with you. Do you have a moment?",
+				"Hi {{name}}, following your recent interaction with {{orgName}}, we would like to send you a business update. Reply YES to receive it or STOP to opt out.",
 			bodyVars: ["name", "orgName"],
 			smsBody: "",
 		},
@@ -745,7 +757,7 @@ export const UTILITY_TEMPLATES: Record<
 			category: "UTILITY",
 			language: "en",
 			bodyText:
-				"Hi {{name}}! The {{orgName}} community has been thinking about you since you joined. How are you finding things so far?",
+				"Hi {{name}}, following your recent visit to {{orgName}}, we would like to send you a welcome message. Reply YES to receive it or STOP to opt out.",
 			bodyVars: ["name", "orgName"],
 			smsBody: "",
 		},
@@ -755,7 +767,7 @@ export const UTILITY_TEMPLATES: Record<
 			category: "UTILITY",
 			language: "en",
 			bodyText:
-				"Hi {{name}}, the team at {{orgName}} is thinking of you. How have you been lately?",
+				"Hi {{name}}, as a member of {{orgName}}, we would like to send you a message. Reply YES to receive it or STOP to opt out.",
 			bodyVars: ["name", "orgName"],
 			smsBody: "",
 		},
@@ -765,7 +777,7 @@ export const UTILITY_TEMPLATES: Record<
 			category: "UTILITY",
 			language: "en",
 			bodyText:
-				"Hi {{name}}! Something exciting is happening in the {{orgName}} community soon. Can we share the details with you?",
+				"Hi {{name}}, as a member of {{orgName}}, we would like to send you details about an upcoming community event. Reply YES to receive them or STOP to opt out.",
 			bodyVars: ["name", "orgName"],
 			smsBody: "",
 		},
@@ -775,7 +787,7 @@ export const UTILITY_TEMPLATES: Record<
 			category: "UTILITY",
 			language: "en",
 			bodyText:
-				"Hi {{name}}, the {{orgName}} team wanted to check in on you. Is there anything we can help with?",
+				"Hi {{name}}, following your recent interaction with {{orgName}}, we would like to send you a message from the team. Reply YES to receive it or STOP to opt out.",
 			bodyVars: ["name", "orgName"],
 			smsBody: "",
 		},
@@ -785,7 +797,7 @@ export const UTILITY_TEMPLATES: Record<
 			category: "UTILITY",
 			language: "en",
 			bodyText:
-				"Hi {{name}}, we have a community update from {{orgName}} to share with you. Got a minute?",
+				"Hi {{name}}, as a member of {{orgName}}, we would like to send you a community update. Reply YES to receive it or STOP to opt out.",
 			bodyVars: ["name", "orgName"],
 			smsBody: "",
 		},
@@ -798,7 +810,7 @@ export const UTILITY_TEMPLATES: Record<
 			category: "UTILITY",
 			language: "en",
 			bodyText:
-				"Hi {{name}}! The team at {{orgName}} wanted to reach out and say hello. How are you doing?",
+				"Hi {{name}}, following your recent visit to {{orgName}}, we would like to send you a welcome message. Reply YES to receive it or STOP to opt out.",
 			bodyVars: ["name", "orgName"],
 			smsBody: "",
 		},
@@ -808,7 +820,7 @@ export const UTILITY_TEMPLATES: Record<
 			category: "UTILITY",
 			language: "en",
 			bodyText:
-				"Hi {{name}}, just checking in from {{orgName}}. How have things been going for you?",
+				"Hi {{name}}, as a member of {{orgName}}, we would like to send you a message. Reply YES to receive it or STOP to opt out.",
 			bodyVars: ["name", "orgName"],
 			smsBody: "",
 		},
@@ -818,7 +830,7 @@ export const UTILITY_TEMPLATES: Record<
 			category: "UTILITY",
 			language: "en",
 			bodyText:
-				"Hi {{name}}! {{orgName}} has something coming up we think you'd be interested in. Can we share the details?",
+				"Hi {{name}}, as a member of {{orgName}}, we would like to send you details about an upcoming event. Reply YES to receive them or STOP to opt out.",
 			bodyVars: ["name", "orgName"],
 			smsBody: "",
 		},
@@ -828,7 +840,7 @@ export const UTILITY_TEMPLATES: Record<
 			category: "UTILITY",
 			language: "en",
 			bodyText:
-				"Hi {{name}}, the team at {{orgName}} wanted to check in on you. How are things going?",
+				"Hi {{name}}, following your recent interaction with {{orgName}}, we would like to send you a message from the team. Reply YES to receive it or STOP to opt out.",
 			bodyVars: ["name", "orgName"],
 			smsBody: "",
 		},
@@ -838,7 +850,7 @@ export const UTILITY_TEMPLATES: Record<
 			category: "UTILITY",
 			language: "en",
 			bodyText:
-				"Hi {{name}}, we have something to share with you from {{orgName}}. Is now a good time?",
+				"Hi {{name}}, as a member of {{orgName}}, we would like to send you an announcement. Reply YES to receive it or STOP to opt out.",
 			bodyVars: ["name", "orgName"],
 			smsBody: "",
 		},

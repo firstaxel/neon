@@ -33,7 +33,12 @@ import {
 import { parsingRouter } from "#/features/parsing/server/router";
 import {
 	completeOnboarding,
+	deleteAccount,
+	deleteSenderNumber,
 	getProfile,
+	getSenderNumbers,
+	reseedTemplates,
+	submitSenderId,
 	updatePassword,
 	updateProfile,
 } from "#/features/profile/server/router";
@@ -107,6 +112,11 @@ export const appRouter = o.router({
 		update: updateProfile,
 		completeOnboarding,
 		updatePassword,
+		reseedTemplates,
+		getSenderNumbers,
+		submitSenderId,
+		deleteSenderNumber,
+		deleteAccount,
 	}),
 	template: o.router({
 		list: listTemplates,

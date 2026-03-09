@@ -15,14 +15,17 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiInngestRouteImport } from './routes/api/inngest'
 import { Route as ApiSplatRouteImport } from './routes/api.$'
 import { Route as dashboardTemplatesIndexRouteImport } from './routes/(dashboard)/templates/index'
+import { Route as dashboardSettingsIndexRouteImport } from './routes/(dashboard)/settings/index'
 import { Route as dashboardOnboardingIndexRouteImport } from './routes/(dashboard)/onboarding/index'
 import { Route as dashboardMessagesIndexRouteImport } from './routes/(dashboard)/messages/index'
 import { Route as dashboardDashboardIndexRouteImport } from './routes/(dashboard)/dashboard/index'
 import { Route as dashboardContactsIndexRouteImport } from './routes/(dashboard)/contacts/index'
 import { Route as dashboardCampaignsIndexRouteImport } from './routes/(dashboard)/campaigns/index'
 import { Route as dashboardBillingIndexRouteImport } from './routes/(dashboard)/billing/index'
+import { Route as authResetPasswordIndexRouteImport } from './routes/(auth)/reset-password/index'
 import { Route as authRegisterIndexRouteImport } from './routes/(auth)/register/index'
 import { Route as authLoginIndexRouteImport } from './routes/(auth)/login/index'
+import { Route as authForgotPasswordIndexRouteImport } from './routes/(auth)/forgot-password/index'
 import { Route as ApiWebhooksWhatsappRouteImport } from './routes/api/webhooks/whatsapp'
 import { Route as ApiWebhooksPaystackRouteImport } from './routes/api/webhooks/paystack'
 import { Route as ApiRpcSplatRouteImport } from './routes/api.rpc.$'
@@ -62,6 +65,11 @@ const dashboardTemplatesIndexRoute = dashboardTemplatesIndexRouteImport.update({
   path: '/templates/',
   getParentRoute: () => dashboardRouteRoute,
 } as any)
+const dashboardSettingsIndexRoute = dashboardSettingsIndexRouteImport.update({
+  id: '/settings/',
+  path: '/settings/',
+  getParentRoute: () => dashboardRouteRoute,
+} as any)
 const dashboardOnboardingIndexRoute =
   dashboardOnboardingIndexRouteImport.update({
     id: '/onboarding/',
@@ -93,6 +101,11 @@ const dashboardBillingIndexRoute = dashboardBillingIndexRouteImport.update({
   path: '/billing/',
   getParentRoute: () => dashboardRouteRoute,
 } as any)
+const authResetPasswordIndexRoute = authResetPasswordIndexRouteImport.update({
+  id: '/reset-password/',
+  path: '/reset-password/',
+  getParentRoute: () => authRouteRoute,
+} as any)
 const authRegisterIndexRoute = authRegisterIndexRouteImport.update({
   id: '/register/',
   path: '/register/',
@@ -101,6 +114,11 @@ const authRegisterIndexRoute = authRegisterIndexRouteImport.update({
 const authLoginIndexRoute = authLoginIndexRouteImport.update({
   id: '/login/',
   path: '/login/',
+  getParentRoute: () => authRouteRoute,
+} as any)
+const authForgotPasswordIndexRoute = authForgotPasswordIndexRouteImport.update({
+  id: '/forgot-password/',
+  path: '/forgot-password/',
   getParentRoute: () => authRouteRoute,
 } as any)
 const ApiWebhooksWhatsappRoute = ApiWebhooksWhatsappRouteImport.update({
@@ -168,14 +186,17 @@ export interface FileRoutesByFullPath {
   '/api/rpc/$': typeof ApiRpcSplatRoute
   '/api/webhooks/paystack': typeof ApiWebhooksPaystackRoute
   '/api/webhooks/whatsapp': typeof ApiWebhooksWhatsappRoute
+  '/forgot-password/': typeof authForgotPasswordIndexRoute
   '/login/': typeof authLoginIndexRoute
   '/register/': typeof authRegisterIndexRoute
+  '/reset-password/': typeof authResetPasswordIndexRoute
   '/billing/': typeof dashboardBillingIndexRoute
   '/campaigns/': typeof dashboardCampaignsIndexRoute
   '/contacts/': typeof dashboardContactsIndexRoute
   '/dashboard/': typeof dashboardDashboardIndexRoute
   '/messages/': typeof dashboardMessagesIndexRoute
   '/onboarding/': typeof dashboardOnboardingIndexRoute
+  '/settings/': typeof dashboardSettingsIndexRoute
   '/templates/': typeof dashboardTemplatesIndexRoute
   '/billing/verify/': typeof dashboardBillingVerifyIndexRoute
   '/campaigns/$campaignId/': typeof dashboardCampaignsCampaignIdIndexRoute
@@ -192,14 +213,17 @@ export interface FileRoutesByTo {
   '/api/rpc/$': typeof ApiRpcSplatRoute
   '/api/webhooks/paystack': typeof ApiWebhooksPaystackRoute
   '/api/webhooks/whatsapp': typeof ApiWebhooksWhatsappRoute
+  '/forgot-password': typeof authForgotPasswordIndexRoute
   '/login': typeof authLoginIndexRoute
   '/register': typeof authRegisterIndexRoute
+  '/reset-password': typeof authResetPasswordIndexRoute
   '/billing': typeof dashboardBillingIndexRoute
   '/campaigns': typeof dashboardCampaignsIndexRoute
   '/contacts': typeof dashboardContactsIndexRoute
   '/dashboard': typeof dashboardDashboardIndexRoute
   '/messages': typeof dashboardMessagesIndexRoute
   '/onboarding': typeof dashboardOnboardingIndexRoute
+  '/settings': typeof dashboardSettingsIndexRoute
   '/templates': typeof dashboardTemplatesIndexRoute
   '/billing/verify': typeof dashboardBillingVerifyIndexRoute
   '/campaigns/$campaignId': typeof dashboardCampaignsCampaignIdIndexRoute
@@ -219,14 +243,17 @@ export interface FileRoutesById {
   '/api/rpc/$': typeof ApiRpcSplatRoute
   '/api/webhooks/paystack': typeof ApiWebhooksPaystackRoute
   '/api/webhooks/whatsapp': typeof ApiWebhooksWhatsappRoute
+  '/(auth)/forgot-password/': typeof authForgotPasswordIndexRoute
   '/(auth)/login/': typeof authLoginIndexRoute
   '/(auth)/register/': typeof authRegisterIndexRoute
+  '/(auth)/reset-password/': typeof authResetPasswordIndexRoute
   '/(dashboard)/billing/': typeof dashboardBillingIndexRoute
   '/(dashboard)/campaigns/': typeof dashboardCampaignsIndexRoute
   '/(dashboard)/contacts/': typeof dashboardContactsIndexRoute
   '/(dashboard)/dashboard/': typeof dashboardDashboardIndexRoute
   '/(dashboard)/messages/': typeof dashboardMessagesIndexRoute
   '/(dashboard)/onboarding/': typeof dashboardOnboardingIndexRoute
+  '/(dashboard)/settings/': typeof dashboardSettingsIndexRoute
   '/(dashboard)/templates/': typeof dashboardTemplatesIndexRoute
   '/(dashboard)/billing/verify/': typeof dashboardBillingVerifyIndexRoute
   '/(dashboard)/campaigns/$campaignId/': typeof dashboardCampaignsCampaignIdIndexRoute
@@ -245,14 +272,17 @@ export interface FileRouteTypes {
     | '/api/rpc/$'
     | '/api/webhooks/paystack'
     | '/api/webhooks/whatsapp'
+    | '/forgot-password/'
     | '/login/'
     | '/register/'
+    | '/reset-password/'
     | '/billing/'
     | '/campaigns/'
     | '/contacts/'
     | '/dashboard/'
     | '/messages/'
     | '/onboarding/'
+    | '/settings/'
     | '/templates/'
     | '/billing/verify/'
     | '/campaigns/$campaignId/'
@@ -269,14 +299,17 @@ export interface FileRouteTypes {
     | '/api/rpc/$'
     | '/api/webhooks/paystack'
     | '/api/webhooks/whatsapp'
+    | '/forgot-password'
     | '/login'
     | '/register'
+    | '/reset-password'
     | '/billing'
     | '/campaigns'
     | '/contacts'
     | '/dashboard'
     | '/messages'
     | '/onboarding'
+    | '/settings'
     | '/templates'
     | '/billing/verify'
     | '/campaigns/$campaignId'
@@ -295,14 +328,17 @@ export interface FileRouteTypes {
     | '/api/rpc/$'
     | '/api/webhooks/paystack'
     | '/api/webhooks/whatsapp'
+    | '/(auth)/forgot-password/'
     | '/(auth)/login/'
     | '/(auth)/register/'
+    | '/(auth)/reset-password/'
     | '/(dashboard)/billing/'
     | '/(dashboard)/campaigns/'
     | '/(dashboard)/contacts/'
     | '/(dashboard)/dashboard/'
     | '/(dashboard)/messages/'
     | '/(dashboard)/onboarding/'
+    | '/(dashboard)/settings/'
     | '/(dashboard)/templates/'
     | '/(dashboard)/billing/verify/'
     | '/(dashboard)/campaigns/$campaignId/'
@@ -368,6 +404,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof dashboardTemplatesIndexRouteImport
       parentRoute: typeof dashboardRouteRoute
     }
+    '/(dashboard)/settings/': {
+      id: '/(dashboard)/settings/'
+      path: '/settings'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof dashboardSettingsIndexRouteImport
+      parentRoute: typeof dashboardRouteRoute
+    }
     '/(dashboard)/onboarding/': {
       id: '/(dashboard)/onboarding/'
       path: '/onboarding'
@@ -410,6 +453,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof dashboardBillingIndexRouteImport
       parentRoute: typeof dashboardRouteRoute
     }
+    '/(auth)/reset-password/': {
+      id: '/(auth)/reset-password/'
+      path: '/reset-password'
+      fullPath: '/reset-password/'
+      preLoaderRoute: typeof authResetPasswordIndexRouteImport
+      parentRoute: typeof authRouteRoute
+    }
     '/(auth)/register/': {
       id: '/(auth)/register/'
       path: '/register'
@@ -422,6 +472,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login/'
       preLoaderRoute: typeof authLoginIndexRouteImport
+      parentRoute: typeof authRouteRoute
+    }
+    '/(auth)/forgot-password/': {
+      id: '/(auth)/forgot-password/'
+      path: '/forgot-password'
+      fullPath: '/forgot-password/'
+      preLoaderRoute: typeof authForgotPasswordIndexRouteImport
       parentRoute: typeof authRouteRoute
     }
     '/api/webhooks/whatsapp': {
@@ -498,13 +555,17 @@ declare module '@tanstack/react-router' {
 }
 
 interface authRouteRouteChildren {
+  authForgotPasswordIndexRoute: typeof authForgotPasswordIndexRoute
   authLoginIndexRoute: typeof authLoginIndexRoute
   authRegisterIndexRoute: typeof authRegisterIndexRoute
+  authResetPasswordIndexRoute: typeof authResetPasswordIndexRoute
 }
 
 const authRouteRouteChildren: authRouteRouteChildren = {
+  authForgotPasswordIndexRoute: authForgotPasswordIndexRoute,
   authLoginIndexRoute: authLoginIndexRoute,
   authRegisterIndexRoute: authRegisterIndexRoute,
+  authResetPasswordIndexRoute: authResetPasswordIndexRoute,
 }
 
 const authRouteRouteWithChildren = authRouteRoute._addFileChildren(
@@ -518,6 +579,7 @@ interface dashboardRouteRouteChildren {
   dashboardDashboardIndexRoute: typeof dashboardDashboardIndexRoute
   dashboardMessagesIndexRoute: typeof dashboardMessagesIndexRoute
   dashboardOnboardingIndexRoute: typeof dashboardOnboardingIndexRoute
+  dashboardSettingsIndexRoute: typeof dashboardSettingsIndexRoute
   dashboardTemplatesIndexRoute: typeof dashboardTemplatesIndexRoute
   dashboardBillingVerifyIndexRoute: typeof dashboardBillingVerifyIndexRoute
   dashboardCampaignsCampaignIdIndexRoute: typeof dashboardCampaignsCampaignIdIndexRoute
@@ -534,6 +596,7 @@ const dashboardRouteRouteChildren: dashboardRouteRouteChildren = {
   dashboardDashboardIndexRoute: dashboardDashboardIndexRoute,
   dashboardMessagesIndexRoute: dashboardMessagesIndexRoute,
   dashboardOnboardingIndexRoute: dashboardOnboardingIndexRoute,
+  dashboardSettingsIndexRoute: dashboardSettingsIndexRoute,
   dashboardTemplatesIndexRoute: dashboardTemplatesIndexRoute,
   dashboardBillingVerifyIndexRoute: dashboardBillingVerifyIndexRoute,
   dashboardCampaignsCampaignIdIndexRoute:

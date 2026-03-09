@@ -278,7 +278,21 @@ async function main() {
 		process.stdout.write(`${prefix} ⏳  ${tpl.name} … `);
 
 		try {
-			const result = await submitTemplate(payload);
+			let result = await submitTemplate(payload);
+
+			// Meta returns this error when a template with the same name exists in a
+			// different category and is mid-deletion. Wait 65s and retry once.
+			const isDeletionPending = (r: MetaApiResult) =>
+				(r.error?.message ?? "").includes("being deleted") ||
+				(r.error?.message ?? "").includes("can't change the category");
+
+			if (isDeletionPending(result)) {
+				console.log("⏸️   deletion pending — waiting 65s then retrying…");
+				await sleep(65_000);
+				process.stdout.write(`${prefix} 🔄  ${tpl.name} (retry) … `);
+				result = await submitTemplate(payload);
+			}
+
 			results.submitted++;
 
 			if (result.error) {

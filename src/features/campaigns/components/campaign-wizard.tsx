@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm } from "@tanstack/react-form";
+import { useForm, useStore } from "@tanstack/react-form";
 import { useRouter } from "@tanstack/react-router";
 import {
 	AlertCircle,
@@ -964,15 +964,17 @@ export function CampaignWizard({ onCancel }: { onCancel?: () => void } = {}) {
 	});
 
 	// Reactive form state needed for cost calculation — lifted here to satisfy Rules of Hooks
-	const contacts = form.store.state.values.contacts;
-
-	const deliveryMode = form.store.state.values.deliveryMode;
-	const templateSource = form.store.state.values.templateSource;
-	const savedWaTemplate = form.store.state.values.savedWaTemplate;
-	const savedSmsTemplate = form.store.state.values.savedSmsTemplate;
-	const customWhatsapp = form.store.state.values.customWhatsapp;
-	const customSms = form.store.state.values.customSms;
-	const scenarioId = form.store.state.values.scenario;
+	const contacts = useStore(form.store, (s) => s.values.contacts);
+	const deliveryMode = useStore(form.store, (s) => s.values.deliveryMode);
+	const templateSource = useStore(form.store, (s) => s.values.templateSource);
+	const savedWaTemplate = useStore(form.store, (s) => s.values.savedWaTemplate);
+	const savedSmsTemplate = useStore(
+		form.store,
+		(s) => s.values.savedSmsTemplate
+	);
+	const customWhatsapp = useStore(form.store, (s) => s.values.customWhatsapp);
+	const customSms = useStore(form.store, (s) => s.values.customSms);
+	const scenarioId = useStore(form.store, (s) => s.values.scenario);
 
 	const dbDefault0 = scenarioDefaults?.[scenarioId] ?? {
 		whatsapp: "",

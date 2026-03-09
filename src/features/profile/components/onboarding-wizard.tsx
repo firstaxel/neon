@@ -627,7 +627,7 @@ export function OnboardingWizard({
 				orgSize: value.orgSize,
 				role: value.role,
 				phone: value.phone,
-				senderId: value.smsSenderId || undefined,
+				smsSenderId: value.smsSenderId || undefined,
 				usePlatformSender: value.usePlatformSender,
 			});
 			onComplete();

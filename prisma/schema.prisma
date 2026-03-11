@@ -32,6 +32,13 @@ model User {
   messageTemplates MessageTemplate[]
   senderNumbers SenderNumber[]
   inboundMessages InboundMessage[]
+
+  // Team relations
+  orgInvitesSent     OrgInvite[]       @relation("OrgInvitesSent")
+  orgMembersOwned    OrgMember[]       @relation("OrgMembersOwned")
+  orgMemberships     OrgMember[]       @relation("OrgMemberships")
+  joinRequestsOwned  OrgJoinRequest[]  @relation("OrgJoinRequestsOwned")
+  joinRequestsSent   OrgJoinRequest[]  @relation("OrgJoinRequestsSent")
 }
 
 model Session {
@@ -423,19 +430,19 @@ model UserProfile {
   userId             String    @unique @map("user_id")
   user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // Org info
+  // Church info
   orgType            String?   @map("org_type")    // e.g. "church" | "ngo" | "school" | "business"
   orgName            String?   @map("org_name")
   orgSize            String?   @map("org_size")    // "1-50" | "51-200" | "201-500" | "500+"
   role               UserRole  @default(staff)
   phone              String?
-  senderId          String?   @map("sender_id")   // custom sender ID for SMS channel (optional)
+
+   senderId          String?   @map("sender_id")   // custom sender ID for SMS channel (optional)
   usePlatformSender Boolean   @default(true) @map("use_platform_sender") // whether to use shared platform sender number for SMS channel (instead of custom sender ID)
 
   // Onboarding state
   onboardingComplete Boolean   @default(false) @map("onboarding_complete")
   onboardingStep     Int       @default(0)     @map("onboarding_step")
-
 
   // Preferences
   timezone           String    @default("Africa/Lagos")
@@ -671,4 +678,88 @@ model InboundMessage {
   @@index([userId, replied])
   @@index([externalId])
   @@map("inbound_messages")
+}
+
+// ─── Team / Multi-user ────────────────────────────────────────────────────────
+
+enum OrgRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+/// Pending invite sent by an org owner to add a team member.
+/// On acceptance the row is marked accepted=true and an OrgMember row is created.
+model OrgInvite {
+  id        String   @id @default(cuid())
+  /// The userId of the account that owns this org (the inviter)
+  ownerId   String   @map("owner_id")
+  owner     User     @relation("OrgInvitesSent", fields: [ownerId], references: [id], onDelete: Cascade)
+
+  email     String
+  role      OrgRole  @default(MEMBER)
+  /// Secure random token embedded in the invite link — single-use
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  accepted  Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([ownerId])
+  @@index([token])
+  @@map("org_invites")
+}
+
+/// Active team membership — joins a user to an owner's org.
+/// ownerId = the account whose wallet + data is being shared.
+model OrgMember {
+  id       String  @id @default(cuid())
+
+  /// The org owner's userId — this is the "workspace"
+  ownerId  String  @map("owner_id")
+  owner    User    @relation("OrgMembersOwned", fields: [ownerId], references: [id], onDelete: Cascade)
+
+  /// The member's own userId
+  userId   String  @map("user_id")
+  user     User    @relation("OrgMemberships", fields: [userId], references: [id], onDelete: Cascade)
+
+  role     OrgRole @default(MEMBER)
+  joinedAt DateTime @default(now()) @map("joined_at")
+
+  @@unique([ownerId, userId])
+  @@index([userId])
+  @@map("org_members")
+}
+
+enum JoinRequestStatus {
+  pending
+  approved
+  declined
+}
+
+/// A request from a user (or unauthenticated visitor) to join an org.
+/// Owners see these in their team settings and can approve or decline.
+/// On approval an OrgMember row is created and the requester is notified.
+model OrgJoinRequest {
+  id        String            @id @default(cuid())
+
+  /// The org being requested to join (identified by the owner's userId)
+  ownerId   String            @map("owner_id")
+  owner     User              @relation("OrgJoinRequestsOwned", fields: [ownerId], references: [id], onDelete: Cascade)
+
+  /// The requester — always a registered user (must sign up first)
+  userId    String            @map("user_id")
+  user      User              @relation("OrgJoinRequestsSent", fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Optional message the requester can include
+  message   String?           @db.Text
+
+  status    JoinRequestStatus @default(pending)
+  decidedAt DateTime?         @map("decided_at")
+
+  createdAt DateTime          @default(now()) @map("created_at")
+
+  @@unique([ownerId, userId])  // one active request per user per org
+  @@index([ownerId, status])
+  @@index([userId])
+  @@map("org_join_requests")
 }

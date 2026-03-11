@@ -1,7 +1,9 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { motion } from "motion/react";
 import React from "react";
+import { ModeToggle } from "./mode-toggle";
 import { AnimatedTabs } from "./tabs";
+import { UserMenu } from "./user-menu";
 
 // ─── Logo / Wordmark ──────────────────────────────────────────────────────────
 
@@ -13,7 +15,7 @@ function Logo() {
 			viewBox="0 0 24 24"
 			xmlns="http://www.w3.org/2000/svg"
 		>
-			<title>Polyvocal</title>
+			<title>MessageDesk</title>
 			{/* WhatsApp-ish message icon tinted with primary green */}
 			<path
 				className="fill-primary"
@@ -67,8 +69,8 @@ function Breadcrumb() {
 function HeaderActions() {
 	return (
 		<div className="flex shrink-0 items-center gap-2">
-			{/* Slot for ModeToggle or user avatar — passed from outside or added here */}
-			{/* <ModeToggle /> */}
+			<UserMenu />
+			<ModeToggle />
 		</div>
 	);
 }

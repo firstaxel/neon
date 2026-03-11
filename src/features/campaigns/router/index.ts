@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 import { SCENARIO_SEED_TEMPLATES } from "#/features/miscellaneous/scenario";
+import { invalidate, withCache } from "#/lib/cache";
 import { inngest } from "#/lib/inngest/client";
 import { protectedProcedure } from "#/orpc";
 
@@ -146,6 +147,7 @@ export const sendCampaign = protectedProcedure
 			});
 		}
 
+		invalidate(userId, "campaign.list");
 		return {
 			campaignId,
 			totalQueued: input.contacts.length,
@@ -154,19 +156,57 @@ export const sendCampaign = protectedProcedure
 	});
 
 export const getCampaignStatus = protectedProcedure
-	.input(z.object({ campaignId: z.string().uuid() }))
+	.input(
+		z.object({
+			campaignId: z.string().uuid(),
+			messagesPage: z.number().int().min(1).default(1),
+			messagesPageSize: z.number().int().min(1).max(200).default(100),
+		})
+	)
 	.handler(async ({ input, context }) => {
 		const campaign = await context.db.campaign.findUnique({
 			where: { id: input.campaignId },
-			include: { messages: { orderBy: { createdAt: "asc" } } },
+			select: {
+				id: true,
+				userId: true,
+				status: true,
+				scenario: true,
+				totalMessages: true,
+				sentMessages: true,
+				failedMessages: true,
+				createdAt: true,
+				completedAt: true,
+			},
 		});
 		if (!campaign) {
 			throw new Error(`Campaign ${input.campaignId} not found`);
 		}
-		// Ensure user can only see their own campaigns
 		if (campaign.userId !== context.session.user.id) {
 			throw new Error("Not found");
 		}
+
+		// Paginate messages — never load all rows unbounded (a 10k campaign = 10k rows in RAM)
+		const [messages, totalMessages] = await Promise.all([
+			context.db.message.findMany({
+				where: { campaignId: input.campaignId },
+				orderBy: { createdAt: "asc" },
+				skip: (input.messagesPage - 1) * input.messagesPageSize,
+				take: input.messagesPageSize,
+				select: {
+					id: true,
+					contactName: true,
+					phone: true,
+					channel: true,
+					message: true,
+					status: true,
+					metaMessageId: true,
+					errorMessage: true,
+					sentAt: true,
+					deliveredAt: true,
+				},
+			}),
+			context.db.message.count({ where: { campaignId: input.campaignId } }),
+		]);
 
 		return {
 			campaignId: campaign.id,
@@ -177,7 +217,7 @@ export const getCampaignStatus = protectedProcedure
 			failed: campaign.failedMessages,
 			createdAt: campaign.createdAt,
 			completedAt: campaign.completedAt,
-			messages: campaign.messages.map((m) => ({
+			messages: messages.map((m) => ({
 				id: m.id,
 				contactName: m.contactName,
 				phone: m.phone,
@@ -189,35 +229,43 @@ export const getCampaignStatus = protectedProcedure
 				sentAt: m.sentAt,
 				deliveredAt: m.deliveredAt,
 			})),
+			messagesPagination: {
+				total: totalMessages,
+				page: input.messagesPage,
+				pageSize: input.messagesPageSize,
+				totalPages: Math.ceil(totalMessages / input.messagesPageSize),
+			},
 		};
 	});
 
 export const listCampaigns = protectedProcedure
 	.input(z.object({ limit: z.number().int().min(1).max(50).default(20) }))
-	.handler(async ({ input, context }) => {
-		const rows = await context.db.campaign.findMany({
-			where: { userId: context.session.user.id },
-			orderBy: { createdAt: "desc" },
-			take: input.limit,
-			select: {
-				id: true,
-				scenario: true,
-				status: true,
-				totalMessages: true,
-				sentMessages: true,
-				failedMessages: true,
-				createdAt: true,
-				completedAt: true,
-			},
-		});
-		return rows.map((c) => ({
-			id: c.id,
-			scenario: c.scenario,
-			status: c.status,
-			total: c.totalMessages,
-			sent: c.sentMessages,
-			failed: c.failedMessages,
-			createdAt: c.createdAt,
-			completedAt: c.completedAt,
-		}));
-	});
+	.handler(
+		withCache("campaign.list", 15_000, async ({ input, context }) => {
+			const rows = await context.db.campaign.findMany({
+				where: { userId: context.session?.user.id ?? "" },
+				orderBy: { createdAt: "desc" },
+				take: input.limit,
+				select: {
+					id: true,
+					scenario: true,
+					status: true,
+					totalMessages: true,
+					sentMessages: true,
+					failedMessages: true,
+					createdAt: true,
+					completedAt: true,
+				},
+			});
+			return rows.map((c) => ({
+				id: c.id,
+				scenario: c.scenario,
+				status: c.status,
+				total: c.totalMessages,
+				sent: c.sentMessages,
+				failed: c.failedMessages,
+				createdAt: c.createdAt,
+				completedAt: c.completedAt,
+			}));
+		})
+	);

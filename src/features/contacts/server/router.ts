@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { BUCKET } from "#/features/upload/lib/s3";
+import { invalidate, invalidateMany, withCache } from "#/lib/cache";
 import { protectedProcedure } from "#/orpc";
 
 const ChannelSchema = z.enum(["whatsapp", "sms"]);
@@ -25,9 +25,9 @@ export const listContacts = protectedProcedure
 			pageSize: z.number().int().min(1).max(100).default(20),
 		})
 	)
-	.handler(async ({ input, context }) => {
-		try {
-			const userId = context.session.user.id;
+	.handler(
+		withCache("contacts.list", 30_000, async ({ input, context }) => {
+			const userId = context.session?.user.id;
 
 			const where = {
 				uploadedBy: userId,
@@ -43,6 +43,9 @@ export const listContacts = protectedProcedure
 				}),
 			};
 
+			// Only run the full-table duplicate scan when the caller explicitly requests it.
+			// This is an expensive groupBy over all contacts for the user — running it on
+			// every page load would add ~50ms to every contacts request.
 			const [total, contacts, duplicatePhones] = await Promise.all([
 				context.db.contact.count({ where }),
 				context.db.contact.findMany({
@@ -56,15 +59,14 @@ export const listContacts = protectedProcedure
 						},
 					},
 				}),
-				// Count how many phones appear more than once for this user
-				// (after the unique constraint migration, this should always be 0 for new data,
-				//  but we still query it to surface pre-migration duplicates)
-				context.db.contact.groupBy({
-					by: ["phone"],
-					where: { uploadedBy: userId },
-					_count: { id: true },
-					having: { id: { _count: { gt: 1 } } },
-				}),
+				input.duplicatesOnly
+					? context.db.contact.groupBy({
+							by: ["phone"],
+							where: { uploadedBy: userId },
+							_count: { id: true },
+							having: { id: { _count: { gt: 1 } } },
+						})
+					: Promise.resolve([]),
 			]);
 
 			const duplicatePhoneSet = new Set(duplicatePhones.map((d) => d.phone));
@@ -94,50 +96,50 @@ export const listContacts = protectedProcedure
 				},
 				duplicateCount: duplicatePhoneSet.size,
 			};
-		} catch (error) {
-			console.log(error);
-		}
-	});
+		})
+	);
 
 // ─── getContact ───────────────────────────────────────────────────────────────
 
 export const getContact = protectedProcedure
 	.input(z.object({ id: z.string().uuid() }))
-	.handler(async ({ input, context }) => {
-		const c = await context.db.contact.findFirst({
-			where: { id: input.id, uploadedBy: context.session.user.id },
-			include: {
-				parseJob: {
-					select: {
-						id: true,
-						originalFilename: true,
-						createdAt: true,
-						confidence: true,
+	.handler(
+		withCache("contacts.get", 30_000, async ({ input, context }) => {
+			const c = await context.db.contact.findFirst({
+				where: { id: input.id, uploadedBy: context.session?.user.id },
+				include: {
+					parseJob: {
+						select: {
+							id: true,
+							originalFilename: true,
+							createdAt: true,
+							confidence: true,
+						},
 					},
 				},
-			},
-		});
-		if (!c) {
-			throw new Error(`Contact ${input.id} not found`);
-		}
+			});
+			if (!c) {
+				throw new Error(`Contact ${input.id} not found`);
+			}
 
-		return {
-			id: c.id,
-			name: c.name,
-			phone: c.phone,
-			channel: c.channel as "whatsapp" | "sms",
-			type: c.type as "first_timer" | "returning" | "member" | "visitor",
-			email: c.email,
-			notes: c.notes,
-			rawRow: c.rawRow,
-			optedOut: c.optedOut,
-			createdAt: c.createdAt.toISOString(),
-			parseJobId: c.parseJobId,
-			sourceFilename: c.parseJob.originalFilename,
-			sourceCreatedAt: c.parseJob.createdAt.toISOString(),
-			sourceConfidence: c.parseJob.confidence,
-		};
-	});
+			return {
+				id: c.id,
+				name: c.name,
+				phone: c.phone,
+				channel: c.channel as "whatsapp" | "sms",
+				type: c.type as "first_timer" | "returning" | "member" | "visitor",
+				email: c.email,
+				notes: c.notes,
+				rawRow: c.rawRow,
+				optedOut: c.optedOut,
+				createdAt: c.createdAt.toISOString(),
+				parseJobId: c.parseJobId,
+				sourceFilename: c.parseJob.originalFilename,
+				sourceCreatedAt: c.parseJob.createdAt.toISOString(),
+				sourceConfidence: c.parseJob.confidence,
+			};
+		})
+	);
 
 // ─── updateContact ────────────────────────────────────────────────────────────
 
@@ -155,8 +157,9 @@ export const updateContact = protectedProcedure
 	)
 	.handler(async ({ input, context }) => {
 		const { id, ...data } = input;
+		const userId = context.session.user.id;
 		const existing = await context.db.contact.findFirst({
-			where: { id, uploadedBy: context.session.user.id },
+			where: { id, uploadedBy: userId },
 		});
 		if (!existing) {
 			throw new Error("Contact not found");
@@ -185,6 +188,7 @@ export const updateContact = protectedProcedure
 			data: { ...data },
 		});
 
+		invalidateMany(userId, ["contacts.list", "contacts.get"]);
 		return { success: true, id: updated.id };
 	});
 
@@ -193,13 +197,15 @@ export const updateContact = protectedProcedure
 export const deleteContact = protectedProcedure
 	.input(z.object({ id: z.string().uuid() }))
 	.handler(async ({ input, context }) => {
+		const userId = context.session.user.id;
 		const existing = await context.db.contact.findFirst({
-			where: { id: input.id, uploadedBy: context.session.user.id },
+			where: { id: input.id, uploadedBy: userId },
 		});
 		if (!existing) {
 			throw new Error("Contact not found");
 		}
 		await context.db.contact.delete({ where: { id: input.id } });
+		invalidateMany(userId, ["contacts.list", "contacts.get"]);
 		return { success: true };
 	});
 
@@ -208,9 +214,11 @@ export const deleteContact = protectedProcedure
 export const deleteContacts = protectedProcedure
 	.input(z.object({ ids: z.array(z.string().uuid()).min(1).max(500) }))
 	.handler(async ({ input, context }) => {
+		const userId = context.session.user.id;
 		const { count } = await context.db.contact.deleteMany({
-			where: { id: { in: input.ids }, uploadedBy: context.session.user.id },
+			where: { id: { in: input.ids }, uploadedBy: userId },
 		});
+		invalidate(userId, "contacts.list");
 		return { success: true, deleted: count };
 	});
 
@@ -422,6 +430,7 @@ export const autoMergeDuplicates = protectedProcedure.handler(
 			totalDeleted += losers.length;
 		}
 
+		invalidate(userId, "contacts.list");
 		return {
 			success: true,
 			groupsResolved: duplicatePhones.length,
@@ -473,14 +482,9 @@ export const createContact = protectedProcedure
 				status: "done",
 				originalFilename: "Manual entry",
 				confidence: 1,
-				mimeType: "image/jpeg" as
-					| "image/jpeg"
-					| "image/jpg"
-					| "image/png"
-					| "image/webp"
-					| "image/gif",
-				r2Bucket: BUCKET,
-				r2Key: `manual_entry-by-${userId}-${new Date()}`,
+				mimeType: "text/plain",
+				r2Bucket: "manual",
+				r2Key: "manual",
 			},
 			update: {},
 		});
@@ -498,6 +502,7 @@ export const createContact = protectedProcedure
 			},
 		});
 
+		invalidate(userId, "contacts.list");
 		return {
 			id: contact.id,
 			name: contact.name,
@@ -505,4 +510,124 @@ export const createContact = protectedProcedure
 			channel: contact.channel as "whatsapp" | "sms",
 			type: contact.type as "first_timer" | "returning" | "member" | "visitor",
 		};
+	});
+
+// ─── exportContacts ───────────────────────────────────────────────────────────
+
+export const exportContacts = protectedProcedure
+	.input(
+		z.object({
+			format: z.enum(["csv", "xlsx"]).default("csv"),
+			channel: ChannelSchema.optional(),
+			type: ContactTypeSchema.optional(),
+			search: z.string().optional(),
+			campaignId: z.string().optional(),
+			/** ISO date string — contacts last messaged on/after this date */
+			lastContactedFrom: z.string().optional(),
+			/** ISO date string — contacts last messaged on/before this date */
+			lastContactedTo: z.string().optional(),
+			/** If true, only export contacts that have not opted out */
+			activeOnly: z.boolean().default(false),
+		})
+	)
+	.handler(async ({ input, context }) => {
+		const userId = context.session.user.id;
+
+		// If user is a member, use owner's contacts
+		const membership = await context.db.orgMember.findFirst({
+			where: { userId },
+			select: { ownerId: true },
+		});
+		const ownerId = membership?.ownerId ?? userId;
+
+		// Build the Prisma where clause
+		const where: Record<string, any> = {
+			uploadedBy: ownerId,
+			...(input.channel && { channel: input.channel }),
+			...(input.type && { type: input.type }),
+			...(input.activeOnly && { optedOut: false }),
+			...(input.search && {
+				OR: [
+					{ name: { contains: input.search, mode: "insensitive" } },
+					{ phone: { contains: input.search, mode: "insensitive" } },
+					{ email: { contains: input.search, mode: "insensitive" } },
+				],
+			}),
+		};
+
+		// Filter by campaign: find contacts who received a message in that campaign
+		if (input.campaignId) {
+			const messagePhones = await context.db.message.findMany({
+				where: { campaignId: input.campaignId },
+				select: { phone: true },
+				distinct: ["phone"],
+			});
+			where.phone = { in: messagePhones.map((m: any) => m.phone) };
+		}
+
+		// Filter by last contacted date (uses lastInboundAt or createdAt of latest message)
+		if (input.lastContactedFrom || input.lastContactedTo) {
+			where.lastInboundAt = {
+				...(input.lastContactedFrom && {
+					gte: new Date(input.lastContactedFrom),
+				}),
+				...(input.lastContactedTo && { lte: new Date(input.lastContactedTo) }),
+			};
+		}
+
+		const contacts = await context.db.contact.findMany({
+			where,
+			orderBy: { createdAt: "desc" },
+			select: {
+				name: true,
+				phone: true,
+				email: true,
+				channel: true,
+				type: true,
+				notes: true,
+				createdAt: true,
+				lastInboundAt: true,
+			},
+		});
+
+		// Build rows
+		const rows = contacts.map((c: any) => ({
+			Name: c.name ?? "",
+			Phone: c.phone,
+			Email: c.email ?? "",
+			Channel: c.channel,
+			Type: c.type ?? "",
+			Notes: c.notes ?? "",
+			"Added on": c.createdAt.toISOString().slice(0, 10),
+			"Last replied": c.lastInboundAt
+				? c.lastInboundAt.toISOString().slice(0, 10)
+				: "",
+		}));
+
+		if (input.format === "csv") {
+			if (rows.length === 0) {
+				return { format: "csv", content: "", count: 0 };
+			}
+			const headers = Object.keys(rows[0]);
+			const stringEscape = (v: string) =>
+				v.includes(",") || v.includes('"') || v.includes("\n")
+					? `"${v.replace(/"/g, '""')}"`
+					: v;
+			const csv = [
+				headers.join(","),
+				...rows.map((r) =>
+					headers.map((h) => stringEscape(r[h as keyof typeof r])).join(",")
+				),
+			].join("\n");
+			return { format: "csv" as const, content: csv, count: rows.length };
+		}
+
+		// XLSX — use the xlsx library (SheetJS)
+		const XLSX = await import("xlsx");
+		const ws = XLSX.utils.json_to_sheet(rows);
+		const wb = XLSX.utils.book_new();
+		XLSX.utils.book_append_sheet(wb, ws, "Contacts");
+		// Return as base64 so it can be sent over JSON
+		const buf = XLSX.write(wb, { type: "base64", bookType: "xlsx" });
+		return { format: "xlsx" as const, content: buf, count: rows.length };
 	});

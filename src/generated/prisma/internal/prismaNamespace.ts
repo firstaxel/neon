@@ -399,7 +399,10 @@ export const ModelName = {
   MessageTemplate: 'MessageTemplate',
   SenderNumber: 'SenderNumber',
   PendingDelivery: 'PendingDelivery',
-  InboundMessage: 'InboundMessage'
+  InboundMessage: 'InboundMessage',
+  OrgInvite: 'OrgInvite',
+  OrgMember: 'OrgMember',
+  OrgJoinRequest: 'OrgJoinRequest'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -415,7 +418,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "session" | "account" | "parseJob" | "contact" | "campaign" | "message" | "verification" | "wallet" | "transaction" | "subscription" | "userProfile" | "messageTemplate" | "senderNumber" | "pendingDelivery" | "inboundMessage"
+    modelProps: "user" | "session" | "account" | "parseJob" | "contact" | "campaign" | "message" | "verification" | "wallet" | "transaction" | "subscription" | "userProfile" | "messageTemplate" | "senderNumber" | "pendingDelivery" | "inboundMessage" | "orgInvite" | "orgMember" | "orgJoinRequest"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1603,6 +1606,228 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    OrgInvite: {
+      payload: Prisma.$OrgInvitePayload<ExtArgs>
+      fields: Prisma.OrgInviteFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.OrgInviteFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrgInvitePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.OrgInviteFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrgInvitePayload>
+        }
+        findFirst: {
+          args: Prisma.OrgInviteFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrgInvitePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.OrgInviteFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrgInvitePayload>
+        }
+        findMany: {
+          args: Prisma.OrgInviteFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrgInvitePayload>[]
+        }
+        create: {
+          args: Prisma.OrgInviteCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrgInvitePayload>
+        }
+        createMany: {
+          args: Prisma.OrgInviteCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.OrgInviteCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrgInvitePayload>[]
+        }
+        delete: {
+          args: Prisma.OrgInviteDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrgInvitePayload>
+        }
+        update: {
+          args: Prisma.OrgInviteUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrgInvitePayload>
+        }
+        deleteMany: {
+          args: Prisma.OrgInviteDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.OrgInviteUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.OrgInviteUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrgInvitePayload>[]
+        }
+        upsert: {
+          args: Prisma.OrgInviteUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrgInvitePayload>
+        }
+        aggregate: {
+          args: Prisma.OrgInviteAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateOrgInvite>
+        }
+        groupBy: {
+          args: Prisma.OrgInviteGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OrgInviteGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.OrgInviteCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OrgInviteCountAggregateOutputType> | number
+        }
+      }
+    }
+    OrgMember: {
+      payload: Prisma.$OrgMemberPayload<ExtArgs>
+      fields: Prisma.OrgMemberFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.OrgMemberFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrgMemberPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.OrgMemberFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrgMemberPayload>
+        }
+        findFirst: {
+          args: Prisma.OrgMemberFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrgMemberPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.OrgMemberFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrgMemberPayload>
+        }
+        findMany: {
+          args: Prisma.OrgMemberFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrgMemberPayload>[]
+        }
+        create: {
+          args: Prisma.OrgMemberCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrgMemberPayload>
+        }
+        createMany: {
+          args: Prisma.OrgMemberCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.OrgMemberCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrgMemberPayload>[]
+        }
+        delete: {
+          args: Prisma.OrgMemberDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrgMemberPayload>
+        }
+        update: {
+          args: Prisma.OrgMemberUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrgMemberPayload>
+        }
+        deleteMany: {
+          args: Prisma.OrgMemberDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.OrgMemberUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.OrgMemberUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrgMemberPayload>[]
+        }
+        upsert: {
+          args: Prisma.OrgMemberUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrgMemberPayload>
+        }
+        aggregate: {
+          args: Prisma.OrgMemberAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateOrgMember>
+        }
+        groupBy: {
+          args: Prisma.OrgMemberGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OrgMemberGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.OrgMemberCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OrgMemberCountAggregateOutputType> | number
+        }
+      }
+    }
+    OrgJoinRequest: {
+      payload: Prisma.$OrgJoinRequestPayload<ExtArgs>
+      fields: Prisma.OrgJoinRequestFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.OrgJoinRequestFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrgJoinRequestPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.OrgJoinRequestFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrgJoinRequestPayload>
+        }
+        findFirst: {
+          args: Prisma.OrgJoinRequestFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrgJoinRequestPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.OrgJoinRequestFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrgJoinRequestPayload>
+        }
+        findMany: {
+          args: Prisma.OrgJoinRequestFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrgJoinRequestPayload>[]
+        }
+        create: {
+          args: Prisma.OrgJoinRequestCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrgJoinRequestPayload>
+        }
+        createMany: {
+          args: Prisma.OrgJoinRequestCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.OrgJoinRequestCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrgJoinRequestPayload>[]
+        }
+        delete: {
+          args: Prisma.OrgJoinRequestDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrgJoinRequestPayload>
+        }
+        update: {
+          args: Prisma.OrgJoinRequestUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrgJoinRequestPayload>
+        }
+        deleteMany: {
+          args: Prisma.OrgJoinRequestDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.OrgJoinRequestUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.OrgJoinRequestUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrgJoinRequestPayload>[]
+        }
+        upsert: {
+          args: Prisma.OrgJoinRequestUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrgJoinRequestPayload>
+        }
+        aggregate: {
+          args: Prisma.OrgJoinRequestAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateOrgJoinRequest>
+        }
+        groupBy: {
+          args: Prisma.OrgJoinRequestGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OrgJoinRequestGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.OrgJoinRequestCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OrgJoinRequestCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1945,6 +2170,44 @@ export const InboundMessageScalarFieldEnum = {
 } as const
 
 export type InboundMessageScalarFieldEnum = (typeof InboundMessageScalarFieldEnum)[keyof typeof InboundMessageScalarFieldEnum]
+
+
+export const OrgInviteScalarFieldEnum = {
+  id: 'id',
+  ownerId: 'ownerId',
+  email: 'email',
+  role: 'role',
+  token: 'token',
+  expiresAt: 'expiresAt',
+  accepted: 'accepted',
+  createdAt: 'createdAt'
+} as const
+
+export type OrgInviteScalarFieldEnum = (typeof OrgInviteScalarFieldEnum)[keyof typeof OrgInviteScalarFieldEnum]
+
+
+export const OrgMemberScalarFieldEnum = {
+  id: 'id',
+  ownerId: 'ownerId',
+  userId: 'userId',
+  role: 'role',
+  joinedAt: 'joinedAt'
+} as const
+
+export type OrgMemberScalarFieldEnum = (typeof OrgMemberScalarFieldEnum)[keyof typeof OrgMemberScalarFieldEnum]
+
+
+export const OrgJoinRequestScalarFieldEnum = {
+  id: 'id',
+  ownerId: 'ownerId',
+  userId: 'userId',
+  message: 'message',
+  status: 'status',
+  decidedAt: 'decidedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type OrgJoinRequestScalarFieldEnum = (typeof OrgJoinRequestScalarFieldEnum)[keyof typeof OrgJoinRequestScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -2293,6 +2556,34 @@ export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'J
 export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
     
 
+
+/**
+ * Reference to a field of type 'OrgRole'
+ */
+export type EnumOrgRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OrgRole'>
+    
+
+
+/**
+ * Reference to a field of type 'OrgRole[]'
+ */
+export type ListEnumOrgRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OrgRole[]'>
+    
+
+
+/**
+ * Reference to a field of type 'JoinRequestStatus'
+ */
+export type EnumJoinRequestStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'JoinRequestStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'JoinRequestStatus[]'
+ */
+export type ListEnumJoinRequestStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'JoinRequestStatus[]'>
+    
+
 /**
  * Batch Payload for updateMany & deleteMany & createMany
  */
@@ -2404,6 +2695,9 @@ export type GlobalOmitConfig = {
   senderNumber?: Prisma.SenderNumberOmit
   pendingDelivery?: Prisma.PendingDeliveryOmit
   inboundMessage?: Prisma.InboundMessageOmit
+  orgInvite?: Prisma.OrgInviteOmit
+  orgMember?: Prisma.OrgMemberOmit
+  orgJoinRequest?: Prisma.OrgJoinRequestOmit
 }
 
 /* Types for Logging */

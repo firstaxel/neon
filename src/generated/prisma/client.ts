@@ -131,3 +131,22 @@ export type PendingDelivery = Prisma.PendingDeliveryModel
  * a free-form reply can be sent or if a template is needed (and billed higher).
  */
 export type InboundMessage = Prisma.InboundMessageModel
+/**
+ * Model OrgInvite
+ * Pending invite sent by an org owner to add a team member.
+ * On acceptance the row is marked accepted=true and an OrgMember row is created.
+ */
+export type OrgInvite = Prisma.OrgInviteModel
+/**
+ * Model OrgMember
+ * Active team membership — joins a user to an owner's org.
+ * ownerId = the account whose wallet + data is being shared.
+ */
+export type OrgMember = Prisma.OrgMemberModel
+/**
+ * Model OrgJoinRequest
+ * A request from a user (or unauthenticated visitor) to join an org.
+ * Owners see these in their team settings and can approve or decline.
+ * On approval an OrgMember row is created and the requester is notified.
+ */
+export type OrgJoinRequest = Prisma.OrgJoinRequestModel

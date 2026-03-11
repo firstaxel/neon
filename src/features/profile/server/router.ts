@@ -12,9 +12,10 @@
  */
 
 import { z } from "zod";
-import { auth } from "#/lib/auth";
-import { protectedProcedure } from "#/orpc";
 import { seedScenarioTemplates } from "#/features/miscellaneous/seed-scenario-templates";
+import { auth } from "#/lib/auth";
+import { invalidate, withCache } from "#/lib/cache";
+import { protectedProcedure } from "#/orpc";
 
 // ─── Shared org input ─────────────────────────────────────────────────────────
 
@@ -28,46 +29,63 @@ const OrgInput = z.object({
 		.optional(),
 	phone: z.string().min(7).max(20).optional(),
 	timezone: z.string().optional(),
-	smsSenderId: z.string().max(11).regex(/^[a-zA-Z0-9]*$/).optional(),
+	smsSenderId: z
+		.string()
+		.max(11)
+		.regex(/^[a-zA-Z0-9]*$/)
+		.optional(),
 	usePlatformSender: z.boolean().optional(),
 });
 
 // ─── get ──────────────────────────────────────────────────────────────────────
 
-export const getProfile = protectedProcedure.handler(async ({ context }) => {
-	const [user, profile] = await Promise.all([
-		context.db.user.findUniqueOrThrow({
-			where: { id: context.session.user.id },
-			select: { id: true, name: true, email: true, image: true, createdAt: true },
-		}),
-		context.db.userProfile.findUnique({
-			where: { userId: context.session.user.id },
-		}),
-	]);
+export const getProfile = protectedProcedure.handler(
+	withCache("profile.get", 60_000, async ({ context }) => {
+		const [user, profile] = await Promise.all([
+			context.db.user.findUniqueOrThrow({
+				where: { id: context.session?.user.id },
+				select: {
+					id: true,
+					name: true,
+					email: true,
+					image: true,
+					createdAt: true,
+				},
+			}),
+			context.db.userProfile.findUnique({
+				where: { userId: context.session?.user.id },
+			}),
+		]);
 
-	return {
-		id: context.session.user.id,
-		name: user.name,
-		email: user.email,
-		image: user.image,
-		createdAt: user.createdAt.toISOString(),
-		orgType: profile?.orgType ?? null,
-		orgName: profile?.orgName ?? null,
-		orgSize: profile?.orgSize ?? null,
-		role: profile?.role ?? "staff",
-		phone: profile?.phone ?? null,
-		timezone: profile?.timezone ?? "Africa/Lagos",
-		onboardingComplete: profile?.onboardingComplete ?? false,
-		onboardingStep: profile?.onboardingStep ?? 0,
-	};
-});
+		return {
+			id: context.session?.user.id,
+			name: user.name,
+			email: user.email,
+			image: user.image,
+			createdAt: user.createdAt.toISOString(),
+			orgType: profile?.orgType ?? null,
+			orgName: profile?.orgName ?? null,
+			orgSize: profile?.orgSize ?? null,
+			role: profile?.role ?? "staff",
+			phone: profile?.phone ?? null,
+			timezone: profile?.timezone ?? "Africa/Lagos",
+			onboardingComplete: profile?.onboardingComplete ?? false,
+			onboardingStep: profile?.onboardingStep ?? 0,
+		};
+	})
+);
 
 // ─── update ───────────────────────────────────────────────────────────────────
 
 export const updateProfile = protectedProcedure
 	.input(OrgInput)
 	.handler(async ({ input, context }) => {
-		const { name, smsSenderId: _s, usePlatformSender: _u, ...profileFields } = input;
+		const {
+			name,
+			smsSenderId: _s,
+			usePlatformSender: _u,
+			...profileFields
+		} = input;
 
 		if (name) {
 			await context.db.user.update({
@@ -82,6 +100,7 @@ export const updateProfile = protectedProcedure
 			update: profileFields,
 		});
 
+		invalidate(context.session.user.id, "profile.get");
 		return { success: true, name: name ?? context.session.user.name, profile };
 	});
 
@@ -95,7 +114,14 @@ export const completeOnboarding = protectedProcedure
 		})
 	)
 	.handler(async ({ input, context }) => {
-		const { step, complete, name, smsSenderId, usePlatformSender, ...profileFields } = input;
+		const {
+			step,
+			complete,
+			name,
+			smsSenderId,
+			usePlatformSender,
+			...profileFields
+		} = input;
 
 		if (name) {
 			await context.db.user.update({
@@ -120,7 +146,11 @@ export const completeOnboarding = protectedProcedure
 		});
 
 		// Save sender ID when user explicitly chose "register my own" (usePlatformSender=false)
-		if (smsSenderId && smsSenderId.trim().length >= 3 && usePlatformSender === false) {
+		if (
+			smsSenderId &&
+			smsSenderId.trim().length >= 3 &&
+			usePlatformSender === false
+		) {
 			const cleanId = smsSenderId.replace(/[^a-zA-Z0-9]/g, "").slice(0, 11);
 			const existing = await context.db.senderNumber.findFirst({
 				where: { userId: context.session.user.id, channel: "sms" },
@@ -128,7 +158,11 @@ export const completeOnboarding = protectedProcedure
 			if (existing) {
 				await context.db.senderNumber.update({
 					where: { id: existing.id },
-					data: { number: cleanId, label: "Primary SMS Sender ID", isActive: false },
+					data: {
+						number: cleanId,
+						label: "Primary SMS Sender ID",
+						isActive: false,
+					},
 				});
 			} else {
 				await context.db.senderNumber.create({
@@ -144,9 +178,14 @@ export const completeOnboarding = protectedProcedure
 		}
 
 		if (complete) {
-			await seedScenarioTemplates(context.db, context.session.user.id, profileFields.orgType);
+			await seedScenarioTemplates(
+				context.db,
+				context.session.user.id,
+				profileFields.orgType
+			);
 		}
 
+		invalidate(context.session.user.id, "profile.get");
 		return { success: true, step, complete, profile };
 	});
 
@@ -169,7 +208,9 @@ export const updatePassword = protectedProcedure
 			headers: new Headers({ "x-user-id": context.session.user.id }),
 		});
 
-		if (!response) throw new Error("Current password is incorrect");
+		if (!response) {
+			throw new Error("Current password is incorrect");
+		}
 		return { success: true };
 	});
 
@@ -188,21 +229,23 @@ export const reseedTemplates = protectedProcedure
 
 // ─── getSenderNumbers ─────────────────────────────────────────────────────────
 
-export const getSenderNumbers = protectedProcedure.handler(async ({ context }) => {
-	const senders = await context.db.senderNumber.findMany({
-		where: { userId: context.session.user.id, channel: "sms" },
-		orderBy: { createdAt: "asc" },
-	});
-	return senders.map((s) => ({
-		id: s.id,
-		number: s.number,
-		label: s.label,
-		isActive: s.isActive,
-		sentCount: s.sentCount,
-		lastUsedAt: s.lastUsedAt?.toISOString() ?? null,
-		createdAt: s.createdAt.toISOString(),
-	}));
-});
+export const getSenderNumbers = protectedProcedure.handler(
+	withCache("profile.getSenderNumbers", 60_000, async ({ context }) => {
+		const senders = await context.db.senderNumber.findMany({
+			where: { userId: context.session?.user.id, channel: "sms" },
+			orderBy: { createdAt: "asc" },
+		});
+		return senders.map((s) => ({
+			id: s.id,
+			number: s.number,
+			label: s.label,
+			isActive: s.isActive,
+			sentCount: s.sentCount,
+			lastUsedAt: s.lastUsedAt?.toISOString() ?? null,
+			createdAt: s.createdAt.toISOString(),
+		}));
+	})
+);
 
 // ─── submitSenderId ───────────────────────────────────────────────────────────
 
@@ -250,10 +293,12 @@ export const submitSenderId = protectedProcedure
 		// 2. Submit to Termii
 		const termiiApiKey = process.env.TERMII_API_KEY;
 		if (!termiiApiKey) {
+			invalidate(context.session.user.id, "profile.getSenderNumbers");
 			return {
 				success: true,
 				submitted: false,
-				reason: "Sender ID saved. TERMII_API_KEY not configured — submit manually via Termii dashboard.",
+				reason:
+					"Sender ID saved. TERMII_API_KEY not configured — submit manually via Termii dashboard.",
 				senderId,
 				dbId: dbRecord.id,
 			};
@@ -266,17 +311,20 @@ export const submitSenderId = protectedProcedure
 		const companyName = profile?.orgName ?? "MessageDesk User";
 
 		try {
-			const res = await fetch("https://v3.api.termii.com/api/sender-id/request", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({
-					api_key: termiiApiKey,
-					sender_id: senderId,
-					usecase:
-						"Sending transactional and informational messages to our members and customers",
-					company: companyName,
-				}),
-			});
+			const res = await fetch(
+				"https://v3.api.termii.com/api/sender-id/request",
+				{
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						api_key: termiiApiKey,
+						sender_id: senderId,
+						usecase:
+							"Sending transactional and informational messages to our members and customers",
+						company: companyName,
+					}),
+				}
+			);
 
 			const data = (await res.json()) as { code?: string; message?: string };
 
@@ -293,7 +341,9 @@ export const submitSenderId = protectedProcedure
 			return {
 				success: true,
 				submitted: true,
-				reason: data.message ?? "Submitted — Termii & NCC approval takes 2–5 business days.",
+				reason:
+					data.message ??
+					"Submitted — Termii & NCC approval takes 2–5 business days.",
 				senderId,
 				dbId: dbRecord.id,
 			};
@@ -317,13 +367,16 @@ export const deleteSenderNumber = protectedProcedure
 		const record = await context.db.senderNumber.findFirst({
 			where: { id: input.id, userId: context.session.user.id },
 		});
-		if (!record) throw new Error("Sender ID not found");
+		if (!record) {
+			throw new Error("Sender ID not found");
+		}
 		if (record.isActive) {
 			throw new Error(
 				"Cannot delete an active sender ID — contact support to deactivate it first"
 			);
 		}
 		await context.db.senderNumber.delete({ where: { id: input.id } });
+		invalidate(context.session.user.id, "profile.getSenderNumbers");
 		return { success: true };
 	});
 

@@ -1,9 +1,9 @@
 /**
  * src/routes/index.tsx — MessageDesk public landing page
  *
- * Aesthetic: Refined dark SaaS — deep slate bg, indigo/violet accent,
- * soft glass cards. Editorial typography (Instrument Serif display + DM Sans body).
- * Fully responsive via a useBreakpoint hook — no Tailwind, pure inline styles.
+ * Aesthetic: Dark SaaS — Bricolage Grotesque (ultra-thick display),
+ * deep navy bg, indigo/violet accent, kinetic message stream hero.
+ * Generic business messaging — no church/NGO references.
  */
 
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -13,60 +13,71 @@ import {
 	MessageCircle,
 	Send,
 	Sparkles,
+	Star,
 	Users,
 	Zap,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { pageHeadMeta } from "#/lib/metadata";
 
-export const Route = createFileRoute("/")({ component: LandingPage });
+export const Route = createFileRoute("/")({
+	component: LandingPage,
+	head: () => {
+		return {
+			meta: [pageHeadMeta.home],
+		};
+	},
+});
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 
 const T = {
-	bg: "#080b12", // deep navy-black
-	bgCard: "#0e1420", // card surface
-	bgCardHi: "#111827", // slightly lifted card
-	border: "rgba(99,102,241,0.14)", // indigo-tinted border
-	borderSub: "rgba(255,255,255,0.06)", // subtle border
-	accent: "#6366f1", // indigo-500
-	accentLo: "rgba(99,102,241,0.12)",
-	accentGlow: "rgba(99,102,241,0.35)",
-	violet: "#8b5cf6", // violet-500 — secondary accent
-	green: "#10b981", // emerald — for positive/live indicators only
-	text: "#f1f3f9", // near-white
-	textSub: "rgba(241,243,249,0.5)", // muted
-	textDim: "rgba(241,243,249,0.25)", // dimmed
-	mono: `'JetBrains Mono','Fira Code',monospace`,
-	display: `'Instrument Serif','Georgia',serif`,
-	body: `'DM Sans',system-ui,sans-serif`,
+	bg: "#060810",
+	bgCard: "#0b0f1c",
+	bgCardHi: "#0f1425",
+	border: "rgba(99,102,241,0.18)",
+	borderSub: "rgba(255,255,255,0.07)",
+	accent: "#6366f1",
+	accentLo: "rgba(99,102,241,0.1)",
+	accentGlow: "rgba(99,102,241,0.45)",
+	violet: "#8b5cf6",
+	violetLo: "rgba(139,92,246,0.1)",
+	green: "#10b981",
+	amber: "#f59e0b",
+	rose: "#f43f5e",
+	text: "#eef0f8",
+	textSub: "rgba(238,240,248,0.55)",
+	textDim: "rgba(238,240,248,0.22)",
+	display: `'Bricolage Grotesque','Outfit',system-ui,sans-serif`,
+	body: `'Geist','DM Sans',system-ui,sans-serif`,
+	mono: `'Geist Mono','JetBrains Mono',monospace`,
 } as const;
 
-// ─── Responsive hook ──────────────────────────────────────────────────────────
+// ─── Responsive hooks ─────────────────────────────────────────────────────────
 
 function useIsMobile() {
-	const [mobile, setMobile] = useState(
+	const [v, setV] = useState(
 		typeof window !== "undefined" ? window.innerWidth < 768 : false
 	);
 	useEffect(() => {
-		const fn = () => setMobile(window.innerWidth < 768);
+		const fn = () => setV(window.innerWidth < 768);
 		fn();
 		window.addEventListener("resize", fn);
 		return () => window.removeEventListener("resize", fn);
 	}, []);
-	return mobile;
+	return v;
 }
-
 function useIsTablet() {
-	const [tablet, setTablet] = useState(
+	const [v, setV] = useState(
 		typeof window !== "undefined" ? window.innerWidth < 1024 : false
 	);
 	useEffect(() => {
-		const fn = () => setTablet(window.innerWidth < 1024);
+		const fn = () => setV(window.innerWidth < 1024);
 		fn();
 		window.addEventListener("resize", fn);
 		return () => window.removeEventListener("resize", fn);
 	}, []);
-	return tablet;
+	return v;
 }
 
 // ─── Font + keyframes ─────────────────────────────────────────────────────────
@@ -74,65 +85,42 @@ function useIsTablet() {
 function FontLoader() {
 	return (
 		<style>{`
-      @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;700&display=swap');
+      @import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
       *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
       html { scroll-behavior: smooth; }
       body { background: ${T.bg}; color: ${T.text}; -webkit-font-smoothing: antialiased; }
       a { color: inherit; text-decoration: none; }
-      @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.85)} }
+      @keyframes blink  { 0%,100%{opacity:1} 50%{opacity:0.4} }
       @keyframes rise {
         0%   { opacity:0; transform:translateY(18px) scale(0.97); }
-        12%  { opacity:1; transform:translateY(0) scale(1); }
+        12%  { opacity:1; transform:translateY(0)    scale(1);    }
         78%  { opacity:1; }
-        100% { opacity:0; transform:translateY(-10px); }
+        100% { opacity:0; transform:translateY(-12px); }
       }
-      @keyframes shimmer {
-        0%   { background-position: -600px 0; }
-        100% { background-position:  600px 0; }
-      }
-      @keyframes fadeUp {
-        from { opacity:0; transform:translateY(22px); }
-        to   { opacity:1; transform:translateY(0); }
-      }
-      .fu  { animation: fadeUp 0.6s ease both; }
-      .fu2 { animation: fadeUp 0.6s 0.1s ease both; }
-      .fu3 { animation: fadeUp 0.6s 0.22s ease both; }
+      @keyframes shimmer { 0%{background-position:-600px 0} 100%{background-position:600px 0} }
+      @keyframes fu { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:translateY(0)} }
+      @keyframes pulse-ring { 0%{transform:scale(1);opacity:0.6} 100%{transform:scale(1.5);opacity:0} }
+      .fu  { animation: fu 0.65s ease both; }
+      .fu2 { animation: fu 0.65s 0.12s ease both; }
+      .fu3 { animation: fu 0.65s 0.25s ease both; }
     `}</style>
 	);
 }
 
-// ─── Tiny atoms ───────────────────────────────────────────────────────────────
+// ─── Atoms ────────────────────────────────────────────────────────────────────
 
 function Divider() {
 	return (
 		<div
 			style={{
 				height: 1,
-				background: `linear-gradient(90deg, transparent, ${T.border}, transparent)`,
+				background: `linear-gradient(90deg,transparent,${T.border},transparent)`,
 			}}
 		/>
 	);
 }
 
-function SectionLabel({ children }: { children: string }) {
-	return (
-		<p
-			style={{
-				fontFamily: T.mono,
-				fontSize: 10,
-				fontWeight: 700,
-				color: T.accent,
-				letterSpacing: "0.18em",
-				textTransform: "uppercase",
-				marginBottom: 14,
-			}}
-		>
-			/ {children}
-		</p>
-	);
-}
-
-function Badge({ children }: { children: React.ReactNode }) {
+function Tag({ children }: { children: React.ReactNode }) {
 	return (
 		<span
 			style={{
@@ -146,28 +134,58 @@ function Badge({ children }: { children: React.ReactNode }) {
 			}}
 		>
 			<span
-				style={{
-					width: 5,
-					height: 5,
-					borderRadius: "50%",
-					background: T.accent,
-					animation: "pulse-dot 2s infinite",
-					flexShrink: 0,
-				}}
-			/>
+				style={{ position: "relative", width: 6, height: 6, flexShrink: 0 }}
+			>
+				<span
+					style={{
+						position: "absolute",
+						inset: 0,
+						borderRadius: "50%",
+						background: T.accent,
+						animation: "blink 2s infinite",
+					}}
+				/>
+				<span
+					style={{
+						position: "absolute",
+						inset: -2,
+						borderRadius: "50%",
+						border: `1px solid ${T.accent}`,
+						animation: "pulse-ring 2s ease infinite",
+					}}
+				/>
+			</span>
 			<span
 				style={{
 					fontFamily: T.mono,
 					fontSize: 10,
-					fontWeight: 700,
+					fontWeight: 600,
 					color: T.accent,
-					letterSpacing: "0.12em",
+					letterSpacing: "0.14em",
 					textTransform: "uppercase",
 				}}
 			>
 				{children}
 			</span>
 		</span>
+	);
+}
+
+function SectionLabel({ children }: { children: string }) {
+	return (
+		<p
+			style={{
+				fontFamily: T.mono,
+				fontSize: 10,
+				fontWeight: 600,
+				color: T.accent,
+				letterSpacing: "0.18em",
+				textTransform: "uppercase",
+				marginBottom: 12,
+			}}
+		>
+			↗ {children}
+		</p>
 	);
 }
 
@@ -181,34 +199,34 @@ function AppChrome({
 	return (
 		<div
 			style={{
-				borderRadius: 14,
+				borderRadius: 16,
 				border: `1px solid ${T.border}`,
 				background: T.bgCard,
 				overflow: "hidden",
 				boxShadow:
-					"0 24px 60px rgba(0,0,0,0.45), 0 0 0 1px rgba(99,102,241,0.06)",
+					"0 32px 80px rgba(0,0,0,0.55),0 0 0 1px rgba(99,102,241,0.06)",
 			}}
 		>
 			<div
 				style={{
-					height: 36,
-					background: "#090d17",
+					height: 38,
+					background: "#07091a",
 					borderBottom: `1px solid ${T.borderSub}`,
 					display: "flex",
 					alignItems: "center",
-					padding: "0 12px",
+					padding: "0 14px",
 					gap: 6,
 				}}
 			>
 				{["#ef4444", "#f59e0b", "#10b981"].map((c, i) => (
 					<div
-						key={i}
+						key={i.toString()}
 						style={{
-							width: 8,
-							height: 8,
+							width: 9,
+							height: 9,
 							borderRadius: "50%",
 							background: c,
-							opacity: 0.55,
+							opacity: 0.6,
 						}}
 					/>
 				))}
@@ -216,15 +234,15 @@ function AppChrome({
 					style={{
 						marginLeft: 10,
 						flex: 1,
-						height: 18,
-						borderRadius: 4,
+						height: 20,
+						borderRadius: 5,
 						background: "rgba(255,255,255,0.04)",
 						display: "flex",
 						alignItems: "center",
-						paddingLeft: 8,
+						paddingLeft: 10,
 					}}
 				>
-					<span style={{ fontFamily: T.mono, fontSize: 9, color: T.textDim }}>
+					<span style={{ fontFamily: T.mono, fontSize: 9.5, color: T.textDim }}>
 						{url}
 					</span>
 				</div>
@@ -238,73 +256,69 @@ function AppChrome({
 
 const MSGS = [
 	{
-		from: "✨ Welcome",
-		text: "Hi Emeka! 🎉 We're so glad you joined us last Sunday. Here's what's on this week...",
-		side: "right" as const,
-	},
-	{
-		from: "💬 Blessing",
-		text: "Thank you so much! I really enjoyed the service 🙏",
-		side: "left" as const,
-	},
-	{
 		from: "📢 Campaign",
-		text: "Dear Ngozi, you're invited to our Easter Harvest — Sat 26th at 11am 🎊",
+		text: "Hi Sarah! Your order #4821 has shipped and will arrive by Thursday.",
 		side: "right" as const,
+	},
+	{
+		from: "💬 Sarah",
+		text: "Wow that was fast! Thanks for the update 🙌",
+		side: "left" as const,
 	},
 	{
 		from: "🔔 Consent",
-		text: "Hi Chidera, Grace Assembly would like to send you a message. Reply YES to receive it or STOP to opt out.",
+		text: "Hi Marcus, TechCorp wants to send you exclusive offers. Reply YES to opt in.",
+		side: "right" as const,
+	},
+	{ from: "💬 Marcus", text: "YES! Sounds good 👍", side: "left" as const },
+	{
+		from: "✨ Welcome",
+		text: "Hi Priya! Welcome to the team. Your account is set up and ready to go.",
 		side: "right" as const,
 	},
 	{
-		from: "💬 Chidera",
-		text: "YES please! Looking forward 😊",
-		side: "left" as const,
-	},
-	{
 		from: "🔄 Follow-up",
-		text: "Hi Adaeze, we noticed you've been away — we miss you! Hope all is well 💙",
+		text: "Hi James — we noticed you haven't checked in lately. Need any help?",
 		side: "right" as const,
 	},
 ];
 
 function MsgBubble({ msg, delay }: { msg: (typeof MSGS)[0]; delay: number }) {
-	const isRight = msg.side === "right";
+	const r = msg.side === "right";
 	return (
 		<div
 			style={{
-				animation: `rise 4s ${delay}s ease both infinite`,
+				animation: `rise 4.2s ${delay}s ease both infinite`,
 				display: "flex",
-				justifyContent: isRight ? "flex-end" : "flex-start",
-				padding: "0 6px",
+				justifyContent: r ? "flex-end" : "flex-start",
+				padding: "0 8px",
 			}}
 		>
 			<div
 				style={{
 					maxWidth: "82%",
-					background: isRight ? T.accentLo : "rgba(255,255,255,0.04)",
-					border: `1px solid ${isRight ? T.border : T.borderSub}`,
-					borderRadius: isRight ? "12px 12px 3px 12px" : "12px 12px 12px 3px",
-					padding: "7px 11px",
+					background: r ? T.accentLo : "rgba(255,255,255,0.04)",
+					border: `1px solid ${r ? T.border : T.borderSub}`,
+					borderRadius: r ? "13px 13px 3px 13px" : "13px 13px 13px 3px",
+					padding: "8px 12px",
 				}}
 			>
 				<p
 					style={{
 						fontFamily: T.mono,
 						fontSize: 9,
-						color: isRight ? T.accent : T.textDim,
+						color: r ? T.accent : T.textDim,
 						marginBottom: 3,
-						fontWeight: 700,
+						fontWeight: 600,
 					}}
 				>
 					{msg.from}
 				</p>
 				<p
 					style={{
-						fontSize: 11.5,
+						fontSize: 12,
 						color: T.text,
-						lineHeight: 1.5,
+						lineHeight: 1.55,
 						fontFamily: T.body,
 					}}
 				>
@@ -331,7 +345,7 @@ function MessageStream() {
 				overflow: "hidden",
 				display: "flex",
 				flexDirection: "column",
-				gap: 8,
+				gap: 9,
 				padding: "8px 0",
 				justifyContent: "flex-end",
 			}}
@@ -363,7 +377,7 @@ function MessageStream() {
 				}}
 			/>
 			{MSGS.map((m, i) => (
-				<MsgBubble delay={i * 0.72} key={i} msg={m} />
+				<MsgBubble delay={i * 0.75} key={i.toString()} msg={m} />
 			))}
 		</div>
 	);
@@ -385,7 +399,7 @@ function Counter({
 	const [v, setV] = useState(0);
 	useEffect(() => {
 		let s = 0;
-		const step = end / 48;
+		const step = end / 52;
 		const t = setInterval(() => {
 			s += step;
 			if (s >= end) {
@@ -394,16 +408,16 @@ function Counter({
 			} else {
 				setV(Math.floor(s));
 			}
-		}, 28);
+		}, 26);
 		return () => clearInterval(t);
 	}, [end]);
 	return (
 		<div style={{ textAlign: "center" }}>
 			<p
 				style={{
-					fontFamily: T.mono,
-					fontSize: 24,
-					fontWeight: 700,
+					fontFamily: T.display,
+					fontSize: 28,
+					fontWeight: 800,
 					color: T.accent,
 					letterSpacing: "-0.04em",
 					lineHeight: 1,
@@ -416,9 +430,9 @@ function Counter({
 			<p
 				style={{
 					fontFamily: T.body,
-					fontSize: 11,
+					fontSize: 11.5,
 					color: T.textSub,
-					marginTop: 4,
+					marginTop: 5,
 				}}
 			>
 				{label}
@@ -446,8 +460,8 @@ function Navbar() {
 				position: "sticky",
 				top: 0,
 				zIndex: 100,
-				background: scrolled ? "rgba(8,11,18,0.92)" : "transparent",
-				backdropFilter: scrolled ? "blur(20px)" : "none",
+				background: scrolled ? "rgba(6,8,16,0.92)" : "transparent",
+				backdropFilter: scrolled ? "blur(22px)" : "none",
 				borderBottom: scrolled
 					? `1px solid ${T.border}`
 					: "1px solid transparent",
@@ -456,10 +470,10 @@ function Navbar() {
 		>
 			<div
 				style={{
-					maxWidth: 1120,
+					maxWidth: 1160,
 					margin: "0 auto",
-					padding: "0 20px",
-					height: 58,
+					padding: "0 24px",
+					height: 60,
 					display: "flex",
 					alignItems: "center",
 					justifyContent: "space-between",
@@ -470,23 +484,23 @@ function Navbar() {
 					style={{
 						display: "flex",
 						alignItems: "center",
-						gap: 9,
+						gap: 10,
 						flexShrink: 0,
 					}}
 				>
 					<div
 						style={{
-							width: 30,
-							height: 30,
-							borderRadius: 9,
-							background: T.accent,
+							width: 32,
+							height: 32,
+							borderRadius: 10,
+							background: `linear-gradient(135deg,${T.accent},${T.violet})`,
 							display: "flex",
 							alignItems: "center",
 							justifyContent: "center",
-							boxShadow: `0 0 18px ${T.accentGlow}`,
+							boxShadow: `0 0 20px ${T.accentGlow}`,
 						}}
 					>
-						<svg fill="none" height="16" viewBox="0 0 24 24" width="16">
+						<svg fill="none" height="17" viewBox="0 0 24 24" width="17">
 							<title>MD</title>
 							<path
 								d="M12 2C6.48 2 2 6.48 2 12c0 1.85.5 3.58 1.38 5.07L2 22l5.03-1.3A9.96 9.96 0 0012 22c5.52 0 10-4.48 10-10S17.52 2 12 2z"
@@ -494,28 +508,27 @@ function Navbar() {
 							/>
 							<path
 								d="M8 11h8M8 14.5h5"
-								stroke={T.accent}
+								stroke="rgba(99,102,241,0.6)"
 								strokeLinecap="round"
-								strokeWidth="1.6"
+								strokeWidth="1.7"
 							/>
 						</svg>
 					</div>
 					<span
 						style={{
-							fontFamily: T.body,
-							fontWeight: 700,
-							fontSize: 15,
+							fontFamily: T.display,
+							fontWeight: 800,
+							fontSize: 17,
 							color: T.text,
-							letterSpacing: "-0.025em",
+							letterSpacing: "-0.04em",
 						}}
 					>
 						Message<span style={{ color: T.accent }}>Desk</span>
 					</span>
 				</div>
 
-				{/* Desktop nav */}
 				{!mobile && (
-					<nav style={{ display: "flex", gap: 28, alignItems: "center" }}>
+					<nav style={{ display: "flex", gap: 30, alignItems: "center" }}>
 						{[
 							["Features", "#features"],
 							["How it works", "#how-it-works"],
@@ -527,7 +540,7 @@ function Navbar() {
 								onMouseEnter={(e) => (e.currentTarget.style.color = T.text)}
 								onMouseLeave={(e) => (e.currentTarget.style.color = T.textSub)}
 								style={{
-									fontSize: 13.5,
+									fontSize: 14,
 									fontWeight: 500,
 									color: T.textSub,
 									fontFamily: T.body,
@@ -540,17 +553,19 @@ function Navbar() {
 					</nav>
 				)}
 
-				{/* Desktop CTA */}
 				{!mobile && (
 					<div style={{ display: "flex", gap: 8, alignItems: "center" }}>
 						<Link
+							onMouseEnter={(e) => (e.currentTarget.style.color = T.text)}
+							onMouseLeave={(e) => (e.currentTarget.style.color = T.textSub)}
 							style={{
-								fontSize: 13.5,
+								fontSize: 14,
 								fontWeight: 600,
 								color: T.textSub,
-								padding: "7px 14px",
-								borderRadius: 8,
+								padding: "7px 16px",
+								borderRadius: 9,
 								fontFamily: T.body,
+								transition: "color .15s",
 							}}
 							to="/login"
 						>
@@ -558,13 +573,13 @@ function Navbar() {
 						</Link>
 						<Link
 							style={{
-								fontSize: 13.5,
+								fontSize: 14,
 								fontWeight: 700,
 								color: "#fff",
-								background: T.accent,
-								padding: "8px 18px",
-								borderRadius: 9,
-								boxShadow: `0 0 18px ${T.accentGlow}`,
+								background: `linear-gradient(135deg,${T.accent},${T.violet})`,
+								padding: "9px 20px",
+								borderRadius: 10,
+								boxShadow: `0 0 20px ${T.accentGlow}`,
 								fontFamily: T.body,
 							}}
 							to="/register"
@@ -574,34 +589,32 @@ function Navbar() {
 					</div>
 				)}
 
-				{/* Mobile hamburger */}
 				{mobile && (
 					<button
 						onClick={() => setOpen((o) => !o)}
 						style={{
 							background: "none",
 							border: `1px solid ${T.border}`,
-							borderRadius: 8,
+							borderRadius: 9,
 							color: T.text,
-							padding: "6px 10px",
+							padding: "7px 11px",
 							cursor: "pointer",
-							fontFamily: T.body,
-							fontSize: 18,
+							fontSize: 17,
 						}}
+						type="button"
 					>
 						☰
 					</button>
 				)}
 			</div>
 
-			{/* Mobile menu */}
 			{mobile && open && (
 				<div
 					style={{
-						background: "rgba(8,11,18,0.98)",
-						backdropFilter: "blur(20px)",
+						background: "rgba(6,8,16,0.98)",
+						backdropFilter: "blur(22px)",
 						borderBottom: `1px solid ${T.border}`,
-						padding: "16px 20px 20px",
+						padding: "16px 24px 22px",
 						display: "flex",
 						flexDirection: "column",
 						gap: 12,
@@ -631,7 +644,7 @@ function Navbar() {
 						style={{
 							display: "flex",
 							gap: 10,
-							paddingTop: 8,
+							paddingTop: 10,
 							borderTop: `1px solid ${T.border}`,
 						}}
 					>
@@ -640,8 +653,8 @@ function Navbar() {
 							style={{
 								flex: 1,
 								textAlign: "center",
-								padding: "10px",
-								borderRadius: 9,
+								padding: "11px",
+								borderRadius: 10,
 								border: `1px solid ${T.border}`,
 								color: T.text,
 								fontFamily: T.body,
@@ -657,9 +670,9 @@ function Navbar() {
 							style={{
 								flex: 1,
 								textAlign: "center",
-								padding: "10px",
-								borderRadius: 9,
-								background: T.accent,
+								padding: "11px",
+								borderRadius: 10,
+								background: `linear-gradient(135deg,${T.accent},${T.violet})`,
 								color: "#fff",
 								fontFamily: T.body,
 								fontSize: 14,
@@ -687,10 +700,10 @@ function Hero() {
 			style={{
 				position: "relative",
 				overflow: "hidden",
-				paddingTop: mobile ? 48 : 72,
+				paddingTop: mobile ? 52 : 80,
 			}}
 		>
-			{/* Subtle grid */}
+			{/* Grid background */}
 			<div
 				aria-hidden
 				style={{
@@ -698,7 +711,7 @@ function Hero() {
 					inset: 0,
 					pointerEvents: "none",
 					backgroundImage: `linear-gradient(${T.borderSub} 1px,transparent 1px),linear-gradient(90deg,${T.borderSub} 1px,transparent 1px)`,
-					backgroundSize: "64px 64px",
+					backgroundSize: "72px 72px",
 					maskImage:
 						"radial-gradient(ellipse 80% 55% at 50% 0%,black 30%,transparent 100%)",
 				}}
@@ -708,84 +721,94 @@ function Hero() {
 				aria-hidden
 				style={{
 					position: "absolute",
-					top: -150,
+					top: -180,
 					left: "50%",
 					transform: "translateX(-50%)",
-					width: 800,
-					height: 600,
+					width: 900,
+					height: 700,
 					pointerEvents: "none",
-					background: `radial-gradient(ellipse at 50% 0%,${T.accentLo} 0%,transparent 68%)`,
+					background:
+						"radial-gradient(ellipse at 50% 0%,rgba(99,102,241,0.13) 0%,transparent 68%)",
 				}}
 			/>
 
 			<div
 				style={{
-					maxWidth: 1120,
+					maxWidth: 1160,
 					margin: "0 auto",
-					padding: `0 ${mobile ? 18 : 28}px`,
+					padding: `0 ${mobile ? 20 : 32}px`,
 					position: "relative",
 				}}
 			>
-				{/* Headline block */}
 				<div
 					className="fu"
 					style={{
 						textAlign: "center",
-						maxWidth: 820,
+						maxWidth: 900,
 						margin: "0 auto",
-						paddingBottom: mobile ? 36 : 48,
+						paddingBottom: mobile ? 40 : 56,
 					}}
 				>
-					<Badge>WhatsApp &amp; SMS for churches &amp; nonprofits</Badge>
+					<Tag>WhatsApp &amp; SMS · Nigerian pricing (₦)</Tag>
+
 					<h1
 						style={{
 							fontFamily: T.display,
 							fontSize: mobile
-								? "clamp(38px,11vw,56px)"
-								: "clamp(52px,7vw,88px)",
-							fontWeight: 400,
-							fontStyle: "italic",
-							lineHeight: 1.04,
-							letterSpacing: "-0.025em",
+								? "clamp(40px,11vw,56px)"
+								: "clamp(60px,7.5vw,100px)",
+							fontWeight: 800,
+							lineHeight: 0.96,
+							letterSpacing: "-0.045em",
 							color: T.text,
-							marginTop: 24,
+							marginTop: 28,
 						}}
 					>
-						Reach every member.
-						<br />
-						<span style={{ color: T.accent }}>Both channels.</span>
+						Reach your
 						<br />
 						<span
 							style={{
-								fontStyle: "normal",
-								fontWeight: 300,
-								fontSize: "0.66em",
-								color: T.textSub,
+								background: `linear-gradient(135deg,${T.accent} 30%,${T.violet})`,
+								WebkitBackgroundClip: "text",
+								WebkitTextFillColor: "transparent",
 							}}
 						>
-							One platform.
+							customers fast.
+						</span>
+						<br />
+						<span
+							style={{
+								fontSize: "0.58em",
+								fontWeight: 700,
+								color: T.textSub,
+								letterSpacing: "-0.03em",
+							}}
+						>
+							Both channels. One platform.
 						</span>
 					</h1>
+
 					<p
 						style={{
 							fontFamily: T.body,
-							fontSize: mobile ? 15 : 17,
-							lineHeight: 1.72,
+							fontSize: mobile ? 15.5 : 17.5,
+							lineHeight: 1.7,
 							color: T.textSub,
-							maxWidth: 500,
-							margin: "20px auto 0",
+							maxWidth: 540,
+							margin: "24px auto 0",
 						}}
 					>
 						Send personalised WhatsApp campaigns and SMS blasts to your
-						congregation — AI-assisted import, pre-built templates, real-time
-						tracking.
+						customers. AI contact import, pre-built templates, real-time
+						delivery tracking.
 					</p>
+
 					<div
 						className="fu2"
 						style={{
-							marginTop: 32,
+							marginTop: 36,
 							display: "flex",
-							gap: 10,
+							gap: 12,
 							justifyContent: "center",
 							flexWrap: "wrap",
 							alignItems: "center",
@@ -795,35 +818,35 @@ function Hero() {
 							style={{
 								display: "inline-flex",
 								alignItems: "center",
-								gap: 8,
+								gap: 9,
 								fontFamily: T.body,
-								fontSize: 15,
+								fontSize: 15.5,
 								fontWeight: 700,
 								color: "#fff",
-								background: T.accent,
-								padding: "13px 26px",
-								borderRadius: 11,
-								boxShadow: `0 0 28px ${T.accentGlow}`,
+								background: `linear-gradient(135deg,${T.accent},${T.violet})`,
+								padding: "14px 30px",
+								borderRadius: 12,
+								boxShadow: `0 0 32px ${T.accentGlow}`,
 								width: mobile ? "100%" : "auto",
 								justifyContent: "center",
 							}}
 							to="/register"
 						>
-							Start free <ArrowRight size={15} />
+							Start free <ArrowRight size={16} />
 						</Link>
 						<Link
 							style={{
 								display: "inline-flex",
 								alignItems: "center",
-								gap: 7,
+								gap: 8,
 								fontFamily: T.body,
-								fontSize: 14,
+								fontSize: 14.5,
 								fontWeight: 500,
 								color: T.textSub,
 								background: "rgba(255,255,255,0.04)",
 								border: `1px solid ${T.borderSub}`,
-								padding: "13px 22px",
-								borderRadius: 11,
+								padding: "14px 24px",
+								borderRadius: 12,
 								width: mobile ? "100%" : "auto",
 								justifyContent: "center",
 							}}
@@ -837,21 +860,21 @@ function Hero() {
 							fontFamily: T.mono,
 							fontSize: 11,
 							color: T.textDim,
-							marginTop: 14,
+							marginTop: 16,
 						}}
 					>
-						No credit card · Live in 5 minutes · Nigerian pricing (₦)
+						No credit card · Live in 5 minutes · Cancel anytime
 					</p>
 				</div>
 
-				{/* Stats row */}
+				{/* Stats */}
 				<div
 					className="fu2"
 					style={{
 						display: "flex",
 						justifyContent: "center",
-						gap: mobile ? 28 : 56,
-						marginBottom: 44,
+						gap: mobile ? 30 : 64,
+						marginBottom: 48,
 						flexWrap: "wrap",
 					}}
 				>
@@ -871,7 +894,7 @@ function Hero() {
 								bottom: 0,
 								left: 0,
 								right: 0,
-								height: 180,
+								height: 200,
 								background: `linear-gradient(to top,${T.bg} 30%,transparent)`,
 								zIndex: 3,
 								pointerEvents: "none",
@@ -882,21 +905,23 @@ function Hero() {
 								style={{
 									display: "grid",
 									gridTemplateColumns: tablet ? "1fr" : "1fr 1fr",
-									minHeight: 340,
+									minHeight: 360,
 								}}
 							>
-								{/* Inbox side */}
 								<div
 									style={{
 										borderRight: tablet ? "none" : `1px solid ${T.borderSub}`,
-										padding: "14px 6px",
+										padding: "16px 8px",
 									}}
 								>
 									<div
 										style={{
-											padding: "0 12px 10px",
+											padding: "0 14px 12px",
 											borderBottom: `1px solid ${T.borderSub}`,
-											marginBottom: 6,
+											marginBottom: 8,
+											display: "flex",
+											alignItems: "center",
+											justifyContent: "space-between",
 										}}
 									>
 										<p
@@ -906,20 +931,32 @@ function Hero() {
 												color: T.textSub,
 											}}
 										>
-											LIVE · Inbox
+											INBOX · Live
 										</p>
+										<span
+											style={{
+												fontFamily: T.mono,
+												fontSize: 9,
+												color: T.green,
+												background: "rgba(16,185,129,0.1)",
+												border: "1px solid rgba(16,185,129,0.2)",
+												padding: "2px 8px",
+												borderRadius: 100,
+											}}
+										>
+											● Online
+										</span>
 									</div>
 									<MessageStream />
 								</div>
-								{/* Campaigns side */}
 								{!tablet && (
-									<div style={{ padding: "14px 16px" }}>
+									<div style={{ padding: "16px 18px" }}>
 										<p
 											style={{
 												fontFamily: T.mono,
 												fontSize: 10,
 												color: T.textSub,
-												marginBottom: 12,
+												marginBottom: 14,
 											}}
 										>
 											CAMPAIGNS · Recent
@@ -928,46 +965,46 @@ function Hero() {
 											style={{
 												display: "flex",
 												flexDirection: "column",
-												gap: 7,
+												gap: 8,
 											}}
 										>
 											{[
 												{
-													name: "Sunday Service Invite",
+													name: "New Customer Onboarding",
 													ch: "WhatsApp",
-													sent: 842,
-													pct: 96,
-													done: true,
-												},
-												{
-													name: "First-Timer Welcome",
-													ch: "SMS + WA",
-													sent: 156,
-													pct: 48,
-													done: false,
-												},
-												{
-													name: "Easter Announcement",
-													ch: "WhatsApp",
-													sent: 1203,
+													sent: 1204,
 													pct: 100,
 													done: true,
 												},
 												{
-													name: "Harvest Festival Invite",
+													name: "Product Launch Blast",
+													ch: "SMS + WA",
+													sent: 892,
+													pct: 68,
+													done: false,
+												},
+												{
+													name: "Abandoned Cart Recovery",
+													ch: "WhatsApp",
+													sent: 346,
+													pct: 100,
+													done: true,
+												},
+												{
+													name: "Weekly Newsletter",
 													ch: "SMS",
-													sent: 389,
-													pct: 72,
+													sent: 2841,
+													pct: 55,
 													done: false,
 												},
 											].map((c) => (
 												<div
 													key={c.name}
 													style={{
-														borderRadius: 8,
+														borderRadius: 9,
 														border: `1px solid ${T.borderSub}`,
 														background: T.bgCardHi,
-														padding: "9px 11px",
+														padding: "10px 12px",
 													}}
 												>
 													<div
@@ -981,7 +1018,7 @@ function Hero() {
 															<p
 																style={{
 																	fontFamily: T.body,
-																	fontSize: 11.5,
+																	fontSize: 12,
 																	fontWeight: 600,
 																	color: T.text,
 																}}
@@ -991,9 +1028,9 @@ function Hero() {
 															<p
 																style={{
 																	fontFamily: T.mono,
-																	fontSize: 9,
+																	fontSize: 9.5,
 																	color: T.textSub,
-																	marginTop: 1,
+																	marginTop: 2,
 																}}
 															>
 																{c.ch} · {c.sent.toLocaleString()} sent
@@ -1001,7 +1038,7 @@ function Hero() {
 														</div>
 														<div
 															style={{
-																padding: "2px 7px",
+																padding: "2px 8px",
 																borderRadius: 100,
 																background: c.done
 																	? "rgba(16,185,129,0.1)"
@@ -1013,7 +1050,7 @@ function Hero() {
 																style={{
 																	fontFamily: T.mono,
 																	fontSize: 9,
-																	color: c.done ? T.green : "#f59e0b",
+																	color: c.done ? T.green : T.amber,
 																	fontWeight: 700,
 																}}
 															>
@@ -1023,8 +1060,8 @@ function Hero() {
 													</div>
 													<div
 														style={{
-															marginTop: 7,
-															height: 2.5,
+															marginTop: 8,
+															height: 3,
 															borderRadius: 100,
 															background: "rgba(255,255,255,0.05)",
 														}}
@@ -1034,8 +1071,8 @@ function Hero() {
 																height: "100%",
 																width: `${c.pct}%`,
 																borderRadius: 100,
-																background: c.done ? T.green : "#f59e0b",
-																transition: "width 1.4s ease",
+																background: c.done ? T.green : T.amber,
+																transition: "width 1.6s ease",
 															}}
 														/>
 													</div>
@@ -1057,19 +1094,19 @@ function Hero() {
 
 function TrustBar() {
 	const mobile = useIsMobile();
-	const orgs = [
-		"RCCG",
-		"Winners Chapel",
-		"CAC",
-		"Living Faith Church",
-		"Nigerian Red Cross",
-		"SU Nigeria",
-		"ECWA",
-		"Deeper Life",
+	const brands = [
+		"Paystack",
+		"Flutterwave",
+		"Kuda Bank",
+		"PiggyVest",
+		"Cowrywise",
+		"Mono",
+		"Paga",
+		"TeamApt",
 	];
 	return (
 		<section
-			style={{ padding: `${mobile ? 40 : 52}px ${mobile ? 18 : 28}px 40px` }}
+			style={{ padding: `${mobile ? 44 : 56}px ${mobile ? 20 : 32}px 44px` }}
 		>
 			<p
 				style={{
@@ -1079,30 +1116,31 @@ function TrustBar() {
 					letterSpacing: "0.18em",
 					textTransform: "uppercase",
 					textAlign: "center",
-					marginBottom: 18,
+					marginBottom: 20,
 				}}
 			>
-				Trusted by faith &amp; nonprofit organisations across Nigeria
+				Trusted by fast-growing teams across Nigeria
 			</p>
 			<div
 				style={{
 					display: "flex",
 					flexWrap: "wrap",
-					gap: "8px 28px",
+					gap: "10px 32px",
 					justifyContent: "center",
 				}}
 			>
-				{orgs.map((o) => (
+				{brands.map((b) => (
 					<span
-						key={o}
+						key={b}
 						style={{
-							fontFamily: T.body,
-							fontSize: 13,
-							fontWeight: 600,
+							fontFamily: T.display,
+							fontSize: 13.5,
+							fontWeight: 700,
 							color: T.textDim,
+							letterSpacing: "-0.02em",
 						}}
 					>
-						{o}
+						{b}
 					</span>
 				))}
 			</div>
@@ -1115,16 +1153,16 @@ function TrustBar() {
 function Problem() {
 	const mobile = useIsMobile();
 	return (
-		<section style={{ padding: `80px ${mobile ? 18 : 28}px` }}>
+		<section style={{ padding: `80px ${mobile ? 20 : 32}px` }}>
 			<Divider />
 			<div
 				style={{
-					maxWidth: 1120,
+					maxWidth: 1160,
 					margin: "0 auto",
 					paddingTop: 80,
 					display: "grid",
 					gridTemplateColumns: mobile ? "1fr" : "1fr 1fr",
-					gap: mobile ? 44 : 80,
+					gap: mobile ? 48 : 88,
 					alignItems: "center",
 				}}
 			>
@@ -1134,53 +1172,51 @@ function Problem() {
 						style={{
 							fontFamily: T.display,
 							fontSize: mobile
-								? "clamp(26px,7vw,44px)"
-								: "clamp(28px,3.5vw,50px)",
-							fontStyle: "italic",
+								? "clamp(28px,8vw,44px)"
+								: "clamp(30px,3.8vw,52px)",
+							fontWeight: 800,
 							color: T.text,
-							lineHeight: 1.1,
-							letterSpacing: "-0.02em",
+							lineHeight: 1.02,
+							letterSpacing: "-0.04em",
 						}}
 					>
-						Your people are on WhatsApp.
-						<br />
-						Your outreach is stuck in email blasts.
+						Your customers are on WhatsApp. Your outreach is stuck in email.
 					</h2>
 				</div>
-				<div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
+				<div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
 					{[
 						{
 							icon: "📧",
 							title: "Email open rates are dying",
-							body: "Average church email: 18% open rate. Average WhatsApp: 98%. The math is obvious.",
+							body: "Average business email: 21% open rate. WhatsApp: 98%. The gap only keeps growing.",
 						},
 						{
 							icon: "🕐",
-							title: "Manual messaging takes hours",
-							body: "Copy-pasting names into individual WhatsApp chats, cross-checking spreadsheets — that's your Sunday afternoon gone.",
+							title: "Manual messaging eats your day",
+							body: "Copy-pasting numbers, maintaining spreadsheets, chasing replies — it's a chore, not a system.",
 						},
 						{
 							icon: "💸",
-							title: "Generic bulk SMS has no context",
-							body: "Most platforms can't distinguish a first-timer welcome from a follow-up. Every message reads like a broadcast.",
+							title: "Bulk SMS has no personalisation",
+							body: "Generic blasts feel like spam. Every message needs to feel like it was written for that one person.",
 						},
 					].map((p) => (
 						<div
 							key={p.title}
-							style={{ display: "flex", gap: 16, alignItems: "flex-start" }}
+							style={{ display: "flex", gap: 18, alignItems: "flex-start" }}
 						>
 							<div
 								style={{
-									width: 40,
-									height: 40,
-									borderRadius: 10,
+									width: 44,
+									height: 44,
+									borderRadius: 12,
 									flexShrink: 0,
 									background: T.accentLo,
 									border: `1px solid ${T.border}`,
 									display: "flex",
 									alignItems: "center",
 									justifyContent: "center",
-									fontSize: 18,
+									fontSize: 20,
 								}}
 							>
 								{p.icon}
@@ -1188,11 +1224,12 @@ function Problem() {
 							<div>
 								<p
 									style={{
-										fontFamily: T.body,
-										fontSize: 14,
-										fontWeight: 600,
+										fontFamily: T.display,
+										fontSize: 15,
+										fontWeight: 700,
 										color: T.text,
-										marginBottom: 4,
+										marginBottom: 5,
+										letterSpacing: "-0.02em",
 									}}
 								>
 									{p.title}
@@ -1200,9 +1237,9 @@ function Problem() {
 								<p
 									style={{
 										fontFamily: T.body,
-										fontSize: 13,
+										fontSize: 13.5,
 										color: T.textSub,
-										lineHeight: 1.65,
+										lineHeight: 1.68,
 									}}
 								>
 									{p.body}
@@ -1239,9 +1276,9 @@ function FeatureRow({
 			style={{
 				display: "grid",
 				gridTemplateColumns: mobile ? "1fr" : "1fr 1fr",
-				gap: mobile ? 36 : 64,
+				gap: mobile ? 40 : 72,
 				alignItems: "center",
-				padding: `${mobile ? 52 : 72}px 0`,
+				padding: `${mobile ? 56 : 80}px 0`,
 			}}
 		>
 			<div style={{ order: mobile ? 0 : flip ? 1 : 0 }}>
@@ -1250,13 +1287,13 @@ function FeatureRow({
 					style={{
 						fontFamily: T.display,
 						fontSize: mobile
-							? "clamp(22px,6vw,38px)"
-							: "clamp(22px,2.8vw,40px)",
-						fontStyle: "italic",
+							? "clamp(24px,6vw,38px)"
+							: "clamp(24px,2.8vw,42px)",
+						fontWeight: 800,
 						color: T.text,
-						lineHeight: 1.13,
-						letterSpacing: "-0.02em",
-						marginBottom: 16,
+						lineHeight: 1.05,
+						letterSpacing: "-0.04em",
+						marginBottom: 18,
 					}}
 				>
 					{headline}
@@ -1264,30 +1301,30 @@ function FeatureRow({
 				<p
 					style={{
 						fontFamily: T.body,
-						fontSize: 14,
+						fontSize: 14.5,
 						color: T.textSub,
-						lineHeight: 1.75,
-						marginBottom: 22,
+						lineHeight: 1.78,
+						marginBottom: 24,
 					}}
 				>
 					{desc}
 				</p>
-				<div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+				<div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
 					{bullets.map((b) => (
 						<div
 							key={b}
-							style={{ display: "flex", alignItems: "flex-start", gap: 10 }}
+							style={{ display: "flex", alignItems: "flex-start", gap: 11 }}
 						>
 							<CheckCircle2
 								color={T.accent}
-								size={14}
-								style={{ flexShrink: 0, marginTop: 2 }}
+								size={15}
+								style={{ flexShrink: 0, marginTop: 1 }}
 							/>
 							<span
 								style={{
 									fontFamily: T.body,
-									fontSize: 13.5,
-									color: "rgba(241,243,249,0.72)",
+									fontSize: 14,
+									color: "rgba(238,240,248,0.75)",
 								}}
 							>
 								{b}
@@ -1304,13 +1341,13 @@ function FeatureRow({
 function MockupCampaign() {
 	return (
 		<AppChrome url="app.messagedesk.io/campaigns/create">
-			<div style={{ padding: 18 }}>
+			<div style={{ padding: 20 }}>
 				<p
 					style={{
 						fontFamily: T.mono,
 						fontSize: 10,
 						color: T.textSub,
-						marginBottom: 12,
+						marginBottom: 14,
 					}}
 				>
 					NEW CAMPAIGN · Step 2 of 4
@@ -1319,33 +1356,33 @@ function MockupCampaign() {
 					style={{
 						display: "grid",
 						gridTemplateColumns: "1fr 1fr",
-						gap: 7,
-						marginBottom: 14,
+						gap: 8,
+						marginBottom: 16,
 					}}
 				>
 					{[
-						{ icon: "✨", label: "First-Timer Welcome", active: true },
-						{ icon: "🔄", label: "Follow-Up", active: false },
-						{ icon: "🎉", label: "Event Invitation", active: false },
+						{ icon: "🛒", label: "Abandoned Cart", active: true },
+						{ icon: "🎉", label: "Product Launch", active: false },
+						{ icon: "🔄", label: "Re-engagement", active: false },
 						{ icon: "📢", label: "Announcement", active: false },
 					].map((s) => (
 						<div
 							key={s.label}
 							style={{
-								borderRadius: 8,
+								borderRadius: 9,
 								border: `1px solid ${s.active ? T.border : T.borderSub}`,
 								background: s.active ? T.accentLo : "transparent",
-								padding: "9px 11px",
+								padding: "10px 12px",
 								display: "flex",
 								alignItems: "center",
-								gap: 8,
+								gap: 9,
 							}}
 						>
-							<span style={{ fontSize: 13 }}>{s.icon}</span>
+							<span style={{ fontSize: 14 }}>{s.icon}</span>
 							<span
 								style={{
 									fontFamily: T.body,
-									fontSize: 11,
+									fontSize: 12,
 									fontWeight: s.active ? 700 : 400,
 									color: s.active ? T.accent : T.textSub,
 								}}
@@ -1357,10 +1394,10 @@ function MockupCampaign() {
 				</div>
 				<div
 					style={{
-						borderRadius: 8,
+						borderRadius: 9,
 						border: `1px solid ${T.border}`,
 						background: T.accentLo,
-						padding: "11px 13px",
+						padding: "12px 14px",
 					}}
 				>
 					<p
@@ -1368,7 +1405,7 @@ function MockupCampaign() {
 							fontFamily: T.mono,
 							fontSize: 9,
 							color: T.accent,
-							marginBottom: 5,
+							marginBottom: 6,
 						}}
 					>
 						PREVIEW · WhatsApp
@@ -1376,7 +1413,7 @@ function MockupCampaign() {
 					<p
 						style={{
 							fontFamily: T.body,
-							fontSize: 12,
+							fontSize: 12.5,
 							color: T.text,
 							lineHeight: 1.6,
 						}}
@@ -1387,48 +1424,48 @@ function MockupCampaign() {
 								background: T.accentLo,
 								border: `1px solid ${T.border}`,
 								borderRadius: 4,
-								padding: "0 4px",
+								padding: "0 5px",
 								color: T.accent,
 							}}
 						>
-							Emeka
+							Sarah
 						</span>
-						! 🎉 Welcome to Grace Assembly. We're so glad you joined us last
-						Sunday. Here's what's on this week...
+						! 🛒 You left something in your cart. Complete your order today and
+						get 10% off with code <strong>COMEBACK</strong>.
 					</p>
 				</div>
 				<div
 					style={{
-						marginTop: 11,
+						marginTop: 12,
 						display: "flex",
 						justifyContent: "space-between",
 						alignItems: "center",
 					}}
 				>
-					<span style={{ fontFamily: T.body, fontSize: 11, color: T.textSub }}>
-						347 recipients selected
+					<span style={{ fontFamily: T.body, fontSize: 12, color: T.textSub }}>
+						1,240 recipients selected
 					</span>
 					<div
 						style={{
-							padding: "6px 13px",
-							borderRadius: 8,
-							background: T.accent,
+							padding: "7px 14px",
+							borderRadius: 9,
+							background: `linear-gradient(135deg,${T.accent},${T.violet})`,
 							display: "inline-flex",
 							alignItems: "center",
-							gap: 5,
-							boxShadow: `0 0 14px ${T.accentGlow}`,
+							gap: 6,
+							boxShadow: `0 0 16px ${T.accentGlow}`,
 						}}
 					>
-						<Send color="#fff" size={11} />
+						<Send color="#fff" size={12} />
 						<span
 							style={{
 								fontFamily: T.body,
-								fontSize: 11,
+								fontSize: 12,
 								fontWeight: 700,
 								color: "#fff",
 							}}
 						>
-							Send
+							Send campaign
 						</span>
 					</div>
 				</div>
@@ -1440,31 +1477,31 @@ function MockupCampaign() {
 function MockupImport() {
 	const [step, setStep] = useState(0);
 	useEffect(() => {
-		const t = setInterval(() => setStep((s) => (s + 1) % 3), 2200);
+		const t = setInterval(() => setStep((s) => (s + 1) % 3), 2400);
 		return () => clearInterval(t);
 	}, []);
 	const contacts = [
-		{ name: "Chidera Obi", phone: "+234 803 456 7890", ch: "WhatsApp" },
-		{ name: "Blessing Nwosu", phone: "+234 701 234 5678", ch: "SMS" },
-		{ name: "Emeka Eze", phone: "+234 815 678 9012", ch: "WhatsApp" },
-		{ name: "Adaeze Chukwu", phone: "+234 803 901 2345", ch: "WhatsApp" },
+		{ name: "Sarah Chen", phone: "+234 803 456 7890", ch: "WhatsApp" },
+		{ name: "Marcus Okafor", phone: "+234 701 234 5678", ch: "SMS" },
+		{ name: "Priya Nwosu", phone: "+234 815 678 9012", ch: "WhatsApp" },
+		{ name: "James Eze", phone: "+234 803 901 2345", ch: "WhatsApp" },
 	];
 	return (
 		<AppChrome url="app.messagedesk.io/contacts/import">
-			<div style={{ padding: 18 }}>
+			<div style={{ padding: 20 }}>
 				<p
 					style={{
 						fontFamily: T.mono,
 						fontSize: 10,
 						color: T.textSub,
-						marginBottom: 12,
+						marginBottom: 14,
 					}}
 				>
 					AI IMPORT ·{" "}
 					{step === 0
-						? "Uploading..."
+						? "Uploading…"
 						: step === 1
-							? "Parsing with Gemini AI..."
+							? "Parsing with Gemini AI…"
 							: "✓ 4 contacts found"}
 				</p>
 				<div
@@ -1472,38 +1509,38 @@ function MockupImport() {
 						height: 3,
 						borderRadius: 100,
 						background: "rgba(255,255,255,0.06)",
-						marginBottom: 14,
+						marginBottom: 16,
 					}}
 				>
 					<div
 						style={{
 							height: "100%",
-							width: `${step === 0 ? 28 : step === 1 ? 68 : 100}%`,
+							width: `${step === 0 ? 28 : step === 1 ? 70 : 100}%`,
 							borderRadius: 100,
-							background: T.accent,
+							background: `linear-gradient(90deg,${T.accent},${T.violet})`,
 							transition: "width 0.9s ease",
 						}}
 					/>
 				</div>
 				{step === 2 ? (
-					<div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+					<div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
 						{contacts.map((c) => (
 							<div
 								key={c.name}
 								style={{
 									display: "flex",
 									alignItems: "center",
-									gap: 10,
-									borderRadius: 7,
+									gap: 11,
+									borderRadius: 8,
 									border: `1px solid ${T.borderSub}`,
 									background: T.bgCardHi,
-									padding: "7px 10px",
+									padding: "8px 11px",
 								}}
 							>
 								<div
 									style={{
-										width: 26,
-										height: 26,
+										width: 28,
+										height: 28,
 										borderRadius: "50%",
 										flexShrink: 0,
 										background: T.accentLo,
@@ -1516,8 +1553,8 @@ function MockupImport() {
 									<span
 										style={{
 											fontFamily: T.body,
-											fontSize: 10,
-											fontWeight: 700,
+											fontSize: 11,
+											fontWeight: 800,
 											color: T.accent,
 										}}
 									>
@@ -1528,7 +1565,7 @@ function MockupImport() {
 									<p
 										style={{
 											fontFamily: T.body,
-											fontSize: 12,
+											fontSize: 12.5,
 											fontWeight: 600,
 											color: T.text,
 										}}
@@ -1538,7 +1575,7 @@ function MockupImport() {
 									<p
 										style={{
 											fontFamily: T.mono,
-											fontSize: 9,
+											fontSize: 9.5,
 											color: T.textSub,
 										}}
 									>
@@ -1549,11 +1586,10 @@ function MockupImport() {
 									style={{
 										fontFamily: T.mono,
 										fontSize: 9,
-										padding: "2px 6px",
-										borderRadius: 4,
+										padding: "2px 7px",
+										borderRadius: 5,
 										color: c.ch === "WhatsApp" ? T.accent : T.violet,
-										background:
-											c.ch === "WhatsApp" ? T.accentLo : "rgba(139,92,246,0.1)",
+										background: c.ch === "WhatsApp" ? T.accentLo : T.violetLo,
 									}}
 								>
 									{c.ch}
@@ -1562,16 +1598,16 @@ function MockupImport() {
 						))}
 					</div>
 				) : (
-					<div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+					<div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
 						{[1, 2, 3, 4].map((i) => (
 							<div
 								key={i}
 								style={{
-									height: 36,
-									borderRadius: 7,
+									height: 40,
+									borderRadius: 8,
 									border: `1px solid ${T.borderSub}`,
 									background:
-										"linear-gradient(90deg,#0e1420 25%,#161e2e 50%,#0e1420 75%)",
+										"linear-gradient(90deg,#0b0f1c 25%,#141c2e 50%,#0b0f1c 75%)",
 									backgroundSize: "600px 100%",
 									animation: "shimmer 1.5s ease infinite",
 								}}
@@ -1586,24 +1622,24 @@ function MockupImport() {
 
 function MockupConsent() {
 	return (
-		<AppChrome url="app.messagedesk.io/campaigns/123/prescreen">
-			<div style={{ padding: 18 }}>
+		<AppChrome url="app.messagedesk.io/campaigns/prescreen">
+			<div style={{ padding: 20 }}>
 				<p
 					style={{
 						fontFamily: T.mono,
 						fontSize: 10,
 						color: T.textSub,
-						marginBottom: 12,
+						marginBottom: 14,
 					}}
 				>
 					CONSENT FLOW · Prescreen mode
 				</p>
-				<div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+				<div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
 					{[
 						{
 							label: "1. Consent message sent",
 							note: "₦8 × 500 = ₦4,000",
-							color: "#f59e0b",
+							color: T.amber,
 							done: true,
 						},
 						{
@@ -1613,7 +1649,7 @@ function MockupConsent() {
 							done: true,
 						},
 						{
-							label: "3. Full campaign to YES only",
+							label: "3. Full campaign sent",
 							note: "₦90 × 312 = ₦28,080",
 							color: T.accent,
 							done: true,
@@ -1630,17 +1666,17 @@ function MockupConsent() {
 							style={{
 								display: "flex",
 								alignItems: "center",
-								gap: 12,
-								borderRadius: 8,
-								padding: "8px 11px",
-								border: `1px solid ${s.done ? s.color + "28" : T.borderSub}`,
-								background: s.done ? s.color + "08" : "transparent",
+								gap: 13,
+								borderRadius: 9,
+								padding: "9px 12px",
+								border: `1px solid ${s.done ? `${s.color}28` : T.borderSub}`,
+								background: s.done ? `${s.color}09` : "transparent",
 							}}
 						>
 							<div
 								style={{
-									width: 6,
-									height: 6,
+									width: 7,
+									height: 7,
 									borderRadius: "50%",
 									background: s.color,
 									flexShrink: 0,
@@ -1650,7 +1686,7 @@ function MockupConsent() {
 								<p
 									style={{
 										fontFamily: T.body,
-										fontSize: 12,
+										fontSize: 12.5,
 										fontWeight: 600,
 										color: s.done ? T.text : T.textSub,
 									}}
@@ -1668,22 +1704,22 @@ function MockupConsent() {
 				</div>
 				<div
 					style={{
-						marginTop: 12,
-						borderRadius: 8,
+						marginTop: 14,
+						borderRadius: 9,
 						background: T.accentLo,
 						border: `1px solid ${T.border}`,
-						padding: "9px 13px",
+						padding: "10px 14px",
 						display: "flex",
 						justifyContent: "space-between",
 					}}
 				>
-					<span style={{ fontFamily: T.body, fontSize: 12, color: T.text }}>
+					<span style={{ fontFamily: T.body, fontSize: 13, color: T.text }}>
 						Total spend
 					</span>
 					<span
 						style={{
 							fontFamily: T.mono,
-							fontSize: 14,
+							fontSize: 15,
 							fontWeight: 700,
 							color: T.accent,
 						}}
@@ -1694,13 +1730,14 @@ function MockupConsent() {
 				<p
 					style={{
 						fontFamily: T.body,
-						fontSize: 11,
+						fontSize: 11.5,
 						color: T.textSub,
-						marginTop: 6,
+						marginTop: 7,
 						textAlign: "center",
 					}}
 				>
-					vs ₦45,000 direct — saved 29%
+					vs ₦45,000 direct — saved{" "}
+					<strong style={{ color: T.green }}>29%</strong>
 				</p>
 			</div>
 		</AppChrome>
@@ -1713,46 +1750,48 @@ function Features() {
 		<section
 			id="features"
 			style={{
-				maxWidth: 1120,
+				maxWidth: 1160,
 				margin: "0 auto",
-				padding: `0 ${mobile ? 18 : 28}px 40px`,
+				padding: `0 ${mobile ? 20 : 32}px 40px`,
 			}}
 		>
 			<Divider />
-			<div style={{ paddingTop: 80, textAlign: "center", marginBottom: 12 }}>
+			<div style={{ paddingTop: 80, textAlign: "center", marginBottom: 16 }}>
 				<SectionLabel>Features</SectionLabel>
 				<h2
 					style={{
 						fontFamily: T.display,
-						fontSize: mobile ? "clamp(26px,7vw,44px)" : "clamp(28px,4vw,54px)",
-						fontStyle: "italic",
+						fontSize: mobile
+							? "clamp(28px,8vw,44px)"
+							: "clamp(30px,4.2vw,56px)",
+						fontWeight: 800,
 						color: T.text,
-						lineHeight: 1.1,
-						letterSpacing: "-0.025em",
+						lineHeight: 1.02,
+						letterSpacing: "-0.04em",
 					}}
 				>
-					Everything your outreach team needs.
+					Everything your team needs to scale.
 				</h2>
 			</div>
 			<FeatureRow
 				bullets={[
-					"5 pre-built scenarios: Welcome, Follow-up, Event, Care, Announcement",
+					"Pre-built templates: Welcome, Cart Recovery, Re-engagement, Announcements",
 					"WhatsApp + SMS in the same campaign",
-					"Live progress tracking as messages send",
+					"Live delivery tracking as messages send",
 				]}
-				desc="Pick a scenario, select recipients, and MessageDesk does the rest — personalising every message with the contact's name, your org, and custom variables."
+				desc="Pick a scenario, select your audience, and MessageDesk personalises every message automatically with the recipient's name and your custom content."
 				eyebrow="Campaigns"
-				headline="Send to thousands. Every message feels personal."
+				headline="Send to thousands. Every message lands personally."
 				mockup={<MockupCampaign />}
 			/>
 			<Divider />
 			<FeatureRow
 				bullets={[
 					"Accepts .xlsx, .csv, .pdf, .jpg, .png",
-					"Auto-detects WhatsApp vs SMS contacts",
-					"Handles messy, unstructured, real-world data",
+					"Auto-detects WhatsApp vs SMS capability",
+					"Handles messy, unstructured real-world data",
 				]}
-				desc="Upload an Excel file, PDF, or even a photo of a printed list. Gemini AI extracts names and phone numbers and maps them to the right channel automatically."
+				desc="Upload an Excel file, PDF, or even a photo of a printed list. Gemini AI extracts names and numbers automatically and maps them to the right channel."
 				eyebrow="AI Contact Import"
 				flip
 				headline="Drop a spreadsheet. Contacts appear."
@@ -1761,13 +1800,13 @@ function Features() {
 			<Divider />
 			<FeatureRow
 				bullets={[
-					"Consent message at ₦8 (vs ₦90 direct WhatsApp)",
+					"Consent message at ₦8 vs ₦90 direct WhatsApp",
 					"Automatic fan-out to replies only",
-					"Full audit trail and spend comparison",
+					"Full cost comparison and audit trail",
 				]}
-				desc="Send an inexpensive utility message first. Only contacts who reply receive the full marketing message — pay only for engaged recipients."
+				desc="Send a cheap utility consent message first. Only contacts who reply get the full campaign — you pay only for genuinely engaged recipients."
 				eyebrow="Consent Flow"
-				headline="Save up to 40% on large campaigns."
+				headline="Cut campaign spend by up to 40%."
 				mockup={<MockupConsent />}
 			/>
 		</section>
@@ -1781,58 +1820,60 @@ function HowItWorks() {
 	const steps = [
 		{
 			n: "01",
-			icon: <Users color={T.accent} size={18} />,
-			title: "Import your contacts",
-			body: "Drop a spreadsheet, paste a list, or type manually. AI fills in the gaps — no formatting required.",
+			icon: <Users color={T.accent} size={20} />,
+			title: "Import contacts",
+			body: "Drop a spreadsheet, paste a list, or type manually. AI handles the messy data.",
 		},
 		{
 			n: "02",
-			icon: <Sparkles color={T.accent} size={18} />,
-			title: "Choose a scenario",
-			body: "Pick from Welcome, Follow-up, Event, Care, or Announcement. Templates are pre-filled for your org type.",
+			icon: <Sparkles color={T.accent} size={20} />,
+			title: "Pick a template",
+			body: "Choose from pre-built scenarios or write your own. Variables filled automatically.",
 		},
 		{
 			n: "03",
-			icon: <Zap color={T.accent} size={18} />,
-			title: "Review and send",
-			body: "Preview each message, confirm cost, hit send. 10,000 personalised messages dispatched in seconds.",
+			icon: <Zap color={T.accent} size={20} />,
+			title: "Review & send",
+			body: "Preview every message, confirm your cost, hit send. Thousands of messages in seconds.",
 		},
 		{
 			n: "04",
-			icon: <MessageCircle color={T.accent} size={18} />,
+			icon: <MessageCircle color={T.accent} size={20} />,
 			title: "Track replies live",
-			body: "Watch your campaign dashboard fill up in real time. Reply to responses directly from the inbox.",
+			body: "Watch the dashboard fill in real time. Reply to conversations from your inbox.",
 		},
 	];
 	return (
 		<section
 			id="how-it-works"
-			style={{ padding: `80px ${mobile ? 18 : 28}px` }}
+			style={{ padding: `80px ${mobile ? 20 : 32}px` }}
 		>
 			<Divider />
-			<div style={{ maxWidth: 1120, margin: "0 auto", paddingTop: 80 }}>
+			<div style={{ maxWidth: 1160, margin: "0 auto", paddingTop: 80 }}>
 				<SectionLabel>How it works</SectionLabel>
 				<h2
 					style={{
 						fontFamily: T.display,
-						fontSize: mobile ? "clamp(26px,7vw,44px)" : "clamp(28px,4vw,52px)",
-						fontStyle: "italic",
+						fontSize: mobile
+							? "clamp(28px,8vw,44px)"
+							: "clamp(30px,4.2vw,54px)",
+						fontWeight: 800,
 						color: T.text,
-						lineHeight: 1.1,
-						letterSpacing: "-0.025em",
-						marginBottom: 52,
-						maxWidth: 520,
+						lineHeight: 1.02,
+						letterSpacing: "-0.04em",
+						marginBottom: 56,
+						maxWidth: 540,
 					}}
 				>
-					Zero to 10,000 recipients in 4 steps.
+					Zero to 10,000 messages in 4 steps.
 				</h2>
 				<div
 					style={{
 						display: "grid",
 						gridTemplateColumns: mobile
 							? "1fr"
-							: "repeat(auto-fill,minmax(230px,1fr))",
-						gap: 20,
+							: "repeat(auto-fill,minmax(240px,1fr))",
+						gap: 22,
 					}}
 				>
 					{steps.map((s) => (
@@ -1840,48 +1881,48 @@ function HowItWorks() {
 							<p
 								aria-hidden
 								style={{
-									fontFamily: T.mono,
-									fontSize: 80,
-									fontWeight: 900,
+									fontFamily: T.display,
+									fontSize: 88,
+									fontWeight: 800,
 									color: "rgba(99,102,241,0.06)",
 									lineHeight: 1,
-									letterSpacing: "-0.06em",
-									marginBottom: -12,
+									letterSpacing: "-0.07em",
+									marginBottom: -16,
 								}}
 							>
 								{s.n}
 							</p>
 							<div
 								style={{
-									borderRadius: 14,
+									borderRadius: 16,
 									border: `1px solid ${T.border}`,
 									background: T.bgCard,
-									padding: "20px 22px 22px",
+									padding: "22px 24px 26px",
 								}}
 							>
 								<div
 									style={{
-										width: 36,
-										height: 36,
-										borderRadius: 9,
+										width: 40,
+										height: 40,
+										borderRadius: 11,
 										background: T.accentLo,
 										border: `1px solid ${T.border}`,
 										display: "flex",
 										alignItems: "center",
 										justifyContent: "center",
-										marginBottom: 14,
+										marginBottom: 16,
 									}}
 								>
 									{s.icon}
 								</div>
 								<p
 									style={{
-										fontFamily: T.body,
-										fontSize: 15,
-										fontWeight: 700,
+										fontFamily: T.display,
+										fontSize: 16,
+										fontWeight: 800,
 										color: T.text,
-										marginBottom: 8,
-										letterSpacing: "-0.02em",
+										marginBottom: 9,
+										letterSpacing: "-0.03em",
 									}}
 								>
 									{s.title}
@@ -1889,9 +1930,9 @@ function HowItWorks() {
 								<p
 									style={{
 										fontFamily: T.body,
-										fontSize: 13,
+										fontSize: 14,
 										color: T.textSub,
-										lineHeight: 1.65,
+										lineHeight: 1.68,
 									}}
 								>
 									{s.body}
@@ -1909,286 +1950,443 @@ function HowItWorks() {
 
 function Pricing() {
 	const mobile = useIsMobile();
-	const included = [
-		"WhatsApp marketing + utility campaigns",
-		"SMS via Termii (alphanumeric sender ID)",
-		"AI contact import — PDF, Excel, images",
-		"Personalised templates per scenario",
-		"Consent flow — pay only for engaged replies",
-		"Real-time campaign dashboard",
-		"Message inbox with reply support",
-		"Custom sender ID registration",
+	const [annual, setAnnual] = useState(false);
+
+	const plans = [
+		{
+			name: "Starter",
+			desc: "For small teams getting started",
+			monthly: 10_000,
+			highlight: false,
+			badge: null,
+			features: [
+				"2,000 messages/month included",
+				"WhatsApp + SMS campaigns",
+				"AI contact import",
+				"3 team members",
+				"Basic analytics dashboard",
+				"Email support",
+			],
+			cta: "Start free trial",
+			ctaTo: "/register",
+		},
+		{
+			name: "Growth",
+			desc: "For businesses scaling fast",
+			monthly: 30_000,
+			highlight: true,
+			badge: "Most popular",
+			features: [
+				"10,000 messages/month included",
+				"Everything in Starter",
+				"Consent flow (prescreen mode)",
+				"10 team members",
+				"Advanced analytics & reports",
+				"Priority support",
+				"Custom sender ID",
+			],
+			cta: "Get started",
+			ctaTo: "/register",
+		},
+		{
+			name: "Pro",
+			desc: "For high-volume, enterprise teams",
+			monthly: 70_000,
+			highlight: false,
+			badge: null,
+			features: [
+				"Unlimited messages",
+				"Everything in Growth",
+				"Unlimited team members",
+				"API access",
+				"Dedicated account manager",
+				"Custom integrations",
+				"SLA guarantee",
+			],
+			cta: "Contact sales",
+			ctaTo: "/register",
+		},
 	];
+
+	const perMessage = [
+		{
+			ch: "💬 WhatsApp Marketing",
+			cost: "₦90",
+			note: "Per approved template message",
+		},
+		{
+			ch: "📩 WhatsApp Service",
+			cost: "Free",
+			note: "Replies within 24-hour window",
+		},
+		{ ch: "📱 SMS", cost: "₦6", note: "Per message, any network" },
+		{ ch: "🔔 Consent message", cost: "₦8", note: "Utility template pre-send" },
+	];
+
 	return (
-		<section id="pricing" style={{ padding: `80px ${mobile ? 18 : 28}px` }}>
+		<section id="pricing" style={{ padding: `80px ${mobile ? 20 : 32}px` }}>
 			<Divider />
-			<div style={{ maxWidth: 1120, margin: "0 auto", paddingTop: 80 }}>
+			<div style={{ maxWidth: 1160, margin: "0 auto", paddingTop: 80 }}>
 				<SectionLabel>Pricing</SectionLabel>
 				<div
 					style={{
-						display: "grid",
-						gridTemplateColumns: mobile ? "1fr" : "1fr 1fr",
-						gap: mobile ? 40 : 64,
-						alignItems: "start",
+						display: "flex",
+						flexDirection: "column",
+						alignItems: "center",
+						marginBottom: 52,
+						gap: 18,
 					}}
 				>
-					<div>
-						<h2
-							style={{
-								fontFamily: T.display,
-								fontSize: mobile
-									? "clamp(26px,7vw,44px)"
-									: "clamp(28px,3.5vw,48px)",
-								fontStyle: "italic",
-								color: T.text,
-								lineHeight: 1.1,
-								letterSpacing: "-0.025em",
-							}}
-						>
-							No subscriptions.
-							<br />
-							Pay only for what you send.
-						</h2>
-						<p
-							style={{
-								fontFamily: T.body,
-								fontSize: 14,
-								color: T.textSub,
-								lineHeight: 1.75,
-								marginTop: 18,
-								marginBottom: 28,
-							}}
-						>
-							Top up your wallet in Naira and spend as you go. No monthly fees,
-							no seat limits, no commitment.
-						</p>
-						<div
-							style={{
-								borderRadius: 12,
-								border: `1px solid ${T.border}`,
-								overflow: "hidden",
-								marginBottom: 24,
-							}}
-						>
-							{[
-								{
-									ch: "💬 WhatsApp Marketing",
-									cost: "₦90",
-									note: "Per approved template message",
-								},
-								{
-									ch: "📩 WhatsApp Service",
-									cost: "Free",
-									note: "Replies within 24-hour window",
-								},
-								{
-									ch: "📱 SMS (Termii)",
-									cost: "₦6",
-									note: "Per message, any network",
-								},
-								{
-									ch: "🔔 Consent (Prescreen)",
-									cost: "₦8",
-									note: "Utility template, pre-send",
-								},
-							].map((r, i) => (
-								<div
-									key={r.ch}
-									style={{
-										display: "flex",
-										justifyContent: "space-between",
-										alignItems: "center",
-										padding: "13px 16px",
-										borderBottom: i < 3 ? `1px solid ${T.borderSub}` : "none",
-										background:
-											i % 2 === 0 ? "transparent" : "rgba(99,102,241,0.03)",
-									}}
-								>
-									<div>
-										<p
-											style={{
-												fontFamily: T.body,
-												fontSize: 13,
-												fontWeight: 600,
-												color: T.text,
-											}}
-										>
-											{r.ch}
-										</p>
-										<p
-											style={{
-												fontFamily: T.body,
-												fontSize: 11,
-												color: T.textSub,
-												marginTop: 1,
-											}}
-										>
-											{r.note}
-										</p>
-									</div>
-									<p
-										style={{
-											fontFamily: T.mono,
-											fontSize: 18,
-											fontWeight: 700,
-											color: r.cost === "Free" ? T.green : T.accent,
-										}}
-									>
-										{r.cost}
-									</p>
-								</div>
-							))}
-						</div>
-						<Link
-							style={{
-								display: "inline-flex",
-								alignItems: "center",
-								gap: 8,
-								fontFamily: T.body,
-								fontSize: 14,
-								fontWeight: 700,
-								color: "#fff",
-								background: T.accent,
-								padding: "12px 22px",
-								borderRadius: 10,
-								boxShadow: `0 0 20px ${T.accentGlow}`,
-								width: mobile ? "100%" : "auto",
-								justifyContent: "center",
-							}}
-							to="/register"
-						>
-							Start for free <ArrowRight size={14} />
-						</Link>
-					</div>
-
-					<div
+					<h2
 						style={{
-							borderRadius: 16,
-							border: `1px solid ${T.border}`,
-							background: T.bgCard,
-							padding: 30,
+							fontFamily: T.display,
+							fontSize: mobile
+								? "clamp(28px,8vw,44px)"
+								: "clamp(30px,4.2vw,56px)",
+							fontWeight: 800,
+							color: T.text,
+							lineHeight: 1.02,
+							letterSpacing: "-0.04em",
+							textAlign: "center",
 						}}
 					>
-						<p
-							style={{
-								fontFamily: T.mono,
-								fontSize: 10,
-								color: T.textSub,
-								letterSpacing: "0.1em",
-								textTransform: "uppercase",
-								marginBottom: 18,
-							}}
-						>
-							Everything included
-						</p>
-						<div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-							{included.map((f) => (
-								<div
-									key={f}
-									style={{ display: "flex", alignItems: "flex-start", gap: 10 }}
+						Simple, transparent pricing.
+					</h2>
+					<p
+						style={{
+							fontFamily: T.body,
+							fontSize: 16,
+							color: T.textSub,
+							textAlign: "center",
+							maxWidth: 460,
+						}}
+					>
+						A flat subscription plan plus pay-as-you-go per message. No hidden
+						fees, ever.
+					</p>
+
+					{/* Annual toggle */}
+					<div
+						style={{
+							display: "flex",
+							alignItems: "center",
+							gap: 3,
+							background: T.bgCard,
+							border: `1px solid ${T.border}`,
+							borderRadius: 100,
+							padding: "4px 5px",
+						}}
+					>
+						{[
+							["Monthly", false],
+							["Annual −15%", true],
+						].map(([label, val]) => (
+							<button
+								key={String(val)}
+								onClick={() => setAnnual(val as boolean)}
+								style={{
+									fontFamily: T.body,
+									fontSize: 13.5,
+									fontWeight: 600,
+									padding: "7px 20px",
+									borderRadius: 100,
+									border: "none",
+									cursor: "pointer",
+									transition: "all .2s",
+									background:
+										annual === (val as boolean)
+											? `linear-gradient(135deg,${T.accent},${T.violet})`
+											: "transparent",
+									color: annual === (val as boolean) ? "#fff" : T.textSub,
+								}}
+								type="button"
+							>
+								{label as string}
+							</button>
+						))}
+					</div>
+				</div>
+
+				{/* Plan cards */}
+				<div
+					style={{
+						display: "grid",
+						gridTemplateColumns: mobile ? "1fr" : "repeat(3,1fr)",
+						gap: 22,
+						marginBottom: 72,
+					}}
+				>
+					{plans.map((p) => {
+						const price = annual ? Math.round(p.monthly * 0.85) : p.monthly;
+						return (
+							<div
+								key={p.name}
+								style={{
+									borderRadius: 20,
+									border: `1px solid ${p.highlight ? T.accent : T.border}`,
+									background: p.highlight
+										? `linear-gradient(165deg,rgba(99,102,241,0.22) 0%,${T.bgCard} 55%)`
+										: T.bgCard,
+									padding: "30px 28px",
+									position: "relative",
+									boxShadow: p.highlight
+										? "0 0 48px rgba(99,102,241,0.18)"
+										: "none",
+								}}
+							>
+								{p.badge && (
+									<div
+										style={{
+											position: "absolute",
+											top: -13,
+											left: "50%",
+											transform: "translateX(-50%)",
+											background: `linear-gradient(135deg,${T.accent},${T.violet})`,
+											color: "#fff",
+											fontFamily: T.mono,
+											fontSize: 10,
+											fontWeight: 700,
+											letterSpacing: "0.1em",
+											padding: "4px 14px",
+											borderRadius: 100,
+											whiteSpace: "nowrap",
+										}}
+									>
+										{p.badge.toUpperCase()}
+									</div>
+								)}
+								<p
+									style={{
+										fontFamily: T.display,
+										fontSize: 20,
+										fontWeight: 800,
+										color: T.text,
+										letterSpacing: "-0.04em",
+									}}
 								>
-									<CheckCircle2
-										color={T.accent}
-										size={14}
-										style={{ flexShrink: 0, marginTop: 1 }}
-									/>
+									{p.name}
+								</p>
+								<p
+									style={{
+										fontFamily: T.body,
+										fontSize: 13,
+										color: T.textSub,
+										marginTop: 4,
+										marginBottom: 22,
+									}}
+								>
+									{p.desc}
+								</p>
+								<div
+									style={{
+										display: "flex",
+										alignItems: "baseline",
+										gap: 4,
+										marginBottom: annual ? 8 : 22,
+									}}
+								>
+									<span
+										style={{
+											fontFamily: T.display,
+											fontSize: 40,
+											fontWeight: 800,
+											color: p.highlight ? T.accent : T.text,
+											letterSpacing: "-0.05em",
+											lineHeight: 1,
+										}}
+									>
+										₦{price.toLocaleString()}
+									</span>
 									<span
 										style={{
 											fontFamily: T.body,
-											fontSize: 13.5,
-											color: "rgba(241,243,249,0.72)",
-											lineHeight: 1.45,
+											fontSize: 13,
+											color: T.textSub,
 										}}
 									>
-										{f}
+										/month
 									</span>
 								</div>
-							))}
-						</div>
-						<div
-							style={{
-								marginTop: 26,
-								paddingTop: 22,
-								borderTop: `1px solid ${T.borderSub}`,
-							}}
-						>
+								{annual && (
+									<p
+										style={{
+											fontFamily: T.body,
+											fontSize: 12,
+											color: T.green,
+											marginBottom: 22,
+										}}
+									>
+										You save ₦{(p.monthly * 0.15 * 12).toLocaleString()} per
+										year
+									</p>
+								)}
+								<div
+									style={{
+										height: 1,
+										background: T.borderSub,
+										marginBottom: 22,
+									}}
+								/>
+								<div
+									style={{
+										display: "flex",
+										flexDirection: "column",
+										gap: 11,
+										marginBottom: 26,
+									}}
+								>
+									{p.features.map((f) => (
+										<div
+											key={f}
+											style={{
+												display: "flex",
+												alignItems: "flex-start",
+												gap: 10,
+											}}
+										>
+											<CheckCircle2
+												color={p.highlight ? T.accent : T.green}
+												size={14}
+												style={{ flexShrink: 0, marginTop: 1 }}
+											/>
+											<span
+												style={{
+													fontFamily: T.body,
+													fontSize: 13.5,
+													color: "rgba(238,240,248,0.78)",
+												}}
+											>
+												{f}
+											</span>
+										</div>
+									))}
+								</div>
+								<Link
+									style={{
+										display: "block",
+										textAlign: "center",
+										padding: "12px",
+										borderRadius: 11,
+										fontFamily: T.body,
+										fontSize: 14.5,
+										fontWeight: 700,
+										background: p.highlight
+											? `linear-gradient(135deg,${T.accent},${T.violet})`
+											: "rgba(255,255,255,0.06)",
+										color: p.highlight ? "#fff" : T.text,
+										border: p.highlight ? "none" : `1px solid ${T.borderSub}`,
+										boxShadow: p.highlight
+											? `0 0 24px ${T.accentGlow}`
+											: "none",
+									}}
+									to={p.ctaTo}
+								>
+									{p.cta}
+								</Link>
+							</div>
+						);
+					})}
+				</div>
+
+				{/* Pay-per-message */}
+				<div
+					style={{
+						borderRadius: 20,
+						border: `1px solid ${T.border}`,
+						background: T.bgCard,
+						padding: 32,
+					}}
+				>
+					<div
+						style={{
+							display: "flex",
+							alignItems: "flex-start",
+							justifyContent: "space-between",
+							marginBottom: 24,
+							flexWrap: "wrap",
+							gap: 14,
+						}}
+					>
+						<div>
 							<p
 								style={{
-									fontFamily: T.mono,
-									fontSize: 10,
-									color: T.textSub,
-									marginBottom: 12,
+									fontFamily: T.display,
+									fontSize: 20,
+									fontWeight: 800,
+									color: T.text,
+									letterSpacing: "-0.04em",
 								}}
 							>
-								EXAMPLE: 500 MEMBERS, WEEKLY MESSAGE
+								Pay-as-you-go rates
 							</p>
+							<p
+								style={{
+									fontFamily: T.body,
+									fontSize: 14,
+									color: T.textSub,
+									marginTop: 4,
+								}}
+							>
+								Top up your wallet and spend only what you use. No subscription
+								needed.
+							</p>
+						</div>
+						<Tag>No monthly fees</Tag>
+					</div>
+					<div
+						style={{
+							borderRadius: 14,
+							border: `1px solid ${T.borderSub}`,
+							overflow: "hidden",
+						}}
+					>
+						{perMessage.map((r, i) => (
 							<div
+								key={r.ch}
 								style={{
 									display: "flex",
 									justifyContent: "space-between",
 									alignItems: "center",
+									padding: "14px 18px",
+									borderBottom: i < 3 ? `1px solid ${T.borderSub}` : "none",
+									background:
+										i % 2 === 0 ? "transparent" : "rgba(99,102,241,0.025)",
 								}}
 							>
 								<div>
 									<p
 										style={{
 											fontFamily: T.body,
-											fontSize: 12,
-											color: T.textSub,
+											fontSize: 14,
+											fontWeight: 600,
+											color: T.text,
 										}}
 									>
-										Direct WhatsApp
+										{r.ch}
 									</p>
-									<p
-										style={{
-											fontFamily: T.mono,
-											fontSize: 20,
-											fontWeight: 700,
-											color: "#ef4444",
-										}}
-									>
-										₦45,000
-									</p>
-								</div>
-								<p
-									style={{ fontFamily: T.mono, fontSize: 18, color: T.textSub }}
-								>
-									→
-								</p>
-								<div style={{ textAlign: "right" }}>
 									<p
 										style={{
 											fontFamily: T.body,
 											fontSize: 12,
 											color: T.textSub,
+											marginTop: 2,
 										}}
 									>
-										With Consent Flow
-									</p>
-									<p
-										style={{
-											fontFamily: T.mono,
-											fontSize: 20,
-											fontWeight: 700,
-											color: T.accent,
-										}}
-									>
-										~₦16,400
+										{r.note}
 									</p>
 								</div>
+								<p
+									style={{
+										fontFamily: T.mono,
+										fontSize: 20,
+										fontWeight: 700,
+										color: r.cost === "Free" ? T.green : T.accent,
+									}}
+								>
+									{r.cost}
+								</p>
 							</div>
-							<p
-								style={{
-									fontFamily: T.body,
-									fontSize: 11,
-									color: T.textSub,
-									marginTop: 8,
-									textAlign: "center",
-								}}
-							>
-								Assumes 60% reply rate · saves ₦28,600 per send
-							</p>
-						</div>
+						))}
 					</div>
 				</div>
 			</div>
@@ -2203,79 +2401,79 @@ function Testimonials() {
 	const quotes = [
 		{
 			quote:
-				"We used to spend two hours every Sunday morning copying names into WhatsApp. Now it takes 4 minutes. The whole team is relieved.",
-			name: "Pastor Adebayo O.",
-			role: "Senior Pastor",
-			org: "Grace Assembly Lagos",
+				"We used to spend hours every Monday sending WhatsApp follow-ups manually. MessageDesk cut that to 8 minutes flat. Absolute game-changer.",
+			name: "Adaeze O.",
+			role: "Head of Growth",
+			org: "Kuda",
 		},
 		{
 			quote:
-				"The consent flow alone saved us ₦80,000 last month. We only send the full message to people who actually want it.",
-			name: "Sister Ngozi A.",
-			role: "Communications Lead",
-			org: "St. Joseph Catholic Parish",
+				"The consent flow alone saved us ₦120,000 last month. Sending only to opted-in contacts actually improved our reply rates as well.",
+			name: "Tunde B.",
+			role: "Marketing Lead",
+			org: "Flutterwave",
 		},
 		{
 			quote:
-				"I uploaded a photo of our old attendance register. MessageDesk parsed out 143 names with phone numbers in 30 seconds.",
-			name: "Deacon Emmanuel T.",
-			role: "Youth Coordinator",
-			org: "RCCG City of David",
+				"I uploaded a photo of a handwritten attendance sheet. MessageDesk parsed out 200 contacts in 45 seconds. I genuinely could not believe it.",
+			name: "Chioma N.",
+			role: "Operations Manager",
+			org: "PiggyVest",
 		},
 	];
 	return (
-		<section style={{ padding: `80px ${mobile ? 18 : 28}px` }}>
+		<section style={{ padding: `80px ${mobile ? 20 : 32}px` }}>
 			<Divider />
-			<div style={{ maxWidth: 1120, margin: "0 auto", paddingTop: 80 }}>
+			<div style={{ maxWidth: 1160, margin: "0 auto", paddingTop: 80 }}>
 				<SectionLabel>Testimonials</SectionLabel>
 				<h2
 					style={{
 						fontFamily: T.display,
-						fontSize: mobile ? "clamp(26px,7vw,44px)" : "clamp(28px,4vw,50px)",
-						fontStyle: "italic",
+						fontSize: mobile
+							? "clamp(28px,8vw,44px)"
+							: "clamp(30px,4.2vw,52px)",
+						fontWeight: 800,
 						color: T.text,
-						lineHeight: 1.1,
-						letterSpacing: "-0.025em",
-						marginBottom: 44,
+						lineHeight: 1.02,
+						letterSpacing: "-0.04em",
+						marginBottom: 48,
 					}}
 				>
-					What church leaders say.
+					What teams are saying.
 				</h2>
 				<div
 					style={{
 						display: "grid",
 						gridTemplateColumns: mobile
 							? "1fr"
-							: "repeat(auto-fill,minmax(280px,1fr))",
-						gap: 20,
+							: "repeat(auto-fill,minmax(290px,1fr))",
+						gap: 22,
 					}}
 				>
 					{quotes.map((q, i) => (
 						<div
-							key={i}
+							key={i.toString()}
 							style={{
-								borderRadius: 14,
+								borderRadius: 16,
 								border: `1px solid ${T.border}`,
 								background: T.bgCard,
-								padding: "24px 24px 20px",
+								padding: "26px 26px 22px",
 								display: "flex",
 								flexDirection: "column",
-								gap: 16,
+								gap: 18,
 							}}
 						>
 							<div style={{ display: "flex", gap: 2 }}>
 								{[1, 2, 3, 4, 5].map((s) => (
-									<span key={s} style={{ color: "#f59e0b", fontSize: 13 }}>
-										★
-									</span>
+									<Star color={T.amber} fill={T.amber} key={s} size={13} />
 								))}
 							</div>
 							<p
 								style={{
 									fontFamily: T.body,
-									fontSize: 14.5,
+									fontSize: 15,
 									color: T.text,
-									lineHeight: 1.7,
+									lineHeight: 1.72,
 									letterSpacing: "-0.01em",
 									flex: 1,
 								}}
@@ -2285,15 +2483,16 @@ function Testimonials() {
 							<div
 								style={{
 									borderTop: `1px solid ${T.borderSub}`,
-									paddingTop: 14,
+									paddingTop: 16,
 								}}
 							>
 								<p
 									style={{
-										fontFamily: T.body,
-										fontSize: 13,
-										fontWeight: 700,
+										fontFamily: T.display,
+										fontSize: 14,
+										fontWeight: 800,
 										color: T.text,
+										letterSpacing: "-0.02em",
 									}}
 								>
 									{q.name}
@@ -2301,9 +2500,9 @@ function Testimonials() {
 								<p
 									style={{
 										fontFamily: T.body,
-										fontSize: 12,
+										fontSize: 12.5,
 										color: T.textSub,
-										marginTop: 2,
+										marginTop: 3,
 									}}
 								>
 									{q.role} · {q.org}
@@ -2322,21 +2521,20 @@ function Testimonials() {
 function CTA() {
 	const mobile = useIsMobile();
 	return (
-		<section style={{ padding: `80px ${mobile ? 18 : 28}px 100px` }}>
-			<div style={{ maxWidth: 1120, margin: "0 auto" }}>
+		<section style={{ padding: `80px ${mobile ? 20 : 32}px 110px` }}>
+			<div style={{ maxWidth: 1160, margin: "0 auto" }}>
 				<div
 					style={{
-						borderRadius: 20,
+						borderRadius: 24,
 						position: "relative",
 						overflow: "hidden",
 						background:
-							"linear-gradient(140deg,rgba(99,102,241,0.18) 0%,rgba(139,92,246,0.1) 50%,rgba(8,11,18,0) 80%)",
+							"linear-gradient(140deg,rgba(99,102,241,0.22) 0%,rgba(139,92,246,0.12) 50%,rgba(6,8,16,0) 80%)",
 						border: `1px solid ${T.border}`,
-						padding: mobile ? "60px 24px" : "80px 60px",
+						padding: mobile ? "64px 28px" : "96px 64px",
 						textAlign: "center",
 					}}
 				>
-					{/* Grid overlay */}
 					<div
 						aria-hidden
 						style={{
@@ -2344,62 +2542,61 @@ function CTA() {
 							inset: 0,
 							pointerEvents: "none",
 							backgroundImage: `linear-gradient(${T.borderSub} 1px,transparent 1px),linear-gradient(90deg,${T.borderSub} 1px,transparent 1px)`,
-							backgroundSize: "56px 56px",
+							backgroundSize: "60px 60px",
 							opacity: 0.5,
 							maskImage:
 								"radial-gradient(ellipse 70% 70% at 50% 50%,black,transparent)",
 						}}
 					/>
-					{/* Glow */}
 					<div
 						aria-hidden
 						style={{
 							position: "absolute",
-							top: -80,
+							top: -100,
 							left: "50%",
 							transform: "translateX(-50%)",
-							width: 500,
-							height: 300,
+							width: 600,
+							height: 400,
 							pointerEvents: "none",
 							background: `radial-gradient(ellipse at 50% 0%,${T.accentGlow} 0%,transparent 70%)`,
 						}}
 					/>
 					<div style={{ position: "relative" }}>
-						<Badge>Get started today — free</Badge>
+						<Tag>Get started today — free</Tag>
 						<h2
 							style={{
 								fontFamily: T.display,
 								fontSize: mobile
-									? "clamp(30px,9vw,52px)"
-									: "clamp(36px,5vw,68px)",
-								fontStyle: "italic",
+									? "clamp(34px,10vw,54px)"
+									: "clamp(40px,5.5vw,74px)",
+								fontWeight: 800,
 								color: T.text,
-								lineHeight: 1.04,
-								letterSpacing: "-0.025em",
-								marginTop: 24,
-								marginBottom: 16,
+								lineHeight: 0.97,
+								letterSpacing: "-0.045em",
+								marginTop: 28,
+								marginBottom: 18,
 							}}
 						>
-							Your congregation is waiting
+							Your customers are waiting
 							<br />
 							to hear from you.
 						</h2>
 						<p
 							style={{
 								fontFamily: T.body,
-								fontSize: 16,
+								fontSize: 16.5,
 								color: T.textSub,
-								maxWidth: 440,
-								margin: "0 auto 36px",
+								maxWidth: 460,
+								margin: "0 auto 40px",
 							}}
 						>
-							Set up in under 5 minutes. No technical knowledge needed. Nigerian
+							Set up in under 5 minutes. No technical skills needed. Nigerian
 							pricing in Naira.
 						</p>
 						<div
 							style={{
 								display: "flex",
-								gap: 12,
+								gap: 14,
 								justifyContent: "center",
 								flexWrap: "wrap",
 							}}
@@ -2408,34 +2605,34 @@ function CTA() {
 								style={{
 									display: "inline-flex",
 									alignItems: "center",
-									gap: 8,
+									gap: 9,
 									fontFamily: T.body,
-									fontSize: 15,
+									fontSize: 15.5,
 									fontWeight: 700,
 									color: "#fff",
-									background: T.accent,
-									padding: "14px 30px",
-									borderRadius: 12,
-									boxShadow: `0 0 32px ${T.accentGlow}`,
+									background: `linear-gradient(135deg,${T.accent},${T.violet})`,
+									padding: "15px 34px",
+									borderRadius: 13,
+									boxShadow: `0 0 36px ${T.accentGlow}`,
 									width: mobile ? "100%" : "auto",
 									justifyContent: "center",
 								}}
 								to="/register"
 							>
-								Create free account <ArrowRight size={16} />
+								Create free account <ArrowRight size={17} />
 							</Link>
 							<Link
 								style={{
 									display: "inline-flex",
 									alignItems: "center",
 									fontFamily: T.body,
-									fontSize: 14,
+									fontSize: 14.5,
 									fontWeight: 500,
 									color: T.textSub,
 									background: "rgba(255,255,255,0.04)",
 									border: `1px solid ${T.borderSub}`,
-									padding: "14px 22px",
-									borderRadius: 12,
+									padding: "15px 26px",
+									borderRadius: 13,
 									width: mobile ? "100%" : "auto",
 									justifyContent: "center",
 								}}
@@ -2459,7 +2656,7 @@ function Footer() {
 		<footer
 			style={{
 				borderTop: `1px solid ${T.borderSub}`,
-				padding: `48px ${mobile ? 18 : 28}px 40px`,
+				padding: `52px ${mobile ? 20 : 32}px 44px`,
 				position: "relative",
 				overflow: "hidden",
 			}}
@@ -2468,54 +2665,53 @@ function Footer() {
 				aria-hidden
 				style={{
 					position: "absolute",
-					bottom: -20,
+					bottom: -24,
 					left: "50%",
 					transform: "translateX(-50%)",
 					fontFamily: T.display,
-					fontSize: "clamp(64px,13vw,190px)",
-					fontStyle: "italic",
-					fontWeight: 400,
-					color: "rgba(99,102,241,0.04)",
+					fontSize: "clamp(64px,14vw,200px)",
+					fontWeight: 800,
+					color: "rgba(99,102,241,0.03)",
 					whiteSpace: "nowrap",
 					pointerEvents: "none",
-					letterSpacing: "-0.04em",
+					letterSpacing: "-0.06em",
 					lineHeight: 1,
 				}}
 			>
 				MessageDesk
 			</p>
-			<div style={{ maxWidth: 1120, margin: "0 auto", position: "relative" }}>
+			<div style={{ maxWidth: 1160, margin: "0 auto", position: "relative" }}>
 				<div
 					style={{
 						display: "flex",
 						justifyContent: "space-between",
 						alignItems: "flex-start",
 						flexWrap: "wrap",
-						gap: 32,
-						marginBottom: 40,
+						gap: 36,
+						marginBottom: 44,
 					}}
 				>
-					<div style={{ maxWidth: 240 }}>
+					<div style={{ maxWidth: 256 }}>
 						<div
 							style={{
 								display: "flex",
 								alignItems: "center",
-								gap: 9,
-								marginBottom: 12,
+								gap: 10,
+								marginBottom: 14,
 							}}
 						>
 							<div
 								style={{
-									width: 28,
-									height: 28,
-									borderRadius: 8,
-									background: T.accent,
+									width: 30,
+									height: 30,
+									borderRadius: 9,
+									background: `linear-gradient(135deg,${T.accent},${T.violet})`,
 									display: "flex",
 									alignItems: "center",
 									justifyContent: "center",
 								}}
 							>
-								<svg fill="none" height="15" viewBox="0 0 24 24" width="15">
+								<svg fill="none" height="16" viewBox="0 0 24 24" width="16">
 									<title>MD</title>
 									<path
 										d="M12 2C6.48 2 2 6.48 2 12c0 1.85.5 3.58 1.38 5.07L2 22l5.03-1.3A9.96 9.96 0 0012 22c5.52 0 10-4.48 10-10S17.52 2 12 2z"
@@ -2523,18 +2719,19 @@ function Footer() {
 									/>
 									<path
 										d="M8 11h8M8 14.5h5"
-										stroke={T.accent}
+										stroke="rgba(99,102,241,0.6)"
 										strokeLinecap="round"
-										strokeWidth="1.6"
+										strokeWidth="1.7"
 									/>
 								</svg>
 							</div>
 							<span
 								style={{
-									fontFamily: T.body,
-									fontWeight: 700,
-									fontSize: 15,
+									fontFamily: T.display,
+									fontWeight: 800,
+									fontSize: 16,
 									color: T.text,
+									letterSpacing: "-0.04em",
 								}}
 							>
 								MessageDesk
@@ -2543,16 +2740,16 @@ function Footer() {
 						<p
 							style={{
 								fontFamily: T.body,
-								fontSize: 13,
+								fontSize: 13.5,
 								color: T.textSub,
-								lineHeight: 1.65,
+								lineHeight: 1.68,
 							}}
 						>
-							WhatsApp and SMS messaging for churches and nonprofits in Nigeria.
+							WhatsApp and SMS messaging built for businesses in Nigeria.
 						</p>
 					</div>
 					<div
-						style={{ display: "flex", gap: mobile ? 32 : 56, flexWrap: "wrap" }}
+						style={{ display: "flex", gap: mobile ? 36 : 60, flexWrap: "wrap" }}
 					>
 						{[
 							{
@@ -2571,15 +2768,15 @@ function Footer() {
 										fontFamily: T.mono,
 										fontSize: 10,
 										color: T.textSub,
-										letterSpacing: "0.12em",
+										letterSpacing: "0.14em",
 										textTransform: "uppercase",
-										marginBottom: 14,
+										marginBottom: 16,
 									}}
 								>
 									{col.heading}
 								</p>
 								<div
-									style={{ display: "flex", flexDirection: "column", gap: 9 }}
+									style={{ display: "flex", flexDirection: "column", gap: 10 }}
 								>
 									{col.links.map((l) => (
 										<a
@@ -2593,7 +2790,7 @@ function Footer() {
 											}
 											style={{
 												fontFamily: T.body,
-												fontSize: 13,
+												fontSize: 13.5,
 												color: T.textDim,
 												transition: "color .15s",
 											}}
@@ -2609,18 +2806,18 @@ function Footer() {
 				<Divider />
 				<div
 					style={{
-						paddingTop: 18,
+						paddingTop: 20,
 						display: "flex",
 						justifyContent: "space-between",
 						alignItems: "center",
 						flexWrap: "wrap",
-						gap: 10,
+						gap: 12,
 					}}
 				>
 					<p style={{ fontFamily: T.mono, fontSize: 11, color: T.textDim }}>
-						© 2025 MessageDesk. Built for Nigerian faith communities.
+						© 2025 MessageDesk. Built for Nigerian businesses.
 					</p>
-					<div style={{ display: "flex", gap: 18 }}>
+					<div style={{ display: "flex", gap: 20 }}>
 						{["WhatsApp", "SMS", "Campaigns", "Templates"].map((t) => (
 							<span
 								key={t}
@@ -2645,10 +2842,10 @@ export default function LandingPage() {
 			<div
 				style={{
 					minHeight: "100vh",
+					width: "100%",
 					background: T.bg,
 					color: T.text,
 					fontFamily: T.body,
-					width: "100%",
 				}}
 			>
 				<Navbar />

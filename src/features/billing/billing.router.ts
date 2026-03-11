@@ -20,21 +20,24 @@ import {
 	cancelSubscription as paystackCancelSub,
 	verifyTransaction,
 } from "#/features/payment/paystack";
+import { invalidate, withCache } from "#/lib/cache";
 import { protectedProcedure } from "#/orpc";
 
 // ── Wallet ────────────────────────────────────────────────────────────────────
-export const getWallet = protectedProcedure.handler(async ({ context }) => {
-	const wallet = await getOrCreateWallet(context.session.user.id);
-	return {
-		balanceKobo: wallet.balanceKobo,
-		heldKobo: wallet.heldKobo,
-		availableKobo: Math.max(0, wallet.balanceKobo - wallet.heldKobo),
-		balanceFormatted: formatNaira(wallet.balanceKobo),
-		availableFormatted: formatNaira(
-			Math.max(0, wallet.balanceKobo - wallet.heldKobo)
-		),
-	};
-});
+export const getWallet = protectedProcedure.handler(
+	withCache("billing.getWallet", 20_000, async ({ context }) => {
+		const wallet = await getOrCreateWallet(context.session?.user.id ?? "");
+		return {
+			balanceKobo: wallet.balanceKobo,
+			heldKobo: wallet.heldKobo,
+			availableKobo: Math.max(0, wallet.balanceKobo - wallet.heldKobo),
+			balanceFormatted: formatNaira(wallet.balanceKobo),
+			availableFormatted: formatNaira(
+				Math.max(0, wallet.balanceKobo - wallet.heldKobo)
+			),
+		};
+	})
+);
 
 // ── Deposit ───────────────────────────────────────────────────────────────────
 export const initDeposit = protectedProcedure
@@ -78,6 +81,7 @@ export const initDeposit = protectedProcedure
 export const verifyDeposit = protectedProcedure
 	.input(z.object({ reference: z.string() }))
 	.handler(async ({ input, context }) => {
+		const userId = context.session.user.id;
 		const existing = await context.db.transaction.findUnique({
 			where: { reference: input.reference },
 		});
@@ -110,6 +114,10 @@ export const verifyDeposit = protectedProcedure
 			data: { status: "completed", paystackRef: input.reference },
 		});
 
+		// Wallet balance changed — invalidate cached reads
+		invalidate(userId, "billing.getWallet");
+		invalidate(userId, "billing.getTransactions");
+
 		return {
 			alreadyProcessed: false,
 			amountKobo: result.amount,
@@ -135,59 +143,61 @@ export const getTransactions = protectedProcedure
 				.optional(),
 		})
 	)
-	.handler(async ({ input, context }) => {
-		const wallet = await context.db.wallet.findUnique({
-			where: { userId: context.session.user.id },
-		});
-		if (!wallet) {
+	.handler(
+		withCache("billing.getTransactions", 20_000, async ({ input, context }) => {
+			const wallet = await context.db.wallet.findUnique({
+				where: { userId: context.session?.user.id ?? "" },
+			});
+			if (!wallet) {
+				return {
+					transactions: [],
+					pagination: {
+						total: 0,
+						page: 1,
+						pageSize: input.pageSize,
+						totalPages: 0,
+					},
+				};
+			}
+
+			const where = {
+				walletId: wallet.id,
+				...(input.type && { type: input.type }),
+			};
+			const [total, rows] = await Promise.all([
+				context.db.transaction.count({ where }),
+				context.db.transaction.findMany({
+					where,
+					orderBy: { createdAt: "desc" },
+					skip: (input.page - 1) * input.pageSize,
+					take: input.pageSize,
+				}),
+			]);
+
 			return {
-				transactions: [],
+				transactions: rows.map((t) => ({
+					id: t.id,
+					type: t.type,
+					status: t.status,
+					amountKobo: t.amountKobo,
+					amountFormatted: formatNaira(t.amountKobo),
+					balanceAfterKobo: t.balanceAfterKobo,
+					balanceAfterFormatted: formatNaira(t.balanceAfterKobo),
+					description: t.description,
+					reference: t.reference,
+					campaignId: t.campaignId,
+					createdAt: t.createdAt.toISOString(),
+					isCredit: ["deposit", "campaign_refund", "refund"].includes(t.type),
+				})),
 				pagination: {
-					total: 0,
-					page: 1,
+					total,
+					page: input.page,
 					pageSize: input.pageSize,
-					totalPages: 0,
+					totalPages: Math.ceil(total / input.pageSize),
 				},
 			};
-		}
-
-		const where = {
-			walletId: wallet.id,
-			...(input.type && { type: input.type }),
-		};
-		const [total, rows] = await Promise.all([
-			context.db.transaction.count({ where }),
-			context.db.transaction.findMany({
-				where,
-				orderBy: { createdAt: "desc" },
-				skip: (input.page - 1) * input.pageSize,
-				take: input.pageSize,
-			}),
-		]);
-
-		return {
-			transactions: rows.map((t) => ({
-				id: t.id,
-				type: t.type,
-				status: t.status,
-				amountKobo: t.amountKobo,
-				amountFormatted: formatNaira(t.amountKobo),
-				balanceAfterKobo: t.balanceAfterKobo,
-				balanceAfterFormatted: formatNaira(t.balanceAfterKobo),
-				description: t.description,
-				reference: t.reference,
-				campaignId: t.campaignId,
-				createdAt: t.createdAt.toISOString(),
-				isCredit: ["deposit", "campaign_refund", "refund"].includes(t.type),
-			})),
-			pagination: {
-				total,
-				page: input.page,
-				pageSize: input.pageSize,
-				totalPages: Math.ceil(total / input.pageSize),
-			},
-		};
-	});
+		})
+	);
 
 // ── Campaign cost check ───────────────────────────────────────────────────────
 export const checkCampaignCost = protectedProcedure
@@ -204,7 +214,7 @@ export const checkCampaignCost = protectedProcedure
 		// Detect which contacts have an open 24h service window (lastInboundAt < 24h ago)
 		// These WhatsApp contacts can receive free-form messages at whatsapp_service rate (₦0)
 		const SERVICE_WINDOW_MS = 24 * 60 * 60 * 1000;
-		let serviceWindowContactIds = new Set<number>(); // index into input.contacts
+		const serviceWindowContactIds = new Set<number>(); // index into input.contacts
 
 		if (
 			input.contactIds &&
@@ -223,7 +233,9 @@ export const checkCampaignCost = protectedProcedure
 			const openSet = new Set(openSessions.map((c) => c.id));
 			// Map back to indexes in input.contacts (parallel array)
 			input.contactIds.forEach((id, idx) => {
-				if (openSet.has(id)) serviceWindowContactIds.add(idx);
+				if (openSet.has(id)) {
+					serviceWindowContactIds.add(idx);
+				}
 			});
 		}
 
@@ -288,9 +300,9 @@ export const checkCampaignCost = protectedProcedure
 
 // ── Subscription ──────────────────────────────────────────────────────────────
 export const getSubscription = protectedProcedure.handler(
-	async ({ context }) => {
+	withCache("billing.getSubscription", 120_000, async ({ context }) => {
 		const sub = await context.db.subscription.findUnique({
-			where: { userId: context.session.user.id },
+			where: { userId: context.session?.user.id ?? "" },
 		});
 		const plans = Object.entries(PRICING.PLANS).map(([key, p]) => ({
 			key,
@@ -328,7 +340,7 @@ export const getSubscription = protectedProcedure.handler(
 			},
 			plans,
 		};
-	}
+	})
 );
 
 export const initSubscription = protectedProcedure
@@ -393,6 +405,7 @@ export const cancelSubscription = protectedProcedure.handler(
 			where: { userId: context.session.user.id },
 			data: { status: "cancelled", cancelledAt: new Date() },
 		});
+		invalidate(context.session.user.id, "billing.getSubscription");
 		return {
 			cancelled: true,
 			currentPeriodEnd: updated.currentPeriodEnd.toISOString(),

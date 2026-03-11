@@ -66,7 +66,10 @@ export const ModelName = {
   MessageTemplate: 'MessageTemplate',
   SenderNumber: 'SenderNumber',
   PendingDelivery: 'PendingDelivery',
-  InboundMessage: 'InboundMessage'
+  InboundMessage: 'InboundMessage',
+  OrgInvite: 'OrgInvite',
+  OrgMember: 'OrgMember',
+  OrgJoinRequest: 'OrgJoinRequest'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -388,6 +391,44 @@ export const InboundMessageScalarFieldEnum = {
 } as const
 
 export type InboundMessageScalarFieldEnum = (typeof InboundMessageScalarFieldEnum)[keyof typeof InboundMessageScalarFieldEnum]
+
+
+export const OrgInviteScalarFieldEnum = {
+  id: 'id',
+  ownerId: 'ownerId',
+  email: 'email',
+  role: 'role',
+  token: 'token',
+  expiresAt: 'expiresAt',
+  accepted: 'accepted',
+  createdAt: 'createdAt'
+} as const
+
+export type OrgInviteScalarFieldEnum = (typeof OrgInviteScalarFieldEnum)[keyof typeof OrgInviteScalarFieldEnum]
+
+
+export const OrgMemberScalarFieldEnum = {
+  id: 'id',
+  ownerId: 'ownerId',
+  userId: 'userId',
+  role: 'role',
+  joinedAt: 'joinedAt'
+} as const
+
+export type OrgMemberScalarFieldEnum = (typeof OrgMemberScalarFieldEnum)[keyof typeof OrgMemberScalarFieldEnum]
+
+
+export const OrgJoinRequestScalarFieldEnum = {
+  id: 'id',
+  ownerId: 'ownerId',
+  userId: 'userId',
+  message: 'message',
+  status: 'status',
+  decidedAt: 'decidedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type OrgJoinRequestScalarFieldEnum = (typeof OrgJoinRequestScalarFieldEnum)[keyof typeof OrgJoinRequestScalarFieldEnum]
 
 
 export const SortOrder = {

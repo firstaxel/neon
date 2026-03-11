@@ -19,14 +19,13 @@
  *   5. When contact replies YES → sendPendingMessage fires
  */
 
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NonRetriableError } from "inngest";
 import { v4 as uuidv4 } from "uuid";
 import { prisma } from "#/db";
-import { env } from "#/env";
 import { debitForMessage, refundForMessage } from "#/features/billing/utils";
-import { personalizeMessage } from "#/features/miscellaneous/scenario";
 import { getUtilityTemplate } from "#/features/miscellaneous/meta-templates";
+import { personalizeMessage } from "#/features/miscellaneous/scenario";
+import { checkContent } from "#/lib/content-check";
 import { inngest } from "#/lib/inngest/client";
 import { sendTemplateMessage, sendTextMessage } from "#/lib/meta-send";
 import { sendSmsMessage } from "#/lib/termii";
@@ -36,28 +35,6 @@ const PRESCREEN_TEMPLATE =
 const PRESCREEN_LANGUAGE = process.env.PRESCREEN_TEMPLATE_LANG ?? "en";
 const PENDING_TTL_HOURS = 48;
 const FAN_OUT_BATCH_SIZE = 100;
-
-const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
-
-async function checkContent(
-	message: string
-): Promise<{ safe: boolean; reason?: string }> {
-	try {
-		const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-		const prompt = `You are a messaging compliance checker. Normal marketing outreach is SAFE.
-Mark UNSAFE only for: spam, threats, sexual content, fraud, hate speech.
-Message: """${message.slice(0, 800)}"""
-Reply ONLY with JSON (no markdown): {"safe": true, "reason": null}`;
-		const result = await model.generateContent(prompt);
-		const text = result.response
-			.text()
-			.trim()
-			.replace(/```json\n?|```\n?/g, "");
-		return JSON.parse(text) as { safe: boolean; reason?: string };
-	} catch {
-		return { safe: true };
-	}
-}
 
 // ─── Orchestrator ─────────────────────────────────────────────────────────────
 
@@ -108,7 +85,12 @@ export const sendCampaignPrescreen = inngest.createFunction(
 				where: { id: { in: contactIds }, uploadedBy: userId },
 				select: { id: true, name: true, phone: true, channel: true },
 			});
-			return rows as Array<{ id: string; name: string; phone: string; channel: "whatsapp" | "sms" }>;
+			return rows as Array<{
+				id: string;
+				name: string;
+				phone: string;
+				channel: "whatsapp" | "sms";
+			}>;
 		});
 
 		// AI check once — on the real message body that will eventually be delivered
@@ -277,7 +259,11 @@ export const sendPrescreenSingle = inngest.createFunction(
 					});
 					const camp = await tx.campaign.findUnique({
 						where: { id: campaignId },
-						select: { sentMessages: true, failedMessages: true, totalMessages: true },
+						select: {
+							sentMessages: true,
+							failedMessages: true,
+							totalMessages: true,
+						},
 					});
 					if (
 						camp &&
@@ -317,7 +303,11 @@ export const sendPrescreenSingle = inngest.createFunction(
 					});
 					const camp = await tx.campaign.findUnique({
 						where: { id: campaignId },
-						select: { sentMessages: true, failedMessages: true, totalMessages: true },
+						select: {
+							sentMessages: true,
+							failedMessages: true,
+							totalMessages: true,
+						},
 					});
 					if (
 						camp &&
@@ -379,15 +369,18 @@ export const sendPrescreenSingle = inngest.createFunction(
 		const result = await step.run("send-consent-template", () => {
 			// Resolve the warm, scenario-specific utility template for this org type.
 			// Falls back to the generic consent template if no match.
-			const utilityTpl = getUtilityTemplate(orgType, scenario as Parameters<typeof getUtilityTemplate>[1]);
-			const templateName = utilityTpl?.name ?? PRESCREEN_TEMPLATE;
-			logger.info(`[Prescreen] Using utility template: ${templateName} (org=${orgType}, scenario=${scenario})`);
-			return sendTemplateMessage(
-				phone,
-				templateName,
-				PRESCREEN_LANGUAGE,
-				[contactName, orgName]
+			const utilityTpl = getUtilityTemplate(
+				orgType,
+				scenario as Parameters<typeof getUtilityTemplate>[1]
 			);
+			const templateName = utilityTpl?.name ?? PRESCREEN_TEMPLATE;
+			logger.info(
+				`[Prescreen] Using utility template: ${templateName} (org=${orgType}, scenario=${scenario})`
+			);
+			return sendTemplateMessage(phone, templateName, PRESCREEN_LANGUAGE, [
+				contactName,
+				orgName,
+			]);
 		});
 
 		if (!result.success) {

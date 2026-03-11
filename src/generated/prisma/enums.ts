@@ -189,3 +189,21 @@ export const Purpose = {
 } as const
 
 export type Purpose = (typeof Purpose)[keyof typeof Purpose]
+
+
+export const OrgRole = {
+  OWNER: 'OWNER',
+  ADMIN: 'ADMIN',
+  MEMBER: 'MEMBER'
+} as const
+
+export type OrgRole = (typeof OrgRole)[keyof typeof OrgRole]
+
+
+export const JoinRequestStatus = {
+  pending: 'pending',
+  approved: 'approved',
+  declined: 'declined'
+} as const
+
+export type JoinRequestStatus = (typeof JoinRequestStatus)[keyof typeof JoinRequestStatus]

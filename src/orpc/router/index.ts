@@ -18,6 +18,7 @@ import {
 	createContact,
 	deleteContact,
 	deleteContacts,
+	exportContacts,
 	getContact,
 	getDuplicates,
 	listContacts,
@@ -95,6 +96,7 @@ export const appRouter = o.router({
 		getDuplicates,
 		mergeContacts,
 		updateContact,
+		export: exportContacts,
 	}),
 	parse: parsingRouter,
 	billing: o.router({

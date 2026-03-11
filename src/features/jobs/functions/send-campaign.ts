@@ -39,12 +39,10 @@
  *   atomically once all workers have had a chance to finish.
  */
 
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import LowBalanceEmail from "emails/low-balance-email";
 
 import { v4 as uuidv4 } from "uuid";
 import { prisma } from "#/db";
-import { env } from "#/env";
 import {
 	debitForMessage,
 	type MessageType,
@@ -53,6 +51,7 @@ import {
 } from "#/features/billing/utils";
 import { sendMail } from "#/features/email/lib/sender";
 import { personalizeMessage } from "#/features/miscellaneous/scenario";
+import { checkContent } from "#/lib/content-check";
 import { inngest } from "#/lib/inngest/client";
 import { sendWhatsAppMessage } from "#/lib/meta-send";
 import { sendSmsMessage } from "#/lib/termii";
@@ -65,44 +64,6 @@ import { sendSmsMessage } from "#/lib/termii";
  * well within the limit even with large message bodies.
  */
 const FAN_OUT_BATCH_SIZE = 100;
-
-// ─── AI content filter (called once in orchestrator, not per message) ─────────
-
-const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
-
-interface ContentCheckResult {
-	reason?: string;
-	safe: boolean;
-}
-
-async function checkContent(
-	message: string,
-	channel: "whatsapp" | "sms"
-): Promise<ContentCheckResult> {
-	try {
-		const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-		const prompt = `You are a messaging compliance checker for a business messaging platform.
-Analyze this ${channel.toUpperCase()} message for compliance. Normal marketing and customer outreach is SAFE.
-Mark UNSAFE only for: spam/phishing/scam, illegal threats, sexual content, financial fraud, hate speech.
-
-Message: """
-${message.slice(0, 800)}
-"""
-
-Reply with ONLY this JSON (no markdown):
-{"safe": true, "reason": null}`;
-
-		const result = await model.generateContent(prompt);
-		const text = result.response
-			.text()
-			.trim()
-			.replace(/```json\n?|```\n?/g, "");
-		const parsed = JSON.parse(text) as ContentCheckResult;
-		return { safe: parsed.safe ?? true, reason: parsed.reason };
-	} catch {
-		return { safe: true }; // fail open — don't block on AI unavailability
-	}
-}
 
 // ─── Orchestrator ─────────────────────────────────────────────────────────────
 
@@ -417,6 +378,7 @@ export const sendSingleMessage = inngest.createFunction(
 		});
 
 		if (!billing.success) {
+			// Update DB state inside a step (idempotent)
 			await step.run("pause-campaign", async () => {
 				logger.warn(
 					`[Campaign] Pausing ${campaignId} — wallet empty for ${userId}`
@@ -436,15 +398,20 @@ export const sendSingleMessage = inngest.createFunction(
 						completedAt: new Date(),
 					},
 				});
-				await inngest.send({
-					name: "neon/campaign.paused-low-balance",
-					data: {
-						campaignId,
-						userId,
-						remainingBalanceKobo: billing.balanceKobo,
-					},
-				});
 			});
+
+			// FIX: inngest.send() MUST be outside step.run() — Inngest can replay
+			// step bodies, which would fire duplicate low-balance emails.
+			// Use step.sendEvent() which is idempotent and checkpoint-safe.
+			await step.sendEvent("notify-low-balance", {
+				name: "neon/campaign.paused-low-balance",
+				data: {
+					campaignId,
+					userId,
+					remainingBalanceKobo: billing.balanceKobo,
+				},
+			});
+
 			return { messageId, success: false, reason: "insufficient_balance" };
 		}
 

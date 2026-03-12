@@ -16,13 +16,13 @@ export function PasswordResetEmail({ url, name }: PasswordResetEmailProps) {
 	const greeting = name ? `Hi ${name},` : "Hi there,";
 
 	return (
-		<EmailLayout preview="Reset your Neon password — link expires in 1 hour">
+		<EmailLayout preview="Reset your Velocast password — link expires in 1 hour">
 			<Heading className="mt-0 mb-2 text-center font-semibold text-2xl text-[#09090b]">
 				Reset your password
 			</Heading>
 
 			<Text className="mt-0 mb-6 text-center text-[#52525b] text-sm">
-				{greeting} we received a request to reset the password for your Neon
+				{greeting} we received a request to reset the password for your Velocast
 				account. Click the button below to choose a new password. This link
 				expires in <strong>1 hour</strong>.
 			</Text>
@@ -55,7 +55,7 @@ export function PasswordResetEmail({ url, name }: PasswordResetEmailProps) {
 }
 
 PasswordResetEmail.PreviewProps = {
-	url: "https://Neon.example.com/api/auth/reset-password?token=abc123",
+	url: "https://Velocast.example.com/api/auth/reset-password?token=abc123",
 	name: "Ngozi",
 } satisfies PasswordResetEmailProps;
 

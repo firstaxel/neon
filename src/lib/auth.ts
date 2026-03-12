@@ -14,7 +14,7 @@ export const auth = betterAuth({
 		provider: "postgresql",
 	}),
 
-	appName: "Neon",
+	appName: "Velocast",
 	baseURL: process.env.BETTER_AUTH_URL,
 
 	emailAndPassword: {
@@ -25,7 +25,7 @@ export const auth = betterAuth({
 		async sendResetPassword({ user, url }) {
 			await sendMail({
 				to: user.email,
-				subject: "Reset your Neon password",
+				subject: "Reset your Velocast password",
 				template: PasswordResetEmail({ url, name: user.name }),
 			});
 		},
@@ -37,7 +37,7 @@ export const auth = betterAuth({
 		async sendVerificationEmail({ user, url }) {
 			await sendMail({
 				to: user.email,
-				subject: "Verify your Neon email",
+				subject: "Verify your Velocast email",
 				template: VerificationEmail({ url, name: user.name }),
 			});
 		},
@@ -66,7 +66,7 @@ export const auth = betterAuth({
 			async sendMagicLink({ email, url }) {
 				await sendMail({
 					to: email,
-					subject: "Your Neon sign-in link",
+					subject: "Your Velocast sign-in link",
 					template: MagicLinkEmail({ url }),
 				});
 			},
@@ -77,7 +77,7 @@ export const auth = betterAuth({
 	],
 
 	advanced: {
-		cookiePrefix: "neon",
+		cookiePrefix: "Velocast",
 		crossSubDomainCookies: { enabled: false },
 	},
 

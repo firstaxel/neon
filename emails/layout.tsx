@@ -19,7 +19,7 @@ interface EmailLayoutProps {
 }
 
 /**
- * Shared wrapper for all Neon transactional emails.
+ * Shared wrapper for all Velocast transactional emails.
  *
  * Provides consistent branding: logo, card container, footer.
  * Uses @react-email/components Tailwind support — classes are
@@ -37,7 +37,7 @@ export function EmailLayout({ preview, children }: EmailLayoutProps) {
 						<Section className="mb-6 text-center">
 							{/* Replace src with your hosted logo URL */}
 							<Img
-								alt="Neon"
+								alt="Velocast"
 								className="mx-auto"
 								height={44}
 								src={`${env.VITE_CLIENT_URL}/logo.png`}
@@ -54,10 +54,10 @@ export function EmailLayout({ preview, children }: EmailLayoutProps) {
 						<Section className="mt-6 px-2 text-center">
 							<Hr className="mb-4 border-[#e4e4e7]" />
 							<Text className="m-0 text-[#71717a] text-xs">
-								Neon · You're receiving this because you have an account.
+								Velocast · You're receiving this because you have an account.
 							</Text>
 							<Text className="m-0 mt-1 text-[#71717a] text-xs">
-								© {new Date().getFullYear()} Neon. All rights reserved.
+								© {new Date().getFullYear()} Velocast. All rights reserved.
 							</Text>
 						</Section>
 					</Container>

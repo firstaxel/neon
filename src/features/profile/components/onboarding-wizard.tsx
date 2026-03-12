@@ -408,7 +408,7 @@ function WalletStep({
 
 // ─── Step 2: Sender ID ────────────────────────────────────────────────────────
 
-const PLATFORM_SENDER_ID = process.env.PLATFORM_SMS_SENDER_ID ?? "MessageDesk";
+const PLATFORM_SENDER_ID = process.env.PLATFORM_SMS_SENDER_ID ?? "Velocast";
 const senderIdRegex = /^[a-zA-Z0-9]+$/;
 
 function SenderIdStep({

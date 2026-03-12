@@ -13,10 +13,10 @@ interface VerificationEmailProps {
  * Preview at: npx email preview
  */
 export function VerificationEmail({ url, name }: VerificationEmailProps) {
-	const greeting = name ? `Welcome, ${name}!` : "Welcome to Neon!";
+	const greeting = name ? `Welcome, ${name}!` : "Welcome to Velocast!";
 
 	return (
-		<EmailLayout preview="Verify your Neon email address to get started">
+		<EmailLayout preview="Verify your Velocast email address to get started">
 			<Heading className="mt-0 mb-2 text-center font-semibold text-2xl text-[#09090b]">
 				Verify your email
 			</Heading>
@@ -36,7 +36,8 @@ export function VerificationEmail({ url, name }: VerificationEmailProps) {
 			</Section>
 
 			<Text className="mt-6 mb-0 text-center text-[#a1a1aa] text-xs">
-				If you didn't create a Neon account, you can safely ignore this email.
+				If you didn't create a Velocast account, you can safely ignore this
+				email.
 			</Text>
 
 			<Text className="mt-3 mb-0 text-center text-[#a1a1aa] text-xs">
@@ -50,7 +51,7 @@ export function VerificationEmail({ url, name }: VerificationEmailProps) {
 }
 
 VerificationEmail.PreviewProps = {
-	url: "https://Neon.example.com/api/auth/verify-email?token=abc123",
+	url: "https://Velocast.example.com/api/auth/verify-email?token=abc123",
 	name: "Emeka",
 } satisfies VerificationEmailProps;
 

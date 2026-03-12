@@ -308,7 +308,7 @@ export const submitSenderId = protectedProcedure
 			where: { userId: context.session.user.id },
 			select: { orgName: true },
 		});
-		const companyName = profile?.orgName ?? "MessageDesk User";
+		const companyName = profile?.orgName ?? "Velocast User";
 
 		try {
 			const res = await fetch(

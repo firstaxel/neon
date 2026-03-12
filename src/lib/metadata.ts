@@ -3,13 +3,13 @@
 import { env } from "#/env";
 
 export const siteConfig = {
-	name: "MessageDesk",
+	name: "Velocast",
 	tagline: "Messaging Console",
 	description:
 		"Send personalised WhatsApp and SMS campaigns to your entire contact list — tracked, fast, and affordable.",
-	url: env.VITE_CLIENT_URL ?? "https://messagedesk.app",
+	url: env.VITE_CLIENT_URL ?? "https://Velocast.app",
 	ogImage: "/og.png",
-	twitterHandle: "@messagedesk",
+	twitterHandle: "@Velocast",
 	locale: "en_NG",
 	themeColor: "#25d366",
 } as const;
@@ -18,8 +18,8 @@ export const siteConfig = {
 
 /**
  * Formats a browser tab title.
- *   "Campaigns"         → "Campaigns —  neon"
- *   undefined           → " neon — Church & NGO Messaging Console"
+ *   "Campaigns"         → "Campaigns —  Velocast"
+ *   undefined           → " Velocast — Church & NGO Messaging Console"
  */
 function formatTitle(pageTitle?: string): string {
 	if (!pageTitle) {
@@ -47,7 +47,7 @@ export interface MetadataOptions {
 	 * Defaults to siteConfig.ogImage.
 	 */
 	ogImage?: string;
-	/** Short page title. Appended with " —  neon". Omit for the home title. */
+	/** Short page title. Appended with " —  Velocast". Omit for the home title. */
 	title?: string;
 }
 
@@ -59,7 +59,7 @@ const DEFAULT_KEYWORDS = [
 	"campaign",
 	"Nigeria",
 	"bulk SMS",
-	"neon",
+	"Velocast",
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────

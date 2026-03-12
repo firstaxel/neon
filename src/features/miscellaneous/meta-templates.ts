@@ -468,7 +468,7 @@ const other: Record<ScenarioId, MetaTemplateDefinition> = {
 // Bold (*YES*) is allowed in BODY text but keep it plain for max compatibility.
 
 export const UTILITY_CONSENT_TEMPLATE: MetaTemplateDefinition = {
-	name: "messagedesk_consent_v1",
+	name: "Velocast_consent_v1",
 	displayName: "Message Consent Request",
 	category: "UTILITY",
 	language: "en",

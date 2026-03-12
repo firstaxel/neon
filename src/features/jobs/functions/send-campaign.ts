@@ -74,7 +74,7 @@ export const sendCampaign = inngest.createFunction(
 		retries: 1,
 		timeouts: { finish: "15m" },
 	},
-	{ event: "neon/campaign.send" },
+	{ event: "Velocast/campaign.send" },
 
 	async ({ event, step, logger }) => {
 		const {
@@ -117,13 +117,25 @@ export const sendCampaign = inngest.createFunction(
 		const contacts = await step.run("fetch-contacts", async () => {
 			const rows = await prisma.contact.findMany({
 				where: { id: { in: contactIds }, uploadedBy: userId },
-				select: { id: true, name: true, phone: true, channel: true, type: true },
+				select: {
+					id: true,
+					name: true,
+					phone: true,
+					channel: true,
+					type: true,
+				},
 			});
 			// sms_fallback: force every contact to SMS channel
 			if (forceSmsChannel) {
 				return rows.map((c) => ({ ...c, channel: "sms" as const }));
 			}
-			return rows as Array<{ id: string; name: string; phone: string; channel: "whatsapp" | "sms"; type: string }>;
+			return rows as Array<{
+				id: string;
+				name: string;
+				phone: string;
+				channel: "whatsapp" | "sms";
+				type: string;
+			}>;
 		});
 
 		// ── Step 3: AI content safety check — ONCE for the whole campaign ────────
@@ -230,7 +242,7 @@ export const sendCampaign = inngest.createFunction(
 			}
 		);
 		const events = messageRows.map((m) => ({
-			name: "neon/campaign.send-single" as const,
+			name: "Velocast/campaign.send-single" as const,
 			data: {
 				campaignId,
 				userId,
@@ -331,7 +343,7 @@ export const sendSingleMessage = inngest.createFunction(
 			}
 		},
 	},
-	{ event: "neon/campaign.send-single" },
+	{ event: "Velocast/campaign.send-single" },
 
 	async ({ event, step, logger }) => {
 		const {
@@ -404,7 +416,7 @@ export const sendSingleMessage = inngest.createFunction(
 			// step bodies, which would fire duplicate low-balance emails.
 			// Use step.sendEvent() which is idempotent and checkpoint-safe.
 			await step.sendEvent("notify-low-balance", {
-				name: "neon/campaign.paused-low-balance",
+				name: "Velocast/campaign.paused-low-balance",
 				data: {
 					campaignId,
 					userId,
@@ -528,7 +540,7 @@ export const handleLowBalancePause = inngest.createFunction(
 		id: "campaign-paused-low-balance",
 		name: "Notify User: Campaign Paused (Low Balance)",
 	},
-	{ event: "neon/campaign.paused-low-balance" },
+	{ event: "Velocast/campaign.paused-low-balance" },
 
 	async ({ event, step, logger }) => {
 		const { campaignId, userId, remainingBalanceKobo } = event.data as {
@@ -552,7 +564,7 @@ export const handleLowBalancePause = inngest.createFunction(
 
 			await sendMail({
 				to: user.email,
-				subject: "Your neon campaign was paused — low balance",
+				subject: "Your Velocast campaign was paused — low balance",
 				template: LowBalanceEmail({
 					name: user.name ?? "",
 					campaignId,

@@ -47,7 +47,7 @@ export const parseContactList = inngest.createFunction(
 			});
 		},
 	},
-	{ event: "neon/contact-list.parse" },
+	{ event: "Velocast/contact-list.parse" },
 
 	async ({ event, step, logger }) => {
 		const { jobId, r2Key, mimeType } = event.data;

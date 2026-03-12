@@ -84,7 +84,7 @@ export const sendCampaign = protectedProcedure
 			where: { userId },
 			select: { orgName: true },
 		});
-		const orgName = profile?.orgName ?? "MessageDesk";
+		const orgName = profile?.orgName ?? "Velocast";
 
 		// Merge auto-resolved server vars with user-supplied vars.
 		// Server-side values win over anything the user typed for org/orgName.
@@ -118,7 +118,7 @@ export const sendCampaign = protectedProcedure
 		// ── Branch by delivery mode ───────────────────────────────────────────────
 		if (input.deliveryMode === "utility_prescreen") {
 			await inngest.send({
-				name: "neon/campaign.prescreen",
+				name: "Velocast/campaign.prescreen",
 				data: {
 					campaignId,
 					userId,
@@ -132,7 +132,7 @@ export const sendCampaign = protectedProcedure
 			});
 		} else {
 			await inngest.send({
-				name: "neon/campaign.send",
+				name: "Velocast/campaign.send",
 				data: {
 					campaignId,
 					userId,

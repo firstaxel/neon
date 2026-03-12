@@ -15,7 +15,7 @@ function Logo() {
 			viewBox="0 0 24 24"
 			xmlns="http://www.w3.org/2000/svg"
 		>
-			<title>MessageDesk</title>
+			<title>Velocast</title>
 			{/* WhatsApp-ish message icon tinted with primary green */}
 			<path
 				className="fill-primary"
@@ -54,7 +54,7 @@ function Breadcrumb() {
 		Object.entries(ROUTE_LABELS)
 			.filter(([route]) => pathname.startsWith(`${route}/`))
 			.sort((a, b) => b[0].length - a[0].length)[0]?.[1] ??
-		"MessageDesk";
+		"Velocast";
 
 	return (
 		<div className="flex min-w-0 items-center gap-1.5 font-mono text-sm">
@@ -114,7 +114,7 @@ export default function AnimatedHeader() {
 					transition={{ duration: 0.1, ease: "linear" }}
 				>
 					<Link
-						aria-label="MessageDesk home"
+						aria-label="Velocast home"
 						className="flex items-center gap-2 py-3"
 						to="/dashboard"
 					>

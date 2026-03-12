@@ -53,7 +53,7 @@ async function fetchAllTemplates(): Promise<MetaTemplate[]> {
 }
 
 async function mainSync() {
-	console.log("\n📋  MessageDesk — Meta Template Status");
+	console.log("\n📋  Velocast — Meta Template Status");
 	console.log("━".repeat(55));
 
 	const templates = await fetchAllTemplates();

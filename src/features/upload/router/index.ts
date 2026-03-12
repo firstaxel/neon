@@ -70,7 +70,7 @@ export const uploadContactImage = protectedProcedure
 
 		// 3. Fire Inngest background job — returns instantly
 		await inngest.send({
-			name: "neon/contact-list.parse",
+			name: "Velocast/contact-list.parse",
 			data: {
 				jobId,
 				r2Key,
@@ -163,7 +163,7 @@ export const confirmDirectUpload = protectedProcedure
 		// inngestEventId is null on a freshly created row and set after the first send.
 		if (!job.inngestEventId) {
 			const event = await inngest.send({
-				name: "neon/contact-list.parse",
+				name: "Velocast/contact-list.parse",
 				data: {
 					jobId: input.jobId,
 					r2Key: input.r2Key,

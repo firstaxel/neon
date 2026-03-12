@@ -21,9 +21,9 @@ export function LowBalanceEmail({
 	campaignId,
 	remainingBalanceKobo,
 }: LowBalanceEmailProps) {
-	const appUrl = env.VITE_CLIENT_URL ?? "https:// neon.app";
+	const appUrl = env.VITE_CLIENT_URL ?? "https:// Velocast.app";
 	return (
-		<EmailLayout preview="Your  neon campaign was paused — wallet balance too low">
+		<EmailLayout preview="Your  Velocast campaign was paused — wallet balance too low">
 			<Heading className="mt-0 mb-2 text-center font-semibold text-2xl text-[#09090b]">
 				Campaign Paused
 			</Heading>

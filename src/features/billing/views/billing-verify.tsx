@@ -124,7 +124,7 @@ function VerifyContent({
 						)}
 					</div>
 					<span className="font-bold font-display text-foreground text-lg tracking-tight">
-						neon
+						Velocast
 					</span>
 				</div>
 
@@ -219,7 +219,7 @@ function VerifyContent({
 									Still having issues?{" "}
 									<a
 										className="text-muted-foreground underline underline-offset-2 transition-colors hover:text-foreground"
-										href="mailto:support@ neon.app"
+										href="mailto:support@ Velocast.app"
 									>
 										Contact support
 									</a>

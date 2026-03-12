@@ -84,7 +84,7 @@ const ALL = "__all__";
 // Preview substitution values for rendering example messages
 const PREVIEW_VALUES: Record<string, string> = {
 	name: "Sarah",
-	org: "MessageDesk",
+	org: "Velocast",
 	date: "Sunday, 15 Dec",
 	time: "10:00 AM",
 	amount: "₦5,000",

@@ -17,9 +17,9 @@ export function MagicLinkEmail({ url, name }: MagicLinkEmailProps) {
 	const greeting = name ? `Hi ${name},` : "Hi there,";
 
 	return (
-		<EmailLayout preview="Your Neon sign-in link — expires in 15 minutes">
+		<EmailLayout preview="Your Velocast sign-in link — expires in 15 minutes">
 			<Heading className="mt-0 mb-2 text-center font-semibold text-2xl text-[#09090b]">
-				Sign in to Neon
+				Sign in to Velocast
 			</Heading>
 
 			<Text className="mt-0 mb-6 text-center text-[#52525b] text-sm">
@@ -32,7 +32,7 @@ export function MagicLinkEmail({ url, name }: MagicLinkEmailProps) {
 					className="inline-block rounded-xl bg-[#09090b] px-6 py-3 font-semibold text-sm text-white no-underline"
 					href={url}
 				>
-					Sign in to Neon
+					Sign in to Velocast
 				</Button>
 			</Section>
 
@@ -53,7 +53,7 @@ export function MagicLinkEmail({ url, name }: MagicLinkEmailProps) {
 
 // Default props for React Email's preview server
 MagicLinkEmail.PreviewProps = {
-	url: "https://Neon.example.com/api/auth/magic-link/verify?token=abc123",
+	url: "https://Velocast.example.com/api/auth/magic-link/verify?token=abc123",
 	name: "Adaeze",
 } satisfies MagicLinkEmailProps;
 

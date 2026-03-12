@@ -14,7 +14,7 @@ import type { ReactElement } from "react";
  *   SMTP_PORT        e.g. 587 (STARTTLS) or 465 (SSL)
  *   SMTP_USER        your SMTP username / email address
  *   SMTP_PASS        your SMTP password or app-specific password
- *   EMAIL_FROM       e.g. Neon <no-reply@yourdomain.com>
+ *   EMAIL_FROM       e.g. Velocast <no-reply@yourdomain.com>
  *
  * Optional:
  *   SMTP_SECURE      "true" for port 465 SSL, omit for STARTTLS (port 587)
@@ -99,7 +99,7 @@ export async function sendMail({ to, subject, template }: SendMailOptions) {
 		});
 
 		const info = await devTransport.sendMail({
-			from: process.env.EMAIL_FROM ?? '"Neon Dev" <dev@Neon.local>',
+			from: process.env.EMAIL_FROM ?? '"Velocast Dev" <dev@Velocast.local>',
 			to,
 			subject,
 			html,

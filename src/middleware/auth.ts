@@ -88,7 +88,7 @@ export const authMiddleware = createMiddleware().server(({ next }) => {
 
 	// 2. Read session cookie — zero DB calls, edge-safe
 	const sessionCookie = getSessionCookie(request, {
-		cookiePrefix: "neon", // must match auth.ts → advanced.cookiePrefix
+		cookiePrefix: "Velocast", // must match auth.ts → advanced.cookiePrefix
 	});
 
 	const isAuthenticated = !!sessionCookie;

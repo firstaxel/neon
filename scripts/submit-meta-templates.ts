@@ -240,7 +240,7 @@ if (FILTER_NAME) {
 // ─── Run ──────────────────────────────────────────────────────────────────────
 
 async function main() {
-	console.log("\n📋  MessageDesk — Meta Template Bulk Submission");
+	console.log("\n📋  Velocast — Meta Template Bulk Submission");
 	console.log("━".repeat(55));
 	console.log(`   Templates to submit : ${filtered.length}`);
 	console.log(`   WABA ID             : ${DRY_RUN ? "(dry run)" : WABA_ID}`);

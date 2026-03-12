@@ -31,7 +31,7 @@ import { sendTemplateMessage, sendTextMessage } from "#/lib/meta-send";
 import { sendSmsMessage } from "#/lib/termii";
 
 const PRESCREEN_TEMPLATE =
-	process.env.PRESCREEN_TEMPLATE_NAME ?? "neon_consent_v1";
+	process.env.PRESCREEN_TEMPLATE_NAME ?? "Velocast_consent_v1";
 const PRESCREEN_LANGUAGE = process.env.PRESCREEN_TEMPLATE_LANG ?? "en";
 const PENDING_TTL_HOURS = 48;
 const FAN_OUT_BATCH_SIZE = 100;
@@ -45,7 +45,7 @@ export const sendCampaignPrescreen = inngest.createFunction(
 		retries: 1,
 		timeouts: { finish: "15m" },
 	},
-	{ event: "neon/campaign.prescreen" },
+	{ event: "Velocast/campaign.prescreen" },
 
 	async ({ event, step, logger }) => {
 		const {
@@ -152,7 +152,7 @@ export const sendCampaignPrescreen = inngest.createFunction(
 		for (let i = 0; i < eligible.length; i += FAN_OUT_BATCH_SIZE) {
 			const batch = eligible.slice(i, i + FAN_OUT_BATCH_SIZE);
 			const events = batch.map((c) => ({
-				name: "neon/campaign.prescreen-single" as const,
+				name: "Velocast/campaign.prescreen-single" as const,
 				data: {
 					campaignId,
 					userId,
@@ -196,7 +196,7 @@ export const sendPrescreenSingle = inngest.createFunction(
 
 		timeouts: { finish: "30s" },
 	},
-	{ event: "neon/campaign.prescreen-single" },
+	{ event: "Velocast/campaign.prescreen-single" },
 
 	async ({ event, step, logger }) => {
 		const {
@@ -360,7 +360,7 @@ export const sendPrescreenSingle = inngest.createFunction(
 		if (!billing.success) {
 			logger.warn(`[Prescreen] Wallet empty for userId=${userId}`);
 			await inngest.send({
-				name: "neon/campaign.paused-low-balance",
+				name: "Velocast/campaign.paused-low-balance",
 				data: { campaignId, userId, remainingBalanceKobo: billing.balanceKobo },
 			});
 			return { success: false, reason: "insufficient_balance" };
@@ -483,7 +483,7 @@ export const sendPendingMessage = inngest.createFunction(
 		retries: 2,
 		timeouts: { finish: "30s" },
 	},
-	{ event: "neon/campaign.pending-reply-yes" },
+	{ event: "Velocast/campaign.pending-reply-yes" },
 
 	async ({ event, step, logger }) => {
 		const { pendingDeliveryId, phone } = event.data as {
@@ -537,7 +537,7 @@ export const sendPendingMessage = inngest.createFunction(
 		if (!billing.success) {
 			logger.warn(`[PendingDelivery] Wallet empty for userId=${userId}`);
 			await inngest.send({
-				name: "neon/campaign.paused-low-balance",
+				name: "Velocast/campaign.paused-low-balance",
 				data: {
 					campaignId: pending.campaignId,
 					userId,

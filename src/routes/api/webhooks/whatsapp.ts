@@ -285,7 +285,7 @@ export async function whatsappWebhookPost(req: Request) {
 								`[WA Webhook] Reply from ${phone} → pending ${pending.id} ("${body.slice(0, 30)}")`
 							);
 							await inngest.send({
-								name: "neon/campaign.pending-reply-yes",
+								name: "Velocast/campaign.pending-reply-yes",
 								data: { pendingDeliveryId: pending.id, phone },
 							});
 						}

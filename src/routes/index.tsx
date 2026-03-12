@@ -1,5 +1,5 @@
 /**
- * src/routes/index.tsx — MessageDesk public landing page
+ * src/routes/index.tsx — Velocast public landing page
  *
  * Features:
  *  - Full light / dark mode via useTheme() + ThemeToggle
@@ -209,7 +209,7 @@ function SectionLabel({ children }: { children: string }) {
 
 function AppChrome({
 	children,
-	url = "app.messagedesk.io",
+	url = "app.Velocast.io",
 }: {
 	children: React.ReactNode;
 	url?: string;
@@ -1433,7 +1433,7 @@ function FeatureRow({
 function MockupCampaign() {
 	const T = useTokens();
 	return (
-		<AppChrome url="app.messagedesk.io/campaigns/create">
+		<AppChrome url="app.Velocast.io/campaigns/create">
 			<div style={{ padding: 20 }}>
 				<p
 					style={{
@@ -1581,7 +1581,7 @@ function MockupImport() {
 		{ name: "James Eze", phone: "+234 803 901 2345", ch: "WhatsApp" },
 	];
 	return (
-		<AppChrome url="app.messagedesk.io/contacts/import">
+		<AppChrome url="app.Velocast.io/contacts/import">
 			<div style={{ padding: 20 }}>
 				<p
 					style={{
@@ -1717,7 +1717,7 @@ function MockupImport() {
 function MockupConsent() {
 	const T = useTokens();
 	return (
-		<AppChrome url="app.messagedesk.io/campaigns/prescreen">
+		<AppChrome url="app.Velocast.io/campaigns/prescreen">
 			<div style={{ padding: 20 }}>
 				<p
 					style={{
@@ -1871,7 +1871,7 @@ function Features() {
 					"WhatsApp + SMS in the same campaign",
 					"Live delivery tracking as messages send",
 				]}
-				desc="Pick a scenario, select your audience, and MessageDesk personalises every message automatically with the recipient's name and your custom content."
+				desc="Pick a scenario, select your audience, and Velocast personalises every message automatically with the recipient's name and your custom content."
 				eyebrow="Campaigns"
 				headline="Send to thousands. Every message lands personally."
 				mockup={<MockupCampaign />}
@@ -2499,7 +2499,7 @@ function Testimonials() {
 	const quotes = [
 		{
 			quote:
-				"We used to spend hours every Monday sending WhatsApp follow-ups manually. MessageDesk cut that to 8 minutes flat. Absolute game-changer.",
+				"We used to spend hours every Monday sending WhatsApp follow-ups manually. Velocast cut that to 8 minutes flat. Absolute game-changer.",
 			name: "Adaeze O.",
 			role: "Head of Growth",
 			org: "Kuda",
@@ -2513,7 +2513,7 @@ function Testimonials() {
 		},
 		{
 			quote:
-				"I uploaded a photo of a handwritten attendance sheet. MessageDesk parsed out 200 contacts in 45 seconds. I genuinely could not believe it.",
+				"I uploaded a photo of a handwritten attendance sheet. Velocast parsed out 200 contacts in 45 seconds. I genuinely could not believe it.",
 			name: "Chioma N.",
 			role: "Operations Manager",
 			org: "PiggyVest",
@@ -2782,7 +2782,7 @@ function Footer() {
 					lineHeight: 1,
 				}}
 			>
-				MessageDesk
+				Velocast
 			</p>
 			<div style={{ maxWidth: 1160, margin: "0 auto", position: "relative" }}>
 				<div
@@ -2814,7 +2814,7 @@ function Footer() {
 									letterSpacing: "-0.04em",
 								}}
 							>
-								MessageDesk
+								Velocast
 							</span>
 						</div>
 						<p
@@ -2895,7 +2895,7 @@ function Footer() {
 					}}
 				>
 					<p style={{ fontFamily: T.mono, fontSize: 11, color: T.textDim }}>
-						© 2025 MessageDesk. Built for Nigerian businesses.
+						© 2025 Velocast. Built for Nigerian businesses.
 					</p>
 					<div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
 						{["WhatsApp", "SMS", "Campaigns", "Templates"].map((t) => (

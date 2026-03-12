@@ -21,7 +21,7 @@ export type DeliveryMode = "marketing" | "utility_prescreen" | "sms_fallback";
 export interface Events {
 	// ── Billing ──────────────────────────────────────────────────────────────────
 
-	"neon/campaign.paused-low-balance": {
+	"Velocast/campaign.paused-low-balance": {
 		data: {
 			campaignId: string;
 			userId: string;
@@ -29,7 +29,7 @@ export interface Events {
 		};
 	};
 
-	"neon/campaign.pending-reply-yes": {
+	"Velocast/campaign.pending-reply-yes": {
 		data: {
 			pendingDeliveryId: string;
 			phone: string;
@@ -38,7 +38,7 @@ export interface Events {
 
 	// ── Utility pre-screen flow ──────────────────────────────────────────────────
 
-	"neon/campaign.prescreen": {
+	"Velocast/campaign.prescreen": {
 		data: {
 			campaignId: string;
 			userId: string;
@@ -51,7 +51,7 @@ export interface Events {
 		};
 	};
 
-	"neon/campaign.prescreen-single": {
+	"Velocast/campaign.prescreen-single": {
 		data: {
 			campaignId: string;
 			userId: string;
@@ -66,7 +66,7 @@ export interface Events {
 
 	// ── Standard campaign ────────────────────────────────────────────────────────
 
-	"neon/campaign.send": {
+	"Velocast/campaign.send": {
 		data: {
 			campaignId: string;
 			userId: string;
@@ -83,7 +83,7 @@ export interface Events {
 	 * messageType is pre-resolved by the orchestrator to avoid redundant DB reads
 	 * and to ensure the worker uses the exact same billing rate as was quoted.
 	 */
-	"neon/campaign.send-single": {
+	"Velocast/campaign.send-single": {
 		data: {
 			campaignId: string;
 			messageId: string;
@@ -98,7 +98,7 @@ export interface Events {
 	};
 	// ── Contact parsing ──────────────────────────────────────────────────────────
 
-	"neon/contact-list.parse": {
+	"Velocast/contact-list.parse": {
 		data: {
 			jobId: string;
 			r2Key: string;
@@ -110,11 +110,11 @@ export interface Events {
 }
 // Create a client to send and receive events
 export const inngest = new Inngest({
-	id: "neon",
+	id: "Velocast",
 	schemas: new EventSchemas().fromRecord<{
 		// ── Billing ──────────────────────────────────────────────────────────────────
 
-		"neon/campaign.paused-low-balance": {
+		"Velocast/campaign.paused-low-balance": {
 			data: {
 				campaignId: string;
 				userId: string;
@@ -122,7 +122,7 @@ export const inngest = new Inngest({
 			};
 		};
 
-		"neon/campaign.pending-reply-yes": {
+		"Velocast/campaign.pending-reply-yes": {
 			data: {
 				pendingDeliveryId: string;
 				phone: string;
@@ -131,7 +131,7 @@ export const inngest = new Inngest({
 
 		// ── Utility pre-screen flow ──────────────────────────────────────────────────
 
-		"neon/campaign.prescreen": {
+		"Velocast/campaign.prescreen": {
 			data: {
 				campaignId: string;
 				userId: string;
@@ -144,7 +144,7 @@ export const inngest = new Inngest({
 			};
 		};
 
-		"neon/campaign.prescreen-single": {
+		"Velocast/campaign.prescreen-single": {
 			data: {
 				campaignId: string;
 				userId: string;
@@ -159,7 +159,7 @@ export const inngest = new Inngest({
 
 		// ── Standard campaign ────────────────────────────────────────────────────────
 
-		"neon/campaign.send": {
+		"Velocast/campaign.send": {
 			data: {
 				campaignId: string;
 				userId: string;
@@ -176,7 +176,7 @@ export const inngest = new Inngest({
 		 * messageType is pre-resolved by the orchestrator to avoid redundant DB reads
 		 * and to ensure the worker uses the exact same billing rate as was quoted.
 		 */
-		"neon/campaign.send-single": {
+		"Velocast/campaign.send-single": {
 			data: {
 				campaignId: string;
 				messageId: string;
@@ -191,7 +191,7 @@ export const inngest = new Inngest({
 		};
 		// ── Contact parsing ──────────────────────────────────────────────────────────
 
-		"neon/contact-list.parse": {
+		"Velocast/contact-list.parse": {
 			data: {
 				jobId: string;
 				r2Key: string;

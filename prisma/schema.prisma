@@ -90,10 +90,10 @@ enum MessageChannel {
 }
 
 enum ContactType {
-  first_timer
+  new_contact
   returning
-  member
-  visitor
+  contact
+  prospect
 }
 
 enum ParseJobStatus {
@@ -179,7 +179,7 @@ model Contact {
   name        String
   phone       String
   channel     MessageChannel
-  type        ContactType    @default(visitor)
+  type        ContactType    @default(prospect)
   email       String?
   notes       String?
   rawRow      String?        @map("raw_row")
@@ -417,7 +417,7 @@ model Subscription {
 
 enum UserRole {
   admin
-  pastor
+  leader
   manager
   staff
   volunteer

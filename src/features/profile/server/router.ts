@@ -25,7 +25,7 @@ const OrgInput = z.object({
 	orgName: z.string().min(1).max(100).optional(),
 	orgSize: z.enum(["1-50", "51-200", "201-500", "500+"]).optional(),
 	role: z
-		.enum(["admin", "pastor", "manager", "staff", "volunteer", "coordinator"])
+		.enum(["admin", "leader", "manager", "staff", "volunteer", "coordinator"])
 		.optional(),
 	phone: z.string().min(7).max(20).optional(),
 	timezone: z.string().optional(),

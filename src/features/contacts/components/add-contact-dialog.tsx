@@ -27,6 +27,8 @@ import {
 } from "#/components/ui/select";
 import { Textarea } from "#/components/ui/textarea";
 import { useCreateContact } from "../hooks/use-contacts";
+import { getContactTypeLabels } from "#/features/miscellaneous/org";
+import { useProfile } from "#/features/profile/hooks/use-profile";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -41,19 +43,12 @@ interface FormValues {
 	name: string;
 	notes: string;
 	phone: string;
-	type: "first_timer" | "returning" | "member" | "visitor";
+	type: "new_contact" | "returning" | "contact" | "prospect";
 }
 
 const CHANNEL_OPTIONS = [
 	{ value: "whatsapp" as const, label: "WhatsApp" },
 	{ value: "sms" as const, label: "SMS" },
-];
-
-const TYPE_OPTIONS = [
-	{ value: "first_timer" as const, label: "First Timer" },
-	{ value: "returning" as const, label: "Returning" },
-	{ value: "member" as const, label: "Member" },
-	{ value: "visitor" as const, label: "Visitor" },
 ];
 
 // ─── Field wrapper ────────────────────────────────────────────────────────────
@@ -93,13 +88,22 @@ export function AddContactDialog({
 	onOpenChange,
 }: AddContactDialogProps) {
 	const { mutateAsync: createContact, isPending } = useCreateContact();
+	const { data: profile } = useProfile();
+	const typeLabels = getContactTypeLabels(profile?.orgType);
+
+	const TYPE_OPTIONS = [
+		{ value: "new_contact" as const, label: typeLabels.new_contact },
+		{ value: "returning" as const, label: typeLabels.returning },
+		{ value: "contact" as const, label: typeLabels.contact },
+		{ value: "prospect" as const, label: typeLabels.prospect },
+	];
 
 	const form = useForm({
 		defaultValues: {
 			name: "",
 			phone: "",
 			channel: "whatsapp",
-			type: "first_timer",
+			type: "new_contact",
 			email: "",
 			notes: "",
 		} as FormValues,
@@ -231,7 +235,7 @@ export function AddContactDialog({
 								<Select
 									onValueChange={(v) =>
 										field.handleChange(
-											v as "first_timer" | "returning" | "member" | "visitor"
+											v as "new_contact" | "returning" | "contact" | "prospect"
 										)
 									}
 									value={field.state.value}

@@ -26,10 +26,12 @@ import {
 } from "#/components/ui/select";
 import type { MessageChannel } from "#/lib/types";
 import { orpc } from "#/orpc/client";
+import { getContactTypeLabels } from "#/features/miscellaneous/org";
+import { useProfile } from "#/features/profile/hooks/use-profile";
 
 type Format = "csv" | "xlsx";
 type Channel = "whatsapp" | "sms";
-type ContactType = "first_timer" | "returning" | "member" | "visitor";
+type ContactType = "new_contact" | "returning" | "contact" | "prospect";
 
 interface ExportFilters {
 	activeOnly: boolean;
@@ -57,6 +59,9 @@ export function ExportContactsDialog({
 		lastContactedTo: "",
 		search: "",
 	});
+
+	const { data: profile } = useProfile();
+	const typeLabels = getContactTypeLabels(profile?.orgType);
 
 	const exportMutation = useMutation(orpc.contacts.export.mutationOptions());
 
@@ -218,10 +223,10 @@ export function ExportContactsDialog({
 									</SelectTrigger>
 									<SelectContent>
 										<SelectItem value="all">All types</SelectItem>
-										<SelectItem value="first_timer">First-timer</SelectItem>
-										<SelectItem value="returning">Returning</SelectItem>
-										<SelectItem value="member">Member</SelectItem>
-										<SelectItem value="visitor">Visitor</SelectItem>
+										<SelectItem value="new_contact">{typeLabels.new_contact}</SelectItem>
+										<SelectItem value="returning">{typeLabels.returning}</SelectItem>
+										<SelectItem value="contact">{typeLabels.contact}</SelectItem>
+										<SelectItem value="prospect">{typeLabels.prospect}</SelectItem>
 									</SelectContent>
 								</Select>
 							</div>

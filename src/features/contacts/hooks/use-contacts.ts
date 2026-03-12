@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { orpc } from "#/orpc/client";
 
 export type ContactChannel = "whatsapp" | "sms";
-export type ContactType = "first_timer" | "returning" | "member" | "visitor";
+export type ContactType = "new_contact" | "returning" | "contact" | "prospect";
 
 export interface ContactFilters {
 	channel?: ContactChannel;

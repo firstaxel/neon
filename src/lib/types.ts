@@ -1,7 +1,7 @@
 // ─── Contact Types ───────────────────────────────────────────────────────────
 
 export type MessageChannel = "whatsapp" | "sms";
-export type ContactType = "first_timer" | "returning" | "member" | "visitor";
+export type ContactType = "new_contact" | "returning" | "contact" | "prospect";
 export type MessageStatus =
 	| "pending"
 	| "queued"

@@ -18,10 +18,10 @@ export type MessageChannel = (typeof MessageChannel)[keyof typeof MessageChannel
 
 
 export const ContactType = {
-  first_timer: 'first_timer',
+  new_contact: 'new_contact',
   returning: 'returning',
-  member: 'member',
-  visitor: 'visitor'
+  contact: 'contact',
+  prospect: 'prospect'
 } as const
 
 export type ContactType = (typeof ContactType)[keyof typeof ContactType]
@@ -125,7 +125,7 @@ export type SubscriptionPlan = (typeof SubscriptionPlan)[keyof typeof Subscripti
 
 export const UserRole = {
   admin: 'admin',
-  pastor: 'pastor',
+  leader: 'leader',
   manager: 'manager',
   staff: 'staff',
   volunteer: 'volunteer',

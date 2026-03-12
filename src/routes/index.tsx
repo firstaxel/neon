@@ -1,9 +1,10 @@
 /**
  * src/routes/index.tsx — MessageDesk public landing page
  *
- * Aesthetic: Dark SaaS — Bricolage Grotesque (ultra-thick display),
- * deep navy bg, indigo/violet accent, kinetic message stream hero.
- * Generic business messaging — no church/NGO references.
+ * Features:
+ *  - Full light / dark mode via useTheme() + ThemeToggle
+ *  - Fully responsive: mobile (< 768), tablet (< 1024), desktop
+ *  - Design tokens adapt per-theme while preserving the premium SaaS aesthetic
  */
 
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -11,14 +12,18 @@ import {
 	ArrowRight,
 	CheckCircle2,
 	MessageCircle,
+	Moon,
 	Send,
 	Sparkles,
 	Star,
+	Sun,
 	Users,
+	X,
 	Zap,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { pageHeadMeta } from "#/lib/metadata";
+import { useTheme } from "#/providers/theme";
 
 export const Route = createFileRoute("/")({
 	component: LandingPage,
@@ -31,27 +36,37 @@ export const Route = createFileRoute("/")({
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 
-const T = {
-	bg: "#060810",
-	bgCard: "#0b0f1c",
-	bgCardHi: "#0f1425",
-	border: "rgba(99,102,241,0.18)",
-	borderSub: "rgba(255,255,255,0.07)",
-	accent: "#6366f1",
-	accentLo: "rgba(99,102,241,0.1)",
-	accentGlow: "rgba(99,102,241,0.45)",
-	violet: "#8b5cf6",
-	violetLo: "rgba(139,92,246,0.1)",
-	green: "#10b981",
-	amber: "#f59e0b",
-	rose: "#f43f5e",
-	text: "#eef0f8",
-	textSub: "rgba(238,240,248,0.55)",
-	textDim: "rgba(238,240,248,0.22)",
-	display: `'Bricolage Grotesque','Outfit',system-ui,sans-serif`,
-	body: `'Geist','DM Sans',system-ui,sans-serif`,
-	mono: `'Geist Mono','JetBrains Mono',monospace`,
-} as const;
+function useTokens() {
+	const { appTheme } = useTheme();
+	const dark = appTheme === "dark";
+
+	return {
+		dark,
+		bg: dark ? "#060810" : "#f8f8fc",
+		bgCard: dark ? "#0b0f1c" : "#ffffff",
+		bgCardHi: dark ? "#0f1425" : "#f2f2fa",
+		bgNav: dark ? "rgba(6,8,16,0.92)" : "rgba(248,248,252,0.92)",
+		bgMobile: dark ? "rgba(6,8,16,0.98)" : "rgba(248,248,252,0.98)",
+		border: dark ? "rgba(99,102,241,0.18)" : "rgba(99,102,241,0.22)",
+		borderSub: dark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.07)",
+		accent: "#6366f1",
+		accentLo: dark ? "rgba(99,102,241,0.1)" : "rgba(99,102,241,0.08)",
+		accentGlow: "rgba(99,102,241,0.45)",
+		violet: "#8b5cf6",
+		violetLo: dark ? "rgba(139,92,246,0.1)" : "rgba(139,92,246,0.08)",
+		green: "#10b981",
+		amber: "#f59e0b",
+		text: dark ? "#eef0f8" : "#0f1120",
+		textSub: dark ? "rgba(238,240,248,0.55)" : "rgba(15,17,32,0.55)",
+		textDim: dark ? "rgba(238,240,248,0.22)" : "rgba(15,17,32,0.28)",
+		shimmerA: dark ? "#0b0f1c" : "#e8e8f4",
+		shimmerB: dark ? "#141c2e" : "#f0f0fa",
+		appBg: dark ? "#07091a" : "#ededf8",
+		display: `'Bricolage Grotesque','Outfit',system-ui,sans-serif`,
+		body: `'Geist','DM Sans',system-ui,sans-serif`,
+		mono: `'Geist Mono','JetBrains Mono',monospace`,
+	} as const;
+}
 
 // ─── Responsive hooks ─────────────────────────────────────────────────────────
 
@@ -82,13 +97,13 @@ function useIsTablet() {
 
 // ─── Font + keyframes ─────────────────────────────────────────────────────────
 
-function FontLoader() {
+function FontLoader({ dark }: { dark: boolean }) {
 	return (
 		<style>{`
       @import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
       *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
       html { scroll-behavior: smooth; }
-      body { background: ${T.bg}; color: ${T.text}; -webkit-font-smoothing: antialiased; }
+      body { background: ${dark ? "#060810" : "#f8f8fc"}; color: ${dark ? "#eef0f8" : "#0f1120"}; -webkit-font-smoothing: antialiased; }
       a { color: inherit; text-decoration: none; }
       @keyframes blink  { 0%,100%{opacity:1} 50%{opacity:0.4} }
       @keyframes rise {
@@ -110,6 +125,7 @@ function FontLoader() {
 // ─── Atoms ────────────────────────────────────────────────────────────────────
 
 function Divider() {
+	const T = useTokens();
 	return (
 		<div
 			style={{
@@ -121,6 +137,7 @@ function Divider() {
 }
 
 function Tag({ children }: { children: React.ReactNode }) {
+	const T = useTokens();
 	return (
 		<span
 			style={{
@@ -172,6 +189,7 @@ function Tag({ children }: { children: React.ReactNode }) {
 }
 
 function SectionLabel({ children }: { children: string }) {
+	const T = useTokens();
 	return (
 		<p
 			style={{
@@ -196,6 +214,7 @@ function AppChrome({
 	children: React.ReactNode;
 	url?: string;
 }) {
+	const T = useTokens();
 	return (
 		<div
 			style={{
@@ -203,14 +222,15 @@ function AppChrome({
 				border: `1px solid ${T.border}`,
 				background: T.bgCard,
 				overflow: "hidden",
-				boxShadow:
-					"0 32px 80px rgba(0,0,0,0.55),0 0 0 1px rgba(99,102,241,0.06)",
+				boxShadow: T.dark
+					? "0 32px 80px rgba(0,0,0,0.55),0 0 0 1px rgba(99,102,241,0.06)"
+					: "0 24px 60px rgba(99,102,241,0.10),0 0 0 1px rgba(99,102,241,0.08)",
 			}}
 		>
 			<div
 				style={{
 					height: 38,
-					background: "#07091a",
+					background: T.appBg,
 					borderBottom: `1px solid ${T.borderSub}`,
 					display: "flex",
 					alignItems: "center",
@@ -236,7 +256,7 @@ function AppChrome({
 						flex: 1,
 						height: 20,
 						borderRadius: 5,
-						background: "rgba(255,255,255,0.04)",
+						background: T.dark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)",
 						display: "flex",
 						alignItems: "center",
 						paddingLeft: 10,
@@ -249,6 +269,36 @@ function AppChrome({
 			</div>
 			{children}
 		</div>
+	);
+}
+
+// ─── Theme toggle ─────────────────────────────────────────────────────────────
+
+function ThemeToggle() {
+	const T = useTokens();
+	const { appTheme, setTheme } = useTheme();
+	return (
+		<button
+			aria-label="Toggle theme"
+			onClick={() => setTheme(appTheme === "dark" ? "light" : "dark")}
+			style={{
+				display: "flex",
+				alignItems: "center",
+				justifyContent: "center",
+				width: 36,
+				height: 36,
+				borderRadius: 9,
+				border: `1px solid ${T.border}`,
+				background: T.accentLo,
+				cursor: "pointer",
+				color: T.accent,
+				flexShrink: 0,
+				transition: "all 0.2s",
+			}}
+			type="button"
+		>
+			{appTheme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
+		</button>
 	);
 }
 
@@ -284,6 +334,7 @@ const MSGS = [
 ];
 
 function MsgBubble({ msg, delay }: { msg: (typeof MSGS)[0]; delay: number }) {
+	const T = useTokens();
 	const r = msg.side === "right";
 	return (
 		<div
@@ -297,7 +348,11 @@ function MsgBubble({ msg, delay }: { msg: (typeof MSGS)[0]; delay: number }) {
 			<div
 				style={{
 					maxWidth: "82%",
-					background: r ? T.accentLo : "rgba(255,255,255,0.04)",
+					background: r
+						? T.accentLo
+						: T.dark
+							? "rgba(255,255,255,0.04)"
+							: "rgba(0,0,0,0.03)",
 					border: `1px solid ${r ? T.border : T.borderSub}`,
 					borderRadius: r ? "13px 13px 3px 13px" : "13px 13px 13px 3px",
 					padding: "8px 12px",
@@ -337,6 +392,7 @@ function MsgBubble({ msg, delay }: { msg: (typeof MSGS)[0]; delay: number }) {
 }
 
 function MessageStream() {
+	const T = useTokens();
 	return (
 		<div
 			style={{
@@ -396,6 +452,7 @@ function Counter({
 	suffix?: string;
 	label: string;
 }) {
+	const T = useTokens();
 	const [v, setV] = useState(0);
 	useEffect(() => {
 		let s = 0;
@@ -441,9 +498,50 @@ function Counter({
 	);
 }
 
+// ─── Logo mark ────────────────────────────────────────────────────────────────
+
+function LogoMark({ size = 32 }: { size?: number }) {
+	const T = useTokens();
+	return (
+		<div
+			style={{
+				width: size,
+				height: size,
+				borderRadius: Math.round(size * 0.31),
+				background: `linear-gradient(135deg,${T.accent},${T.violet})`,
+				display: "flex",
+				alignItems: "center",
+				justifyContent: "center",
+				boxShadow: `0 0 20px ${T.accentGlow}`,
+				flexShrink: 0,
+			}}
+		>
+			<svg
+				fill="none"
+				height={Math.round(size * 0.53)}
+				viewBox="0 0 24 24"
+				width={Math.round(size * 0.53)}
+			>
+				<title>MD</title>
+				<path
+					d="M12 2C6.48 2 2 6.48 2 12c0 1.85.5 3.58 1.38 5.07L2 22l5.03-1.3A9.96 9.96 0 0012 22c5.52 0 10-4.48 10-10S17.52 2 12 2z"
+					fill="white"
+				/>
+				<path
+					d="M8 11h8M8 14.5h5"
+					stroke="rgba(99,102,241,0.6)"
+					strokeLinecap="round"
+					strokeWidth="1.7"
+				/>
+			</svg>
+		</div>
+	);
+}
+
 // ─── Navbar ───────────────────────────────────────────────────────────────────
 
 function Navbar() {
+	const T = useTokens();
 	const [scrolled, setScrolled] = useState(false);
 	const [open, setOpen] = useState(false);
 	const mobile = useIsMobile();
@@ -454,13 +552,19 @@ function Navbar() {
 		return () => window.removeEventListener("scroll", fn);
 	}, []);
 
+	useEffect(() => {
+		if (!mobile) {
+			setOpen(false);
+		}
+	}, [mobile]);
+
 	return (
 		<header
 			style={{
 				position: "sticky",
 				top: 0,
 				zIndex: 100,
-				background: scrolled ? "rgba(6,8,16,0.92)" : "transparent",
+				background: scrolled ? T.bgNav : "transparent",
 				backdropFilter: scrolled ? "blur(22px)" : "none",
 				borderBottom: scrolled
 					? `1px solid ${T.border}`
@@ -472,11 +576,12 @@ function Navbar() {
 				style={{
 					maxWidth: 1160,
 					margin: "0 auto",
-					padding: "0 24px",
+					padding: "0 20px",
 					height: 60,
 					display: "flex",
 					alignItems: "center",
 					justifyContent: "space-between",
+					gap: 16,
 				}}
 			>
 				{/* Logo */}
@@ -488,32 +593,7 @@ function Navbar() {
 						flexShrink: 0,
 					}}
 				>
-					<div
-						style={{
-							width: 32,
-							height: 32,
-							borderRadius: 10,
-							background: `linear-gradient(135deg,${T.accent},${T.violet})`,
-							display: "flex",
-							alignItems: "center",
-							justifyContent: "center",
-							boxShadow: `0 0 20px ${T.accentGlow}`,
-						}}
-					>
-						<svg fill="none" height="17" viewBox="0 0 24 24" width="17">
-							<title>MD</title>
-							<path
-								d="M12 2C6.48 2 2 6.48 2 12c0 1.85.5 3.58 1.38 5.07L2 22l5.03-1.3A9.96 9.96 0 0012 22c5.52 0 10-4.48 10-10S17.52 2 12 2z"
-								fill="white"
-							/>
-							<path
-								d="M8 11h8M8 14.5h5"
-								stroke="rgba(99,102,241,0.6)"
-								strokeLinecap="round"
-								strokeWidth="1.7"
-							/>
-						</svg>
-					</div>
+					<LogoMark size={32} />
 					<span
 						style={{
 							fontFamily: T.display,
@@ -527,8 +607,9 @@ function Navbar() {
 					</span>
 				</div>
 
+				{/* Desktop nav */}
 				{!mobile && (
-					<nav style={{ display: "flex", gap: 30, alignItems: "center" }}>
+					<nav style={{ display: "flex", gap: 28, alignItems: "center" }}>
 						{[
 							["Features", "#features"],
 							["How it works", "#how-it-works"],
@@ -553,8 +634,10 @@ function Navbar() {
 					</nav>
 				)}
 
+				{/* Desktop CTA + toggle */}
 				{!mobile && (
 					<div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+						<ThemeToggle />
 						<Link
 							onMouseEnter={(e) => (e.currentTarget.style.color = T.text)}
 							onMouseLeave={(e) => (e.currentTarget.style.color = T.textSub)}
@@ -589,35 +672,44 @@ function Navbar() {
 					</div>
 				)}
 
+				{/* Mobile controls */}
 				{mobile && (
-					<button
-						onClick={() => setOpen((o) => !o)}
-						style={{
-							background: "none",
-							border: `1px solid ${T.border}`,
-							borderRadius: 9,
-							color: T.text,
-							padding: "7px 11px",
-							cursor: "pointer",
-							fontSize: 17,
-						}}
-						type="button"
-					>
-						☰
-					</button>
+					<div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+						<ThemeToggle />
+						<button
+							onClick={() => setOpen((o) => !o)}
+							style={{
+								background: T.accentLo,
+								border: `1px solid ${T.border}`,
+								borderRadius: 9,
+								color: T.text,
+								width: 36,
+								height: 36,
+								cursor: "pointer",
+								display: "flex",
+								alignItems: "center",
+								justifyContent: "center",
+								fontSize: 17,
+							}}
+							type="button"
+						>
+							{open ? <X size={16} /> : "☰"}
+						</button>
+					</div>
 				)}
 			</div>
 
+			{/* Mobile menu */}
 			{mobile && open && (
 				<div
 					style={{
-						background: "rgba(6,8,16,0.98)",
+						background: T.bgMobile,
 						backdropFilter: "blur(22px)",
 						borderBottom: `1px solid ${T.border}`,
-						padding: "16px 24px 22px",
+						padding: "16px 20px 22px",
 						display: "flex",
 						flexDirection: "column",
-						gap: 12,
+						gap: 4,
 					}}
 				>
 					{[
@@ -634,7 +726,8 @@ function Navbar() {
 								fontWeight: 500,
 								color: T.text,
 								fontFamily: T.body,
-								padding: "8px 0",
+								padding: "10px 4px",
+								display: "block",
 							}}
 						>
 							{l}
@@ -644,8 +737,9 @@ function Navbar() {
 						style={{
 							display: "flex",
 							gap: 10,
-							paddingTop: 10,
+							paddingTop: 14,
 							borderTop: `1px solid ${T.border}`,
+							marginTop: 8,
 						}}
 					>
 						<Link
@@ -692,6 +786,7 @@ function Navbar() {
 // ─── Hero ─────────────────────────────────────────────────────────────────────
 
 function Hero() {
+	const T = useTokens();
 	const mobile = useIsMobile();
 	const tablet = useIsTablet();
 
@@ -703,7 +798,6 @@ function Hero() {
 				paddingTop: mobile ? 52 : 80,
 			}}
 		>
-			{/* Grid background */}
 			<div
 				aria-hidden
 				style={{
@@ -716,7 +810,6 @@ function Hero() {
 						"radial-gradient(ellipse 80% 55% at 50% 0%,black 30%,transparent 100%)",
 				}}
 			/>
-			{/* Glow */}
 			<div
 				aria-hidden
 				style={{
@@ -727,8 +820,9 @@ function Hero() {
 					width: 900,
 					height: 700,
 					pointerEvents: "none",
-					background:
-						"radial-gradient(ellipse at 50% 0%,rgba(99,102,241,0.13) 0%,transparent 68%)",
+					background: T.dark
+						? "radial-gradient(ellipse at 50% 0%,rgba(99,102,241,0.13) 0%,transparent 68%)"
+						: "radial-gradient(ellipse at 50% 0%,rgba(99,102,241,0.09) 0%,transparent 68%)",
 				}}
 			/>
 
@@ -736,7 +830,7 @@ function Hero() {
 				style={{
 					maxWidth: 1160,
 					margin: "0 auto",
-					padding: `0 ${mobile ? 20 : 32}px`,
+					padding: "0 20px",
 					position: "relative",
 				}}
 			>
@@ -750,7 +844,6 @@ function Hero() {
 					}}
 				>
 					<Tag>WhatsApp &amp; SMS · Nigerian pricing (₦)</Tag>
-
 					<h1
 						style={{
 							fontFamily: T.display,
@@ -787,7 +880,6 @@ function Hero() {
 							Both channels. One platform.
 						</span>
 					</h1>
-
 					<p
 						style={{
 							fontFamily: T.body,
@@ -802,7 +894,6 @@ function Hero() {
 						customers. AI contact import, pre-built templates, real-time
 						delivery tracking.
 					</p>
-
 					<div
 						className="fu2"
 						style={{
@@ -843,7 +934,9 @@ function Hero() {
 								fontSize: 14.5,
 								fontWeight: 500,
 								color: T.textSub,
-								background: "rgba(255,255,255,0.04)",
+								background: T.dark
+									? "rgba(255,255,255,0.04)"
+									: "rgba(0,0,0,0.04)",
 								border: `1px solid ${T.borderSub}`,
 								padding: "14px 24px",
 								borderRadius: 12,
@@ -873,7 +966,7 @@ function Hero() {
 					style={{
 						display: "flex",
 						justifyContent: "center",
-						gap: mobile ? 30 : 64,
+						gap: mobile ? 24 : 64,
 						marginBottom: 48,
 						flexWrap: "wrap",
 					}}
@@ -884,7 +977,7 @@ function Hero() {
 					<Counter end={6} label="per SMS" prefix="₦" />
 				</div>
 
-				{/* Product chrome */}
+				{/* Product chrome — hidden on mobile */}
 				{!mobile && (
 					<div className="fu3" style={{ position: "relative" }}>
 						<div
@@ -1063,7 +1156,9 @@ function Hero() {
 															marginTop: 8,
 															height: 3,
 															borderRadius: 100,
-															background: "rgba(255,255,255,0.05)",
+															background: T.dark
+																? "rgba(255,255,255,0.05)"
+																: "rgba(0,0,0,0.06)",
 														}}
 													>
 														<div
@@ -1093,6 +1188,7 @@ function Hero() {
 // ─── Trust bar ────────────────────────────────────────────────────────────────
 
 function TrustBar() {
+	const T = useTokens();
 	const mobile = useIsMobile();
 	const brands = [
 		"Paystack",
@@ -1105,9 +1201,7 @@ function TrustBar() {
 		"TeamApt",
 	];
 	return (
-		<section
-			style={{ padding: `${mobile ? 44 : 56}px ${mobile ? 20 : 32}px 44px` }}
-		>
+		<section style={{ padding: `${mobile ? 44 : 56}px 20px 44px` }}>
 			<p
 				style={{
 					fontFamily: T.mono,
@@ -1125,7 +1219,7 @@ function TrustBar() {
 				style={{
 					display: "flex",
 					flexWrap: "wrap",
-					gap: "10px 32px",
+					gap: "10px 28px",
 					justifyContent: "center",
 				}}
 			>
@@ -1151,9 +1245,10 @@ function TrustBar() {
 // ─── Problem ──────────────────────────────────────────────────────────────────
 
 function Problem() {
+	const T = useTokens();
 	const mobile = useIsMobile();
 	return (
-		<section style={{ padding: `80px ${mobile ? 20 : 32}px` }}>
+		<section style={{ padding: "80px 20px" }}>
 			<Divider />
 			<div
 				style={{
@@ -1253,7 +1348,7 @@ function Problem() {
 	);
 }
 
-// ─── Feature rows ─────────────────────────────────────────────────────────────
+// ─── Features ─────────────────────────────────────────────────────────────────
 
 function FeatureRow({
 	eyebrow,
@@ -1270,6 +1365,7 @@ function FeatureRow({
 	mockup: React.ReactNode;
 	flip?: boolean;
 }) {
+	const T = useTokens();
 	const mobile = useIsMobile();
 	return (
 		<div
@@ -1321,11 +1417,7 @@ function FeatureRow({
 								style={{ flexShrink: 0, marginTop: 1 }}
 							/>
 							<span
-								style={{
-									fontFamily: T.body,
-									fontSize: 14,
-									color: "rgba(238,240,248,0.75)",
-								}}
+								style={{ fontFamily: T.body, fontSize: 14, color: T.textSub }}
 							>
 								{b}
 							</span>
@@ -1339,6 +1431,7 @@ function FeatureRow({
 }
 
 function MockupCampaign() {
+	const T = useTokens();
 	return (
 		<AppChrome url="app.messagedesk.io/campaigns/create">
 			<div style={{ padding: 20 }}>
@@ -1475,6 +1568,7 @@ function MockupCampaign() {
 }
 
 function MockupImport() {
+	const T = useTokens();
 	const [step, setStep] = useState(0);
 	useEffect(() => {
 		const t = setInterval(() => setStep((s) => (s + 1) % 3), 2400);
@@ -1508,7 +1602,7 @@ function MockupImport() {
 					style={{
 						height: 3,
 						borderRadius: 100,
-						background: "rgba(255,255,255,0.06)",
+						background: T.dark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)",
 						marginBottom: 16,
 					}}
 				>
@@ -1561,7 +1655,7 @@ function MockupImport() {
 										{c.name[0]}
 									</span>
 								</div>
-								<div style={{ flex: 1 }}>
+								<div style={{ flex: 1, minWidth: 0 }}>
 									<p
 										style={{
 											fontFamily: T.body,
@@ -1590,6 +1684,7 @@ function MockupImport() {
 										borderRadius: 5,
 										color: c.ch === "WhatsApp" ? T.accent : T.violet,
 										background: c.ch === "WhatsApp" ? T.accentLo : T.violetLo,
+										flexShrink: 0,
 									}}
 								>
 									{c.ch}
@@ -1606,8 +1701,7 @@ function MockupImport() {
 									height: 40,
 									borderRadius: 8,
 									border: `1px solid ${T.borderSub}`,
-									background:
-										"linear-gradient(90deg,#0b0f1c 25%,#141c2e 50%,#0b0f1c 75%)",
+									background: `linear-gradient(90deg,${T.shimmerA} 25%,${T.shimmerB} 50%,${T.shimmerA} 75%)`,
 									backgroundSize: "600px 100%",
 									animation: "shimmer 1.5s ease infinite",
 								}}
@@ -1621,6 +1715,7 @@ function MockupImport() {
 }
 
 function MockupConsent() {
+	const T = useTokens();
 	return (
 		<AppChrome url="app.messagedesk.io/campaigns/prescreen">
 			<div style={{ padding: 20 }}>
@@ -1745,15 +1840,12 @@ function MockupConsent() {
 }
 
 function Features() {
+	const T = useTokens();
 	const mobile = useIsMobile();
 	return (
 		<section
 			id="features"
-			style={{
-				maxWidth: 1160,
-				margin: "0 auto",
-				padding: `0 ${mobile ? 20 : 32}px 40px`,
-			}}
+			style={{ maxWidth: 1160, margin: "0 auto", padding: "0 20px 40px" }}
 		>
 			<Divider />
 			<div style={{ paddingTop: 80, textAlign: "center", marginBottom: 16 }}>
@@ -1816,6 +1908,7 @@ function Features() {
 // ─── How it works ─────────────────────────────────────────────────────────────
 
 function HowItWorks() {
+	const T = useTokens();
 	const mobile = useIsMobile();
 	const steps = [
 		{
@@ -1844,10 +1937,7 @@ function HowItWorks() {
 		},
 	];
 	return (
-		<section
-			id="how-it-works"
-			style={{ padding: `80px ${mobile ? 20 : 32}px` }}
-		>
+		<section id="how-it-works" style={{ padding: "80px 20px" }}>
 			<Divider />
 			<div style={{ maxWidth: 1160, margin: "0 auto", paddingTop: 80 }}>
 				<SectionLabel>How it works</SectionLabel>
@@ -1884,7 +1974,9 @@ function HowItWorks() {
 									fontFamily: T.display,
 									fontSize: 88,
 									fontWeight: 800,
-									color: "rgba(99,102,241,0.06)",
+									color: T.dark
+										? "rgba(99,102,241,0.06)"
+										: "rgba(99,102,241,0.08)",
 									lineHeight: 1,
 									letterSpacing: "-0.07em",
 									marginBottom: -16,
@@ -1949,6 +2041,7 @@ function HowItWorks() {
 // ─── Pricing ──────────────────────────────────────────────────────────────────
 
 function Pricing() {
+	const T = useTokens();
 	const mobile = useIsMobile();
 	const [annual, setAnnual] = useState(false);
 
@@ -2024,7 +2117,7 @@ function Pricing() {
 	];
 
 	return (
-		<section id="pricing" style={{ padding: `80px ${mobile ? 20 : 32}px` }}>
+		<section id="pricing" style={{ padding: "80px 20px" }}>
 			<Divider />
 			<div style={{ maxWidth: 1160, margin: "0 auto", paddingTop: 80 }}>
 				<SectionLabel>Pricing</SectionLabel>
@@ -2064,8 +2157,6 @@ function Pricing() {
 						A flat subscription plan plus pay-as-you-go per message. No hidden
 						fees, ever.
 					</p>
-
-					{/* Annual toggle */}
 					<div
 						style={{
 							display: "flex",
@@ -2107,7 +2198,6 @@ function Pricing() {
 					</div>
 				</div>
 
-				{/* Plan cards */}
 				<div
 					style={{
 						display: "grid",
@@ -2125,12 +2215,14 @@ function Pricing() {
 									borderRadius: 20,
 									border: `1px solid ${p.highlight ? T.accent : T.border}`,
 									background: p.highlight
-										? `linear-gradient(165deg,rgba(99,102,241,0.22) 0%,${T.bgCard} 55%)`
+										? T.dark
+											? `linear-gradient(165deg,rgba(99,102,241,0.22) 0%,${T.bgCard} 55%)`
+											: `linear-gradient(165deg,rgba(99,102,241,0.1) 0%,${T.bgCard} 55%)`
 										: T.bgCard,
 									padding: "30px 28px",
 									position: "relative",
 									boxShadow: p.highlight
-										? "0 0 48px rgba(99,102,241,0.18)"
+										? `0 0 48px rgba(99,102,241,${T.dark ? "0.18" : "0.12"})`
 										: "none",
 								}}
 							>
@@ -2253,7 +2345,7 @@ function Pricing() {
 												style={{
 													fontFamily: T.body,
 													fontSize: 13.5,
-													color: "rgba(238,240,248,0.78)",
+													color: T.textSub,
 												}}
 											>
 												{f}
@@ -2272,7 +2364,9 @@ function Pricing() {
 										fontWeight: 700,
 										background: p.highlight
 											? `linear-gradient(135deg,${T.accent},${T.violet})`
-											: "rgba(255,255,255,0.06)",
+											: T.dark
+												? "rgba(255,255,255,0.06)"
+												: "rgba(0,0,0,0.04)",
 										color: p.highlight ? "#fff" : T.text,
 										border: p.highlight ? "none" : `1px solid ${T.borderSub}`,
 										boxShadow: p.highlight
@@ -2288,13 +2382,12 @@ function Pricing() {
 					})}
 				</div>
 
-				{/* Pay-per-message */}
 				<div
 					style={{
 						borderRadius: 20,
 						border: `1px solid ${T.border}`,
 						background: T.bgCard,
-						padding: 32,
+						padding: mobile ? 20 : 32,
 					}}
 				>
 					<div
@@ -2350,7 +2443,11 @@ function Pricing() {
 									padding: "14px 18px",
 									borderBottom: i < 3 ? `1px solid ${T.borderSub}` : "none",
 									background:
-										i % 2 === 0 ? "transparent" : "rgba(99,102,241,0.025)",
+										i % 2 === 0
+											? "transparent"
+											: T.dark
+												? "rgba(99,102,241,0.025)"
+												: "rgba(99,102,241,0.015)",
 								}}
 							>
 								<div>
@@ -2397,6 +2494,7 @@ function Pricing() {
 // ─── Testimonials ─────────────────────────────────────────────────────────────
 
 function Testimonials() {
+	const T = useTokens();
 	const mobile = useIsMobile();
 	const quotes = [
 		{
@@ -2422,7 +2520,7 @@ function Testimonials() {
 		},
 	];
 	return (
-		<section style={{ padding: `80px ${mobile ? 20 : 32}px` }}>
+		<section style={{ padding: "80px 20px" }}>
 			<Divider />
 			<div style={{ maxWidth: 1160, margin: "0 auto", paddingTop: 80 }}>
 				<SectionLabel>Testimonials</SectionLabel>
@@ -2519,19 +2617,21 @@ function Testimonials() {
 // ─── CTA ──────────────────────────────────────────────────────────────────────
 
 function CTA() {
+	const T = useTokens();
 	const mobile = useIsMobile();
 	return (
-		<section style={{ padding: `80px ${mobile ? 20 : 32}px 110px` }}>
+		<section style={{ padding: "80px 20px 110px" }}>
 			<div style={{ maxWidth: 1160, margin: "0 auto" }}>
 				<div
 					style={{
 						borderRadius: 24,
 						position: "relative",
 						overflow: "hidden",
-						background:
-							"linear-gradient(140deg,rgba(99,102,241,0.22) 0%,rgba(139,92,246,0.12) 50%,rgba(6,8,16,0) 80%)",
+						background: T.dark
+							? "linear-gradient(140deg,rgba(99,102,241,0.22) 0%,rgba(139,92,246,0.12) 50%,rgba(6,8,16,0) 80%)"
+							: "linear-gradient(140deg,rgba(99,102,241,0.12) 0%,rgba(139,92,246,0.06) 50%,rgba(248,248,252,0) 80%)",
 						border: `1px solid ${T.border}`,
-						padding: mobile ? "64px 28px" : "96px 64px",
+						padding: mobile ? "64px 24px" : "96px 64px",
 						textAlign: "center",
 					}}
 				>
@@ -2559,6 +2659,7 @@ function CTA() {
 							height: 400,
 							pointerEvents: "none",
 							background: `radial-gradient(ellipse at 50% 0%,${T.accentGlow} 0%,transparent 70%)`,
+							opacity: T.dark ? 1 : 0.5,
 						}}
 					/>
 					<div style={{ position: "relative" }}>
@@ -2629,7 +2730,9 @@ function CTA() {
 									fontSize: 14.5,
 									fontWeight: 500,
 									color: T.textSub,
-									background: "rgba(255,255,255,0.04)",
+									background: T.dark
+										? "rgba(255,255,255,0.04)"
+										: "rgba(0,0,0,0.04)",
 									border: `1px solid ${T.borderSub}`,
 									padding: "15px 26px",
 									borderRadius: 13,
@@ -2651,12 +2754,13 @@ function CTA() {
 // ─── Footer ───────────────────────────────────────────────────────────────────
 
 function Footer() {
+	const T = useTokens();
 	const mobile = useIsMobile();
 	return (
 		<footer
 			style={{
 				borderTop: `1px solid ${T.borderSub}`,
-				padding: `52px ${mobile ? 20 : 32}px 44px`,
+				padding: "52px 20px 44px",
 				position: "relative",
 				overflow: "hidden",
 			}}
@@ -2671,7 +2775,7 @@ function Footer() {
 					fontFamily: T.display,
 					fontSize: "clamp(64px,14vw,200px)",
 					fontWeight: 800,
-					color: "rgba(99,102,241,0.03)",
+					color: T.dark ? "rgba(99,102,241,0.03)" : "rgba(99,102,241,0.04)",
 					whiteSpace: "nowrap",
 					pointerEvents: "none",
 					letterSpacing: "-0.06em",
@@ -2700,31 +2804,7 @@ function Footer() {
 								marginBottom: 14,
 							}}
 						>
-							<div
-								style={{
-									width: 30,
-									height: 30,
-									borderRadius: 9,
-									background: `linear-gradient(135deg,${T.accent},${T.violet})`,
-									display: "flex",
-									alignItems: "center",
-									justifyContent: "center",
-								}}
-							>
-								<svg fill="none" height="16" viewBox="0 0 24 24" width="16">
-									<title>MD</title>
-									<path
-										d="M12 2C6.48 2 2 6.48 2 12c0 1.85.5 3.58 1.38 5.07L2 22l5.03-1.3A9.96 9.96 0 0012 22c5.52 0 10-4.48 10-10S17.52 2 12 2z"
-										fill="white"
-									/>
-									<path
-										d="M8 11h8M8 14.5h5"
-										stroke="rgba(99,102,241,0.6)"
-										strokeLinecap="round"
-										strokeWidth="1.7"
-									/>
-								</svg>
-							</div>
+							<LogoMark size={30} />
 							<span
 								style={{
 									fontFamily: T.display,
@@ -2749,7 +2829,7 @@ function Footer() {
 						</p>
 					</div>
 					<div
-						style={{ display: "flex", gap: mobile ? 36 : 60, flexWrap: "wrap" }}
+						style={{ display: "flex", gap: mobile ? 32 : 60, flexWrap: "wrap" }}
 					>
 						{[
 							{
@@ -2817,7 +2897,7 @@ function Footer() {
 					<p style={{ fontFamily: T.mono, fontSize: 11, color: T.textDim }}>
 						© 2025 MessageDesk. Built for Nigerian businesses.
 					</p>
-					<div style={{ display: "flex", gap: 20 }}>
+					<div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
 						{["WhatsApp", "SMS", "Campaigns", "Templates"].map((t) => (
 							<span
 								key={t}
@@ -2836,9 +2916,11 @@ function Footer() {
 // ─── Root ─────────────────────────────────────────────────────────────────────
 
 export default function LandingPage() {
+	const { appTheme } = useTheme();
+	const T = useTokens();
 	return (
 		<>
-			<FontLoader />
+			<FontLoader dark={appTheme === "dark"} />
 			<div
 				style={{
 					minHeight: "100vh",

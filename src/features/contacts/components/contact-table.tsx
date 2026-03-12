@@ -263,7 +263,7 @@ export function ContactsTable({
 		search: search || undefined,
 		channel: (channel as "whatsapp" | "sms") || undefined,
 		type:
-			(type as "first_timer" | "returning" | "member" | "visitor") || undefined,
+			(type as "new_contact" | "returning" | "contact" | "prospect") || undefined,
 		duplicatesOnly: duplicates === "1",
 		page,
 		pageSize: 15,
@@ -414,12 +414,12 @@ export function ContactsTable({
 					</SelectTrigger>
 					<SelectContent>
 						<SelectItem value="all">All types</SelectItem>
-						<SelectItem value="first_timer">
-							{typeLabels.first_timer}
+						<SelectItem value="new_contact">
+							{typeLabels.new_contact}
 						</SelectItem>
 						<SelectItem value="returning">{typeLabels.returning}</SelectItem>
-						<SelectItem value="member">{typeLabels.member}</SelectItem>
-						<SelectItem value="visitor">{typeLabels.visitor}</SelectItem>
+						<SelectItem value="contact">{typeLabels.contact}</SelectItem>
+						<SelectItem value="prospect">{typeLabels.prospect}</SelectItem>
 					</SelectContent>
 				</Select>
 

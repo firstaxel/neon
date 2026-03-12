@@ -12,7 +12,7 @@ export interface GeminiContact {
 	name: string;
 	notes?: string;
 	phone: string;
-	type: "first_timer" | "returning" | "member" | "visitor";
+	type: "new_contact" | "returning" | "contact" | "prospect";
 }
 
 export interface GeminiParseResult {
@@ -35,7 +35,7 @@ Extract ALL contacts and return a JSON object with this exact structure:
       "name": "Full Name",
       "phone": "+234XXXXXXXXXX",
       "channel": "whatsapp" | "sms",
-      "type": "first_timer" | "returning" | "member" | "visitor",
+      "type": "new_contact" | "returning" | "contact" | "prospect",
       "notes": "any additional notes visible"
     }
   ],
@@ -46,7 +46,7 @@ Extract ALL contacts and return a JSON object with this exact structure:
 
 Rules for extraction:
 - "channel": Look for columns/labels like "WA", "WhatsApp", "WhatsApp Number", "SMS", "Text". If a number appears under a WhatsApp column → "whatsapp". If under SMS/Text column → "sms". If ambiguous, default to "whatsapp".
-- "type": Look for "First Timer", "First Time", "FT", "New", "Visitor" → "first_timer". "Member", "Regular", "Returning" → "returning". Default to "visitor" if unclear.
+- "type": Map any label meaning "new" or "first contact" (e.g. "First Timer", "First Time", "FT", "New", "New Customer", "New Member", "New Student", "New Beneficiary", "New Contact") → "new_contact". Any label meaning "came back" or "repeated visit" (e.g. "Returning", "Return", "Repeat") → "returning". Any label meaning "regular", "established contact", or "ongoing relationship" (e.g. "Member", "Regular", "Client", "Student", "Partner", "Contact") → "contact". Default to "prospect" if the type is unclear or no type column exists.
 - "phone": Normalize to international format with country code. If Nigerian numbers without +234, add it.
 - "name": Use the full name as written.
 - Return ONLY valid JSON with no markdown, no backticks, no explanation.`;

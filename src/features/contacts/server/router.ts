@@ -4,10 +4,10 @@ import { protectedProcedure } from "#/orpc";
 
 const ChannelSchema = z.enum(["whatsapp", "sms"]);
 const ContactTypeSchema = z.enum([
-	"first_timer",
+	"new_contact",
 	"returning",
-	"member",
-	"visitor",
+	"contact",
+	"prospect",
 ]);
 
 // ─── listContacts ─────────────────────────────────────────────────────────────
@@ -77,7 +77,7 @@ export const listContacts = protectedProcedure
 					name: c.name,
 					phone: c.phone,
 					channel: c.channel as "whatsapp" | "sms",
-					type: c.type as "first_timer" | "returning" | "member" | "visitor",
+					type: c.type as "new_contact" | "returning" | "contact" | "prospect",
 					email: c.email,
 					notes: c.notes,
 					rawRow: c.rawRow,
@@ -127,7 +127,7 @@ export const getContact = protectedProcedure
 				name: c.name,
 				phone: c.phone,
 				channel: c.channel as "whatsapp" | "sms",
-				type: c.type as "first_timer" | "returning" | "member" | "visitor",
+				type: c.type as "new_contact" | "returning" | "contact" | "prospect",
 				email: c.email,
 				notes: c.notes,
 				rawRow: c.rawRow,
@@ -508,7 +508,7 @@ export const createContact = protectedProcedure
 			name: contact.name,
 			phone: contact.phone,
 			channel: contact.channel as "whatsapp" | "sms",
-			type: contact.type as "first_timer" | "returning" | "member" | "visitor",
+			type: contact.type as "new_contact" | "returning" | "contact" | "prospect",
 		};
 	});
 

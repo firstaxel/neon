@@ -9,65 +9,65 @@
  * Usage:
  *   import { getContactTypeLabels, getScenarioLabels } from "@/lib/org";
  *   const labels = getContactTypeLabels("ngo");
- *   labels.first_timer  // → "New Beneficiary"
+ *   labels.new_contact  // → "New Beneficiary"
  */
 
 export type OrgType =
+	| "business"
+	| "school"
+	| "community"
 	| "church"
 	| "ngo"
-	| "school"
-	| "business"
-	| "community"
 	| "other";
 
 // ─── Contact type labels ───────────────────────────────────────────────────────
 //
-// The underlying ContactType values ("first_timer", "member", etc.) never
+// The underlying ContactType values ("new_contact", "contact", etc.) never
 // change — they're stored in the DB. Only the display labels flex.
 
 export interface ContactTypeLabels {
-	first_timer: string;
-	member: string;
+	contact: string;
+	new_contact: string;
+	prospect: string;
 	returning: string;
-	visitor: string;
 }
 
 const CONTACT_TYPE_LABELS: Record<OrgType, ContactTypeLabels> = {
-	church: {
-		first_timer: "First Timer",
+	business: {
+		new_contact: "New Customer",
 		returning: "Returning",
-		member: "Member",
-		visitor: "Visitor",
-	},
-	ngo: {
-		first_timer: "New Beneficiary",
-		returning: "Returning",
-		member: "Partner",
-		visitor: "Guest",
+		contact: "Client",
+		prospect: "Lead",
 	},
 	school: {
-		first_timer: "New Student",
+		new_contact: "New Student",
 		returning: "Returning",
-		member: "Student",
-		visitor: "Visitor",
-	},
-	business: {
-		first_timer: "New Customer",
-		returning: "Returning",
-		member: "Client",
-		visitor: "Lead",
+		contact: "Student",
+		prospect: "Visitor",
 	},
 	community: {
-		first_timer: "New Member",
+		new_contact: "New Member",
 		returning: "Returning",
-		member: "Member",
-		visitor: "Guest",
+		contact: "Member",
+		prospect: "Guest",
+	},
+	church: {
+		new_contact: "New Contact",
+		returning: "Returning",
+		contact: "Member",
+		prospect: "Visitor",
+	},
+	ngo: {
+		new_contact: "New Beneficiary",
+		returning: "Returning",
+		contact: "Partner",
+		prospect: "Guest",
 	},
 	other: {
-		first_timer: "First Time",
+		new_contact: "New Contact",
 		returning: "Returning",
-		member: "Member",
-		visitor: "Guest",
+		contact: "Member",
+		prospect: "Guest",
 	},
 };
 
@@ -280,6 +280,17 @@ export const ORG_TYPE_LABELS: Record<
 	OrgType,
 	{ label: string; icon: string; sub: string }
 > = {
+	business: { label: "Business", icon: "🏢", sub: "Company, SME, enterprise" },
+	school: {
+		label: "School / Academy",
+		icon: "🎓",
+		sub: "Primary, secondary, tertiary",
+	},
+	community: {
+		label: "Community Group",
+		icon: "🌍",
+		sub: "Association, club, network",
+	},
 	church: {
 		label: "Church / Ministry",
 		icon: "⛪",
@@ -290,17 +301,6 @@ export const ORG_TYPE_LABELS: Record<
 		icon: "🤝",
 		sub: "Non-profit, foundation, aid org",
 	},
-	school: {
-		label: "School / Academy",
-		icon: "🎓",
-		sub: "Primary, secondary, tertiary",
-	},
-	business: { label: "Business", icon: "🏢", sub: "Company, SME, enterprise" },
-	community: {
-		label: "Community Group",
-		icon: "🌍",
-		sub: "Association, club, network",
-	},
 	other: { label: "Other", icon: "✦", sub: "Something else" },
 };
 
@@ -308,7 +308,7 @@ export const ORG_TYPE_LABELS: Record<
 
 export type UserRole =
 	| "admin"
-	| "pastor"
+	| "leader"
 	| "manager"
 	| "staff"
 	| "volunteer"
@@ -324,14 +324,14 @@ const ROLE_META: Record<OrgType, Partial<Record<UserRole, RoleMeta>>> & {
 } = {
 	_default: {
 		admin: { label: "Administrator", icon: "🗂️" },
-		pastor: { label: "Pastor / Lead", icon: "✝️" },
+		leader: { label: "Leader / Head", icon: "⭐" },
 		manager: { label: "Manager", icon: "📋" },
 		coordinator: { label: "Coordinator", icon: "🔗" },
 		staff: { label: "Staff", icon: "💼" },
 		volunteer: { label: "Volunteer", icon: "🙌" },
 	},
 	church: {
-		pastor: { label: "Pastor / Leader", icon: "✝️" },
+		leader: { label: "Pastor / Leader", icon: "✝️" },
 		admin: { label: "Administrator", icon: "🗂️" },
 		coordinator: { label: "Ministry Lead", icon: "🔗" },
 		staff: { label: "Staff", icon: "💼" },
@@ -344,10 +344,10 @@ const ROLE_META: Record<OrgType, Partial<Record<UserRole, RoleMeta>>> & {
 		coordinator: { label: "Field Coordinator", icon: "🔗" },
 		staff: { label: "Staff", icon: "💼" },
 		volunteer: { label: "Volunteer", icon: "🙌" },
-		pastor: { label: "Director", icon: "✦" },
+		leader: { label: "Director", icon: "✦" },
 	},
 	school: {
-		pastor: { label: "Principal", icon: "🏫" },
+		leader: { label: "Principal", icon: "🏫" },
 		admin: { label: "Administrator", icon: "🗂️" },
 		manager: { label: "Head of Dept", icon: "📋" },
 		coordinator: { label: "Class Teacher", icon: "🔗" },
@@ -355,7 +355,7 @@ const ROLE_META: Record<OrgType, Partial<Record<UserRole, RoleMeta>>> & {
 		volunteer: { label: "Helper", icon: "🙌" },
 	},
 	business: {
-		pastor: { label: "CEO / Founder", icon: "🏆" },
+		leader: { label: "CEO / Founder", icon: "🏆" },
 		admin: { label: "Admin", icon: "🗂️" },
 		manager: { label: "Manager", icon: "📋" },
 		coordinator: { label: "Team Lead", icon: "🔗" },

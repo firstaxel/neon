@@ -9,11 +9,24 @@
  * not generic placeholder text.
  *
  * Idempotent — skips any scenario/channel combo that already has a default.
+ *
+ * FIX: Previously used getAllMetaTemplatesForOrg() + t.name.includes(s.id) to
+ * build a lookup Map. That was broken because:
+ *   1. getAllMetaTemplatesForOrg() returns both MARKETING and UTILITY templates
+ *      for the same org type (from META_TEMPLATE_LIBRARY and UTILITY_TEMPLATES),
+ *      but only META_TEMPLATE_LIBRARY is keyed by scenario correctly.
+ *   2. The name-based matching (t.name.includes(s.id)) caused false positives —
+ *      e.g. "church_consent_first_timer" matched "first_timer" and overwrote the
+ *      real marketing template in the Map, leaving some scenarios unseeded.
+ *
+ * Now we call getMetaTemplate(orgType, scenario.id) directly per scenario,
+ * which does a clean keyed lookup with no string-matching or Map collisions.
  */
 
 import type { PrismaClient } from "#/generated/prisma/client";
 import type { MessageTemplateCreateManyArgs } from "#/generated/prisma/models";
-import { getAllMetaTemplatesForOrg } from "./meta-templates";
+import type { ScenarioId } from "#/lib/types";
+import { getMetaTemplate } from "./meta-templates";
 import { SCENARIOS } from "./scenario";
 
 export async function seedScenarioTemplates(
@@ -31,24 +44,12 @@ export async function seedScenarioTemplates(
 		existing.map((t) => `${t.scenarioId}:${t.channel}`)
 	);
 
-	const metaTemplates = getAllMetaTemplatesForOrg(orgType);
-	// Build a lookup by scenario id
-	const metaByScenario = new Map(
-		metaTemplates.map((t) => {
-			// Template names follow pattern: {orgtype}_{scenarioid}_... or general_{scenarioid}_...
-			// We match by finding the scenario id in SCENARIOS
-			const scenarioId = SCENARIOS.find((s) => t.name.includes(s.id))?.id;
-			return [scenarioId, t] as const;
-		})
-	);
-
 	const toCreate: MessageTemplateCreateManyArgs["data"] = [];
 
 	for (const scenario of SCENARIOS) {
-		const meta = metaByScenario.get(scenario.id);
-		if (!meta) {
-			continue;
-		}
+		// Direct keyed lookup — no string matching, no Map collisions.
+		// getMetaTemplate falls back to "other" if the orgType is unknown.
+		const meta = getMetaTemplate(orgType, scenario.id as ScenarioId);
 
 		// WhatsApp default
 		if (!existingSet.has(`${scenario.id}:whatsapp`)) {
@@ -69,8 +70,20 @@ export async function seedScenarioTemplates(
 			});
 		}
 
-		// SMS default
+		// SMS default — body is the smsBody; keep only vars that appear in it
 		if (!existingSet.has(`${scenario.id}:sms`)) {
+			// Derive which named vars the smsBody actually uses so we don't
+			// prompt the user to fill in variables that the SMS body doesn't reference.
+			const smsVarPattern = /\{\{([a-zA-Z_][a-zA-Z0-9_]*)\}\}/g;
+			const smsBodyVars: string[] = [];
+			const seenVars = new Set<string>();
+			for (const m of meta.smsBody.matchAll(smsVarPattern)) {
+				if (!seenVars.has(m[1])) {
+					seenVars.add(m[1]);
+					smsBodyVars.push(m[1]);
+				}
+			}
+
 			toCreate.push({
 				userId,
 				scenarioId: scenario.id,
@@ -79,8 +92,9 @@ export async function seedScenarioTemplates(
 				name: `${meta.name}_sms`,
 				displayName: `${meta.displayName} (SMS)`,
 				bodyText: meta.smsBody,
-				bodyVars: meta.bodyVars.filter((v) => ["name", "orgName"].includes(v)),
+				bodyVars: smsBodyVars.length > 0 ? smsBodyVars : meta.bodyVars.filter((v) => ["name", "orgName"].includes(v)),
 				smsBody: meta.smsBody,
+				footerText: null,
 				purpose: "general",
 				category: "MARKETING",
 				status: "DRAFT",

@@ -13,10 +13,10 @@ import type { ScenarioId } from "#/lib/types";
 // ─── Scenario metadata ────────────────────────────────────────────────────────
 
 export interface ScenarioMeta {
-	id: ScenarioId;
-	icon: string;
-	label: string;
 	description: string;
+	icon: string;
+	id: ScenarioId;
+	label: string;
 }
 
 export const SCENARIOS: ScenarioMeta[] = [
@@ -67,24 +67,25 @@ export const SCENARIO_SEED_TEMPLATES: Record<
 	{ whatsapp: string; sms: string }
 > = {
 	first_timer: {
-		whatsapp: `Hi {name}, 👋 It was so wonderful connecting with you for the first time! We'd love to get to know you better — feel free to reply anytime. Is there anything we can help you with? We're here for you! 😊`,
-		sms: `Hi {name}, Great connecting with you for the first time. We'd love to stay in touch. Reply anytime. From {orgName}`,
+		whatsapp: `Hi {name}! 👋 Welcome — we're really glad to have you on board with {orgName}. Feel free to reply anytime if you have questions or need a hand. We're here to help! 😊`,
+		sms: "Hi {name}, welcome to {orgName}! Glad to have you with us. Reach out anytime. Reply STOP to opt out.",
 	},
 	follow_up: {
-		whatsapp: `Hi {name}, 😊 Just checking in. You've been on our minds. How are you doing? We'd love to hear from you and are here if there's anything we can do for you!`,
-		sms: `Hi {name}, hope you're well. We've been thinking of you. Feel free to reach out anytime. From {orgName}`,
+		whatsapp: `Hi {name}, 😊 just checking in from the team at {orgName}. How are things going? We'd love to hear from you — let us know if there's anything we can do for you.`,
+		sms: `Hi {name}, following up from {orgName}. How are things? We're here if you need anything. Reply STOP to opt out.`,
 	},
 	event_invite: {
-		whatsapp: `Hi {name}! 🎉 We have something exciting coming up and would *love* to have you join us! Reply *YES* to confirm your spot or ask us for more details. Can't wait to see you there!`,
-		sms: `Hi {name}, You're invited to our upcoming event. Reply YES to confirm. More details coming soon. From {orgName}`,
+		whatsapp: `Hi {name}! 🎉 {orgName} has something coming up and we'd love to have you join us. Reply *YES* to confirm your spot or ask us for more details!`,
+		sms: `Hi {name}, you're invited to an upcoming event from {orgName}. Reply YES to confirm. More details coming soon. Reply STOP to opt out.`,
 	},
 	request: {
-		whatsapp: `Hi {name}! 🙏 You've been on our hearts and we just wanted to reach out. We hope you're doing well — please know we're here for you. Is there anything we can do to support you right now?`,
-		sms: `Hi {name}, you're in our thoughts! We're here for you — please reach out if you need anything. From {orgName}`,
+		whatsapp: `Hi {name}, 💬 the team at {orgName} is reaching out to check in. We hope you're doing well — is there anything we can help you with or any way we can support you right now?`,
+		sms: `Hi {name}, checking in from {orgName}. We're here if you need anything — don't hesitate to reply. Reply STOP to opt out.`,
 	},
 	general: {
-		whatsapp: `Hi {name}! 📢 We have an important update to share with you. More details are coming very soon — thank you for being such a valued part of our community!`,
-		sms: `Hi {name}, Important update coming soon — stay tuned. Thank you, From {orgName}`,
+		whatsapp:
+			"Hi {name}! 📢 {orgName} has an important update to share with you. Stay tuned — more details are on the way. Thank you for being a valued part of what we do!",
+		sms: "Hi {name}, important update from {orgName} coming soon. Thank you. Reply STOP to opt out.",
 	},
 };
 
@@ -112,7 +113,7 @@ export const VAR_LABELS: Record<string, string> = {
 	location: "Location / venue",
 	url: "Link / URL",
 	deadline: "Deadline",
-	pastor: "Pastor / leader name",
+	leader: "Leader / contact name",
 };
 
 export function extractTemplateVars(text: string): string[] {
@@ -162,9 +163,8 @@ export function personalizeMessage(
 		(match, varName) => (varName in vars ? vars[varName] : match)
 	);
 
-	result = result.replace(
-		/\{([a-zA-Z_][a-zA-Z0-9_]*)\}/g,
-		(match, varName) => (varName in vars ? vars[varName] : match)
+	result = result.replace(/\{([a-zA-Z_][a-zA-Z0-9_]*)\}/g, (match, varName) =>
+		varName in vars ? vars[varName] : match
 	);
 
 	return result;

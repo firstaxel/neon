@@ -57,7 +57,7 @@ const GoogleIcon = (
 	</svg>
 );
 
-function MagicLinkForm() {
+function MagicLinkForm({ callbackURL }: { callbackURL: string }) {
 	const [sent, setSent] = useState(false);
 
 	const form = useAppForm({
@@ -68,7 +68,7 @@ function MagicLinkForm() {
 		onSubmit: async ({ value }) => {
 			const { error } = await authClient.signIn.magicLink({
 				email: value.email,
-				callbackURL: "/",
+				callbackURL: callbackURL ?? "/dashboard",
 			});
 			if (error) {
 				throw new Error(error.message ?? "Failed to send link");
@@ -156,7 +156,7 @@ function MagicLinkForm() {
 
 // ─── Password sign-in form ─────────────────────────────────────────────────────
 
-function PasswordForm() {
+function PasswordForm({ callbackURL }: { callbackURL: string }) {
 	const navigate = useNavigate();
 
 	const form = useAppForm({
@@ -168,12 +168,12 @@ function PasswordForm() {
 			const { error } = await authClient.signIn.email({
 				email: value.email,
 				password: value.password,
-				callbackURL: "/",
+				callbackURL: callbackURL ?? "/dashboard",
 			});
 			if (error) {
-				throw new Error(error.message ?? "Invalid email or password");
+				toast.error(error.message ?? "Invalid email or password");
 			}
-			navigate({ to: "/" });
+			navigate({ to: callbackURL ?? "/dashboard" });
 		},
 	});
 
@@ -279,14 +279,14 @@ function PasswordForm() {
 	);
 }
 
-export default function LoginView() {
+export default function LoginView({ callbackURL }: { callbackURL?: string }) {
 	const [usePassword, setUsePassword] = useState(false);
 
 	const handleSocialLogin = () => {
 		authClient.signIn
 			.social({
 				provider: "google",
-				callbackURL: "",
+				callbackURL: callbackURL ?? "/dashboard",
 				newUserCallbackURL: "/onboarding",
 				requestSignUp: true,
 			})
@@ -334,7 +334,11 @@ export default function LoginView() {
 								<Separator className="flex-1" />
 							</div>
 
-							{usePassword ? <PasswordForm /> : <MagicLinkForm />}
+							{usePassword ? (
+								<PasswordForm callbackURL={callbackURL ?? "/dashboard"} />
+							) : (
+								<MagicLinkForm callbackURL={callbackURL ?? "/dashboard"} />
+							)}
 
 							{usePassword && (
 								<div className="text-center">

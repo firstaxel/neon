@@ -13,16 +13,15 @@ import {
 	ArrowRight,
 	CheckCircle2,
 	MessageCircle,
-	Moon,
 	Send,
 	Sparkles,
 	Star,
-	Sun,
 	Users,
 	X,
 	Zap,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { ModeToggle } from "#/features/dashboard/components/mode-toggle";
 import { pageHeadMeta } from "#/lib/metadata";
 import { useTheme } from "#/providers/theme";
 
@@ -96,20 +95,6 @@ function AppChrome({
 }
 
 // ─── Theme toggle ─────────────────────────────────────────────────────────────
-
-function ThemeToggle() {
-	const { appTheme, setTheme } = useTheme();
-	return (
-		<button
-			aria-label="Toggle theme"
-			className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-[9px] border border-[var(--lp-border)] bg-[var(--lp-accent-lo)] text-[var(--lp-accent)] transition-all duration-200"
-			onClick={() => setTheme(appTheme === "dark" ? "light" : "dark")}
-			type="button"
-		>
-			{appTheme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
-		</button>
-	);
-}
 
 // ─── Logo mark ────────────────────────────────────────────────────────────────
 
@@ -330,7 +315,7 @@ function Navbar() {
 
 				{/* Desktop CTA */}
 				<div className="hidden items-center gap-2 md:flex">
-					<ThemeToggle />
+					<ModeToggle />
 					<Link
 						className="rounded-[9px] px-4 py-[7px] font-[family-name:var(--lp-font-body)] font-semibold text-[14px] text-[var(--lp-text-sub)] transition-colors duration-150 hover:text-[var(--lp-text)]"
 						to="/login"
@@ -347,7 +332,7 @@ function Navbar() {
 
 				{/* Mobile controls */}
 				<div className="flex items-center gap-2 md:hidden">
-					<ThemeToggle />
+					<ModeToggle />
 					<button
 						className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-[9px] border border-[var(--lp-border)] bg-[var(--lp-accent-lo)] text-[var(--lp-text)]"
 						onClick={() => setOpen((o) => !o)}

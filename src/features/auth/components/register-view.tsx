@@ -63,7 +63,7 @@ const GoogleIcon = (
 
 // ─── Magic-link registration form ─────────────────────────────────────────────
 
-function MagicLinkRegisterForm() {
+function MagicLinkRegisterForm({ callbackURL }: { callbackURL: string }) {
 	const [sent, setSent] = useState(false);
 
 	const form = useAppForm({
@@ -78,7 +78,7 @@ function MagicLinkRegisterForm() {
 			const { error } = await authClient.signIn.magicLink({
 				email: value.email,
 				name: value.name,
-				callbackURL: "/",
+				callbackURL: callbackURL ?? "/dashboard",
 			});
 			if (error) {
 				throw new Error(error.message ?? "Failed to send link");
@@ -199,7 +199,7 @@ function MagicLinkRegisterForm() {
 
 // ─── Password registration form ────────────────────────────────────────────────
 
-function PasswordRegisterForm() {
+function PasswordRegisterForm({ callbackURL }: { callbackURL: string }) {
 	const navigate = useNavigate();
 
 	const form = useAppForm({
@@ -217,12 +217,12 @@ function PasswordRegisterForm() {
 				name: value.name,
 				email: value.email,
 				password: value.password,
-				callbackURL: "/",
+				callbackURL: callbackURL ?? "/dashboard",
 			});
 			if (error) {
 				throw new Error(error.message ?? "Failed to create account");
 			}
-			navigate({ to: "/" });
+			navigate({ to: callbackURL ?? "/dashboard" });
 		},
 	});
 
@@ -368,7 +368,11 @@ function PasswordRegisterForm() {
 
 // ─── View ──────────────────────────────────────────────────────────────────────
 
-export default function RegisterView() {
+export default function RegisterView({
+	callbackURL,
+}: {
+	callbackURL?: string;
+}) {
 	const [usePassword, setUsePassword] = useState(false);
 
 	return (
@@ -396,7 +400,7 @@ export default function RegisterView() {
 								onClick={() =>
 									authClient.signIn.social({
 										provider: "google",
-										callbackURL: "/",
+										callbackURL: callbackURL ?? "/dashboard	",
 									})
 								}
 								size="lg"
@@ -415,9 +419,13 @@ export default function RegisterView() {
 
 							{/* Swap form — each mode has its own isolated form instance */}
 							{usePassword ? (
-								<PasswordRegisterForm />
+								<PasswordRegisterForm
+									callbackURL={callbackURL ?? "/dashboard"}
+								/>
 							) : (
-								<MagicLinkRegisterForm />
+								<MagicLinkRegisterForm
+									callbackURL={callbackURL ?? "/dashboard"}
+								/>
 							)}
 
 							<Button

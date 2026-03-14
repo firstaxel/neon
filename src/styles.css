@@ -1,10 +1,107 @@
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+
+
 @import 'tailwindcss';
+
 
 @import 'tw-animate-css';
 @import "@fontsource/geist";
 @import "@fontsource/geist-mono";
 
+/* ── Google Fonts for the landing page ────────────────────────────────────── */
+
 @custom-variant dark (&:is(.dark *));
+
+/* ── Landing page design tokens ───────────────────────────────────────────── */
+/* Applied to <html>; .dark class is set synchronously before paint by ThemeProvider */
+:root {
+  --lp-bg:        #f8f8fc;
+  --lp-card:      #ffffff;
+  --lp-card-hi:   #f2f2fa;
+  --lp-text:      #0f1120;
+  --lp-text-sub:  rgba(15,17,32,0.55);
+  --lp-text-dim:  rgba(15,17,32,0.28);
+  --lp-border:    rgba(99,102,241,0.22);
+  --lp-border-sub:rgba(0,0,0,0.07);
+  --lp-accent-lo: rgba(99,102,241,0.08);
+  --lp-violet-lo: rgba(139,92,246,0.08);
+  --lp-app-bg:    #ededf8;
+  --lp-nav-bg:    rgba(248,248,252,0.92);
+  --lp-mob-bg:    rgba(248,248,252,0.98);
+  --lp-shimmer-a: #e8e8f4;
+  --lp-shimmer-b: #f0f0fa;
+  --lp-glow-op:   0.5;
+  /* Fixed across themes */
+  --lp-accent:    #6366f1;
+  --lp-violet:    #8b5cf6;
+  --lp-green:     #10b981;
+  --lp-amber:     #f59e0b;
+  --lp-glow:      rgba(99,102,241,0.45);
+  --lp-font-display: 'Bricolage Grotesque','Outfit',system-ui,sans-serif;
+  --lp-font-body:    'DM Sans','Geist',system-ui,sans-serif;
+  --lp-font-mono:    'JetBrains Mono','Geist Mono',monospace;
+}
+
+.dark {
+  --lp-bg:        #060810;
+  --lp-card:      #0b0f1c;
+  --lp-card-hi:   #0f1425;
+  --lp-text:      #eef0f8;
+  --lp-text-sub:  rgba(238,240,248,0.55);
+  --lp-text-dim:  rgba(238,240,248,0.22);
+  --lp-border:    rgba(99,102,241,0.18);
+  --lp-border-sub:rgba(255,255,255,0.07);
+  --lp-accent-lo: rgba(99,102,241,0.1);
+  --lp-violet-lo: rgba(139,92,246,0.1);
+  --lp-app-bg:    #07091a;
+  --lp-nav-bg:    rgba(6,8,16,0.92);
+  --lp-mob-bg:    rgba(6,8,16,0.98);
+  --lp-shimmer-a: #0b0f1c;
+  --lp-shimmer-b: #141c2e;
+  --lp-glow-op:   1;
+}
+
+/* ── Landing page keyframes ───────────────────────────────────────────────── */
+@keyframes lp-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+@keyframes lp-rise {
+  0%   { opacity: 0; transform: translateY(18px) scale(0.97); }
+  12%  { opacity: 1; transform: translateY(0) scale(1); }
+  78%  { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-12px); }
+}
+@keyframes lp-shimmer {
+  0%   { background-position: -600px 0; }
+  100% { background-position:  600px 0; }
+}
+@keyframes lp-fu {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes lp-pulse-ring {
+  0%   { transform: scale(1);   opacity: 0.6; }
+  100% { transform: scale(1.5); opacity: 0;   }
+}
+
+/* ── Landing page utility classes ─────────────────────────────────────────── */
+.lp-fu  { animation: lp-fu 0.65s ease both; }
+.lp-fu2 { animation: lp-fu 0.65s 0.12s ease both; }
+.lp-fu3 { animation: lp-fu 0.65s 0.25s ease both; }
+
+.lp-blink      { animation: lp-blink 2s infinite; }
+.lp-pulse-ring { animation: lp-pulse-ring 2s ease infinite; }
+.lp-rise       { animation: lp-rise 4.2s ease both infinite; }
+.lp-shimmer    { animation: lp-shimmer 1.5s ease infinite; }
+
+/* Dynamic delay for message bubbles */
+.lp-rise-d0 { animation-delay: 0s; }
+.lp-rise-d1 { animation-delay: 0.75s; }
+.lp-rise-d2 { animation-delay: 1.5s; }
+.lp-rise-d3 { animation-delay: 2.25s; }
+.lp-rise-d4 { animation-delay: 3s; }
+.lp-rise-d5 { animation-delay: 3.75s; }
 
 body {
   @apply m-0;

@@ -19,6 +19,22 @@ interface ModalStore {
 }
 
 export const useModalStore = create<ModalStore>((set, get) => ({
+	closeAllModals: () => {
+		set({ modals: [] });
+	},
+
+	closeModal: (id: string) => {
+		set((state) => ({
+			modals: state.modals.filter((modal) => modal.id !== id),
+		}));
+	},
+
+	getModalProps: <T = ModalProps>(id: string): T | undefined => {
+		const modalData = get().modals.find((modal) => modal.id === id);
+		return modalData?.props as T | undefined;
+	},
+
+	isModalOpen: (id: string) => get().modals.some((modal) => modal.id === id),
 	modals: [],
 
 	openModal: (id: string, props?: ModalProps) => {
@@ -36,23 +52,6 @@ export const useModalStore = create<ModalStore>((set, get) => ({
 			return { modals: [...state.modals, { id, props }] };
 		});
 	},
-
-	closeModal: (id: string) => {
-		set((state) => ({
-			modals: state.modals.filter((modal) => modal.id !== id),
-		}));
-	},
-
-	closeAllModals: () => {
-		set({ modals: [] });
-	},
-
-	isModalOpen: (id: string) => get().modals.some((modal) => modal.id === id),
-
-	getModalProps: <T = ModalProps>(id: string): T | undefined => {
-		const modalData = get().modals.find((modal) => modal.id === id);
-		return modalData?.props as T | undefined;
-	},
 }));
 
 // Custom hook for individual modal control
@@ -60,9 +59,9 @@ export const useModal = <T = ModalProps>(modalId: string) => {
 	const { openModal, closeModal, isModalOpen, getModalProps } = useModalStore();
 
 	return {
+		close: () => closeModal(modalId),
 		isOpen: isModalOpen(modalId),
 		open: (props?: T) => openModal(modalId, props as ModalProps),
-		close: () => closeModal(modalId),
 		props: getModalProps<T>(modalId),
 	};
 };

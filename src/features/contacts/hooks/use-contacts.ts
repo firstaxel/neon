@@ -17,17 +17,17 @@ export interface ContactFilters {
 export function useContacts(filters: ContactFilters = {}) {
 	return useQuery(
 		orpc.contacts.list.queryOptions({
-			queryKey: ["contacts", filters],
 			input: {
-				search: filters.search || undefined,
 				channel: filters.channel || undefined,
-				type: filters.type || undefined,
-				parseJobId: filters.parseJobId || undefined,
+				duplicatesOnly: filters.duplicatesOnly,
 				page: filters.page ?? 1,
 				pageSize: filters.pageSize ?? 20,
-				duplicatesOnly: filters.duplicatesOnly,
+				parseJobId: filters.parseJobId || undefined,
+				search: filters.search || undefined,
+				type: filters.type || undefined,
 			},
 			placeholderData: (prev) => prev,
+			queryKey: ["contacts", filters],
 			staleTime: 30_000,
 		})
 	);
@@ -36,9 +36,9 @@ export function useContacts(filters: ContactFilters = {}) {
 export function useContact(id: string | null) {
 	return useQuery(
 		orpc.contacts.get.queryOptions({
-			queryKey: ["contact", id],
-			input: { id: id ?? "" },
 			enabled: !!id,
+			input: { id: id ?? "" },
+			queryKey: ["contact", id],
 		})
 	);
 }

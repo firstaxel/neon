@@ -15,14 +15,14 @@ const ContactTypeSchema = z.enum([
 export const listContacts = protectedProcedure
 	.input(
 		z.object({
-			search: z.string().optional(),
 			channel: ChannelSchema.optional(),
-			type: ContactTypeSchema.optional(),
-			parseJobId: z.string().uuid().optional(),
 			/** When true, return only phone numbers that appear more than once for this user */
 			duplicatesOnly: z.boolean().default(false),
 			page: z.number().int().min(1).default(1),
 			pageSize: z.number().int().min(1).max(100).default(20),
+			parseJobId: z.string().uuid().optional(),
+			search: z.string().optional(),
+			type: ContactTypeSchema.optional(),
 		})
 	)
 	.handler(
@@ -49,22 +49,22 @@ export const listContacts = protectedProcedure
 			const [total, contacts, duplicatePhones] = await Promise.all([
 				context.db.contact.count({ where }),
 				context.db.contact.findMany({
-					where,
+					include: {
+						parseJob: {
+							select: { createdAt: true, id: true, originalFilename: true },
+						},
+					},
 					orderBy: { createdAt: "desc" },
 					skip: (input.page - 1) * input.pageSize,
 					take: input.pageSize,
-					include: {
-						parseJob: {
-							select: { id: true, originalFilename: true, createdAt: true },
-						},
-					},
+					where,
 				}),
 				input.duplicatesOnly
 					? context.db.contact.groupBy({
-							by: ["phone"],
-							where: { uploadedBy: userId },
 							_count: { id: true },
+							by: ["phone"],
 							having: { id: { _count: { gt: 1 } } },
+							where: { uploadedBy: userId },
 						})
 					: Promise.resolve([]),
 			]);
@@ -73,28 +73,28 @@ export const listContacts = protectedProcedure
 
 			return {
 				contacts: contacts.map((c) => ({
-					id: c.id,
-					name: c.name,
-					phone: c.phone,
 					channel: c.channel as "whatsapp" | "sms",
-					type: c.type as "new_contact" | "returning" | "contact" | "prospect",
-					email: c.email,
-					notes: c.notes,
-					rawRow: c.rawRow,
-					optedOut: c.optedOut,
 					createdAt: c.createdAt.toISOString(),
-					parseJobId: c.parseJobId,
-					sourceFilename: c.parseJob.originalFilename,
-					sourceCreatedAt: c.parseJob.createdAt.toISOString(),
+					email: c.email,
+					id: c.id,
 					isDuplicate: duplicatePhoneSet.has(c.phone),
+					name: c.name,
+					notes: c.notes,
+					optedOut: c.optedOut,
+					parseJobId: c.parseJobId,
+					phone: c.phone,
+					rawRow: c.rawRow,
+					sourceCreatedAt: c.parseJob.createdAt.toISOString(),
+					sourceFilename: c.parseJob.originalFilename,
+					type: c.type as "new_contact" | "returning" | "contact" | "prospect",
 				})),
+				duplicateCount: duplicatePhoneSet.size,
 				pagination: {
-					total,
 					page: input.page,
 					pageSize: input.pageSize,
+					total,
 					totalPages: Math.ceil(total / input.pageSize),
 				},
-				duplicateCount: duplicatePhoneSet.size,
 			};
 		})
 	);
@@ -106,37 +106,37 @@ export const getContact = protectedProcedure
 	.handler(
 		withCache("contacts.get", 30_000, async ({ input, context }) => {
 			const c = await context.db.contact.findFirst({
-				where: { id: input.id, uploadedBy: context.session?.user.id },
 				include: {
 					parseJob: {
 						select: {
+							confidence: true,
+							createdAt: true,
 							id: true,
 							originalFilename: true,
-							createdAt: true,
-							confidence: true,
 						},
 					},
 				},
+				where: { id: input.id, uploadedBy: context.session?.user.id },
 			});
 			if (!c) {
 				throw new Error(`Contact ${input.id} not found`);
 			}
 
 			return {
+				channel: c.channel as "whatsapp" | "sms",
+				createdAt: c.createdAt.toISOString(),
+				email: c.email,
 				id: c.id,
 				name: c.name,
-				phone: c.phone,
-				channel: c.channel as "whatsapp" | "sms",
-				type: c.type as "new_contact" | "returning" | "contact" | "prospect",
-				email: c.email,
 				notes: c.notes,
-				rawRow: c.rawRow,
 				optedOut: c.optedOut,
-				createdAt: c.createdAt.toISOString(),
 				parseJobId: c.parseJobId,
-				sourceFilename: c.parseJob.originalFilename,
-				sourceCreatedAt: c.parseJob.createdAt.toISOString(),
+				phone: c.phone,
+				rawRow: c.rawRow,
 				sourceConfidence: c.parseJob.confidence,
+				sourceCreatedAt: c.parseJob.createdAt.toISOString(),
+				sourceFilename: c.parseJob.originalFilename,
+				type: c.type as "new_contact" | "returning" | "contact" | "prospect",
 			};
 		})
 	);
@@ -146,13 +146,13 @@ export const getContact = protectedProcedure
 export const updateContact = protectedProcedure
 	.input(
 		z.object({
+			channel: ChannelSchema.optional(),
+			email: z.string().email().optional().nullable(),
 			id: z.string().uuid(),
 			name: z.string().min(1).optional(),
-			phone: z.string().min(7).optional(),
-			channel: ChannelSchema.optional(),
-			type: ContactTypeSchema.optional(),
-			email: z.string().email().optional().nullable(),
 			notes: z.string().optional().nullable(),
+			phone: z.string().min(7).optional(),
+			type: ContactTypeSchema.optional(),
 		})
 	)
 	.handler(async ({ input, context }) => {
@@ -170,8 +170,8 @@ export const updateContact = protectedProcedure
 			const conflict = await context.db.contact.findUnique({
 				where: {
 					uploadedBy_phone: {
-						uploadedBy: context.session.user.id,
 						phone: data.phone,
+						uploadedBy: context.session.user.id,
 					},
 				},
 			});
@@ -184,12 +184,12 @@ export const updateContact = protectedProcedure
 		}
 
 		const updated = await context.db.contact.update({
-			where: { id },
 			data: { ...data },
+			where: { id },
 		});
 
 		invalidateMany(userId, ["contacts.list", "contacts.get"]);
-		return { success: true, id: updated.id };
+		return { id: updated.id, success: true };
 	});
 
 // ─── deleteContact ────────────────────────────────────────────────────────────
@@ -219,7 +219,7 @@ export const deleteContacts = protectedProcedure
 			where: { id: { in: input.ids }, uploadedBy: userId },
 		});
 		invalidate(userId, "contacts.list");
-		return { success: true, deleted: count };
+		return { deleted: count, success: true };
 	});
 
 // ─── getDuplicates ────────────────────────────────────────────────────────────
@@ -237,11 +237,11 @@ export const getDuplicates = protectedProcedure.handler(async ({ context }) => {
 
 	// Find phones that appear more than once
 	const duplicatePhones = await context.db.contact.groupBy({
-		by: ["phone"],
-		where: { uploadedBy: userId },
 		_count: { id: true },
+		by: ["phone"],
 		having: { id: { _count: { gt: 1 } } },
 		orderBy: { _count: { id: "desc" } },
+		where: { uploadedBy: userId },
 	});
 
 	if (duplicatePhones.length === 0) {
@@ -250,13 +250,13 @@ export const getDuplicates = protectedProcedure.handler(async ({ context }) => {
 
 	// Fetch all contacts for those phones
 	const contacts = await context.db.contact.findMany({
-		where: {
-			uploadedBy: userId,
-			phone: { in: duplicatePhones.map((d) => d.phone) },
+		include: {
+			parseJob: { select: { createdAt: true, originalFilename: true } },
 		},
 		orderBy: { createdAt: "asc" },
-		include: {
-			parseJob: { select: { originalFilename: true, createdAt: true } },
+		where: {
+			phone: { in: duplicatePhones.map((d) => d.phone) },
+			uploadedBy: userId,
 		},
 	});
 
@@ -270,21 +270,21 @@ export const getDuplicates = protectedProcedure.handler(async ({ context }) => {
 	}
 
 	const groups = [...groupMap.entries()].map(([phone, members]) => ({
-		phone,
 		count: members.length,
 		members: members.map((c) => ({
+			channel: c.channel as "whatsapp" | "sms",
+			createdAt: c.createdAt.toISOString(),
+			email: c.email,
 			id: c.id,
 			name: c.name,
-			phone: c.phone,
-			channel: c.channel as "whatsapp" | "sms",
-			type: c.type,
-			email: c.email,
 			notes: c.notes,
 			optedOut: c.optedOut,
-			createdAt: c.createdAt.toISOString(),
-			sourceFilename: c.parseJob.originalFilename,
+			phone: c.phone,
 			sourceDate: c.parseJob.createdAt.toISOString(),
+			sourceFilename: c.parseJob.originalFilename,
+			type: c.type,
 		})),
+		phone,
 	}));
 
 	return {
@@ -308,19 +308,19 @@ export const getDuplicates = protectedProcedure.handler(async ({ context }) => {
 export const mergeContacts = protectedProcedure
 	.input(
 		z.object({
-			/** The contact whose row will be kept */
-			winnerId: z.string().uuid(),
 			/** All other contact ids in this duplicate group (will be deleted) */
 			loserIds: z.array(z.string().uuid()).min(1),
 			/** Optional overrides for the winner's fields */
 			overrides: z
 				.object({
-					name: z.string().min(1).optional(),
-					type: ContactTypeSchema.optional(),
 					channel: ChannelSchema.optional(),
+					name: z.string().min(1).optional(),
 					notes: z.string().optional().nullable(),
+					type: ContactTypeSchema.optional(),
 				})
 				.optional(),
+			/** The contact whose row will be kept */
+			winnerId: z.string().uuid(),
 		})
 	)
 	.handler(async ({ input, context }) => {
@@ -350,13 +350,13 @@ export const mergeContacts = protectedProcedure
 		await context.db.$transaction([
 			// Update winner with overrides + opt-out resolution
 			context.db.contact.update({
-				where: { id: winner.id },
 				data: {
 					...input.overrides,
 					optedOut: anyOptedOut,
 					optedOutAt:
 						anyOptedOut && !winner.optedOut ? new Date() : winner.optedOutAt,
 				},
+				where: { id: winner.id },
 			}),
 			// Delete all losers
 			context.db.contact.deleteMany({
@@ -365,10 +365,10 @@ export const mergeContacts = protectedProcedure
 		]);
 
 		return {
-			success: true,
-			kept: winner.id,
 			deleted: validLosers.length,
+			kept: winner.id,
 			optedOut: anyOptedOut,
+			success: true,
 		};
 	});
 
@@ -389,22 +389,22 @@ export const autoMergeDuplicates = protectedProcedure.handler(
 		const userId = context.session.user.id;
 
 		const duplicatePhones = await context.db.contact.groupBy({
-			by: ["phone"],
-			where: { uploadedBy: userId },
 			_count: { id: true },
+			by: ["phone"],
 			having: { id: { _count: { gt: 1 } } },
+			where: { uploadedBy: userId },
 		});
 
 		if (duplicatePhones.length === 0) {
-			return { success: true, groupsResolved: 0, contactsDeleted: 0 };
+			return { contactsDeleted: 0, groupsResolved: 0, success: true };
 		}
 
 		let totalDeleted = 0;
 
 		for (const { phone } of duplicatePhones) {
 			const group = await context.db.contact.findMany({
-				where: { uploadedBy: userId, phone },
 				orderBy: { createdAt: "desc" }, // newest first → [0] is the winner
+				where: { phone, uploadedBy: userId },
 			});
 			if (group.length < 2) {
 				continue;
@@ -415,12 +415,12 @@ export const autoMergeDuplicates = protectedProcedure.handler(
 
 			await context.db.$transaction([
 				context.db.contact.update({
-					where: { id: winner.id },
 					data: {
 						optedOut: anyOptedOut,
 						optedOutAt:
 							anyOptedOut && !winner.optedOut ? new Date() : winner.optedOutAt,
 					},
+					where: { id: winner.id },
 				}),
 				context.db.contact.deleteMany({
 					where: { id: { in: losers.map((l) => l.id) }, uploadedBy: userId },
@@ -432,9 +432,9 @@ export const autoMergeDuplicates = protectedProcedure.handler(
 
 		invalidate(userId, "contacts.list");
 		return {
-			success: true,
-			groupsResolved: duplicatePhones.length,
 			contactsDeleted: totalDeleted,
+			groupsResolved: duplicatePhones.length,
+			success: true,
 		};
 	}
 );
@@ -444,12 +444,12 @@ export const autoMergeDuplicates = protectedProcedure.handler(
 export const createContact = protectedProcedure
 	.input(
 		z.object({
-			name: z.string().min(1, "Name is required"),
-			phone: z.string().min(7, "Phone is required"),
 			channel: ChannelSchema,
-			type: ContactTypeSchema,
 			email: z.string().email("Invalid email").optional().nullable(),
+			name: z.string().min(1, "Name is required"),
 			notes: z.string().optional().nullable(),
+			phone: z.string().min(7, "Phone is required"),
+			type: ContactTypeSchema,
 		})
 	)
 	.handler(async ({ input, context }) => {
@@ -459,8 +459,8 @@ export const createContact = protectedProcedure
 		const existing = await context.db.contact.findUnique({
 			where: {
 				uploadedBy_phone: {
-					uploadedBy: userId,
 					phone: input.phone,
+					uploadedBy: userId,
 				},
 			},
 		});
@@ -475,40 +475,44 @@ export const createContact = protectedProcedure
 		// share one row rather than creating a new job per contact.
 		const parseJobId = `manual-${userId}`;
 		await context.db.parseJob.upsert({
-			where: { id: parseJobId },
 			create: {
-				id: parseJobId,
-				parsedBy: userId,
-				status: "done",
-				originalFilename: "Manual entry",
 				confidence: 1,
+				id: parseJobId,
 				mimeType: "text/plain",
+				originalFilename: "Manual entry",
+				parsedBy: userId,
 				r2Bucket: "manual",
 				r2Key: "manual",
+				status: "done",
 			},
 			update: {},
+			where: { id: parseJobId },
 		});
 
 		const contact = await context.db.contact.create({
 			data: {
-				uploadedBy: userId,
-				parseJobId,
-				name: input.name,
-				phone: input.phone,
 				channel: input.channel,
-				type: input.type,
 				email: input.email ?? null,
+				name: input.name,
 				notes: input.notes ?? null,
+				parseJobId,
+				phone: input.phone,
+				type: input.type,
+				uploadedBy: userId,
 			},
 		});
 
 		invalidate(userId, "contacts.list");
 		return {
+			channel: contact.channel as "whatsapp" | "sms",
 			id: contact.id,
 			name: contact.name,
 			phone: contact.phone,
-			channel: contact.channel as "whatsapp" | "sms",
-			type: contact.type as "new_contact" | "returning" | "contact" | "prospect",
+			type: contact.type as
+				| "new_contact"
+				| "returning"
+				| "contact"
+				| "prospect",
 		};
 	});
 
@@ -517,17 +521,17 @@ export const createContact = protectedProcedure
 export const exportContacts = protectedProcedure
 	.input(
 		z.object({
-			format: z.enum(["csv", "xlsx"]).default("csv"),
-			channel: ChannelSchema.optional(),
-			type: ContactTypeSchema.optional(),
-			search: z.string().optional(),
+			/** If true, only export contacts that have not opted out */
+			activeOnly: z.boolean().default(false),
 			campaignId: z.string().optional(),
+			channel: ChannelSchema.optional(),
+			format: z.enum(["csv", "xlsx"]).default("csv"),
 			/** ISO date string — contacts last messaged on/after this date */
 			lastContactedFrom: z.string().optional(),
 			/** ISO date string — contacts last messaged on/before this date */
 			lastContactedTo: z.string().optional(),
-			/** If true, only export contacts that have not opted out */
-			activeOnly: z.boolean().default(false),
+			search: z.string().optional(),
+			type: ContactTypeSchema.optional(),
 		})
 	)
 	.handler(async ({ input, context }) => {
@@ -535,8 +539,8 @@ export const exportContacts = protectedProcedure
 
 		// If user is a member, use owner's contacts
 		const membership = await context.db.orgMember.findFirst({
-			where: { userId },
 			select: { ownerId: true },
+			where: { userId },
 		});
 		const ownerId = membership?.ownerId ?? userId;
 
@@ -558,9 +562,9 @@ export const exportContacts = protectedProcedure
 		// Filter by campaign: find contacts who received a message in that campaign
 		if (input.campaignId) {
 			const messagePhones = await context.db.message.findMany({
-				where: { campaignId: input.campaignId },
-				select: { phone: true },
 				distinct: ["phone"],
+				select: { phone: true },
+				where: { campaignId: input.campaignId },
 			});
 			where.phone = { in: messagePhones.map((m: any) => m.phone) };
 		}
@@ -576,37 +580,37 @@ export const exportContacts = protectedProcedure
 		}
 
 		const contacts = await context.db.contact.findMany({
-			where,
 			orderBy: { createdAt: "desc" },
 			select: {
-				name: true,
-				phone: true,
-				email: true,
 				channel: true,
-				type: true,
-				notes: true,
 				createdAt: true,
+				email: true,
 				lastInboundAt: true,
+				name: true,
+				notes: true,
+				phone: true,
+				type: true,
 			},
+			where,
 		});
 
 		// Build rows
 		const rows = contacts.map((c: any) => ({
-			Name: c.name ?? "",
-			Phone: c.phone,
-			Email: c.email ?? "",
-			Channel: c.channel,
-			Type: c.type ?? "",
-			Notes: c.notes ?? "",
 			"Added on": c.createdAt.toISOString().slice(0, 10),
+			Channel: c.channel,
+			Email: c.email ?? "",
 			"Last replied": c.lastInboundAt
 				? c.lastInboundAt.toISOString().slice(0, 10)
 				: "",
+			Name: c.name ?? "",
+			Notes: c.notes ?? "",
+			Phone: c.phone,
+			Type: c.type ?? "",
 		}));
 
 		if (input.format === "csv") {
 			if (rows.length === 0) {
-				return { format: "csv", content: "", count: 0 };
+				return { content: "", count: 0, format: "csv" };
 			}
 			const headers = Object.keys(rows[0]);
 			const stringEscape = (v: string) =>
@@ -619,7 +623,7 @@ export const exportContacts = protectedProcedure
 					headers.map((h) => stringEscape(r[h as keyof typeof r])).join(",")
 				),
 			].join("\n");
-			return { format: "csv" as const, content: csv, count: rows.length };
+			return { content: csv, count: rows.length, format: "csv" as const };
 		}
 
 		// XLSX — use the xlsx library (SheetJS)
@@ -628,6 +632,6 @@ export const exportContacts = protectedProcedure
 		const wb = XLSX.utils.book_new();
 		XLSX.utils.book_append_sheet(wb, ws, "Contacts");
 		// Return as base64 so it can be sent over JSON
-		const buf = XLSX.write(wb, { type: "base64", bookType: "xlsx" });
-		return { format: "xlsx" as const, content: buf, count: rows.length };
+		const buf = XLSX.write(wb, { bookType: "xlsx", type: "base64" });
+		return { content: buf, count: rows.length, format: "xlsx" as const };
 	});

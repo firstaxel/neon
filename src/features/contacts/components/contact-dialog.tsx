@@ -15,9 +15,9 @@ import {
 } from "#/components/ui/dialog";
 import { Separator } from "#/components/ui/separator";
 import { Skeleton } from "#/components/ui/skeleton";
-import { useContact } from "../hooks/use-contacts";
 import { getContactTypeLabels } from "#/features/miscellaneous/org";
 import { useProfile } from "#/features/profile/hooks/use-profile";
+import { useContact } from "../hooks/use-contacts";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -28,8 +28,8 @@ interface ContactDialogProps {
 }
 
 const CHANNEL_STYLE: Record<string, string> = {
-	whatsapp: "border-[#25d36640] bg-[#0d2016] text-[#25d366]",
 	sms: "border-[#60a5fa40] bg-[#0d1a2e] text-[#60a5fa]",
+	whatsapp: "border-[#25d36640] bg-[#0d2016] text-[#25d366]",
 };
 
 // ─── Detail row ───────────────────────────────────────────────────────────────
@@ -107,7 +107,8 @@ export function ContactDialog({
 										{contact.channel === "whatsapp" ? "WhatsApp" : "SMS"}
 									</span>
 									<Badge className="font-normal text-xs" variant="secondary">
-										{typeLabels[contact.type as keyof typeof typeLabels] ?? contact.type}
+										{typeLabels[contact.type as keyof typeof typeLabels] ??
+											contact.type}
 									</Badge>
 								</div>
 							</div>
@@ -136,7 +137,10 @@ export function ContactDialog({
 							<Row
 								icon={<User className="h-4 w-4" />}
 								label="Contact type"
-								value={typeLabels[contact.type as keyof typeof typeLabels] ?? contact.type}
+								value={
+									typeLabels[contact.type as keyof typeof typeLabels] ??
+									contact.type
+								}
 							/>
 							{contact.notes && (
 								<Row

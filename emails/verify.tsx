@@ -51,8 +51,8 @@ export function VerificationEmail({ url, name }: VerificationEmailProps) {
 }
 
 VerificationEmail.PreviewProps = {
-	url: "https://Velocast.example.com/api/auth/verify-email?token=abc123",
 	name: "Emeka",
+	url: "https://Velocast.example.com/api/auth/verify-email?token=abc123",
 } satisfies VerificationEmailProps;
 
 export default VerificationEmail;

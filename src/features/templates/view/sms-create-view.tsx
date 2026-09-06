@@ -18,10 +18,10 @@ export function SmsTemplateCreateView() {
 				description: `"${values.displayName}" is ready to use.`,
 			});
 			router.navigate({
-				to: "/templates",
 				search: {
 					channel: "sms",
 				},
+				to: "/templates",
 			});
 		} catch (e) {
 			toast.error("Error", {
@@ -37,10 +37,10 @@ export function SmsTemplateCreateView() {
 					className="gap-1.5 rounded-xl"
 					onClick={() =>
 						router.navigate({
-							to: "/templates",
 							search: {
 								channel: "sms",
 							},
+							to: "/templates",
 						})
 					}
 					size="sm"
@@ -58,10 +58,10 @@ export function SmsTemplateCreateView() {
 					isSaving={isPending}
 					onCancel={() =>
 						router.navigate({
-							to: "/templates",
 							search: {
 								channel: "sms",
 							},
+							to: "/templates",
 						})
 					}
 					onSave={handleSave}

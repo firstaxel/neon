@@ -201,7 +201,7 @@ function DoneState({
 					</div>
 					<div className="min-w-0 flex-1">
 						<CardTitle className="text-base">
-							{totalExtracted} contact{totalExtracted !== 1 ? "s" : ""}{" "}
+							{totalExtracted} contact{totalExtracted === 1 ? "" : "s"}{" "}
 							extracted
 						</CardTitle>
 						<CardDescription>
@@ -247,7 +247,7 @@ function DoneState({
 						<div className="flex items-center gap-1.5">
 							<AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-500" />
 							<span className="font-medium text-amber-600 text-xs dark:text-amber-400">
-								{warnings.length} warning{warnings.length !== 1 ? "s" : ""}
+								{warnings.length} warning{warnings.length === 1 ? "" : "s"}
 							</span>
 						</div>
 						<ul className="space-y-0.5 pl-5">
@@ -294,7 +294,7 @@ function DoneState({
 						{contacts.length > 5 && (
 							<p className="text-center text-muted-foreground text-xs">
 								+{contacts.length - 5} more contact
-								{contacts.length - 5 !== 1 ? "s" : ""}
+								{contacts.length - 5 === 1 ? "" : "s"}
 							</p>
 						)}
 					</>

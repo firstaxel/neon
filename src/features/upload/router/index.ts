@@ -31,14 +31,14 @@ const ALLOWED_MIME_TYPES = [
 export const uploadContactImage = protectedProcedure
 	.input(
 		z.object({
-			filename: z.string().min(1),
-			mimeType: z.enum(ALLOWED_MIME_TYPES),
 			fileBase64: z.string().min(1),
+			filename: z.string().min(1),
 			fileSizeBytes: z
 				.number()
 				.int()
 				.positive()
 				.max(8 * 1024 * 1024),
+			mimeType: z.enum(ALLOWED_MIME_TYPES),
 		})
 	)
 	.handler(async ({ input, context }) => {
@@ -48,44 +48,44 @@ export const uploadContactImage = protectedProcedure
 		// 1. Upload image bytes to Cloudflare R2
 		const imageBuffer = Buffer.from(input.fileBase64, "base64");
 		await uploadToR2({
-			key: r2Key,
 			body: imageBuffer,
 			contentType: input.mimeType,
+			key: r2Key,
 			metadata: { jobId, originalFilename: input.filename },
 		});
 
 		// 2. Create ParseJob row in Postgres via context.db
 		await context.db.parseJob.create({
 			data: {
-				id: jobId,
-				parsedBy: context.session.user.id,
-				status: "pending",
-				r2Key,
-				r2Bucket: BUCKET,
-				originalFilename: input.filename,
-				mimeType: input.mimeType,
 				fileSizeBytes: input.fileSizeBytes,
+				id: jobId,
+				mimeType: input.mimeType,
+				originalFilename: input.filename,
+				parsedBy: context.session.user.id,
+				r2Bucket: BUCKET,
+				r2Key,
+				status: "pending",
 			},
 		});
 
 		// 3. Fire Inngest background job — returns instantly
 		await inngest.send({
-			name: "Velocast/contact-list.parse",
 			data: {
 				jobId,
-				r2Key,
-				r2Bucket: BUCKET,
 				mimeType: input.mimeType,
 				originalFilename: input.filename,
 				parsedBy: context.session.user.id,
+				r2Bucket: BUCKET,
+				r2Key,
 			},
+			name: "Velocast/contact-list.parse",
 		});
 
 		return {
 			jobId,
-			r2Key,
 			message:
 				"Image uploaded to R2. Gemini parsing started as a background job.",
+			r2Key,
 		};
 	});
 
@@ -101,12 +101,12 @@ export const getUploadPresignedUrl = protectedProcedure
 	.input(
 		z.object({
 			filename: z.string().min(1),
-			mimeType: z.enum(ALLOWED_MIME_TYPES),
 			fileSizeBytes: z
 				.number()
 				.int()
 				.positive()
 				.max(8 * 1024 * 1024),
+			mimeType: z.enum(ALLOWED_MIME_TYPES),
 		})
 	)
 	.handler(async ({ input, context }) => {
@@ -117,7 +117,7 @@ export const getUploadPresignedUrl = protectedProcedure
 			input.mimeType,
 			300
 		);
-		return { jobId, r2Key, presignedUrl, expiresInSeconds: 300 };
+		return { expiresInSeconds: 300, jobId, presignedUrl, r2Key };
 	});
 
 /**
@@ -134,50 +134,50 @@ export const getUploadPresignedUrl = protectedProcedure
 export const confirmDirectUpload = protectedProcedure
 	.input(
 		z.object({
-			jobId: z.string().uuid(),
-			r2Key: z.string().min(1),
 			filename: z.string().min(1),
-			mimeType: z.enum(ALLOWED_MIME_TYPES),
 			fileSizeBytes: z.number().int().positive(),
+			jobId: z.string().uuid(),
+			mimeType: z.enum(ALLOWED_MIME_TYPES),
+			r2Key: z.string().min(1),
 		})
 	)
 	.handler(async ({ input, context }) => {
 		// Try to create the row. If it already exists, do nothing and return it.
 		// This is the clean idempotency pattern: one atomic operation, no races.
 		const job = await context.db.parseJob.upsert({
-			where: { id: input.jobId },
 			create: {
-				id: input.jobId,
-				parsedBy: context.session.user.id,
-				status: "pending",
-				r2Key: input.r2Key,
-				r2Bucket: BUCKET,
-				originalFilename: input.filename,
-				mimeType: input.mimeType,
 				fileSizeBytes: input.fileSizeBytes,
+				id: input.jobId,
+				mimeType: input.mimeType,
+				originalFilename: input.filename,
+				parsedBy: context.session.user.id,
+				r2Bucket: BUCKET,
+				r2Key: input.r2Key,
+				status: "pending",
 			},
 			update: {}, // row exists — leave it completely untouched
+			where: { id: input.jobId },
 		});
 
 		// Only send the Inngest event if no event has been queued yet.
 		// inngestEventId is null on a freshly created row and set after the first send.
 		if (!job.inngestEventId) {
 			const event = await inngest.send({
-				name: "Velocast/contact-list.parse",
 				data: {
 					jobId: input.jobId,
-					r2Key: input.r2Key,
-					r2Bucket: BUCKET,
 					mimeType: input.mimeType,
 					originalFilename: input.filename,
 					parsedBy: context.session.user.id,
+					r2Bucket: BUCKET,
+					r2Key: input.r2Key,
 				},
+				name: "Velocast/contact-list.parse",
 			});
 
 			// Stamp the eventId so any subsequent duplicate call sees this and skips
 			await context.db.parseJob.update({
-				where: { id: input.jobId },
 				data: { inngestEventId: event.ids[0] ?? "queued" },
+				where: { id: input.jobId },
 			});
 		}
 
@@ -192,17 +192,22 @@ export const confirmDirectUpload = protectedProcedure
  */
 export const listParseJobs = protectedProcedure.handler(async ({ context }) => {
 	const jobs = await context.db.parseJob.findMany({
-		where: { parsedBy: context.session.user.id },
-		orderBy: { createdAt: "desc" },
 		include: {
 			contacts: { orderBy: { createdAt: "asc" } },
 		},
+		orderBy: { createdAt: "desc" },
+		where: { parsedBy: context.session.user.id },
 	});
 
 	return {
 		data: jobs.map((job) => ({
+			confidence: job.confidence,
+			contacts: job.status === "done" ? job.contacts : [],
+			createdAt: job.createdAt.toISOString(),
+			error: job.status === "error" ? job.errorMessage : undefined,
+			fileSizeBytes: job.fileSizeBytes,
 			jobId: job.id,
-			status: job.status as "pending" | "parsing" | "done" | "error",
+			originalFilename: job.originalFilename,
 			progress:
 				job.status === "pending"
 					? 10
@@ -211,14 +216,9 @@ export const listParseJobs = protectedProcedure.handler(async ({ context }) => {
 						: job.status === "done"
 							? 100
 							: 0,
-			originalFilename: job.originalFilename,
-			fileSizeBytes: job.fileSizeBytes,
-			confidence: job.confidence,
-			warnings: job.warnings as string[],
-			contacts: job.status === "done" ? job.contacts : [],
+			status: job.status as "pending" | "parsing" | "done" | "error",
 			totalExtracted: job.status === "done" ? job.contacts.length : 0,
-			error: job.status === "error" ? job.errorMessage : undefined,
-			createdAt: job.createdAt.toISOString(),
+			warnings: job.warnings as string[],
 		})),
 	};
 });
@@ -233,10 +233,10 @@ export const getParseStatus = protectedProcedure
 	.input(z.object({ jobId: z.string().uuid() }))
 	.handler(async ({ input, context }) => {
 		const job = await context.db.parseJob.findFirst({
-			where: { id: input.jobId, parsedBy: context.session.user.id },
 			include: {
 				contacts: { orderBy: { createdAt: "asc" } },
 			},
+			where: { id: input.jobId, parsedBy: context.session.user.id },
 		});
 
 		if (!job) {
@@ -253,13 +253,13 @@ export const getParseStatus = protectedProcedure
 						: 0;
 
 		return {
-			jobId: job.id,
-			status: job.status,
-			progress,
 			confidence: job.confidence,
-			warnings: job.warnings as string[],
 			contacts: job.status === "done" ? job.contacts : [],
-			totalExtracted: job.status === "done" ? job.contacts.length : 0,
 			error: job.status === "error" ? job.errorMessage : undefined,
+			jobId: job.id,
+			progress,
+			status: job.status,
+			totalExtracted: job.status === "done" ? job.contacts.length : 0,
+			warnings: job.warnings as string[],
 		};
 	});

@@ -28,12 +28,12 @@ function ActionButton({ action }: { action: PageHeaderAction }) {
 		"inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 select-none";
 
 	const variants: Record<NonNullable<PageHeaderAction["variant"]>, string> = {
+		ghost:
+			"text-muted-foreground hover:text-foreground hover:bg-muted active:scale-[.98] focus-visible:ring-foreground",
 		primary:
 			"bg-foreground text-background shadow-sm hover:opacity-90 active:scale-[.98] focus-visible:ring-foreground",
 		secondary:
 			"border border-border bg-background text-foreground shadow-sm hover:bg-muted active:scale-[.98] focus-visible:ring-foreground",
-		ghost:
-			"text-muted-foreground hover:text-foreground hover:bg-muted active:scale-[.98] focus-visible:ring-foreground",
 	};
 
 	const className = `${base} ${variants[action.variant ?? "primary"]}`;

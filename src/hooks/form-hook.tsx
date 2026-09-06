@@ -10,14 +10,14 @@ import {
 } from "#/components/ui/form";
 
 export const { useAppForm, withForm } = createFormHook({
-	fieldContext,
-	formContext,
 	fieldComponents: {
-		Field,
-		Label: FieldLabel,
 		Control: FieldControl,
 		Description: FieldDescription,
 		Error: FieldError,
+		Field,
+		Label: FieldLabel,
 	},
+	fieldContext,
 	formComponents: {},
+	formContext,
 });

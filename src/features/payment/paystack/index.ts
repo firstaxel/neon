@@ -27,8 +27,8 @@ async function request<T>(
 	body?: Record<string, unknown>
 ): Promise<T> {
 	const res = await fetch(`${BASE}${path}`, {
-		method,
 		headers: headers(),
+		method,
 		...(body ? { body: JSON.stringify(body) } : {}),
 	});
 
@@ -95,13 +95,13 @@ export function initializeDeposit(
 		"POST",
 		"/transaction/initialize",
 		{
-			email,
 			amount: amountKobo,
-			reference,
 			callback_url: callbackUrl,
-			currency: "NGN",
 			channels: ["card", "bank", "ussd", "bank_transfer"],
+			currency: "NGN",
+			email,
 			metadata: { type: "wallet_deposit" },
+			reference,
 		}
 	);
 }
@@ -134,9 +134,9 @@ export function createSubscription(
 	authorizationCode: string
 ): Promise<CreateSubscriptionResult> {
 	return request<CreateSubscriptionResult>("POST", "/subscription", {
+		authorization: authorizationCode,
 		customer: customerEmail,
 		plan: planCode,
-		authorization: authorizationCode,
 	});
 }
 

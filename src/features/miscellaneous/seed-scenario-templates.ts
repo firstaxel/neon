@@ -36,8 +36,8 @@ export async function seedScenarioTemplates(
 ): Promise<{ seeded: number; skipped: number }> {
 	// Find which scenarios already have defaults for this user
 	const existing = await db.messageTemplate.findMany({
-		where: { userId, isDefault: true, scenarioId: { not: null } },
-		select: { scenarioId: true, channel: true },
+		select: { channel: true, scenarioId: true },
+		where: { isDefault: true, scenarioId: { not: null }, userId },
 	});
 
 	const existingSet = new Set(
@@ -54,19 +54,19 @@ export async function seedScenarioTemplates(
 		// WhatsApp default
 		if (!existingSet.has(`${scenario.id}:whatsapp`)) {
 			toCreate.push({
-				userId,
-				scenarioId: scenario.id,
-				isDefault: true,
-				channel: "whatsapp",
-				name: meta.name,
-				displayName: meta.displayName,
 				bodyText: meta.bodyText,
 				bodyVars: meta.bodyVars,
-				smsBody: meta.smsBody,
-				footerText: meta.footerText ?? null,
-				purpose: "general",
 				category: meta.category,
+				channel: "whatsapp",
+				displayName: meta.displayName,
+				footerText: meta.footerText ?? null,
+				isDefault: true,
+				name: meta.name,
+				purpose: "general",
+				scenarioId: scenario.id,
+				smsBody: meta.smsBody,
 				status: "DRAFT",
+				userId,
 			});
 		}
 
@@ -85,19 +85,22 @@ export async function seedScenarioTemplates(
 			}
 
 			toCreate.push({
-				userId,
-				scenarioId: scenario.id,
-				isDefault: true,
-				channel: "sms",
-				name: `${meta.name}_sms`,
-				displayName: `${meta.displayName} (SMS)`,
 				bodyText: meta.smsBody,
-				bodyVars: smsBodyVars.length > 0 ? smsBodyVars : meta.bodyVars.filter((v) => ["name", "orgName"].includes(v)),
-				smsBody: meta.smsBody,
-				footerText: null,
-				purpose: "general",
+				bodyVars:
+					smsBodyVars.length > 0
+						? smsBodyVars
+						: meta.bodyVars.filter((v) => ["name", "orgName"].includes(v)),
 				category: "MARKETING",
+				channel: "sms",
+				displayName: `${meta.displayName} (SMS)`,
+				footerText: null,
+				isDefault: true,
+				name: `${meta.name}_sms`,
+				purpose: "general",
+				scenarioId: scenario.id,
+				smsBody: meta.smsBody,
 				status: "DRAFT",
+				userId,
 			});
 		}
 	}

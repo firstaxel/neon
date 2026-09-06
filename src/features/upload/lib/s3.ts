@@ -34,12 +34,12 @@ function createR2Client(): S3Client {
 	}
 
 	return new S3Client({
-		region: "auto", // R2 uses "auto" as the region
-		endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
 		credentials: {
 			accessKeyId: env.CLOUDFLARE_ACCESS_KEY_ID,
 			secretAccessKey: env.CLOUDFLARE_SECRET_ACCESS_KEY,
 		},
+		endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
+		region: "auto", // R2 uses "auto" as the region
 	});
 }
 
@@ -78,14 +78,14 @@ export async function uploadToR2(params: {
 }): Promise<{ key: string; bucket: string }> {
 	await r2.send(
 		new PutObjectCommand({
-			Bucket: BUCKET,
-			Key: params.key,
 			Body: params.body,
+			Bucket: BUCKET,
 			ContentType: params.contentType,
+			Key: params.key,
 			Metadata: params.metadata,
 		})
 	);
-	return { key: params.key, bucket: BUCKET };
+	return { bucket: BUCKET, key: params.key };
 }
 
 // ─── Download a file from R2 as Buffer ───────────────────────────────────────
@@ -115,8 +115,8 @@ export async function getR2ObjectMetadata(key: string) {
 		new HeadObjectCommand({ Bucket: BUCKET, Key: key })
 	);
 	return {
-		contentType: response.ContentType,
 		contentLength: response.ContentLength,
+		contentType: response.ContentType,
 		metadata: response.Metadata,
 	};
 }
@@ -143,8 +143,8 @@ export function getPresignedUploadUrl(
 		r2,
 		new PutObjectCommand({
 			Bucket: BUCKET,
-			Key: key,
 			ContentType: contentType,
+			Key: key,
 		}),
 		{ expiresIn: expiresInSeconds }
 	);

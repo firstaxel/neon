@@ -106,7 +106,7 @@ export function useRealUpload(
 
 	const setError = useCallback(
 		(fileId: string, error: string) => {
-			patch(fileId, { status: "error", error, progress: 0 });
+			patch(fileId, { error, progress: 0, status: "error" });
 			optionsRef.current?.onError?.(fileId, error);
 		},
 		[patch]
@@ -116,7 +116,7 @@ export function useRealUpload(
 
 	const startParsePoll = useCallback(
 		(fileId: string, jobId: string) => {
-			patch(fileId, { status: "parsing", jobId, progress: 90 });
+			patch(fileId, { jobId, progress: 90, status: "parsing" });
 
 			const interval = setInterval(async () => {
 				try {
@@ -134,7 +134,7 @@ export function useRealUpload(
 						pollRefs.current.delete(fileId);
 
 						const contacts = (result.contacts ?? []) as Contact[];
-						patch(fileId, { status: "completed", progress: 100, contacts });
+						patch(fileId, { contacts, progress: 100, status: "completed" });
 						optionsRef.current?.onCompleted?.(fileId, contacts);
 					} else if (result.status === "error") {
 						clearInterval(interval);
@@ -181,20 +181,20 @@ export function useRealUpload(
 				const { jobId, r2Key, presignedUrl } =
 					await client.upload.getUploadPresignedUrl({
 						filename: file.name,
+						fileSizeBytes: file.size,
 						mimeType: file.type as
 							| "image/jpeg"
 							| "image/jpg"
 							| "image/png"
 							| "image/webp"
 							| "image/gif",
-						fileSizeBytes: file.size,
 					});
 
 				patch(fileId, {
-					status: "uploading",
-					progress: 0,
-					jobId,
 					error: undefined,
+					jobId,
+					progress: 0,
+					status: "uploading",
 				});
 
 				// ── Step 2: Upload file bytes directly to R2 with XHR progress ────────
@@ -247,16 +247,16 @@ export function useRealUpload(
 				// ── Step 3: Notify server upload is done → fire Inngest parse job ─────
 				patch(fileId, { progress: 90 });
 				await client.upload.confirmDirectUpload({
-					jobId,
-					r2Key,
 					filename: file.name,
+					fileSizeBytes: file.size,
+					jobId,
 					mimeType: file.type as
 						| "image/jpeg"
 						| "image/jpg"
 						| "image/png"
 						| "image/webp"
 						| "image/gif",
-					fileSizeBytes: file.size,
+					r2Key,
 				});
 
 				// ── Fire onUploadComplete immediately ─────────────────────────────────
@@ -309,19 +309,19 @@ export function useRealUpload(
 					f.id === fileId
 						? {
 								...f,
-								progress: 0,
-								status: "uploading" as const,
+								contacts: undefined,
 								error: undefined,
 								jobId: undefined,
 								parseProgress: undefined,
-								contacts: undefined,
+								progress: 0,
+								status: "uploading" as const,
 							}
 						: f
 				)
 			);
 
 			// Restart the full upload flow
-			startUpload({ id: fileId, file, progress: 0, status: "uploading" });
+			startUpload({ file, id: fileId, progress: 0, status: "uploading" });
 		},
 		[setUploadFiles, startUpload]
 	);
@@ -339,5 +339,5 @@ export function useRealUpload(
 		pollRefs.current.clear();
 	}, []);
 
-	return { startUpload, retryUpload, cleanup };
+	return { cleanup, retryUpload, startUpload };
 }

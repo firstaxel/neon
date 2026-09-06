@@ -6,10 +6,10 @@ export const loginSchema = z.object({
 });
 
 export const registerSchema = z.object({
-	name: z.string().min(1),
-	email: z.string().email(),
-	password: z.string().min(8),
 	confirmPassword: z.string().min(8),
+	email: z.string().email(),
+	name: z.string().min(1),
+	password: z.string().min(8),
 });
 
 export const magicLinkSchema = z.object({

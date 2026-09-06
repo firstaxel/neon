@@ -76,13 +76,13 @@ function useCountdown(expiresAtIso: string | null) {
 	const m = Math.floor((secondsLeft % 3600) / 60);
 	const s = secondsLeft % 60;
 	return {
-		secondsLeft,
-		isOpen: secondsLeft > 0,
-		isWarning: secondsLeft > 0 && secondsLeft < 3600,
 		formatted:
 			secondsLeft > 0
 				? `${h}h ${String(m).padStart(2, "0")}m ${String(s).padStart(2, "0")}s`
 				: "Closed",
+		isOpen: secondsLeft > 0,
+		isWarning: secondsLeft > 0 && secondsLeft < 3600,
+		secondsLeft,
 	};
 }
 
@@ -240,9 +240,9 @@ function ThreadMessage({ item }: { item: TimelineItem }) {
 	// const isInboxReply = isOut && "source" in item && item.source === "inbox_reply";
 	const time = new Date(item.at).toLocaleString("en-GB", {
 		day: "numeric",
-		month: "short",
 		hour: "2-digit",
 		minute: "2-digit",
+		month: "short",
 	});
 	return (
 		<div className={cn("flex", isOut ? "justify-end" : "justify-start")}>
@@ -326,11 +326,11 @@ function ThreadPane({
 		data: thread,
 		isLoading,
 		refetch,
-	} = useGetInboxThread({ phone, channel });
+	} = useGetInboxThread({ channel, phone });
 
 	const cd = useCountdown(thread?.windowExpiresAt ?? null);
 
-	const reply = useMessageThread({ phone, channel });
+	const reply = useMessageThread({ channel, phone });
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: <need to scroll to bottom>
 	useEffect(() => {
@@ -524,15 +524,15 @@ export function MessagesView() {
 		isLoading,
 		refetch,
 	} = useMessageConversations({
-		filter,
 		channelFilter: channelFilter === "all" ? undefined : channelFilter,
+		filter,
 	});
 
 	const totalUnread =
 		conversations?.reduce((n, c) => n + (c?.unreadCount ?? 0), 0) ?? 0;
 
 	function selectConv(phone: string, channel: "whatsapp" | "sms") {
-		setSelected({ phone, channel });
+		setSelected({ channel, phone });
 		setMobileView("thread");
 	}
 

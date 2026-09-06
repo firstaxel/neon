@@ -53,8 +53,8 @@ export function MagicLinkEmail({ url, name }: MagicLinkEmailProps) {
 
 // Default props for React Email's preview server
 MagicLinkEmail.PreviewProps = {
-	url: "https://Velocast.example.com/api/auth/magic-link/verify?token=abc123",
 	name: "Adaeze",
+	url: "https://Velocast.example.com/api/auth/magic-link/verify?token=abc123",
 } satisfies MagicLinkEmailProps;
 
 export default MagicLinkEmail;

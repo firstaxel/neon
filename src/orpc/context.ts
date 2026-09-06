@@ -19,11 +19,11 @@ export async function createContext() {
 	});
 
 	return {
-		session,
 		db: prisma,
 		headers: h,
 		ip: getRequestIP(),
 		requestID: crypto.randomUUID(),
+		session,
 		userAgent: getUserAgent(h),
 	};
 }

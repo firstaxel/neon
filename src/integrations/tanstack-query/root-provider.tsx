@@ -16,8 +16,8 @@ export function getContext() {
 	const queryClient = new QueryClient();
 
 	context = {
-		queryClient,
 		isAuthenticated: false,
+		queryClient,
 		sessionCookie: null,
 	};
 

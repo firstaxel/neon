@@ -88,38 +88,42 @@ export const parseContactList = inngest.createFunction(
 				//     but leave optedOut alone — we never re-opt someone in on a fresh upload.
 				const results = await Promise.all(
 					geminiResult.contacts.map(async (c) => {
-					const existing = await prisma.contact.findUnique({
-						select: { id: true },
-						where: { uploadedBy_phone: { phone: c.phone, uploadedBy: userId } },
-					});
+						const existing = await prisma.contact.findUnique({
+							select: { id: true },
+							where: {
+								uploadedBy_phone: { phone: c.phone, uploadedBy: userId },
+							},
+						});
 
-					await prisma.contact.upsert({
-						create: {
-							channel: c.channel,
-							id: c.id,
-							name: c.name,
-							notes: c.notes ?? null,
-							parseJobId: jobId,
-							phone: c.phone,
-							rawRow: c.rawRow ?? null,
-							type: c.type,
-							uploadedBy: userId,
-						},
-						update: {
-							// Update mutable fields from the latest import
-							name: c.name,
-							notes: c.notes ?? null,
-							parseJobId: jobId, // attribute to the most recent import
-							rawRow: c.rawRow ?? null,
-							type: c.type,
-							// channel: intentionally not updated — changing whatsapp→sms
-							//   would silently break ongoing campaigns. Let the user edit manually.
-							// optedOut: intentionally not updated — never overwrite an opt-out.
-						},
-						where: { uploadedBy_phone: { phone: c.phone, uploadedBy: userId } },
-					});
+						await prisma.contact.upsert({
+							create: {
+								channel: c.channel,
+								id: c.id,
+								name: c.name,
+								notes: c.notes ?? null,
+								parseJobId: jobId,
+								phone: c.phone,
+								rawRow: c.rawRow ?? null,
+								type: c.type,
+								uploadedBy: userId,
+							},
+							update: {
+								// Update mutable fields from the latest import
+								name: c.name,
+								notes: c.notes ?? null,
+								parseJobId: jobId, // attribute to the most recent import
+								rawRow: c.rawRow ?? null,
+								type: c.type,
+								// channel: intentionally not updated — changing whatsapp→sms
+								//   would silently break ongoing campaigns. Let the user edit manually.
+								// optedOut: intentionally not updated — never overwrite an opt-out.
+							},
+							where: {
+								uploadedBy_phone: { phone: c.phone, uploadedBy: userId },
+							},
+						});
 
-					return existing ? "updated" : "inserted";
+						return existing ? "updated" : "inserted";
 					})
 				);
 

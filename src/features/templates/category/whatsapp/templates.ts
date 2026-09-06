@@ -121,7 +121,7 @@ export function toNumberedVars(
 		exampleValues.push(exampleValueFor(varName));
 	});
 
-	return { text: result, exampleValues };
+	return { exampleValues, text: result };
 }
 
 /** Sensible example values for common variable names */
@@ -186,9 +186,9 @@ export function buildMetaPayload(tpl: WaTemplatePayload) {
 			const vars = tpl.headerVars ?? [];
 			const { text, exampleValues } = toNumberedVars(tpl.headerText, vars);
 			components.push({
-				type: "HEADER",
 				format: "TEXT",
 				text,
+				type: "HEADER",
 				...(vars.length > 0 && {
 					example: { header_text: exampleValues },
 				}),
@@ -196,8 +196,8 @@ export function buildMetaPayload(tpl: WaTemplatePayload) {
 		} else {
 			// IMAGE / VIDEO / DOCUMENT / LOCATION — example handle required
 			components.push({
-				type: "HEADER",
 				format: tpl.headerFormat,
+				type: "HEADER",
 				...(tpl.headerFormat !== "LOCATION" && {
 					example: {
 						header_handle: ["https://example.com/placeholder.jpg"],
@@ -213,8 +213,8 @@ export function buildMetaPayload(tpl: WaTemplatePayload) {
 		tpl.bodyVars
 	);
 	components.push({
-		type: "BODY",
 		text: bodyText,
+		type: "BODY",
 		...(tpl.bodyVars.length > 0 && {
 			example: { body_text: [bodyExamples] },
 		}),
@@ -222,15 +222,14 @@ export function buildMetaPayload(tpl: WaTemplatePayload) {
 
 	// ── Footer ──
 	if (tpl.footerText) {
-		components.push({ type: "FOOTER", text: tpl.footerText });
+		components.push({ text: tpl.footerText, type: "FOOTER" });
 	}
 
 	// ── Buttons ──
 	if (tpl.buttons.length > 0) {
 		components.push({
-			type: "BUTTONS",
 			buttons: tpl.buttons.map((btn) => {
-				const base = { type: btn.type, text: btn.text };
+				const base = { text: btn.text, type: btn.type };
 				if (btn.type === "URL" && btn.url) {
 					// URL may have a dynamic {{1}} suffix
 					const hasDynamic = btn.url.includes("{{");
@@ -245,14 +244,15 @@ export function buildMetaPayload(tpl: WaTemplatePayload) {
 				}
 				return base;
 			}),
+			type: "BUTTONS",
 		});
 	}
 
 	return {
-		name: tpl.name,
-		language: tpl.language,
 		category: tpl.category,
 		components,
+		language: tpl.language,
+		name: tpl.name,
 	};
 }
 
@@ -266,12 +266,12 @@ export async function submitTemplate(
 	const url = `${BASE}/${apiVersion()}/${wabaId()}/message_templates`;
 
 	const res = await fetch(url, {
-		method: "POST",
-		headers: {
-			"Content-Type": "application/json",
-			Authorization: `Bearer ${accessToken()}`,
-		},
 		body: JSON.stringify(payload),
+		headers: {
+			Authorization: `Bearer ${accessToken()}`,
+			"Content-Type": "application/json",
+		},
+		method: "POST",
 	});
 
 	const data = (await res.json()) as MetaTemplateResponse | MetaErrorResponse;
@@ -307,9 +307,9 @@ export async function fetchTemplateStatus(
 	}
 
 	return {
-		status: data.status,
 		rejectionReason:
 			"rejected_reason" in data ? data.rejected_reason : undefined,
+		status: data.status,
 	};
 }
 
@@ -318,8 +318,8 @@ export async function deleteMetaTemplate(templateName: string): Promise<void> {
 	const url = `${BASE}/${apiVersion()}/${wabaId()}/message_templates?name=${encodeURIComponent(templateName)}`;
 
 	const res = await fetch(url, {
-		method: "DELETE",
 		headers: { Authorization: `Bearer ${accessToken()}` },
+		method: "DELETE",
 	});
 
 	if (!res.ok) {

@@ -3,7 +3,7 @@
  * All procedures use `protectedProcedure` — userId always from context.session.user.id
  */
 
-import { ORPCError } from "@orpc/client";
+import { ORPCError } from "@orpc/server";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 import {
@@ -28,13 +28,13 @@ export const getWallet = protectedProcedure.handler(
 	withCache("billing.getWallet", 20_000, async ({ context }) => {
 		const wallet = await getOrCreateWallet(context.session?.user.id ?? "");
 		return {
-			balanceKobo: wallet.balanceKobo,
-			heldKobo: wallet.heldKobo,
-			availableKobo: Math.max(0, wallet.balanceKobo - wallet.heldKobo),
-			balanceFormatted: formatNaira(wallet.balanceKobo),
 			availableFormatted: formatNaira(
 				Math.max(0, wallet.balanceKobo - wallet.heldKobo)
 			),
+			availableKobo: Math.max(0, wallet.balanceKobo - wallet.heldKobo),
+			balanceFormatted: formatNaira(wallet.balanceKobo),
+			balanceKobo: wallet.balanceKobo,
+			heldKobo: wallet.heldKobo,
 		};
 	})
 );
@@ -55,13 +55,13 @@ export const initDeposit = protectedProcedure
 
 		await context.db.transaction.create({
 			data: {
-				walletId: wallet.id,
-				type: "deposit",
-				status: "pending",
 				amountKobo,
 				balanceAfterKobo: wallet.balanceKobo,
 				description: `Wallet top-up of ${formatNaira(amountKobo)}`,
 				reference,
+				status: "pending",
+				type: "deposit",
+				walletId: wallet.id,
 			},
 		});
 
@@ -72,9 +72,9 @@ export const initDeposit = protectedProcedure
 			input.callbackUrl
 		);
 		return {
+			amountKobo,
 			checkoutUrl: result.authorization_url,
 			reference: result.reference,
-			amountKobo,
 		};
 	});
 
@@ -86,7 +86,9 @@ export const verifyDeposit = protectedProcedure
 			where: { reference: input.reference },
 		});
 		if (!existing) {
-			throw new ORPCError("Transaction not found");
+			throw new ORPCError("NOT_FOUND", {
+				message: "Transaction not found",
+			});
 		}
 		if (existing.status === "completed") {
 			return { alreadyProcessed: true, amountKobo: existing.amountKobo };
@@ -95,23 +97,25 @@ export const verifyDeposit = protectedProcedure
 		const result = await verifyTransaction(input.reference);
 		if (result.status !== "success") {
 			await context.db.transaction.update({
-				where: { reference: input.reference },
 				data: { status: "failed" },
+				where: { reference: input.reference },
 			});
-			throw new ORPCError(`Payment ${result.status} — please try again`);
+			throw new ORPCError("BAD_REQUEST", {
+				message: `Payment ${result.status} — please try again`,
+			});
 		}
 
 		const wallet = await creditWallet({
-			userId: context.session.user.id,
 			amountKobo: result.amount,
 			description: `Wallet top-up of ${formatNaira(result.amount)}`,
-			reference: `${input.reference}_credit`,
 			paystackRef: input.reference,
+			reference: `${input.reference}_credit`,
 			type: "deposit",
+			userId: context.session.user.id,
 		});
 		await context.db.transaction.update({
+			data: { paystackRef: input.reference, status: "completed" },
 			where: { reference: input.reference },
-			data: { status: "completed", paystackRef: input.reference },
 		});
 
 		// Wallet balance changed — invalidate cached reads
@@ -121,8 +125,8 @@ export const verifyDeposit = protectedProcedure
 		return {
 			alreadyProcessed: false,
 			amountKobo: result.amount,
-			newBalanceKobo: wallet.balanceKobo,
 			newBalanceFormatted: formatNaira(wallet.balanceKobo),
+			newBalanceKobo: wallet.balanceKobo,
 		};
 	});
 
@@ -150,13 +154,13 @@ export const getTransactions = protectedProcedure
 			});
 			if (!wallet) {
 				return {
-					transactions: [],
 					pagination: {
-						total: 0,
 						page: 1,
 						pageSize: input.pageSize,
+						total: 0,
 						totalPages: 0,
 					},
+					transactions: [],
 				};
 			}
 
@@ -167,34 +171,34 @@ export const getTransactions = protectedProcedure
 			const [total, rows] = await Promise.all([
 				context.db.transaction.count({ where }),
 				context.db.transaction.findMany({
-					where,
 					orderBy: { createdAt: "desc" },
 					skip: (input.page - 1) * input.pageSize,
 					take: input.pageSize,
+					where,
 				}),
 			]);
 
 			return {
-				transactions: rows.map((t) => ({
-					id: t.id,
-					type: t.type,
-					status: t.status,
-					amountKobo: t.amountKobo,
-					amountFormatted: formatNaira(t.amountKobo),
-					balanceAfterKobo: t.balanceAfterKobo,
-					balanceAfterFormatted: formatNaira(t.balanceAfterKobo),
-					description: t.description,
-					reference: t.reference,
-					campaignId: t.campaignId,
-					createdAt: t.createdAt.toISOString(),
-					isCredit: ["deposit", "campaign_refund", "refund"].includes(t.type),
-				})),
 				pagination: {
-					total,
 					page: input.page,
 					pageSize: input.pageSize,
+					total,
 					totalPages: Math.ceil(total / input.pageSize),
 				},
+				transactions: rows.map((t) => ({
+					amountFormatted: formatNaira(t.amountKobo),
+					amountKobo: t.amountKobo,
+					balanceAfterFormatted: formatNaira(t.balanceAfterKobo),
+					balanceAfterKobo: t.balanceAfterKobo,
+					campaignId: t.campaignId,
+					createdAt: t.createdAt.toISOString(),
+					description: t.description,
+					id: t.id,
+					isCredit: ["deposit", "campaign_refund", "refund"].includes(t.type),
+					reference: t.reference,
+					status: t.status,
+					type: t.type,
+				})),
 			};
 		})
 	);
@@ -203,8 +207,8 @@ export const getTransactions = protectedProcedure
 export const checkCampaignCost = protectedProcedure
 	.input(
 		z.object({
-			contacts: z.array(z.object({ channel: z.enum(["whatsapp", "sms"]) })),
 			contactIds: z.array(z.string()).optional(), // if provided, detect open service windows
+			contacts: z.array(z.object({ channel: z.enum(["whatsapp", "sms"]) })),
 			deliveryMode: z
 				.enum(["marketing", "utility_prescreen", "sms_fallback"])
 				.default("marketing"),
@@ -223,12 +227,12 @@ export const checkCampaignCost = protectedProcedure
 		) {
 			const cutoff = new Date(Date.now() - SERVICE_WINDOW_MS);
 			const openSessions = await context.db.contact.findMany({
+				select: { id: true },
 				where: {
-					id: { in: input.contactIds },
 					channel: "whatsapp",
+					id: { in: input.contactIds },
 					lastInboundAt: { gt: cutoff },
 				},
-				select: { id: true },
 			});
 			const openSet = new Set(openSessions.map((c) => c.id));
 			// Map back to indexes in input.contacts (parallel array)
@@ -267,34 +271,34 @@ export const checkCampaignCost = protectedProcedure
 		}
 
 		return {
-			canAfford,
-			totalCostKobo,
-			shortfallKobo: canAfford ? 0 : totalCostKobo - wallet.balanceKobo,
-			balanceKobo: wallet.balanceKobo,
-			totalCostFormatted: formatNaira(totalCostKobo),
-			shortfallFormatted:
-				totalCostKobo - wallet.balanceKobo > 0
-					? formatNaira(totalCostKobo - wallet.balanceKobo)
-					: null,
 			balanceFormatted: formatNaira(wallet.balanceKobo),
+			balanceKobo: wallet.balanceKobo,
+			canAfford,
 			deliveryMode: input.deliveryMode,
-			serviceWindowCount, // contacts who can be sent free-form at ₦0
-			serviceWindowCountFormatted:
-				serviceWindowCount > 0 ? `${serviceWindowCount}` : null,
-			rates: {
-				whatsappMarketing: formatNaira(PRICING.PER_MESSAGE.whatsapp_marketing),
-				whatsappUtility: formatNaira(PRICING.PER_MESSAGE.whatsapp_utility),
-				whatsappService: formatNaira(PRICING.PER_MESSAGE.whatsapp_service),
-				sms: formatNaira(PRICING.PER_MESSAGE.sms),
-			},
 			prescreenConsentCostFormatted:
 				input.deliveryMode === "utility_prescreen"
 					? formatNaira(totalCostKobo)
 					: null,
 			prescreenFullCostFormatted:
-				prescreenFullCostKobo !== null
-					? formatNaira(prescreenFullCostKobo)
+				prescreenFullCostKobo === null
+					? null
+					: formatNaira(prescreenFullCostKobo),
+			rates: {
+				sms: formatNaira(PRICING.PER_MESSAGE.sms),
+				whatsappMarketing: formatNaira(PRICING.PER_MESSAGE.whatsapp_marketing),
+				whatsappService: formatNaira(PRICING.PER_MESSAGE.whatsapp_service),
+				whatsappUtility: formatNaira(PRICING.PER_MESSAGE.whatsapp_utility),
+			},
+			serviceWindowCount, // contacts who can be sent free-form at ₦0
+			serviceWindowCountFormatted:
+				serviceWindowCount > 0 ? `${serviceWindowCount}` : null,
+			shortfallFormatted:
+				totalCostKobo - wallet.balanceKobo > 0
+					? formatNaira(totalCostKobo - wallet.balanceKobo)
 					: null,
+			shortfallKobo: canAfford ? 0 : totalCostKobo - wallet.balanceKobo,
+			totalCostFormatted: formatNaira(totalCostKobo),
+			totalCostKobo,
 		};
 	});
 
@@ -307,30 +311,31 @@ export const getSubscription = protectedProcedure.handler(
 		const plans = Object.entries(PRICING.PLANS).map(([key, p]) => ({
 			key,
 			label: p.label,
-			priceKobo: p.priceKobo,
-			priceFormatted: formatNaira(p.priceKobo),
 			monthlyLimit:
 				p.monthlyLimit === 999_999
 					? "Unlimited"
 					: p.monthlyLimit.toLocaleString(),
 			paystackPlanCode: p.paystackPlanCode,
+			priceFormatted: formatNaira(p.priceKobo),
+			priceKobo: p.priceKobo,
 		}));
 		if (!sub) {
-			return { subscription: null, plans };
+			return { plans, subscription: null };
 		}
 		return {
+			plans,
 			subscription: {
-				id: sub.id,
-				plan: sub.plan,
-				status: sub.status,
-				monthlyMessageLimit: sub.monthlyMessageLimit,
-				messagesUsedThisCycle: sub.messagesUsedThisCycle,
 				currentPeriodEnd: sub.currentPeriodEnd.toISOString(),
+				id: sub.id,
+				messagesUsedThisCycle: sub.messagesUsedThisCycle,
+				monthlyMessageLimit: sub.monthlyMessageLimit,
 				paystackSubCode: sub.paystackSubCode,
+				plan: sub.plan,
 				remainingMessages: Math.max(
 					0,
 					sub.monthlyMessageLimit - sub.messagesUsedThisCycle
 				),
+				status: sub.status,
 				usagePercent:
 					sub.monthlyMessageLimit === 999_999
 						? 0
@@ -338,7 +343,6 @@ export const getSubscription = protectedProcedure.handler(
 								(sub.messagesUsedThisCycle / sub.monthlyMessageLimit) * 100
 							),
 			},
-			plans,
 		};
 	})
 );
@@ -346,8 +350,8 @@ export const getSubscription = protectedProcedure.handler(
 export const initSubscription = protectedProcedure
 	.input(
 		z.object({
-			plan: z.enum(["starter", "growth", "pro"]),
 			callbackUrl: z.string().url(),
+			plan: z.enum(["starter", "growth", "pro"]),
 		})
 	)
 	.handler(async ({ input, context }) => {
@@ -362,21 +366,21 @@ export const initSubscription = protectedProcedure
 		const wallet = await getOrCreateWallet(context.session.user.id);
 		await context.db.transaction.create({
 			data: {
-				walletId: wallet.id,
-				type: "subscription",
-				status: "pending",
 				amountKobo: planConfig.priceKobo,
 				balanceAfterKobo: 0,
 				description: `Subscription to ${planConfig.label} plan`,
 				reference,
+				status: "pending",
+				type: "subscription",
+				walletId: wallet.id,
 			},
 		});
 		return {
 			checkoutUrl: result.authorization_url,
-			reference,
 			plan: input.plan,
 			planLabel: planConfig.label,
 			priceFormatted: formatNaira(planConfig.priceKobo),
+			reference,
 		};
 	});
 
@@ -386,10 +390,14 @@ export const cancelSubscription = protectedProcedure.handler(
 			where: { userId: context.session.user.id },
 		});
 		if (!sub) {
-			throw new ORPCError("No active subscription found");
+			throw new ORPCError("NOT_FOUND", {
+				message: "No active subscription found",
+			});
 		}
 		if (sub.status === "cancelled") {
-			throw new ORPCError("Subscription already cancelled");
+			throw new ORPCError("BAD_REQUEST", {
+				message: "Subscription already cancelled",
+			});
 		}
 		if (sub.paystackSubCode) {
 			try {
@@ -402,8 +410,8 @@ export const cancelSubscription = protectedProcedure.handler(
 			}
 		}
 		const updated = await context.db.subscription.update({
+			data: { cancelledAt: new Date(), status: "cancelled" },
 			where: { userId: context.session.user.id },
-			data: { status: "cancelled", cancelledAt: new Date() },
 		});
 		invalidate(context.session.user.id, "billing.getSubscription");
 		return {

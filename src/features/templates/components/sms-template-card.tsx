@@ -45,17 +45,17 @@ import { useDeleteTemplate } from "../hooks/use-templates";
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const PREVIEW_VALUES: Record<string, string> = {
-	name: "Sarah",
-	firstName: "Sarah",
-	org: "Grace Assembly",
-	date: "Sunday, 15 Dec",
-	time: "10:00 AM",
 	amount: "₦5,000",
-	event: "Easter Sunday",
 	code: "ABC123",
-	phone: "+2348012345678",
+	date: "Sunday, 15 Dec",
+	event: "Easter Sunday",
+	firstName: "Sarah",
 	link: "https://example.com",
+	name: "Sarah",
 	orderId: "ORD-12345",
+	org: "Grace Assembly",
+	phone: "+2348012345678",
+	time: "10:00 AM",
 };
 
 function getPreviewValue(v: string): string {

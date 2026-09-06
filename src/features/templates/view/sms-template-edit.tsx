@@ -23,10 +23,10 @@ export function SmsTemplateEditView({ id }: { id: string }) {
 				description: `"${values.displayName}" updated.`,
 			});
 			router.navigate({
-				to: "/templates",
 				search: {
 					channel: "sms",
 				},
+				to: "/templates",
 			});
 		} catch (e) {
 			toast("Error", {
@@ -37,7 +37,7 @@ export function SmsTemplateEditView({ id }: { id: string }) {
 
 	if (isLoading) {
 		return (
-			<div style={{ padding: "32px 28px", maxWidth: 860, margin: "0 auto" }}>
+			<div style={{ margin: "0 auto", maxWidth: 860, padding: "32px 28px" }}>
 				<Skeleton className="mb-6 h-8 w-48" />
 				<Skeleton className="mb-8 h-6 w-64" />
 				<div className="space-y-4">
@@ -59,10 +59,10 @@ export function SmsTemplateEditView({ id }: { id: string }) {
 				<Button
 					onClick={() =>
 						router.navigate({
-							to: "/templates",
 							search: {
 								channel: "sms",
 							},
+							to: "/templates",
 						})
 					}
 					variant="link"
@@ -74,16 +74,16 @@ export function SmsTemplateEditView({ id }: { id: string }) {
 	}
 
 	return (
-		<div style={{ padding: "32px 28px", maxWidth: 860, margin: "0 auto" }}>
+		<div style={{ margin: "0 auto", maxWidth: 860, padding: "32px 28px" }}>
 			<div className="mb-6 flex items-center gap-3">
 				<Button
 					className="gap-1.5 rounded-xl"
 					onClick={() =>
 						router.navigate({
-							to: "/templates",
 							search: {
 								channel: "sms",
 							},
+							to: "/templates",
 						})
 					}
 					size="sm"
@@ -101,10 +101,10 @@ export function SmsTemplateEditView({ id }: { id: string }) {
 					isSaving={isPending}
 					onCancel={() =>
 						router.navigate({
-							to: "/templates",
 							search: {
 								channel: "sms",
 							},
+							to: "/templates",
 						})
 					}
 					onSave={handleSave}

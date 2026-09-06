@@ -62,18 +62,18 @@ function MagicLinkForm({ callbackURL }: { callbackURL: string }) {
 
 	const form = useAppForm({
 		defaultValues: { email: "" },
-		validators: {
-			onBlur: magicLinkSchema,
-		},
 		onSubmit: async ({ value }) => {
 			const { error } = await authClient.signIn.magicLink({
-				email: value.email,
 				callbackURL: callbackURL ?? "/dashboard",
+				email: value.email,
 			});
 			if (error) {
 				throw new Error(error.message ?? "Failed to send link");
 			}
 			setSent(true);
+		},
+		validators: {
+			onBlur: magicLinkSchema,
 		},
 	});
 
@@ -161,19 +161,19 @@ function PasswordForm({ callbackURL }: { callbackURL: string }) {
 
 	const form = useAppForm({
 		defaultValues: { email: "", password: "" },
-		validators: {
-			onBlur: loginSchema,
-		},
 		onSubmit: async ({ value }) => {
 			const { error } = await authClient.signIn.email({
+				callbackURL: callbackURL ?? "/dashboard",
 				email: value.email,
 				password: value.password,
-				callbackURL: callbackURL ?? "/dashboard",
 			});
 			if (error) {
 				toast.error(error.message ?? "Invalid email or password");
 			}
 			navigate({ to: callbackURL ?? "/dashboard" });
+		},
+		validators: {
+			onBlur: loginSchema,
 		},
 	});
 
@@ -285,9 +285,9 @@ export default function LoginView({ callbackURL }: { callbackURL?: string }) {
 	const handleSocialLogin = () => {
 		authClient.signIn
 			.social({
-				provider: "google",
 				callbackURL: callbackURL ?? "/dashboard",
 				newUserCallbackURL: "/onboarding",
+				provider: "google",
 				requestSignUp: true,
 			})
 			.then(() => {

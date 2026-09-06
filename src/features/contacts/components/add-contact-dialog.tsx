@@ -26,9 +26,9 @@ import {
 	SelectValue,
 } from "#/components/ui/select";
 import { Textarea } from "#/components/ui/textarea";
-import { useCreateContact } from "../hooks/use-contacts";
 import { getContactTypeLabels } from "#/features/miscellaneous/org";
 import { useProfile } from "#/features/profile/hooks/use-profile";
+import { useCreateContact } from "../hooks/use-contacts";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -47,8 +47,8 @@ interface FormValues {
 }
 
 const CHANNEL_OPTIONS = [
-	{ value: "whatsapp" as const, label: "WhatsApp" },
-	{ value: "sms" as const, label: "SMS" },
+	{ label: "WhatsApp", value: "whatsapp" as const },
+	{ label: "SMS", value: "sms" as const },
 ];
 
 // ─── Field wrapper ────────────────────────────────────────────────────────────
@@ -92,30 +92,30 @@ export function AddContactDialog({
 	const typeLabels = getContactTypeLabels(profile?.orgType);
 
 	const TYPE_OPTIONS = [
-		{ value: "new_contact" as const, label: typeLabels.new_contact },
-		{ value: "returning" as const, label: typeLabels.returning },
-		{ value: "contact" as const, label: typeLabels.contact },
-		{ value: "prospect" as const, label: typeLabels.prospect },
+		{ label: typeLabels.new_contact, value: "new_contact" as const },
+		{ label: typeLabels.returning, value: "returning" as const },
+		{ label: typeLabels.contact, value: "contact" as const },
+		{ label: typeLabels.prospect, value: "prospect" as const },
 	];
 
 	const form = useForm({
 		defaultValues: {
-			name: "",
-			phone: "",
 			channel: "whatsapp",
-			type: "new_contact",
 			email: "",
+			name: "",
 			notes: "",
+			phone: "",
+			type: "new_contact",
 		} as FormValues,
 		onSubmit: async ({ value }) => {
 			try {
 				await createContact({
-					name: value.name.trim(),
-					phone: value.phone.trim(),
 					channel: value.channel,
-					type: value.type,
 					email: value.email.trim() || null,
+					name: value.name.trim(),
 					notes: value.notes.trim() || null,
+					phone: value.phone.trim(),
+					type: value.type,
 				});
 				toast.success(`${value.name} added to contacts`);
 				onOpenChange(false);

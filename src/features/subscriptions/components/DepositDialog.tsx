@@ -37,59 +37,59 @@ export function DepositDialog({ open, onOpenChange }: DepositDialogProps) {
 			<div
 				onClick={() => onOpenChange(false)}
 				style={{
-					position: "fixed",
-					inset: 0,
-					background: "rgba(0,0,0,0.7)",
 					backdropFilter: "blur(4px)",
+					background: "rgba(0,0,0,0.7)",
+					inset: 0,
+					position: "fixed",
 					zIndex: 40,
 				}}
 			/>
 			<div
 				style={{
-					position: "fixed",
-					top: "50%",
-					left: "50%",
-					transform: "translate(-50%,-50%)",
-					zIndex: 50,
-					width: "min(420px, calc(100vw - 32px))",
+					animation: "fadeSlideUp 0.2s ease forwards",
 					background: "#0d1420",
 					border: "1px solid #1e2a3a",
 					borderRadius: 20,
+					left: "50%",
 					overflow: "hidden",
-					animation: "fadeSlideUp 0.2s ease forwards",
+					position: "fixed",
+					top: "50%",
+					transform: "translate(-50%,-50%)",
+					width: "min(420px, calc(100vw - 32px))",
+					zIndex: 50,
 				}}
 			>
 				{/* Header */}
 				<div
 					style={{
-						display: "flex",
 						alignItems: "center",
+						borderBottom: "1px solid #1e2a3a",
+						display: "flex",
 						justifyContent: "space-between",
 						padding: "18px 22px",
-						borderBottom: "1px solid #1e2a3a",
 					}}
 				>
-					<div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+					<div style={{ alignItems: "center", display: "flex", gap: 10 }}>
 						<div
 							style={{
-								width: 32,
-								height: 32,
-								borderRadius: 10,
+								alignItems: "center",
 								background: "#0d2016",
 								border: "1px solid #25d36630",
+								borderRadius: 10,
 								display: "flex",
-								alignItems: "center",
+								height: 32,
 								justifyContent: "center",
+								width: 32,
 							}}
 						>
 							<Banknote color="#25d366" size={15} />
 						</div>
 						<span
 							style={{
-								fontFamily: "'Space Grotesk', sans-serif",
-								fontWeight: 600,
-								fontSize: 15,
 								color: "#e2e8f0",
+								fontFamily: "'Space Grotesk', sans-serif",
+								fontSize: 15,
+								fontWeight: 600,
 							}}
 						>
 							Top Up Wallet
@@ -98,16 +98,16 @@ export function DepositDialog({ open, onOpenChange }: DepositDialogProps) {
 					<button
 						onClick={() => onOpenChange(false)}
 						style={{
-							width: 28,
-							height: 28,
-							borderRadius: 8,
-							border: "none",
+							alignItems: "center",
 							background: "#1e2a3a",
+							border: "none",
+							borderRadius: 8,
 							color: "#8899aa",
 							cursor: "pointer",
 							display: "flex",
-							alignItems: "center",
+							height: 28,
 							justifyContent: "center",
+							width: 28,
 						}}
 						type="button"
 					>
@@ -117,22 +117,22 @@ export function DepositDialog({ open, onOpenChange }: DepositDialogProps) {
 
 				<div
 					style={{
-						padding: "20px 22px 24px",
 						display: "flex",
 						flexDirection: "column",
 						gap: 18,
+						padding: "20px 22px 24px",
 					}}
 				>
 					{/* Preset amounts */}
 					<div>
 						<p
 							style={{
+								color: "#4a5568",
 								fontSize: 11,
 								fontWeight: 700,
-								color: "#4a5568",
-								textTransform: "uppercase",
 								letterSpacing: "0.05em",
 								marginBottom: 10,
+								textTransform: "uppercase",
 							}}
 						>
 							Select Amount
@@ -140,8 +140,8 @@ export function DepositDialog({ open, onOpenChange }: DepositDialogProps) {
 						<div
 							style={{
 								display: "grid",
-								gridTemplateColumns: "repeat(3,1fr)",
 								gap: 8,
+								gridTemplateColumns: "repeat(3,1fr)",
 							}}
 						>
 							{PRESETS.map((p) => {
@@ -154,15 +154,15 @@ export function DepositDialog({ open, onOpenChange }: DepositDialogProps) {
 											setCustomActive(false);
 										}}
 										style={{
-											padding: "10px 6px",
-											borderRadius: 12,
-											border: `1px solid ${active ? "#25d366" : "#1e2a3a"}`,
 											background: active ? "#0d2016" : "#0a1020",
+											border: `1px solid ${active ? "#25d366" : "#1e2a3a"}`,
+											borderRadius: 12,
 											color: active ? "#25d366" : "#8899aa",
-											fontFamily: "'Space Grotesk',sans-serif",
-											fontWeight: 600,
-											fontSize: 13,
 											cursor: "pointer",
+											fontFamily: "'Space Grotesk',sans-serif",
+											fontSize: 13,
+											fontWeight: 600,
+											padding: "10px 6px",
 											transition: "all 0.15s",
 										}}
 										type="button"
@@ -178,12 +178,12 @@ export function DepositDialog({ open, onOpenChange }: DepositDialogProps) {
 					<div>
 						<p
 							style={{
+								color: "#4a5568",
 								fontSize: 11,
 								fontWeight: 700,
-								color: "#4a5568",
-								textTransform: "uppercase",
 								letterSpacing: "0.05em",
 								marginBottom: 8,
+								textTransform: "uppercase",
 							}}
 						>
 							Or Enter Custom Amount
@@ -191,14 +191,14 @@ export function DepositDialog({ open, onOpenChange }: DepositDialogProps) {
 						<div style={{ position: "relative" }}>
 							<span
 								style={{
-									position: "absolute",
+									color: customActive ? "#25d366" : "#8899aa",
+									fontSize: 15,
+									fontWeight: 600,
 									left: 14,
+									pointerEvents: "none",
+									position: "absolute",
 									top: "50%",
 									transform: "translateY(-50%)",
-									color: customActive ? "#25d366" : "#8899aa",
-									fontWeight: 600,
-									fontSize: 15,
-									pointerEvents: "none",
 								}}
 							>
 								₦
@@ -213,22 +213,22 @@ export function DepositDialog({ open, onOpenChange }: DepositDialogProps) {
 								}}
 								placeholder="Enter amount"
 								style={{
-									width: "100%",
-									padding: "12px 14px 12px 30px",
-									borderRadius: 12,
-									border: `1px solid ${customActive ? "#25d36650" : "#1e2a3a"}`,
 									background: "#0a1020",
+									border: `1px solid ${customActive ? "#25d36650" : "#1e2a3a"}`,
+									borderRadius: 12,
+									boxSizing: "border-box",
 									color: "#e2e8f0",
 									fontSize: 14,
 									outline: "none",
-									boxSizing: "border-box",
+									padding: "12px 14px 12px 30px",
+									width: "100%",
 								}}
 								type="number"
 								value={customActive ? amount : ""}
 							/>
 						</div>
 						{selectedAmount > 0 && selectedAmount < 100 && (
-							<p style={{ fontSize: 11, color: "#f87171", marginTop: 5 }}>
+							<p style={{ color: "#f87171", fontSize: 11, marginTop: 5 }}>
 								Minimum deposit is ₦100
 							</p>
 						)}
@@ -241,29 +241,29 @@ export function DepositDialog({ open, onOpenChange }: DepositDialogProps) {
 								background: "#0a1020",
 								border: "1px solid #1e2a3a",
 								borderRadius: 12,
-								padding: "12px 14px",
 								display: "flex",
 								gap: 20,
+								padding: "12px 14px",
 							}}
 						>
 							<div>
 								<p
 									style={{
-										fontSize: 10,
 										color: "#25d366",
+										fontSize: 10,
 										fontWeight: 700,
-										textTransform: "uppercase",
 										letterSpacing: "0.05em",
 										margin: 0,
+										textTransform: "uppercase",
 									}}
 								>
 									WhatsApp
 								</p>
 								<p
 									style={{
+										color: "#e2e8f0",
 										fontSize: 13,
 										fontWeight: 600,
-										color: "#e2e8f0",
 										marginTop: 3,
 									}}
 								>
@@ -274,21 +274,21 @@ export function DepositDialog({ open, onOpenChange }: DepositDialogProps) {
 							<div>
 								<p
 									style={{
-										fontSize: 10,
 										color: "#60a5fa",
+										fontSize: 10,
 										fontWeight: 700,
-										textTransform: "uppercase",
 										letterSpacing: "0.05em",
 										margin: 0,
+										textTransform: "uppercase",
 									}}
 								>
 									SMS
 								</p>
 								<p
 									style={{
+										color: "#e2e8f0",
 										fontSize: 13,
 										fontWeight: 600,
-										color: "#e2e8f0",
 										marginTop: 3,
 									}}
 								>
@@ -302,12 +302,12 @@ export function DepositDialog({ open, onOpenChange }: DepositDialogProps) {
 					{error && (
 						<p
 							style={{
-								fontSize: 12,
-								color: "#f87171",
-								padding: "8px 12px",
 								background: "#2e0d0d",
-								borderRadius: 8,
 								border: "1px solid #f8717140",
+								borderRadius: 8,
+								color: "#f87171",
+								fontSize: 12,
+								padding: "8px 12px",
 							}}
 						>
 							{error instanceof Error
@@ -320,21 +320,21 @@ export function DepositDialog({ open, onOpenChange }: DepositDialogProps) {
 						disabled={!isValid || isPending}
 						onClick={handlePay}
 						style={{
-							display: "flex",
 							alignItems: "center",
-							justifyContent: "center",
-							gap: 8,
-							width: "100%",
-							padding: "14px",
-							borderRadius: 14,
-							border: "none",
 							background: isValid && !isPending ? "#25d366" : "#1e2a3a",
+							border: "none",
+							borderRadius: 14,
 							color: isValid && !isPending ? "#080c14" : "#4a5568",
-							fontFamily: "'Space Grotesk',sans-serif",
-							fontWeight: 700,
-							fontSize: 15,
 							cursor: isValid && !isPending ? "pointer" : "not-allowed",
+							display: "flex",
+							fontFamily: "'Space Grotesk',sans-serif",
+							fontSize: 15,
+							fontWeight: 700,
+							gap: 8,
+							justifyContent: "center",
+							padding: "14px",
 							transition: "all 0.2s",
+							width: "100%",
 						}}
 						type="button"
 					>
@@ -357,10 +357,10 @@ export function DepositDialog({ open, onOpenChange }: DepositDialogProps) {
 
 					<p
 						style={{
-							fontSize: 11,
 							color: "#4a5568",
-							textAlign: "center",
+							fontSize: 11,
 							margin: 0,
+							textAlign: "center",
 						}}
 					>
 						Secured by Paystack · Cards, bank transfer, USSD

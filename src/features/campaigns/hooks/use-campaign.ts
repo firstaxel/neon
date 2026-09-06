@@ -30,10 +30,10 @@ export function useSendCampaign() {
 export function useCampaigns() {
 	return useQuery(
 		orpc.campaign.list.queryOptions({
-			queryKey: ["campaigns"],
 			input: {
 				limit: 10,
 			},
+			queryKey: ["campaigns"],
 			staleTime: 10_000,
 		})
 	);
@@ -42,11 +42,11 @@ export function useCampaigns() {
 export function useCampaignStatus(campaignId: string | null) {
 	return useQuery(
 		orpc.campaign.getStatus.queryOptions({
-			queryKey: ["campaignStatus", campaignId],
+			enabled: !!campaignId,
 			input: {
 				campaignId: campaignId ?? "",
 			},
-			enabled: !!campaignId,
+			queryKey: ["campaignStatus", campaignId],
 			refetchInterval: ({ state }) => {
 				const status = state.data?.status;
 				return status === "completed" || status === "failed" ? false : 2000;

@@ -30,7 +30,7 @@ const WA_SERVICE_WINDOW_MS = 24 * 60 * 60 * 1000;
 
 function getServiceWindow(lastInboundAt: Date, channel: string) {
 	if (channel !== "whatsapp") {
-		return { windowOpen: false, windowExpiresAt: null, windowSecondsLeft: 0 };
+		return { windowExpiresAt: null, windowOpen: false, windowSecondsLeft: 0 };
 	}
 	const expiresAt = new Date(lastInboundAt.getTime() + WA_SERVICE_WINDOW_MS);
 	const secondsLeft = Math.max(
@@ -38,8 +38,8 @@ function getServiceWindow(lastInboundAt: Date, channel: string) {
 		Math.floor((expiresAt.getTime() - Date.now()) / 1000)
 	);
 	return {
-		windowOpen: secondsLeft > 0,
 		windowExpiresAt: expiresAt.toISOString(),
+		windowOpen: secondsLeft > 0,
 		windowSecondsLeft: secondsLeft,
 	};
 }
@@ -49,8 +49,8 @@ async function resolveOwnerId(
 	userId: string
 ): Promise<string> {
 	const membership = await db.orgMember.findFirst({
-		where: { userId },
 		select: { ownerId: true },
+		where: { userId },
 	});
 	return membership?.ownerId ?? userId;
 }
@@ -60,10 +60,10 @@ async function resolveOwnerId(
 export const listConversations = protectedProcedure
 	.input(
 		z.object({
-			filter: z.enum(["all", "unread", "keyword"]).default("all"),
 			channel: z.enum(["all", "whatsapp", "sms"]).default("all"),
-			limit: z.number().int().min(1).max(100).default(50),
 			cursor: z.string().optional(),
+			filter: z.enum(["all", "unread", "keyword"]).default("all"),
+			limit: z.number().int().min(1).max(100).default(50),
 		})
 	)
 	.handler(
@@ -71,26 +71,26 @@ export const listConversations = protectedProcedure
 			const userId = context.session?.user.id ?? "";
 			const ownerId = await resolveOwnerId(context.db, userId);
 			const channelFilter =
-				input.channel !== "all"
-					? (input.channel as "whatsapp" | "sms")
-					: undefined;
+				input.channel === "all"
+					? undefined
+					: (input.channel as "whatsapp" | "sms");
 
 			// ── Inbound threads ──────────────────────────────────────────────────
 			const inboundThreads = await context.db.inboundMessage.groupBy({
+				_count: { id: true },
+				_max: { receivedAt: true },
 				by: ["phone", "channel"],
+				orderBy: { _max: { receivedAt: "desc" } },
+				take: input.limit,
 				where: {
 					userId: ownerId,
 					...(channelFilter && { channel: channelFilter }),
 					...(input.filter === "unread" && {
-						replied: false,
 						isKeyword: false,
+						replied: false,
 					}),
 					...(input.filter === "keyword" && { isKeyword: true }),
 				},
-				_max: { receivedAt: true },
-				_count: { id: true },
-				orderBy: { _max: { receivedAt: "desc" } },
-				take: input.limit,
 			});
 
 			// ── Outbound-only threads ────────────────────────────────────────────
@@ -100,15 +100,15 @@ export const listConversations = protectedProcedure
 					inboundThreads.map((t) => `${t.phone}:${t.channel}`)
 				);
 				const recentOutbound = await context.db.message.groupBy({
+					_max: { sentAt: true },
 					by: ["phone", "channel"],
+					orderBy: { _max: { sentAt: "desc" } },
+					take: input.limit,
 					where: {
 						campaign: { userId: ownerId },
 						status: { in: ["sent", "delivered", "read"] },
 						...(channelFilter && { channel: channelFilter }),
 					},
-					_max: { sentAt: true },
-					orderBy: { _max: { sentAt: "desc" } },
-					take: input.limit,
 				});
 				outboundOnlyPhones = recentOutbound
 					.filter((r) => !inboundPhoneSet.has(`${r.phone}:${r.channel}`))
@@ -120,20 +120,20 @@ export const listConversations = protectedProcedure
 			const [latestInboundRows, unreadCountRows] = await Promise.all([
 				inboundPhones.length > 0
 					? context.db.inboundMessage.findMany({
-							where: { userId: ownerId, phone: { in: inboundPhones } },
 							orderBy: { receivedAt: "desc" },
+							where: { phone: { in: inboundPhones }, userId: ownerId },
 						})
 					: Promise.resolve([]),
 				inboundPhones.length > 0
 					? context.db.inboundMessage.groupBy({
+							_count: { id: true },
 							by: ["phone", "channel"],
 							where: {
-								userId: ownerId,
+								isKeyword: false,
 								phone: { in: inboundPhones },
 								replied: false,
-								isKeyword: false,
+								userId: ownerId,
 							},
-							_count: { id: true },
 						})
 					: Promise.resolve([]),
 			]);
@@ -160,15 +160,15 @@ export const listConversations = protectedProcedure
 					}
 					const window = getServiceWindow(latest.receivedAt, latest.channel);
 					return {
-						phone: t.phone,
 						channel: t.channel,
-						contactName: latest.contactName,
 						contactId: latest.contactId,
+						contactName: latest.contactName,
+						hasInbound: true,
 						lastMessage: latest.body,
 						lastMessageAt: latest.receivedAt.toISOString(),
-						hasInbound: true,
-						unreadCount: unreadCountMap.get(key) ?? 0,
+						phone: t.phone,
 						replied: latest.replied,
+						unreadCount: unreadCountMap.get(key) ?? 0,
 						...window,
 					};
 				})
@@ -179,20 +179,20 @@ export const listConversations = protectedProcedure
 			const latestOutboundRows =
 				outboundPhoneList.length > 0
 					? await context.db.message.findMany({
-							where: {
-								phone: { in: outboundPhoneList },
-								campaign: { userId: ownerId },
-								status: { in: ["sent", "delivered", "read"] },
-							},
 							orderBy: { sentAt: "desc" },
 							select: {
-								phone: true,
 								channel: true,
-								message: true,
-								sentAt: true,
-								createdAt: true,
-								contactName: true,
 								contactId: true,
+								contactName: true,
+								createdAt: true,
+								message: true,
+								phone: true,
+								sentAt: true,
+							},
+							where: {
+								campaign: { userId: ownerId },
+								phone: { in: outboundPhoneList },
+								status: { in: ["sent", "delivered", "read"] },
 							},
 						})
 					: [];
@@ -215,17 +215,17 @@ export const listConversations = protectedProcedure
 						return null;
 					}
 					return {
-						phone: t.phone,
 						channel: t.channel as "whatsapp" | "sms",
-						contactName: latest.contactName,
 						contactId: latest.contactId,
+						contactName: latest.contactName,
+						hasInbound: false,
 						lastMessage: latest.message,
 						lastMessageAt: (latest.sentAt ?? latest.createdAt).toISOString(),
-						hasInbound: false,
-						unreadCount: 0,
+						phone: t.phone,
 						replied: false,
-						windowOpen: false,
+						unreadCount: 0,
 						windowExpiresAt: null,
+						windowOpen: false,
 						windowSecondsLeft: 0,
 					};
 				})
@@ -246,9 +246,9 @@ export const listConversations = protectedProcedure
 export const getThread = protectedProcedure
 	.input(
 		z.object({
-			phone: z.string(),
 			channel: z.enum(["whatsapp", "sms"]),
 			limit: z.number().int().min(1).max(200).default(50),
+			phone: z.string(),
 		})
 	)
 	.handler(
@@ -257,28 +257,28 @@ export const getThread = protectedProcedure
 			const ownerId = await resolveOwnerId(context.db, userId);
 
 			const inbound = await context.db.inboundMessage.findMany({
-				where: { userId: ownerId, phone: input.phone, channel: input.channel },
 				orderBy: { receivedAt: "asc" },
 				take: input.limit,
+				where: { channel: input.channel, phone: input.phone, userId: ownerId },
 			});
 
 			const outbound = await context.db.message.findMany({
-				where: {
-					phone: { in: [input.phone, `+${input.phone}`] },
-					channel: input.channel,
-					campaign: { userId: ownerId },
-				},
 				orderBy: { createdAt: "asc" },
-				take: input.limit,
 				select: {
-					id: true,
-					message: true,
-					status: true,
-					sentAt: true,
-					createdAt: true,
+					campaignId: true,
 					channel: true,
 					contactName: true,
-					campaignId: true,
+					createdAt: true,
+					id: true,
+					message: true,
+					sentAt: true,
+					status: true,
+				},
+				take: input.limit,
+				where: {
+					campaign: { userId: ownerId },
+					channel: input.channel,
+					phone: { in: [input.phone, `+${input.phone}`] },
 				},
 			});
 
@@ -310,38 +310,38 @@ export const getThread = protectedProcedure
 
 			const timeline: TimelineEvent[] = [
 				...inbound.map((m) => ({
+					at: m.receivedAt.toISOString(),
+					body: m.body,
 					direction: "in" as const,
 					id: m.id,
-					body: m.body,
-					at: m.receivedAt.toISOString(),
 					isKeyword: m.isKeyword,
 					replied: m.replied,
 					source: "inbound" as const,
 				})),
 				...outbound.map((m) => ({
+					at: (m.sentAt ?? m.createdAt).toISOString(),
+					body: m.message,
+					campaignId: m.campaignId,
 					direction: "out" as const,
 					id: m.id,
-					body: m.message,
-					at: (m.sentAt ?? m.createdAt).toISOString(),
-					status: m.status,
-					campaignId: m.campaignId,
 					source:
 						m.campaignId && inboxReplyCampaignIds.has(m.campaignId)
 							? ("inbox_reply" as const)
 							: ("campaign_send" as const),
+					status: m.status,
 				})),
 			].sort((a, b) => new Date(a.at).getTime() - new Date(b.at).getTime());
 
 			const lastInbound = inbound.at(-1);
 			const window = lastInbound
 				? getServiceWindow(lastInbound.receivedAt, input.channel)
-				: { windowOpen: false, windowExpiresAt: null, windowSecondsLeft: 0 };
+				: { windowExpiresAt: null, windowOpen: false, windowSecondsLeft: 0 };
 
 			return {
-				phone: input.phone,
 				channel: input.channel,
-				contactName: lastInbound?.contactName ?? null,
 				contactId: lastInbound?.contactId ?? null,
+				contactName: lastInbound?.contactName ?? null,
+				phone: input.phone,
 				timeline,
 				...window,
 			};
@@ -353,10 +353,10 @@ export const getThread = protectedProcedure
 export const replyToConversation = protectedProcedure
 	.input(
 		z.object({
-			phone: z.string().min(7),
-			channel: z.enum(["whatsapp", "sms"]),
 			body: z.string().min(1).max(4096),
+			channel: z.enum(["whatsapp", "sms"]),
 			inboundId: z.string().uuid().optional(),
+			phone: z.string().min(7),
 		})
 	)
 	.handler(async ({ input, context }) => {
@@ -367,8 +367,8 @@ export const replyToConversation = protectedProcedure
 
 		if (input.channel === "whatsapp") {
 			const lastInbound = await context.db.inboundMessage.findFirst({
-				where: { userId: ownerId, phone: input.phone, channel: "whatsapp" },
 				orderBy: { receivedAt: "desc" },
+				where: { channel: "whatsapp", phone: input.phone, userId: ownerId },
 			});
 			if (!lastInbound) {
 				throw new Error(
@@ -391,10 +391,10 @@ export const replyToConversation = protectedProcedure
 		const messageId = uuidv4();
 
 		const billing = await debitForMessage({
-			userId: ownerId, // FIX: bill owner, not caller
-			messageType,
 			campaignId: `inbox_reply_${ownerId}`,
 			messageId,
+			messageType,
+			userId: ownerId, // FIX: bill owner, not caller
 		});
 
 		if (!billing.success) {
@@ -412,37 +412,37 @@ export const replyToConversation = protectedProcedure
 
 		if (!result.success) {
 			await refundForMessage({
-				userId: ownerId,
-				messageType,
 				campaignId: `inbox_reply_${ownerId}`,
 				messageId,
+				messageType,
 				reason: result.error ?? "send failed",
+				userId: ownerId,
 			});
 			throw new Error(`Failed to send: ${result.error}`);
 		}
 
 		await context.db.inboundMessage.updateMany({
-			where: {
-				userId: ownerId,
-				phone: input.phone,
-				channel: input.channel,
-				replied: false,
-			},
 			data: { replied: true, repliedAt: new Date() },
+			where: {
+				channel: input.channel,
+				phone: input.phone,
+				replied: false,
+				userId: ownerId,
+			},
 		});
 
 		const contact = await context.db.contact.findFirst({
-			where: {
-				uploadedBy: ownerId,
-				phone: { in: [input.phone, `+${input.phone}`] },
-			},
 			select: { id: true, name: true },
+			where: {
+				phone: { in: [input.phone, `+${input.phone}`] },
+				uploadedBy: ownerId,
+			},
 		});
 
 		const anchorCampaign = await context.db.campaign.findFirst({
-			where: { userId: ownerId },
 			orderBy: { createdAt: "desc" },
 			select: { id: true },
+			where: { userId: ownerId },
 		});
 
 		if (!anchorCampaign) {
@@ -453,16 +453,16 @@ export const replyToConversation = protectedProcedure
 
 		await context.db.message.create({
 			data: {
-				id: messageId,
 				campaignId: anchorCampaign.id,
+				channel: input.channel,
 				contactId: contact?.id ?? undefined,
 				contactName: contact?.name ?? input.phone,
-				phone: input.phone,
-				channel: input.channel,
+				id: messageId,
 				message: input.body,
-				status: "sent",
 				metaMessageId: result.messageId ?? null,
+				phone: input.phone,
 				sentAt: new Date(),
+				status: "sent",
 			},
 		});
 
@@ -470,23 +470,23 @@ export const replyToConversation = protectedProcedure
 		invalidate(ownerId, "inbox.list");
 		invalidate(ownerId, "inbox.getThread");
 
-		return { success: true, messageId: result.messageId, billed: messageType };
+		return { billed: messageType, messageId: result.messageId, success: true };
 	});
 
 // ─── markThreadReplied ────────────────────────────────────────────────────────
 
 export const markThreadReplied = protectedProcedure
-	.input(z.object({ phone: z.string(), channel: z.enum(["whatsapp", "sms"]) }))
+	.input(z.object({ channel: z.enum(["whatsapp", "sms"]), phone: z.string() }))
 	.handler(async ({ input, context }) => {
 		const ownerId = await resolveOwnerId(context.db, context.session.user.id);
 		await context.db.inboundMessage.updateMany({
-			where: {
-				userId: ownerId,
-				phone: input.phone,
-				channel: input.channel,
-				replied: false,
-			},
 			data: { replied: true, repliedAt: new Date() },
+			where: {
+				channel: input.channel,
+				phone: input.phone,
+				replied: false,
+				userId: ownerId,
+			},
 		});
 		invalidate(ownerId, "inbox.list");
 		invalidate(ownerId, "inbox.getThread");

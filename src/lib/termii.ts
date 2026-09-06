@@ -70,17 +70,17 @@ export async function sendSmsMessage(
 
 	try {
 		const res = await fetch(BASE_URL, {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({
 				api_key: apiKey(),
-				to: normalisePhone(to),
-				from: senderId(),
-				sms: fullBody,
-				type: "plain",
 				channel: "generic", // DND channel bypasses Nigerian DND registry
-				media: { url: null, caption: null },
+				from: senderId(),
+				media: { caption: null, url: null },
+				sms: fullBody,
+				to: normalisePhone(to),
+				type: "plain",
 			}),
+			headers: { "Content-Type": "application/json" },
+			method: "POST",
 		});
 
 		const data = (await res.json()) as TermiiResponse;
@@ -89,15 +89,15 @@ export async function sendSmsMessage(
 			const msg =
 				"message" in data ? String(data.message) : `HTTP ${res.status}`;
 			console.error("[Termii] Send failed:", msg);
-			return { success: false, error: msg };
+			return { error: msg, success: false };
 		}
 
 		const ok = data as TermiiResponse;
-		return { success: true, messageId: ok.message_id };
+		return { messageId: ok.message_id, success: true };
 	} catch (err) {
 		const error = err instanceof Error ? err.message : String(err);
 		console.error("[Termii] Send error:", error);
-		return { success: false, error };
+		return { error, success: false };
 	}
 }
 

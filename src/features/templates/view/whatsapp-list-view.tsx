@@ -87,42 +87,42 @@ const STATUS_CONFIG: Record<
 		badge: string;
 	}
 > = {
-	DRAFT: {
-		label: "Draft",
-		icon: <FileText className="h-3 w-3" />,
-		badge: "border-border text-muted-foreground bg-muted/30",
-	},
-	PENDING: {
-		label: "Pending",
-		icon: <Clock className="h-3 w-3" />,
-		badge: "border-amber-500/40 text-amber-400 bg-amber-500/8",
-	},
 	APPROVED: {
-		label: "Approved",
-		icon: <CheckCircle2 className="h-3 w-3" />,
 		badge: "border-emerald-500/40 text-emerald-400 bg-emerald-500/8",
-	},
-	REJECTED: {
-		label: "Rejected",
-		icon: <XCircle className="h-3 w-3" />,
-		badge: "border-destructive/40 text-destructive bg-destructive/8",
-	},
-	PAUSED: {
-		label: "Paused",
-		icon: <AlertCircle className="h-3 w-3" />,
-		badge: "border-orange-500/40 text-orange-400 bg-orange-500/8",
+		icon: <CheckCircle2 className="h-3 w-3" />,
+		label: "Approved",
 	},
 	DISABLED: {
-		label: "Disabled",
-		icon: <XCircle className="h-3 w-3" />,
 		badge: "border-muted-foreground/30 text-muted-foreground bg-muted/20",
+		icon: <XCircle className="h-3 w-3" />,
+		label: "Disabled",
+	},
+	DRAFT: {
+		badge: "border-border text-muted-foreground bg-muted/30",
+		icon: <FileText className="h-3 w-3" />,
+		label: "Draft",
+	},
+	PAUSED: {
+		badge: "border-orange-500/40 text-orange-400 bg-orange-500/8",
+		icon: <AlertCircle className="h-3 w-3" />,
+		label: "Paused",
+	},
+	PENDING: {
+		badge: "border-amber-500/40 text-amber-400 bg-amber-500/8",
+		icon: <Clock className="h-3 w-3" />,
+		label: "Pending",
+	},
+	REJECTED: {
+		badge: "border-destructive/40 text-destructive bg-destructive/8",
+		icon: <XCircle className="h-3 w-3" />,
+		label: "Rejected",
 	},
 };
 
 const CATEGORY_LABELS: Record<WaCategory, string> = {
+	AUTHENTICATION: "Auth",
 	MARKETING: "Marketing",
 	UTILITY: "Utility",
-	AUTHENTICATION: "Auth",
 };
 
 const ALL = "ALL";
@@ -171,13 +171,13 @@ function TemplateCard({
 				id: template.id,
 			},
 			{
-				onSuccess: () =>
-					toast.success("Submitted!", {
-						description: `"${template.displayName}" is now pending Meta review.`,
-					}),
 				onError: (e) =>
 					toast.error("Submission failed", {
 						description: (e as Error).message,
+					}),
+				onSuccess: () =>
+					toast.success("Submitted!", {
+						description: `"${template.displayName}" is now pending Meta review.`,
 					}),
 			}
 		);
@@ -187,13 +187,13 @@ function TemplateCard({
 		sync(
 			{ id: template.id },
 			{
-				onSuccess: (t) =>
-					toast.success("Status updated", {
-						description: `Template is now ${t.status}.`,
-					}),
 				onError: (e) =>
 					toast.error("Sync failed", {
 						description: (e as Error).message,
+					}),
+				onSuccess: (t) =>
+					toast.success("Status updated", {
+						description: `Template is now ${t.status}.`,
 					}),
 			}
 		);
@@ -558,10 +558,10 @@ export function WaTemplateListView({
 	);
 
 	const { data: templates, isLoading } = useTemplates({
+		category: category === ALL ? undefined : (category as WaCategory),
 		channel: "whatsapp",
 		search: search || undefined,
 		status: status === ALL ? undefined : (status as WaTemplateStatus),
-		category: category === ALL ? undefined : (category as WaCategory),
 	});
 
 	const router = useRouter();
@@ -669,7 +669,7 @@ export function WaTemplateListView({
 			{/* Count */}
 			{!isLoading && totalCount > 0 && (
 				<p className="text-muted-foreground text-xs">
-					{totalCount} template{totalCount !== 1 ? "s" : ""}
+					{totalCount} template{totalCount === 1 ? "" : "s"}
 					{hasFilters && " matching filters"}
 				</p>
 			)}

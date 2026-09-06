@@ -87,6 +87,12 @@ export function useTemplates(opts?: {
 }) {
 	return useQuery(
 		orpc.template.list.queryOptions({
+			input: {
+				category: opts?.category ? opts.category : undefined,
+				channel: opts?.channel ?? undefined,
+				search: opts?.search ?? undefined,
+				status: opts?.status ? opts?.status : undefined,
+			},
 			queryKey: [
 				"templates",
 				opts?.status,
@@ -94,12 +100,6 @@ export function useTemplates(opts?: {
 				opts?.channel,
 				opts?.search,
 			],
-			input: {
-				status: opts?.status ? opts?.status : undefined,
-				category: opts?.category ? opts.category : undefined,
-				channel: opts?.channel ?? undefined,
-				search: opts?.search ?? undefined,
-			},
 			staleTime: 15_000,
 		})
 	);
@@ -108,9 +108,9 @@ export function useTemplates(opts?: {
 export function useTemplate(id: string | null) {
 	return useQuery(
 		orpc.template.get.queryOptions({
-			queryKey: ["template", id],
-			input: { id: id ?? "" },
 			enabled: !!id,
+			input: { id: id ?? "" },
+			queryKey: ["template", id],
 			staleTime: 5000,
 		})
 	);

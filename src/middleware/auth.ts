@@ -32,10 +32,10 @@ const BYPASS_PREFIXES = [
 // ─── Security headers ──────────────────────────────────────────────────────────
 
 const SECURITY_HEADERS: Record<string, string> = {
-	"X-Frame-Options": "DENY",
-	"X-Content-Type-Options": "nosniff",
-	"Referrer-Policy": "strict-origin-when-cross-origin",
 	"Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+	"Referrer-Policy": "strict-origin-when-cross-origin",
+	"X-Content-Type-Options": "nosniff",
+	"X-Frame-Options": "DENY",
 };
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
@@ -103,8 +103,8 @@ export const authMiddleware = createMiddleware().server(({ next }) => {
 		}
 
 		throw new Response(null, {
-			status: 302,
 			headers: { Location: loginUrl.toString(), ...SECURITY_HEADERS },
+			status: 302,
 		});
 	}
 
@@ -114,11 +114,11 @@ export const authMiddleware = createMiddleware().server(({ next }) => {
 		const destination = isSafeRedirect(callbackParam) ? callbackParam : "/";
 
 		throw new Response(null, {
-			status: 302,
 			headers: {
 				Location: new URL(destination, url.origin).toString(),
 				...SECURITY_HEADERS,
 			},
+			status: 302,
 		});
 	}
 
@@ -150,8 +150,8 @@ export async function requireSession() {
 
 	if (!sessionData) {
 		throw new Response(null, {
-			status: 302,
 			headers: { Location: "/login" },
+			status: 302,
 		});
 	}
 

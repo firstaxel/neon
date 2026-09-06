@@ -24,10 +24,10 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "#/components/ui/select";
-import type { MessageChannel } from "#/lib/types";
-import { orpc } from "#/orpc/client";
 import { getContactTypeLabels } from "#/features/miscellaneous/org";
 import { useProfile } from "#/features/profile/hooks/use-profile";
+import type { MessageChannel } from "#/lib/types";
+import { orpc } from "#/orpc/client";
 
 type Format = "csv" | "xlsx";
 type Channel = "whatsapp" | "sms";
@@ -51,13 +51,13 @@ export function ExportContactsDialog({
 	const [open, setOpen] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [filters, setFilters] = useState<ExportFilters>({
-		format: "csv",
-		channel: "all",
-		type: "all",
 		activeOnly: false,
+		channel: "all",
+		format: "csv",
 		lastContactedFrom: "",
 		lastContactedTo: "",
 		search: "",
+		type: "all",
 	});
 
 	const { data: profile } = useProfile();
@@ -223,10 +223,18 @@ export function ExportContactsDialog({
 									</SelectTrigger>
 									<SelectContent>
 										<SelectItem value="all">All types</SelectItem>
-										<SelectItem value="new_contact">{typeLabels.new_contact}</SelectItem>
-										<SelectItem value="returning">{typeLabels.returning}</SelectItem>
-										<SelectItem value="contact">{typeLabels.contact}</SelectItem>
-										<SelectItem value="prospect">{typeLabels.prospect}</SelectItem>
+										<SelectItem value="new_contact">
+											{typeLabels.new_contact}
+										</SelectItem>
+										<SelectItem value="returning">
+											{typeLabels.returning}
+										</SelectItem>
+										<SelectItem value="contact">
+											{typeLabels.contact}
+										</SelectItem>
+										<SelectItem value="prospect">
+											{typeLabels.prospect}
+										</SelectItem>
 									</SelectContent>
 								</Select>
 							</div>

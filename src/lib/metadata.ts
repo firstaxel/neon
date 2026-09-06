@@ -3,15 +3,15 @@
 import { env } from "#/env";
 
 export const siteConfig = {
-	name: "Velocast",
-	tagline: "Messaging Console",
 	description:
 		"Send personalised WhatsApp and SMS campaigns to your entire contact list — tracked, fast, and affordable.",
-	url: env.VITE_CLIENT_URL ?? "https://Velocast.app",
-	ogImage: "/og.png",
-	twitterHandle: "@Velocast",
 	locale: "en_NG",
+	name: "Velocast",
+	ogImage: "/og.png",
+	tagline: "Messaging Console",
 	themeColor: "#25d366",
+	twitterHandle: "@Velocast",
+	url: env.VITE_CLIENT_URL ?? "https://Velocast.app",
 } as const;
 
 // ─── Page-title template ──────────────────────────────────────────────────────
@@ -136,55 +136,55 @@ export function createHeadMeta({
 
 	const meta: HeadMeta["meta"] = [
 		{ charSet: "utf-8" },
-		{ name: "viewport", content: "width=device-width, initial-scale=1" },
-		{ name: "description", content: resolvedDescription },
-		{ name: "keywords", content: allKeywords.join(", ") },
-		{ name: "author", content: siteConfig.name },
-		{ name: "theme-color", content: siteConfig.themeColor },
-		{ httpEquiv: "content-language", content: "en-NG" },
+		{ content: "width=device-width, initial-scale=1", name: "viewport" },
+		{ content: resolvedDescription, name: "description" },
+		{ content: allKeywords.join(", "), name: "keywords" },
+		{ content: siteConfig.name, name: "author" },
+		{ content: siteConfig.themeColor, name: "theme-color" },
+		{ content: "en-NG", httpEquiv: "content-language" },
 	];
 
 	if (noIndex) {
-		meta.push({ name: "robots", content: "noindex, nofollow" });
+		meta.push({ content: "noindex, nofollow", name: "robots" });
 	} else {
-		meta.push({ name: "robots", content: "index, follow" });
+		meta.push({ content: "index, follow", name: "robots" });
 
 		// OpenGraph
 		meta.push(
-			{ property: "og:type", content: "website" },
-			{ property: "og:url", content: canonicalUrl },
-			{ property: "og:site_name", content: siteConfig.name },
-			{ property: "og:title", content: resolvedTitle },
-			{ property: "og:description", content: resolvedDescription },
-			{ property: "og:image", content: ogImageUrl },
-			{ property: "og:image:width", content: "1200" },
-			{ property: "og:image:height", content: "630" },
-			{ property: "og:image:alt", content: resolvedTitle },
-			{ property: "og:locale", content: siteConfig.locale }
+			{ content: "website", property: "og:type" },
+			{ content: canonicalUrl, property: "og:url" },
+			{ content: siteConfig.name, property: "og:site_name" },
+			{ content: resolvedTitle, property: "og:title" },
+			{ content: resolvedDescription, property: "og:description" },
+			{ content: ogImageUrl, property: "og:image" },
+			{ content: "1200", property: "og:image:width" },
+			{ content: "630", property: "og:image:height" },
+			{ content: resolvedTitle, property: "og:image:alt" },
+			{ content: siteConfig.locale, property: "og:locale" }
 		);
 
 		// Twitter card
 		meta.push(
-			{ name: "twitter:card", content: "summary_large_image" },
-			{ name: "twitter:site", content: siteConfig.twitterHandle },
-			{ name: "twitter:creator", content: siteConfig.twitterHandle },
-			{ name: "twitter:title", content: resolvedTitle },
-			{ name: "twitter:description", content: resolvedDescription },
-			{ name: "twitter:image", content: ogImageUrl }
+			{ content: "summary_large_image", name: "twitter:card" },
+			{ content: siteConfig.twitterHandle, name: "twitter:site" },
+			{ content: siteConfig.twitterHandle, name: "twitter:creator" },
+			{ content: resolvedTitle, name: "twitter:title" },
+			{ content: resolvedDescription, name: "twitter:description" },
+			{ content: ogImageUrl, name: "twitter:image" }
 		);
 	}
 
 	const links: HeadMeta["links"] = [
-		{ rel: "icon", href: "/favicon.ico" },
-		{ rel: "icon", href: "/icon.png", type: "image/png" },
-		{ rel: "apple-touch-icon", href: "/apple-icon.png", sizes: "180x180" },
-		{ rel: "manifest", href: "/manifest.json" },
+		{ href: "/favicon.ico", rel: "icon" },
+		{ href: "/icon.png", rel: "icon", type: "image/png" },
+		{ href: "/apple-icon.png", rel: "apple-touch-icon", sizes: "180x180" },
+		{ href: "/manifest.json", rel: "manifest" },
 		...(canonicalPath && !noIndex
-			? [{ rel: "canonical", href: canonicalUrl }]
+			? [{ href: canonicalUrl, rel: "canonical" }]
 			: []),
 	];
 
-	return { title: resolvedTitle, meta, links };
+	return { links, meta, title: resolvedTitle };
 }
 
 /**
@@ -192,65 +192,64 @@ export function createHeadMeta({
  * correct output shape for head() exports.
  */
 export const pageHeadMeta = {
-	home: createHeadMeta({ canonicalPath: "/" }),
-
-	dashboard: createHeadMeta({
-		title: "Dashboard",
-		description: "Overview of your campaigns, contacts, and wallet balance",
-		canonicalPath: "/dashboard",
-		keywords: ["dashboard", "analytics", "overview"],
+	billing: createHeadMeta({
+		canonicalPath: "/billing",
+		description:
+			"Manage your wallet, subscription plan, and transaction history",
+		noIndex: true,
+		title: "Billing",
 	}),
+	billingVerify: createHeadMeta({ noIndex: true, title: "Verifying payment" }),
 
 	campaigns: createHeadMeta({
-		title: "Campaigns",
-		description: "Create and manage your WhatsApp and SMS messaging campaigns",
 		canonicalPath: "/campaigns",
+		description: "Create and manage your WhatsApp and SMS messaging campaigns",
 		keywords: ["campaign", "send messages", "bulk messaging"],
+		title: "Campaigns",
 	}),
 
 	contacts: createHeadMeta({
-		title: "Contacts",
+		canonicalPath: "/contacts",
 		description:
 			"Manage your congregation or contact list for messaging campaigns",
-		canonicalPath: "/contacts",
 		keywords: ["contacts", "congregation", "members", "contact list"],
+		title: "Contacts",
 	}),
 
+	dashboard: createHeadMeta({
+		canonicalPath: "/dashboard",
+		description: "Overview of your campaigns, contacts, and wallet balance",
+		keywords: ["dashboard", "analytics", "overview"],
+		title: "Dashboard",
+	}),
+	home: createHeadMeta({ canonicalPath: "/" }),
+
+	login: createHeadMeta({ noIndex: true, title: "Sign in" }),
+
 	messages: createHeadMeta({
-		title: "Messages",
-		description: "View all sent, pending, and failed messages across campaigns",
 		canonicalPath: "/messages",
+		description: "View all sent, pending, and failed messages across campaigns",
 		keywords: ["messages", "delivery", "inbox", "WhatsApp", "SMS"],
+		title: "Messages",
+	}),
+	onboarding: createHeadMeta({ noIndex: true, title: "Get started" }),
+	register: createHeadMeta({ noIndex: true, title: "Create account" }),
+	resetPassword: createHeadMeta({ noIndex: true, title: "Reset password" }),
+
+	settings: createHeadMeta({
+		canonicalPath: "/settings",
+		description: "Update your profile, organisation details, and password",
+		noIndex: true,
+		title: "Account Settings",
 	}),
 
 	templates: createHeadMeta({
-		title: "Templates",
+		canonicalPath: "/templates",
 		description:
 			"Create and manage reusable WhatsApp and SMS message templates",
-		canonicalPath: "/templates",
 		keywords: ["templates", "WhatsApp templates", "SMS templates"],
+		title: "Templates",
 	}),
-
-	billing: createHeadMeta({
-		title: "Billing",
-		description:
-			"Manage your wallet, subscription plan, and transaction history",
-		canonicalPath: "/billing",
-		noIndex: true,
-	}),
-
-	settings: createHeadMeta({
-		title: "Account Settings",
-		description: "Update your profile, organisation details, and password",
-		canonicalPath: "/settings",
-		noIndex: true,
-	}),
-
-	login: createHeadMeta({ title: "Sign in", noIndex: true }),
-	register: createHeadMeta({ title: "Create account", noIndex: true }),
-	resetPassword: createHeadMeta({ title: "Reset password", noIndex: true }),
-	onboarding: createHeadMeta({ title: "Get started", noIndex: true }),
-	billingVerify: createHeadMeta({ title: "Verifying payment", noIndex: true }),
 } as const;
 
 /**
@@ -268,10 +267,10 @@ export function campaignHeadMeta({
 	status: string;
 }): HeadMeta {
 	return createHeadMeta({
-		title: name,
-		description: `${status === "completed" ? "Completed" : "Active"} campaign to ${totalContacts.toLocaleString()} contacts`,
 		canonicalPath: `/campaigns/${id}`,
+		description: `${status === "completed" ? "Completed" : "Active"} campaign to ${totalContacts.toLocaleString()} contacts`,
 		noIndex: true,
+		title: name,
 	});
 }
 
@@ -288,9 +287,9 @@ export function templateHeadMeta({
 	channel: "whatsapp" | "sms";
 }): HeadMeta {
 	return createHeadMeta({
-		title: `${name} — ${channel === "whatsapp" ? "WhatsApp" : "SMS"} Template`,
-		description: `Edit the "${name}" ${channel === "whatsapp" ? "WhatsApp" : "SMS"} message template`,
 		canonicalPath: `/templates/${channel}/${id}`,
+		description: `Edit the "${name}" ${channel === "whatsapp" ? "WhatsApp" : "SMS"} message template`,
 		noIndex: true,
+		title: `${name} — ${channel === "whatsapp" ? "WhatsApp" : "SMS"} Template`,
 	});
 }

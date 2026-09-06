@@ -1,13 +1,13 @@
 export function createSuccessResponse<T>(data: T) {
 	return {
-		success: true,
 		data,
+		success: true,
 	};
 }
 
 export function createErrorResponse(message: string) {
 	return {
-		success: false,
 		message,
+		success: false,
 	};
 }

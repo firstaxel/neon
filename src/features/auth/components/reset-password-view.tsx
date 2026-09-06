@@ -46,7 +46,7 @@ export default function ResetPasswordView() {
 	const [showPassword, setShowPassword] = useState(false);
 
 	const form = useAppForm({
-		defaultValues: { password: "", confirm: "" },
+		defaultValues: { confirm: "", password: "" },
 		onSubmit: async ({ value }) => {
 			if (!token) {
 				throw new Error(

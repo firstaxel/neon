@@ -83,14 +83,14 @@ const ALL = "__all__";
 
 // Preview substitution values for rendering example messages
 const PREVIEW_VALUES: Record<string, string> = {
+	amount: "₦5,000",
+	code: "ABC123",
+	date: "Sunday, 15 Dec",
+	event: "Easter Sunday",
 	name: "Sarah",
 	org: "Velocast",
-	date: "Sunday, 15 Dec",
-	time: "10:00 AM",
-	amount: "₦5,000",
-	event: "Easter Sunday",
-	code: "ABC123",
 	phone: "+2348012345678",
+	time: "10:00 AM",
 };
 
 function resolvePreview(text: string, vars: string[]): string {
@@ -433,17 +433,17 @@ export function TemplatePickerDialog({
 
 	// Fetch WA templates (APPROVED only — the only ones usable in campaigns)
 	const { data: waTemplates, isLoading: waLoading } = useTemplates({
-		channel: "whatsapp",
-		status: "APPROVED",
-		search: waSearch || undefined,
 		category: waCategory === ALL ? undefined : (waCategory as WaCategory),
+		channel: "whatsapp",
+		search: waSearch || undefined,
+		status: "APPROVED",
 	});
 
 	// Fetch SMS templates (all — always ready, no Meta approval needed)
 	const { data: smsTemplates, isLoading: smsLoading } = useTemplates({
+		category: smsCategory === ALL ? undefined : (smsCategory as WaCategory),
 		channel: "sms",
 		search: smsSearch || undefined,
-		category: smsCategory === ALL ? undefined : (smsCategory as WaCategory),
 	});
 
 	function toChannelTemplate(
@@ -451,18 +451,18 @@ export function TemplatePickerDialog({
 		ch: "whatsapp" | "sms"
 	): ChannelTemplate {
 		return {
-			id: t.id,
-			displayName: t.displayName,
 			body: ch === "whatsapp" ? t.bodyText : t.smsBody,
-			vars: ch === "whatsapp" ? t.bodyVars : t.smsVars,
 			category: t.category,
+			displayName: t.displayName,
+			id: t.id,
+			vars: ch === "whatsapp" ? t.bodyVars : t.smsVars,
 		};
 	}
 
 	function handleConfirm() {
 		onConfirm({
-			wa: selectedWa ? toChannelTemplate(selectedWa, "whatsapp") : null,
 			sms: selectedSms ? toChannelTemplate(selectedSms, "sms") : null,
+			wa: selectedWa ? toChannelTemplate(selectedWa, "whatsapp") : null,
 		});
 		onOpenChange(false);
 	}

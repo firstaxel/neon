@@ -55,8 +55,8 @@ export function PasswordResetEmail({ url, name }: PasswordResetEmailProps) {
 }
 
 PasswordResetEmail.PreviewProps = {
-	url: "https://Velocast.example.com/api/auth/reset-password?token=abc123",
 	name: "Ngozi",
+	url: "https://Velocast.example.com/api/auth/reset-password?token=abc123",
 } satisfies PasswordResetEmailProps;
 
 export default PasswordResetEmail;

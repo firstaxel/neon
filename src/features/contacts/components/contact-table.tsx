@@ -83,8 +83,8 @@ interface ContactsTableProps {
 // ─── Styling constants ────────────────────────────────────────────────────────
 
 const CHANNEL_CLASS: Record<string, string> = {
-	whatsapp: "border-[#25d36640] bg-[#0d2016] text-[#25d366]",
 	sms: "border-[#60a5fa40] bg-[#0d1a2e] text-[#60a5fa]",
+	whatsapp: "border-[#25d36640] bg-[#0d2016] text-[#25d366]",
 };
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
@@ -147,29 +147,29 @@ function useFilterState(disableUrlSync: boolean) {
 
 	if (disableUrlSync) {
 		return {
-			search: localSearch,
-			setSearch: (v: string | null) => setLocalSearch(v ?? ""),
 			channel: localChannel,
-			setChannel: (v: string | null) => setLocalChannel(v ?? ""),
-			type: localType,
-			setType: (v: string | null) => setLocalType(v ?? ""),
-			page: localPage,
-			setPage: (v: number) => setLocalPage(v),
 			duplicates: localDupes,
+			page: localPage,
+			search: localSearch,
+			setChannel: (v: string | null) => setLocalChannel(v ?? ""),
 			setDuplicates: (v: string | null) => setLocalDupes(v ?? ""),
+			setPage: (v: number) => setLocalPage(v),
+			setSearch: (v: string | null) => setLocalSearch(v ?? ""),
+			setType: (v: string | null) => setLocalType(v ?? ""),
+			type: localType,
 		};
 	}
 	return {
-		search: urlSearch,
-		setSearch: setUrlSearch,
 		channel: urlChannel,
-		setChannel: setUrlChannel,
-		type: urlType,
-		setType: setUrlType,
-		page: urlPage,
-		setPage: setUrlPage,
 		duplicates: urlDupes,
+		page: urlPage,
+		search: urlSearch,
+		setChannel: setUrlChannel,
 		setDuplicates: setUrlDupes,
+		setPage: setUrlPage,
+		setSearch: setUrlSearch,
+		setType: setUrlType,
+		type: urlType,
 	};
 }
 
@@ -218,33 +218,33 @@ export function ContactsTable({
 	// Mutations
 	const deleteMutation = useMutation(
 		orpc.contacts.delete.mutationOptions({
-			onSuccess: () => {
-				qc.invalidateQueries({ queryKey: ["contacts"] });
-				toast.success("Contact deleted");
-			},
 			onError: (e) =>
 				toast.error("Delete failed", {
 					description: e instanceof Error ? e.message : "Unknown error",
 				}),
+			onSuccess: () => {
+				qc.invalidateQueries({ queryKey: ["contacts"] });
+				toast.success("Contact deleted");
+			},
 		})
 	);
 
 	const autoMergeMutation = useMutation(
 		orpc.contacts.autoMergeDuplicates.mutationOptions({
+			onError: (e) =>
+				toast.error("Merge failed", {
+					description: e instanceof Error ? e.message : "Unknown error",
+				}),
 			onSuccess: (r) => {
 				qc.invalidateQueries({ queryKey: ["contacts"] });
 				qc.invalidateQueries({ queryKey: ["contacts.duplicates"] });
 				toast.success(
-					`Merged ${r.groupsResolved} duplicate group${r.groupsResolved !== 1 ? "s" : ""}`,
+					`Merged ${r.groupsResolved} duplicate group${r.groupsResolved === 1 ? "" : "s"}`,
 					{
 						description: `${r.contactsDeleted} duplicate entries removed.`,
 					}
 				);
 			},
-			onError: (e) =>
-				toast.error("Merge failed", {
-					description: e instanceof Error ? e.message : "Unknown error",
-				}),
 		})
 	);
 
@@ -260,13 +260,14 @@ export function ContactsTable({
 
 	// Query
 	const { data, isLoading, isFetching } = useContacts({
-		search: search || undefined,
 		channel: (channel as "whatsapp" | "sms") || undefined,
-		type:
-			(type as "new_contact" | "returning" | "contact" | "prospect") || undefined,
 		duplicatesOnly: duplicates === "1",
 		page,
 		pageSize: 15,
+		search: search || undefined,
+		type:
+			(type as "new_contact" | "returning" | "contact" | "prospect") ||
+			undefined,
 	});
 
 	const contacts = data?.contacts ?? [];
@@ -290,10 +291,10 @@ export function ContactsTable({
 
 	function togglePage() {
 		const pageItems = contacts.map((c) => ({
+			channel: c.channel,
 			id: c.id,
 			name: c.name,
 			phone: c.phone,
-			channel: c.channel,
 			type: c.type,
 		}));
 		const allChecked = pageItems.every((c) => activeIds.has(c.id));
@@ -336,7 +337,7 @@ export function ContactsTable({
 					<div className="min-w-0 flex-1">
 						<p className="font-semibold text-amber-400 text-sm">
 							{duplicateCount} duplicate contact
-							{duplicateCount !== 1 ? "s" : ""} found
+							{duplicateCount === 1 ? "" : "s"} found
 						</p>
 						<p className="mt-0.5 text-muted-foreground text-xs">
 							The same phone number appears more than once. Auto-merge keeps the
@@ -356,7 +357,7 @@ export function ContactsTable({
 						<Button
 							className="h-8 gap-1.5 rounded-lg text-xs"
 							disabled={autoMergeMutation.isPending}
-							onClick={() => autoMergeMutation.mutate({})}
+							onClick={() => autoMergeMutation.mutate(undefined)}
 							size="sm"
 						>
 							{autoMergeMutation.isPending ? (
@@ -508,10 +509,10 @@ export function ContactsTable({
 							contacts.map((contact) => {
 								const isSelected = activeIds.has(contact.id);
 								const asSelected: SelectedContact = {
+									channel: contact.channel,
 									id: contact.id,
 									name: contact.name,
 									phone: contact.phone,
-									channel: contact.channel,
 									type: contact.type,
 								};
 								return (

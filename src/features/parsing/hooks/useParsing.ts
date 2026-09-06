@@ -3,8 +3,8 @@ import { orpc } from "#/orpc/client";
 
 const PARSING_QUERY_KEY = ["parsingByUserId"];
 
-export const useGetParsing = () => {
-	return useQuery(
+export const useGetParsing = () =>
+	useQuery(
 		orpc.parse.all.queryOptions({
 			queryKey: PARSING_QUERY_KEY,
 			refetchInterval: ({ state }) => {
@@ -16,7 +16,6 @@ export const useGetParsing = () => {
 			},
 		})
 	);
-};
 
 export function useInvalidateParsing() {
 	const queryClient = useQueryClient();

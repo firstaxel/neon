@@ -34,40 +34,40 @@ export interface ContactTypeLabels {
 
 const CONTACT_TYPE_LABELS: Record<OrgType, ContactTypeLabels> = {
 	business: {
-		new_contact: "New Customer",
-		returning: "Returning",
 		contact: "Client",
+		new_contact: "New Customer",
 		prospect: "Lead",
-	},
-	school: {
-		new_contact: "New Student",
 		returning: "Returning",
-		contact: "Student",
-		prospect: "Visitor",
-	},
-	community: {
-		new_contact: "New Member",
-		returning: "Returning",
-		contact: "Member",
-		prospect: "Guest",
 	},
 	church: {
-		new_contact: "New Contact",
-		returning: "Returning",
 		contact: "Member",
+		new_contact: "New Contact",
 		prospect: "Visitor",
+		returning: "Returning",
+	},
+	community: {
+		contact: "Member",
+		new_contact: "New Member",
+		prospect: "Guest",
+		returning: "Returning",
 	},
 	ngo: {
-		new_contact: "New Beneficiary",
-		returning: "Returning",
 		contact: "Partner",
+		new_contact: "New Beneficiary",
 		prospect: "Guest",
+		returning: "Returning",
 	},
 	other: {
-		new_contact: "New Contact",
-		returning: "Returning",
 		contact: "Member",
+		new_contact: "New Contact",
 		prospect: "Guest",
+		returning: "Returning",
+	},
+	school: {
+		contact: "Student",
+		new_contact: "New Student",
+		prospect: "Visitor",
+		returning: "Returning",
 	},
 };
 
@@ -96,166 +96,166 @@ type ScenarioId =
 	| "general";
 
 const SCENARIO_META: Record<OrgType, Record<ScenarioId, ScenarioMeta>> = {
-	church: {
-		first_timer: {
-			label: "First Timer Welcome",
-			description: "Warm welcome for first-time visitors",
-			icon: "✨",
-		},
-		follow_up: {
-			label: "Follow-Up",
-			description: "Check in with existing members",
-			icon: "🔄",
-		},
-		event_invite: {
-			label: "Event Invitation",
-			description: "Invite people to an upcoming service or event",
-			icon: "🎉",
-		},
-		request: {
-			label: "Prayer & Support",
-			description: "Offer prayer and spiritual support",
-			icon: "🙏",
-		},
-		general: {
-			label: "General Announcement",
-			description: "Broadcast a message to your congregation",
-			icon: "📢",
-		},
-	},
-	ngo: {
-		first_timer: {
-			label: "New Beneficiary",
-			description: "Welcome new beneficiaries or volunteers",
-			icon: "✨",
-		},
-		follow_up: {
-			label: "Follow-Up",
-			description: "Check in with existing contacts",
-			icon: "🔄",
-		},
-		event_invite: {
-			label: "Event / Workshop",
-			description: "Invite contacts to a programme or workshop",
-			icon: "🎉",
-		},
-		request: {
-			label: "Welfare Check",
-			description: "Reach out to offer care or support",
-			icon: "🤝",
-		},
-		general: {
-			label: "General Announcement",
-			description: "Broadcast an update to your network",
-			icon: "📢",
-		},
-	},
-	school: {
-		first_timer: {
-			label: "New Student Welcome",
-			description: "Welcome new students or parents",
-			icon: "✨",
-		},
-		follow_up: {
-			label: "Follow-Up",
-			description: "Check in with students or parents",
-			icon: "🔄",
-		},
-		event_invite: {
-			label: "Event Invitation",
-			description: "Invite to a school event or open day",
-			icon: "🎉",
-		},
-		request: {
-			label: "Pastoral Check-In",
-			description: "Reach out to support a student or family",
-			icon: "🙏",
-		},
-		general: {
-			label: "School Announcement",
-			description: "Send an announcement to students and parents",
-			icon: "📢",
-		},
-	},
 	business: {
-		first_timer: {
-			label: "New Customer Welcome",
-			description: "Welcome a new customer or client",
-			icon: "✨",
-		},
-		follow_up: {
-			label: "Follow-Up",
-			description: "Check in with existing customers",
-			icon: "🔄",
-		},
 		event_invite: {
-			label: "Event / Promotion",
 			description: "Invite customers to an event or promotion",
 			icon: "🎉",
+			label: "Event / Promotion",
 		},
-		request: {
-			label: "Customer Care",
-			description: "Reach out to check on satisfaction or offer help",
-			icon: "💬",
+		first_timer: {
+			description: "Welcome a new customer or client",
+			icon: "✨",
+			label: "New Customer Welcome",
+		},
+		follow_up: {
+			description: "Check in with existing customers",
+			icon: "🔄",
+			label: "Follow-Up",
 		},
 		general: {
-			label: "General Update",
 			description: "Send a broadcast to your customer base",
 			icon: "📢",
+			label: "General Update",
+		},
+		request: {
+			description: "Reach out to check on satisfaction or offer help",
+			icon: "💬",
+			label: "Customer Care",
+		},
+	},
+	church: {
+		event_invite: {
+			description: "Invite people to an upcoming service or event",
+			icon: "🎉",
+			label: "Event Invitation",
+		},
+		first_timer: {
+			description: "Warm welcome for first-time visitors",
+			icon: "✨",
+			label: "First Timer Welcome",
+		},
+		follow_up: {
+			description: "Check in with existing members",
+			icon: "🔄",
+			label: "Follow-Up",
+		},
+		general: {
+			description: "Broadcast a message to your congregation",
+			icon: "📢",
+			label: "General Announcement",
+		},
+		request: {
+			description: "Offer prayer and spiritual support",
+			icon: "🙏",
+			label: "Prayer & Support",
 		},
 	},
 	community: {
-		first_timer: {
-			label: "New Member Welcome",
-			description: "Welcome someone joining for the first time",
-			icon: "✨",
-		},
-		follow_up: {
-			label: "Follow-Up",
-			description: "Check in with community members",
-			icon: "🔄",
-		},
 		event_invite: {
-			label: "Event Invitation",
 			description: "Invite members to a community event",
 			icon: "🎉",
+			label: "Event Invitation",
 		},
-		request: {
-			label: "Member Support",
-			description: "Reach out to offer support to a member",
-			icon: "🤝",
+		first_timer: {
+			description: "Welcome someone joining for the first time",
+			icon: "✨",
+			label: "New Member Welcome",
+		},
+		follow_up: {
+			description: "Check in with community members",
+			icon: "🔄",
+			label: "Follow-Up",
 		},
 		general: {
-			label: "Community Update",
 			description: "Send a broadcast to your community",
 			icon: "📢",
+			label: "Community Update",
+		},
+		request: {
+			description: "Reach out to offer support to a member",
+			icon: "🤝",
+			label: "Member Support",
+		},
+	},
+	ngo: {
+		event_invite: {
+			description: "Invite contacts to a programme or workshop",
+			icon: "🎉",
+			label: "Event / Workshop",
+		},
+		first_timer: {
+			description: "Welcome new beneficiaries or volunteers",
+			icon: "✨",
+			label: "New Beneficiary",
+		},
+		follow_up: {
+			description: "Check in with existing contacts",
+			icon: "🔄",
+			label: "Follow-Up",
+		},
+		general: {
+			description: "Broadcast an update to your network",
+			icon: "📢",
+			label: "General Announcement",
+		},
+		request: {
+			description: "Reach out to offer care or support",
+			icon: "🤝",
+			label: "Welfare Check",
 		},
 	},
 	other: {
-		first_timer: {
-			label: "First-Time Welcome",
-			description: "Welcome someone for the first time",
-			icon: "✨",
-		},
-		follow_up: {
-			label: "Follow-Up",
-			description: "Check in with existing contacts",
-			icon: "🔄",
-		},
 		event_invite: {
-			label: "Event Invitation",
 			description: "Invite contacts to an upcoming event",
 			icon: "🎉",
+			label: "Event Invitation",
 		},
-		request: {
-			label: "Care & Support",
-			description: "Reach out to offer support",
-			icon: "🙏",
+		first_timer: {
+			description: "Welcome someone for the first time",
+			icon: "✨",
+			label: "First-Time Welcome",
+		},
+		follow_up: {
+			description: "Check in with existing contacts",
+			icon: "🔄",
+			label: "Follow-Up",
 		},
 		general: {
-			label: "General Announcement",
 			description: "Send a broadcast to your contacts",
 			icon: "📢",
+			label: "General Announcement",
+		},
+		request: {
+			description: "Reach out to offer support",
+			icon: "🙏",
+			label: "Care & Support",
+		},
+	},
+	school: {
+		event_invite: {
+			description: "Invite to a school event or open day",
+			icon: "🎉",
+			label: "Event Invitation",
+		},
+		first_timer: {
+			description: "Welcome new students or parents",
+			icon: "✨",
+			label: "New Student Welcome",
+		},
+		follow_up: {
+			description: "Check in with students or parents",
+			icon: "🔄",
+			label: "Follow-Up",
+		},
+		general: {
+			description: "Send an announcement to students and parents",
+			icon: "📢",
+			label: "School Announcement",
+		},
+		request: {
+			description: "Reach out to support a student or family",
+			icon: "🙏",
+			label: "Pastoral Check-In",
 		},
 	},
 };
@@ -280,28 +280,28 @@ export const ORG_TYPE_LABELS: Record<
 	OrgType,
 	{ label: string; icon: string; sub: string }
 > = {
-	business: { label: "Business", icon: "🏢", sub: "Company, SME, enterprise" },
-	school: {
-		label: "School / Academy",
-		icon: "🎓",
-		sub: "Primary, secondary, tertiary",
-	},
-	community: {
-		label: "Community Group",
-		icon: "🌍",
-		sub: "Association, club, network",
-	},
+	business: { icon: "🏢", label: "Business", sub: "Company, SME, enterprise" },
 	church: {
-		label: "Church / Ministry",
 		icon: "⛪",
+		label: "Church / Ministry",
 		sub: "Congregation, parish, chapel",
 	},
+	community: {
+		icon: "🌍",
+		label: "Community Group",
+		sub: "Association, club, network",
+	},
 	ngo: {
-		label: "NGO / Charity",
 		icon: "🤝",
+		label: "NGO / Charity",
 		sub: "Non-profit, foundation, aid org",
 	},
-	other: { label: "Other", icon: "✦", sub: "Something else" },
+	other: { icon: "✦", label: "Other", sub: "Something else" },
+	school: {
+		icon: "🎓",
+		label: "School / Academy",
+		sub: "Primary, secondary, tertiary",
+	},
 };
 
 // ─── Role labels by org ────────────────────────────────────────────────────────
@@ -323,47 +323,47 @@ const ROLE_META: Record<OrgType, Partial<Record<UserRole, RoleMeta>>> & {
 	_default: Record<UserRole, RoleMeta>;
 } = {
 	_default: {
-		admin: { label: "Administrator", icon: "🗂️" },
-		leader: { label: "Leader / Head", icon: "⭐" },
-		manager: { label: "Manager", icon: "📋" },
-		coordinator: { label: "Coordinator", icon: "🔗" },
-		staff: { label: "Staff", icon: "💼" },
-		volunteer: { label: "Volunteer", icon: "🙌" },
-	},
-	church: {
-		leader: { label: "Pastor / Leader", icon: "✝️" },
-		admin: { label: "Administrator", icon: "🗂️" },
-		coordinator: { label: "Ministry Lead", icon: "🔗" },
-		staff: { label: "Staff", icon: "💼" },
-		volunteer: { label: "Volunteer", icon: "🙌" },
-		manager: { label: "Department Head", icon: "📋" },
-	},
-	ngo: {
-		admin: { label: "Administrator", icon: "🗂️" },
-		manager: { label: "Programme Manager", icon: "📋" },
-		coordinator: { label: "Field Coordinator", icon: "🔗" },
-		staff: { label: "Staff", icon: "💼" },
-		volunteer: { label: "Volunteer", icon: "🙌" },
-		leader: { label: "Director", icon: "✦" },
-	},
-	school: {
-		leader: { label: "Principal", icon: "🏫" },
-		admin: { label: "Administrator", icon: "🗂️" },
-		manager: { label: "Head of Dept", icon: "📋" },
-		coordinator: { label: "Class Teacher", icon: "🔗" },
-		staff: { label: "Staff", icon: "💼" },
-		volunteer: { label: "Helper", icon: "🙌" },
+		admin: { icon: "🗂️", label: "Administrator" },
+		coordinator: { icon: "🔗", label: "Coordinator" },
+		leader: { icon: "⭐", label: "Leader / Head" },
+		manager: { icon: "📋", label: "Manager" },
+		staff: { icon: "💼", label: "Staff" },
+		volunteer: { icon: "🙌", label: "Volunteer" },
 	},
 	business: {
-		leader: { label: "CEO / Founder", icon: "🏆" },
-		admin: { label: "Admin", icon: "🗂️" },
-		manager: { label: "Manager", icon: "📋" },
-		coordinator: { label: "Team Lead", icon: "🔗" },
-		staff: { label: "Staff", icon: "💼" },
-		volunteer: { label: "Intern", icon: "🙌" },
+		admin: { icon: "🗂️", label: "Admin" },
+		coordinator: { icon: "🔗", label: "Team Lead" },
+		leader: { icon: "🏆", label: "CEO / Founder" },
+		manager: { icon: "📋", label: "Manager" },
+		staff: { icon: "💼", label: "Staff" },
+		volunteer: { icon: "🙌", label: "Intern" },
+	},
+	church: {
+		admin: { icon: "🗂️", label: "Administrator" },
+		coordinator: { icon: "🔗", label: "Ministry Lead" },
+		leader: { icon: "✝️", label: "Pastor / Leader" },
+		manager: { icon: "📋", label: "Department Head" },
+		staff: { icon: "💼", label: "Staff" },
+		volunteer: { icon: "🙌", label: "Volunteer" },
 	},
 	community: {},
+	ngo: {
+		admin: { icon: "🗂️", label: "Administrator" },
+		coordinator: { icon: "🔗", label: "Field Coordinator" },
+		leader: { icon: "✦", label: "Director" },
+		manager: { icon: "📋", label: "Programme Manager" },
+		staff: { icon: "💼", label: "Staff" },
+		volunteer: { icon: "🙌", label: "Volunteer" },
+	},
 	other: {},
+	school: {
+		admin: { icon: "🗂️", label: "Administrator" },
+		coordinator: { icon: "🔗", label: "Class Teacher" },
+		leader: { icon: "🏫", label: "Principal" },
+		manager: { icon: "📋", label: "Head of Dept" },
+		staff: { icon: "💼", label: "Staff" },
+		volunteer: { icon: "🙌", label: "Helper" },
+	},
 };
 
 export function getRoleMeta(
@@ -387,9 +387,9 @@ export function getOrgSizeLabel(orgType?: string | null) {
 					: "members";
 
 	return [
-		{ value: "1-50", label: `1–50 ${memberWord}`, icon: "🏠" },
-		{ value: "51-200", label: `51–200 ${memberWord}`, icon: "🏛️" },
-		{ value: "201-500", label: `201–500 ${memberWord}`, icon: "🏟️" },
-		{ value: "500+", label: `500+ ${memberWord}`, icon: "🌍" },
+		{ icon: "🏠", label: `1–50 ${memberWord}`, value: "1-50" },
+		{ icon: "🏛️", label: `51–200 ${memberWord}`, value: "51-200" },
+		{ icon: "🏟️", label: `201–500 ${memberWord}`, value: "201-500" },
+		{ icon: "🌍", label: `500+ ${memberWord}`, value: "500+" },
 	];
 }

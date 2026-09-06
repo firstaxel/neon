@@ -39,10 +39,10 @@ function fmtDate(iso: string | Date | null | undefined) {
 	}
 	return new Date(iso).toLocaleDateString("en-GB", {
 		day: "numeric",
-		month: "short",
-		year: "numeric",
 		hour: "2-digit",
 		minute: "2-digit",
+		month: "short",
+		year: "numeric",
 	});
 }
 
@@ -126,7 +126,7 @@ export function CampaignDetailView({ campaignId }: { campaignId: string }) {
 
 	if (isLoading) {
 		return (
-			<div style={{ padding: "32px 28px", maxWidth: 900, margin: "0 auto" }}>
+			<div style={{ margin: "0 auto", maxWidth: 900, padding: "32px 28px" }}>
 				<Skeleton className="mb-6 h-5 w-32" />
 				<Skeleton className="mb-2 h-8 w-56" />
 				<Skeleton className="mb-8 h-5 w-72" />
@@ -178,7 +178,7 @@ export function CampaignDetailView({ campaignId }: { campaignId: string }) {
 	const smsMessages = data.messages?.filter((m) => m.channel === "sms") ?? [];
 
 	return (
-		<div style={{ padding: "32px 28px", maxWidth: 900, margin: "0 auto" }}>
+		<div style={{ margin: "0 auto", maxWidth: 900, padding: "32px 28px" }}>
 			{/* Back link */}
 			<Button
 				className="mb-6 gap-1.5 rounded-xl"

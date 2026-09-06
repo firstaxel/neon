@@ -24,8 +24,8 @@ import { env } from "#/env";
 const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
 
 export interface ContentCheckResult {
-	safe: boolean;
 	reason?: string;
+	safe: boolean;
 }
 
 /**
@@ -61,7 +61,7 @@ Reply with ONLY this JSON (no markdown):
 			.trim()
 			.replace(/```json\n?|```\n?/g, "");
 		const parsed = JSON.parse(text) as ContentCheckResult;
-		return { safe: parsed.safe ?? true, reason: parsed.reason };
+		return { reason: parsed.reason, safe: parsed.safe ?? true };
 	} catch {
 		// Fail open — never block a campaign because Gemini is unavailable.
 		return { safe: true };

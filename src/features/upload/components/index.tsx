@@ -58,12 +58,12 @@ export function Uploader({
 	const defaultImages: FileMetadata[] = [];
 	// Convert default images to FileUploadItem format
 	const defaultUploadFiles: UploadFile[] = defaultImages.map((image) => ({
-		id: image.id,
 		file: {
 			name: image.name,
 			size: image.size,
 			type: image.type,
 		} as File,
+		id: image.id,
 		preview: image.url,
 		progress: 100,
 		status: "completed" as const,
@@ -86,11 +86,11 @@ export function Uploader({
 			getInputProps,
 		},
 	] = useFileUpload({
+		accept,
+		initialFiles: defaultImages,
 		maxFiles,
 		maxSize,
-		accept,
 		multiple,
-		initialFiles: defaultImages,
 		onFilesChange: (newFiles) => {
 			// Convert to upload items when files change, preserving existing status
 			const newUploadFiles = newFiles.map((file) => {
@@ -126,14 +126,14 @@ export function Uploader({
 					uploadFile.file instanceof File
 				) {
 					startUpload({
-						file: uploadFile.file,
-						id: uploadFile.id,
-						progress: uploadFile.progress,
-						status: uploadFile.status,
 						contacts: uploadFile.contacts,
 						error: uploadFile.error,
+						file: uploadFile.file,
+						id: uploadFile.id,
 						jobId: uploadFile.jobId,
 						parseProgress: uploadFile.parseProgress,
+						progress: uploadFile.progress,
+						status: uploadFile.status,
 					});
 				}
 			}

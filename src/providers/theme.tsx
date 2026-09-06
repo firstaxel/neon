@@ -25,11 +25,12 @@ const setStoredTheme = createClientOnlyFn((theme: UserTheme) => {
 
 const getSystemTheme = createIsomorphicFn()
 	.server((): AppTheme => "light")
-	.client((): AppTheme => {
-		return window.matchMedia("(prefers-color-scheme: dark)").matches
-			? "dark"
-			: "light";
-	});
+	.client(
+		(): AppTheme =>
+			window.matchMedia("(prefers-color-scheme: dark)").matches
+				? "dark"
+				: "light"
+	);
 
 const handleThemeChange = createClientOnlyFn((userTheme: UserTheme) => {
 	const validatedTheme = UserThemeSchema.parse(userTheme);
@@ -110,7 +111,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 	};
 
 	return (
-		<ThemeContext value={{ userTheme, appTheme, setTheme }}>
+		<ThemeContext value={{ appTheme, setTheme, userTheme }}>
 			<ScriptOnce>{themeScript}</ScriptOnce>
 
 			{children}

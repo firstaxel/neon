@@ -19,16 +19,16 @@ interface AnimatedTabsProps {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const transition = {
-	type: "tween",
-	ease: "easeOut",
 	duration: 0.15,
+	ease: "easeOut",
+	type: "tween",
 };
 
 const getHoverProps = (hoveredRect: DOMRect, navRect: DOMRect) => ({
+	height: hoveredRect.height + 10,
+	width: hoveredRect.width + 20,
 	x: hoveredRect.left - navRect.left - 10,
 	y: hoveredRect.top - navRect.top - 4,
-	width: hoveredRect.width + 20,
-	height: hoveredRect.height + 10,
 });
 
 function isTabActive(pathname: string, tab: Tab): boolean {
@@ -86,10 +86,10 @@ function MobileNav({ tabs }: { tabs: Tab[] }) {
 			<AnimatePresence>
 				{open && (
 					<motion.div
-						animate={{ opacity: 1, height: "auto" }}
+						animate={{ height: "auto", opacity: 1 }}
 						className="overflow-hidden border-border border-t bg-background"
-						exit={{ opacity: 0, height: 0 }}
-						initial={{ opacity: 0, height: 0 }}
+						exit={{ height: 0, opacity: 0 }}
+						initial={{ height: 0, opacity: 0 }}
 						transition={{ duration: 0.2, ease: "easeOut" }}
 					>
 						<div className="flex flex-col py-1">
@@ -165,8 +165,8 @@ function DesktopTabs({ tabs }: { tabs: Tab[] }) {
 					>
 						<motion.span
 							className={cn("block whitespace-nowrap text-sm", {
-								"text-muted-foreground": !isActive,
 								"font-semibold text-foreground": isActive,
+								"text-muted-foreground": !isActive,
 							})}
 							ref={(el) => {
 								linkRefs[i] = el;
@@ -197,9 +197,9 @@ function DesktopTabs({ tabs }: { tabs: Tab[] }) {
 				{selectedRect && navRect && (
 					<motion.div
 						animate={{
+							opacity: 1,
 							width: selectedRect.width + 18,
 							x: `calc(${selectedRect.left - navRect.left - 9}px)`,
-							opacity: 1,
 						}}
 						className="absolute bottom-0 left-0 z-10 h-0.5 bg-primary"
 						initial={false}

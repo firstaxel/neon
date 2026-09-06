@@ -67,23 +67,23 @@ function MagicLinkRegisterForm({ callbackURL }: { callbackURL: string }) {
 	const [sent, setSent] = useState(false);
 
 	const form = useAppForm({
-		defaultValues: { name: "", email: "" },
-		validators: {
-			onBlur: magicLinkSchema.extend({
-				name: z.string().min(1),
-			}),
-		},
+		defaultValues: { email: "", name: "" },
 		onSubmit: async ({ value }) => {
 			// Magic link: create account then send the link in one step
 			const { error } = await authClient.signIn.magicLink({
+				callbackURL: callbackURL ?? "/dashboard",
 				email: value.email,
 				name: value.name,
-				callbackURL: callbackURL ?? "/dashboard",
 			});
 			if (error) {
 				throw new Error(error.message ?? "Failed to send link");
 			}
 			setSent(true);
+		},
+		validators: {
+			onBlur: magicLinkSchema.extend({
+				name: z.string().min(1),
+			}),
 		},
 	});
 
@@ -204,25 +204,25 @@ function PasswordRegisterForm({ callbackURL }: { callbackURL: string }) {
 
 	const form = useAppForm({
 		defaultValues: {
-			name: "",
-			email: "",
-			password: "",
 			confirmPassword: "",
-		},
-		validators: {
-			onBlur: registerSchema,
+			email: "",
+			name: "",
+			password: "",
 		},
 		onSubmit: async ({ value }) => {
 			const { error } = await authClient.signUp.email({
-				name: value.name,
-				email: value.email,
-				password: value.password,
 				callbackURL: callbackURL ?? "/dashboard",
+				email: value.email,
+				name: value.name,
+				password: value.password,
 			});
 			if (error) {
 				throw new Error(error.message ?? "Failed to create account");
 			}
 			navigate({ to: callbackURL ?? "/dashboard" });
+		},
+		validators: {
+			onBlur: registerSchema,
 		},
 	});
 
@@ -399,8 +399,8 @@ export default function RegisterView({
 								className="w-full gap-2 rounded-xl"
 								onClick={() =>
 									authClient.signIn.social({
-										provider: "google",
 										callbackURL: callbackURL ?? "/dashboard	",
+										provider: "google",
 									})
 								}
 								size="lg"

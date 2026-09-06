@@ -21,19 +21,19 @@ import { protectedProcedure } from "#/orpc";
 
 const OrgInput = z.object({
 	name: z.string().min(1).max(100).optional(),
-	orgType: z.string().min(1).max(60).optional(),
 	orgName: z.string().min(1).max(100).optional(),
 	orgSize: z.enum(["1-50", "51-200", "201-500", "500+"]).optional(),
+	orgType: z.string().min(1).max(60).optional(),
+	phone: z.string().min(7).max(20).optional(),
 	role: z
 		.enum(["admin", "leader", "manager", "staff", "volunteer", "coordinator"])
 		.optional(),
-	phone: z.string().min(7).max(20).optional(),
-	timezone: z.string().optional(),
 	smsSenderId: z
 		.string()
 		.max(11)
 		.regex(/^[a-zA-Z0-9]*$/)
 		.optional(),
+	timezone: z.string().optional(),
 	usePlatformSender: z.boolean().optional(),
 });
 
@@ -43,14 +43,14 @@ export const getProfile = protectedProcedure.handler(
 	withCache("profile.get", 60_000, async ({ context }) => {
 		const [user, profile] = await Promise.all([
 			context.db.user.findUniqueOrThrow({
-				where: { id: context.session?.user.id },
 				select: {
-					id: true,
-					name: true,
-					email: true,
-					image: true,
 					createdAt: true,
+					email: true,
+					id: true,
+					image: true,
+					name: true,
 				},
+				where: { id: context.session?.user.id },
 			}),
 			context.db.userProfile.findUnique({
 				where: { userId: context.session?.user.id },
@@ -58,19 +58,19 @@ export const getProfile = protectedProcedure.handler(
 		]);
 
 		return {
-			id: context.session?.user.id,
-			name: user.name,
-			email: user.email,
-			image: user.image,
 			createdAt: user.createdAt.toISOString(),
-			orgType: profile?.orgType ?? null,
-			orgName: profile?.orgName ?? null,
-			orgSize: profile?.orgSize ?? null,
-			role: profile?.role ?? "staff",
-			phone: profile?.phone ?? null,
-			timezone: profile?.timezone ?? "Africa/Lagos",
+			email: user.email,
+			id: context.session?.user.id,
+			image: user.image,
+			name: user.name,
 			onboardingComplete: profile?.onboardingComplete ?? false,
 			onboardingStep: profile?.onboardingStep ?? 0,
+			orgName: profile?.orgName ?? null,
+			orgSize: profile?.orgSize ?? null,
+			orgType: profile?.orgType ?? null,
+			phone: profile?.phone ?? null,
+			role: profile?.role ?? "staff",
+			timezone: profile?.timezone ?? "Africa/Lagos",
 		};
 	})
 );
@@ -89,19 +89,19 @@ export const updateProfile = protectedProcedure
 
 		if (name) {
 			await context.db.user.update({
-				where: { id: context.session.user.id },
 				data: { name },
+				where: { id: context.session.user.id },
 			});
 		}
 
 		const profile = await context.db.userProfile.upsert({
-			where: { userId: context.session.user.id },
 			create: { userId: context.session.user.id, ...profileFields },
 			update: profileFields,
+			where: { userId: context.session.user.id },
 		});
 
 		invalidate(context.session.user.id, "profile.get");
-		return { success: true, name: name ?? context.session.user.name, profile };
+		return { name: name ?? context.session.user.name, profile, success: true };
 	});
 
 // ─── completeOnboarding ───────────────────────────────────────────────────────
@@ -109,8 +109,8 @@ export const updateProfile = protectedProcedure
 export const completeOnboarding = protectedProcedure
 	.input(
 		OrgInput.extend({
-			step: z.number().int().min(0).max(10),
 			complete: z.boolean().default(false),
+			step: z.number().int().min(0).max(10),
 		})
 	)
 	.handler(async ({ input, context }) => {
@@ -125,24 +125,24 @@ export const completeOnboarding = protectedProcedure
 
 		if (name) {
 			await context.db.user.update({
-				where: { id: context.session.user.id },
 				data: { name },
+				where: { id: context.session.user.id },
 			});
 		}
 
 		const profile = await context.db.userProfile.upsert({
-			where: { userId: context.session.user.id },
 			create: {
-				userId: context.session.user.id,
-				onboardingStep: step,
 				onboardingComplete: complete,
+				onboardingStep: step,
+				userId: context.session.user.id,
 				...profileFields,
 			},
 			update: {
-				onboardingStep: step,
 				onboardingComplete: complete,
+				onboardingStep: step,
 				...profileFields,
 			},
+			where: { userId: context.session.user.id },
 		});
 
 		// Save sender ID when user explicitly chose "register my own" (usePlatformSender=false)
@@ -153,25 +153,25 @@ export const completeOnboarding = protectedProcedure
 		) {
 			const cleanId = smsSenderId.replace(/[^a-zA-Z0-9]/g, "").slice(0, 11);
 			const existing = await context.db.senderNumber.findFirst({
-				where: { userId: context.session.user.id, channel: "sms" },
+				where: { channel: "sms", userId: context.session.user.id },
 			});
 			if (existing) {
 				await context.db.senderNumber.update({
-					where: { id: existing.id },
 					data: {
-						number: cleanId,
-						label: "Primary SMS Sender ID",
 						isActive: false,
+						label: "Primary SMS Sender ID",
+						number: cleanId,
 					},
+					where: { id: existing.id },
 				});
 			} else {
 				await context.db.senderNumber.create({
 					data: {
-						userId: context.session.user.id,
-						number: cleanId,
-						label: "Primary SMS Sender ID",
 						channel: "sms",
 						isActive: false,
+						label: "Primary SMS Sender ID",
+						number: cleanId,
+						userId: context.session.user.id,
 					},
 				});
 			}
@@ -186,7 +186,7 @@ export const completeOnboarding = protectedProcedure
 		}
 
 		invalidate(context.session.user.id, "profile.get");
-		return { success: true, step, complete, profile };
+		return { complete, profile, step, success: true };
 	});
 
 // ─── updatePassword ───────────────────────────────────────────────────────────
@@ -232,17 +232,17 @@ export const reseedTemplates = protectedProcedure
 export const getSenderNumbers = protectedProcedure.handler(
 	withCache("profile.getSenderNumbers", 60_000, async ({ context }) => {
 		const senders = await context.db.senderNumber.findMany({
-			where: { userId: context.session?.user.id, channel: "sms" },
 			orderBy: { createdAt: "asc" },
+			where: { channel: "sms", userId: context.session?.user.id },
 		});
 		return senders.map((s) => ({
-			id: s.id,
-			number: s.number,
-			label: s.label,
-			isActive: s.isActive,
-			sentCount: s.sentCount,
-			lastUsedAt: s.lastUsedAt?.toISOString() ?? null,
 			createdAt: s.createdAt.toISOString(),
+			id: s.id,
+			isActive: s.isActive,
+			label: s.label,
+			lastUsedAt: s.lastUsedAt?.toISOString() ?? null,
+			number: s.number,
+			sentCount: s.sentCount,
 		}));
 	})
 );
@@ -252,12 +252,12 @@ export const getSenderNumbers = protectedProcedure.handler(
 export const submitSenderId = protectedProcedure
 	.input(
 		z.object({
+			label: z.string().max(60).optional(),
 			senderId: z
 				.string()
 				.min(3, "Must be at least 3 characters")
 				.max(11, "Must be at most 11 characters")
 				.regex(/^[a-zA-Z0-9]+$/, "Letters and numbers only, no spaces"),
-			label: z.string().max(60).optional(),
 		})
 	)
 	.handler(async ({ input, context }) => {
@@ -265,27 +265,27 @@ export const submitSenderId = protectedProcedure
 
 		// 1. Upsert DB record immediately (DB is source of truth regardless of Termii)
 		const existing = await context.db.senderNumber.findFirst({
-			where: { userId: context.session.user.id, channel: "sms" },
+			where: { channel: "sms", userId: context.session.user.id },
 		});
 
 		let dbRecord: { id: string };
 		if (existing) {
 			dbRecord = await context.db.senderNumber.update({
-				where: { id: existing.id },
 				data: {
-					number: senderId,
-					label: label ?? existing.label ?? "Primary SMS Sender ID",
 					isActive: false,
+					label: label ?? existing.label ?? "Primary SMS Sender ID",
+					number: senderId,
 				},
+				where: { id: existing.id },
 			});
 		} else {
 			dbRecord = await context.db.senderNumber.create({
 				data: {
-					userId: context.session.user.id,
-					number: senderId,
-					label: label ?? "Primary SMS Sender ID",
 					channel: "sms",
 					isActive: false,
+					label: label ?? "Primary SMS Sender ID",
+					number: senderId,
+					userId: context.session.user.id,
 				},
 			});
 		}
@@ -295,18 +295,18 @@ export const submitSenderId = protectedProcedure
 		if (!termiiApiKey) {
 			invalidate(context.session.user.id, "profile.getSenderNumbers");
 			return {
-				success: true,
-				submitted: false,
+				dbId: dbRecord.id,
 				reason:
 					"Sender ID saved. TERMII_API_KEY not configured — submit manually via Termii dashboard.",
 				senderId,
-				dbId: dbRecord.id,
+				submitted: false,
+				success: true,
 			};
 		}
 
 		const profile = await context.db.userProfile.findUnique({
-			where: { userId: context.session.user.id },
 			select: { orgName: true },
+			where: { userId: context.session.user.id },
 		});
 		const companyName = profile?.orgName ?? "Velocast User";
 
@@ -314,15 +314,15 @@ export const submitSenderId = protectedProcedure
 			const res = await fetch(
 				"https://v3.api.termii.com/api/sender-id/request",
 				{
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
 					body: JSON.stringify({
 						api_key: termiiApiKey,
+						company: companyName,
 						sender_id: senderId,
 						usecase:
 							"Sending transactional and informational messages to our members and customers",
-						company: companyName,
 					}),
+					headers: { "Content-Type": "application/json" },
+					method: "POST",
 				}
 			);
 
@@ -330,31 +330,31 @@ export const submitSenderId = protectedProcedure
 
 			if (!res.ok) {
 				return {
-					success: false,
-					submitted: true,
+					dbId: dbRecord.id,
 					reason: data.message ?? `Termii returned ${res.status}`,
 					senderId,
-					dbId: dbRecord.id,
+					submitted: true,
+					success: false,
 				};
 			}
 
 			return {
-				success: true,
-				submitted: true,
+				dbId: dbRecord.id,
 				reason:
 					data.message ??
 					"Submitted — Termii & NCC approval takes 2–5 business days.",
 				senderId,
-				dbId: dbRecord.id,
+				submitted: true,
+				success: true,
 			};
 		} catch (err) {
 			const error = err instanceof Error ? err.message : String(err);
 			return {
-				success: false,
-				submitted: false,
+				dbId: dbRecord.id,
 				reason: `Network error submitting to Termii: ${error}`,
 				senderId,
-				dbId: dbRecord.id,
+				submitted: false,
+				success: false,
 			};
 		}
 	});
@@ -388,8 +388,8 @@ export const deleteAccount = protectedProcedure
 	.input(z.object({ confirmEmail: z.string().email() }))
 	.handler(async ({ input, context }) => {
 		const user = await context.db.user.findUniqueOrThrow({
-			where: { id: context.session.user.id },
 			select: { email: true },
+			where: { id: context.session.user.id },
 		});
 
 		if (input.confirmEmail.toLowerCase() !== user.email.toLowerCase()) {

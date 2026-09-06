@@ -1,16 +1,21 @@
 import { RPCHandler } from "@orpc/server/fetch";
+import { GetMethodCsrfProtectionHandlerPlugin } from "@orpc/server/plugins";
+import { RPC_DEFAULT_ALLOW_METHODS } from "@orpc/server/standard";
 import { createFileRoute } from "@tanstack/react-router";
 import { createContext } from "#/orpc/context";
 import { appRouter } from "#/orpc/router";
 
-const handler = new RPCHandler(appRouter);
+const handler = new RPCHandler(appRouter, {
+	allowMethods: ["GET", ...RPC_DEFAULT_ALLOW_METHODS],
+	plugins: [new GetMethodCsrfProtectionHandlerPlugin()],
+});
 
 async function handle({ request }: { request: Request }) {
 	const context = await createContext();
 
 	const { response } = await handler.handle(request, {
-		prefix: "/api/rpc",
 		context,
+		prefix: "/api/rpc",
 	});
 
 	return response ?? new Response("Not Found", { status: 404 });
@@ -19,12 +24,12 @@ async function handle({ request }: { request: Request }) {
 export const Route = createFileRoute("/api/rpc/$")({
 	server: {
 		handlers: {
-			HEAD: handle,
+			DELETE: handle,
 			GET: handle,
+			HEAD: handle,
+			PATCH: handle,
 			POST: handle,
 			PUT: handle,
-			PATCH: handle,
-			DELETE: handle,
 		},
 	},
 });

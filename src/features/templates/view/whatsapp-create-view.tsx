@@ -33,16 +33,16 @@ export function WaTemplateCreateView() {
 	}
 
 	return (
-		<div style={{ padding: "32px 28px", maxWidth: 1100, margin: "0 auto" }}>
+		<div style={{ margin: "0 auto", maxWidth: 1100, padding: "32px 28px" }}>
 			<div className="mb-6 flex items-center gap-3">
 				<Button
 					className="gap-1.5 rounded-xl"
 					onClick={() =>
 						router.navigate({
-							to: "/templates",
 							search: {
 								channel: "whatsapp",
 							},
+							to: "/templates",
 						})
 					}
 					size="sm"
@@ -60,10 +60,10 @@ export function WaTemplateCreateView() {
 					isSaving={isPending}
 					onCancel={() =>
 						router.navigate({
-							to: "/templates",
 							search: {
 								channel: "whatsapp",
 							},
+							to: "/templates",
 						})
 					}
 					onSave={handleSave}

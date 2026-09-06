@@ -83,18 +83,18 @@ interface WizardValues {
 }
 
 const CHANNEL_BADGE = {
-	whatsapp: "border-[#25d36640] bg-[#0d2016] text-[#25d366]",
 	sms: "border-[#60a5fa40] bg-[#0d1a2e] text-[#60a5fa]",
+	whatsapp: "border-[#25d36640] bg-[#0d2016] text-[#25d366]",
 } as const;
 
 // ─── Step indicator ───────────────────────────────────────────────────────────
 
 const STEPS = [
-	{ label: "Scenario", icon: MessageCircle },
-	{ label: "Contacts", icon: Users },
-	{ label: "Review", icon: FileText },
-	{ label: "Variables", icon: Variable },
-	{ label: "Send", icon: Send },
+	{ icon: MessageCircle, label: "Scenario" },
+	{ icon: Users, label: "Contacts" },
+	{ icon: FileText, label: "Review" },
+	{ icon: Variable, label: "Variables" },
+	{ icon: Send, label: "Send" },
 ] as const;
 
 function StepIndicator({
@@ -247,37 +247,37 @@ function ContactsStep({
 
 const DELIVERY_MODES = [
 	{
-		id: "marketing" as const,
-		label: "Direct WhatsApp",
-		sublabel: "Marketing template",
+		badge: "bg-[#25d36615] text-[#25d366] border-[#25d36630]",
+		color: "border-[#25d36650] bg-[#0d2016] text-[#25d366]",
 		cost: "~₦90 / contact",
 		detail:
 			"Send your approved WhatsApp marketing template straight to contacts. Fastest delivery.",
-		color: "border-[#25d36650] bg-[#0d2016] text-[#25d366]",
-		badge: "bg-[#25d36615] text-[#25d366] border-[#25d36630]",
 		icon: "💬",
+		id: "marketing" as const,
+		label: "Direct WhatsApp",
+		sublabel: "Marketing template",
 	},
 	{
-		id: "utility_prescreen" as const,
-		label: "Consent first",
-		sublabel: "Utility → Marketing",
+		badge: "bg-[#f59e0b15] text-[#f59e0b] border-[#f59e0b30]",
+		color: "border-[#f59e0b50] bg-[#1a1200] text-[#f59e0b]",
 		cost: "~₦8 + ₦0 for replies",
 		detail:
 			"Send a cheap consent message first. Only contacts who reply YES receive the full message. Best for large lists.",
-		color: "border-[#f59e0b50] bg-[#1a1200] text-[#f59e0b]",
-		badge: "bg-[#f59e0b15] text-[#f59e0b] border-[#f59e0b30]",
 		icon: "🔔",
+		id: "utility_prescreen" as const,
+		label: "Consent first",
+		sublabel: "Utility → Marketing",
 	},
 	{
-		id: "sms_fallback" as const,
-		label: "SMS to WA number",
-		sublabel: "Termii SMS",
+		badge: "bg-[#60a5fa15] text-[#60a5fa] border-[#60a5fa30]",
+		color: "border-[#60a5fa50] bg-[#0d1a2e] text-[#60a5fa]",
 		cost: "~₦6 / contact",
 		detail:
 			"Send as a regular SMS to their WhatsApp phone number. No Meta approval needed. Works even if WhatsApp isn't open.",
-		color: "border-[#60a5fa50] bg-[#0d1a2e] text-[#60a5fa]",
-		badge: "bg-[#60a5fa15] text-[#60a5fa] border-[#60a5fa30]",
 		icon: "📱",
+		id: "sms_fallback" as const,
+		label: "SMS to WA number",
+		sublabel: "Termii SMS",
 	},
 ] as const;
 
@@ -442,21 +442,21 @@ function ReviewStep({
 	const previewName = values.contacts[0]?.name ?? "John";
 
 	const dbDefault = scenarioDefaults?.[values.scenario] ?? {
-		whatsapp: "",
 		sms: "",
+		whatsapp: "",
 	};
 
 	const activeTemplate = (() => {
 		if (values.templateSource === "custom") {
-			return { whatsapp: values.customWhatsapp, sms: values.customSms };
+			return { sms: values.customSms, whatsapp: values.customWhatsapp };
 		}
 		return {
-			whatsapp: values.savedWaTemplate
-				? values.savedWaTemplate.body
-				: dbDefault.whatsapp,
 			sms: values.savedSmsTemplate
 				? values.savedSmsTemplate.body
 				: dbDefault.sms,
+			whatsapp: values.savedWaTemplate
+				? values.savedWaTemplate.body
+				: dbDefault.whatsapp,
 		};
 	})();
 
@@ -489,7 +489,7 @@ function ReviewStep({
 					},
 					{
 						label: "Recipients",
-						value: `${values.contacts.length} contact${values.contacts.length !== 1 ? "s" : ""}`,
+						value: `${values.contacts.length} contact${values.contacts.length === 1 ? "" : "s"}`,
 					},
 					{
 						label: "Channels",
@@ -894,14 +894,14 @@ export function CampaignWizard({ onCancel }: { onCancel?: () => void } = {}) {
 
 	const form = useForm({
 		defaultValues: {
-			scenario: "first_timer",
 			contacts: [],
-			templateSource: "scenario",
-			savedWaTemplate: null,
-			savedSmsTemplate: null,
-			customWhatsapp: "",
 			customSms: "",
+			customWhatsapp: "",
 			deliveryMode: "marketing",
+			savedSmsTemplate: null,
+			savedWaTemplate: null,
+			scenario: "first_timer",
+			templateSource: "scenario",
 			templateVars: {},
 		} as WizardValues,
 		onSubmit: async ({ value }) => {
@@ -910,29 +910,29 @@ export function CampaignWizard({ onCancel }: { onCancel?: () => void } = {}) {
 			// Resolve the template body: DB defaults > saved pick > custom override.
 			// scenarioDefaults comes from the DB — the user's own editable templates.
 			const dbDefaults = scenarioDefaults?.[value.scenario] ?? {
-				whatsapp: "",
 				sms: "",
+				whatsapp: "",
 			};
 
 			const customTemplate = useCustom
 				? value.templateSource === "saved"
 					? {
-							whatsapp: value.savedWaTemplate?.body ?? dbDefaults.whatsapp,
 							sms: value.savedSmsTemplate?.body ?? dbDefaults.sms,
+							whatsapp: value.savedWaTemplate?.body ?? dbDefaults.whatsapp,
 						}
-					: { whatsapp: value.customWhatsapp, sms: value.customSms }
+					: { sms: value.customSms, whatsapp: value.customWhatsapp }
 				: undefined;
 
 			const result = await sendCampaign({
-				scenario: value.scenario,
 				contacts: value.contacts,
-				useCustom,
 				customTemplate: customTemplate ?? {
-					whatsapp: "",
 					sms: "",
+					whatsapp: "",
 				},
 				deliveryMode: value.deliveryMode,
+				scenario: value.scenario,
 				templateVars: value.templateVars,
+				useCustom,
 			});
 
 			// Record usage on saved templates (fire-and-forget — one per picked channel)
@@ -977,16 +977,16 @@ export function CampaignWizard({ onCancel }: { onCancel?: () => void } = {}) {
 	const scenarioId = useStore(form.store, (s) => s.values.scenario);
 
 	const dbDefault0 = scenarioDefaults?.[scenarioId] ?? {
-		whatsapp: "",
 		sms: "",
+		whatsapp: "",
 	};
 	const activeTemplateForCost =
 		templateSource === "custom"
-			? { whatsapp: customWhatsapp, sms: customSms }
+			? { sms: customSms, whatsapp: customWhatsapp }
 			: templateSource === "saved"
 				? {
-						whatsapp: savedWaTemplate?.body ?? dbDefault0.whatsapp,
 						sms: savedSmsTemplate?.body ?? dbDefault0.sms,
+						whatsapp: savedWaTemplate?.body ?? dbDefault0.whatsapp,
 					}
 				: dbDefault0;
 	const manualVarsForCost = getManualVars(
@@ -1010,18 +1010,18 @@ export function CampaignWizard({ onCancel }: { onCancel?: () => void } = {}) {
 					<form.Subscribe
 						selector={(s) => {
 							const dbDef = scenarioDefaults?.[s.values.scenario] ?? {
-								whatsapp: "",
 								sms: "",
+								whatsapp: "",
 							};
 							const t =
 								s.values.templateSource === "custom"
-									? { wa: s.values.customWhatsapp, sms: s.values.customSms }
+									? { sms: s.values.customSms, wa: s.values.customWhatsapp }
 									: s.values.templateSource === "saved"
 										? {
-												wa: s.values.savedWaTemplate?.body ?? dbDef.whatsapp,
 												sms: s.values.savedSmsTemplate?.body ?? dbDef.sms,
+												wa: s.values.savedWaTemplate?.body ?? dbDef.whatsapp,
 											}
-										: { wa: dbDef.whatsapp, sms: dbDef.sms };
+										: { sms: dbDef.sms, wa: dbDef.whatsapp };
 							return getManualVars(t.wa ?? "", t.sms ?? "").length > 0;
 						}}
 					>
@@ -1073,26 +1073,26 @@ export function CampaignWizard({ onCancel }: { onCancel?: () => void } = {}) {
 					<form.Subscribe selector={(s) => s.values}>
 						{(values) => {
 							const dbDefault = scenarioDefaults?.[values.scenario] ?? {
-								whatsapp: "",
 								sms: "",
+								whatsapp: "",
 							};
 							const activeTemplate = (() => {
 								if (values.templateSource === "custom") {
 									return {
-										whatsapp: values.customWhatsapp,
 										sms: values.customSms,
+										whatsapp: values.customWhatsapp,
 									};
 								}
 								if (values.templateSource === "saved") {
 									return {
+										sms: values.savedSmsTemplate?.body ?? dbDefault.sms,
 										whatsapp:
 											values.savedWaTemplate?.body ?? dbDefault.whatsapp,
-										sms: values.savedSmsTemplate?.body ?? dbDefault.sms,
 									};
 								}
 								return {
-									whatsapp: dbDefault.whatsapp,
 									sms: dbDefault.sms,
+									whatsapp: dbDefault.whatsapp,
 								};
 							})();
 							const manualVars = getManualVars(
@@ -1131,17 +1131,17 @@ export function CampaignWizard({ onCancel }: { onCancel?: () => void } = {}) {
 				{(values) => {
 					// Resolve the active template so we know how many manual vars there are
 					const dbDefault_ = scenarioDefaults?.[values.scenario] ?? {
-						whatsapp: "",
 						sms: "",
+						whatsapp: "",
 					};
 					const activeTemplate_ = (() => {
 						if (values.templateSource === "custom") {
-							return { whatsapp: values.customWhatsapp, sms: values.customSms };
+							return { sms: values.customSms, whatsapp: values.customWhatsapp };
 						}
 						if (values.templateSource === "saved") {
 							return {
-								whatsapp: values.savedWaTemplate?.body ?? dbDefault_.whatsapp,
 								sms: values.savedSmsTemplate?.body ?? dbDefault_.sms,
+								whatsapp: values.savedWaTemplate?.body ?? dbDefault_.whatsapp,
 							};
 						}
 						return dbDefault_;
@@ -1215,7 +1215,7 @@ export function CampaignWizard({ onCancel }: { onCancel?: () => void } = {}) {
 											<CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
 											<p className="text-emerald-400 text-xs">
 												<strong>{serviceWindowCount}</strong> contact
-												{serviceWindowCount !== 1 ? "s" : ""} replied recently —
+												{serviceWindowCount === 1 ? "" : "s"} replied recently —
 												sent free within their 24h window.
 											</p>
 										</div>
@@ -1281,7 +1281,7 @@ export function CampaignWizard({ onCancel }: { onCancel?: () => void } = {}) {
 													<>
 														<Send className="h-4 w-4" /> Send to{" "}
 														{values.contacts.length} contact
-														{values.contacts.length !== 1 ? "s" : ""}
+														{values.contacts.length === 1 ? "" : "s"}
 													</>
 												)}
 											</Button>

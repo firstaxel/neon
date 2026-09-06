@@ -1,4 +1,4 @@
-import { Inngest, eventType, staticSchema } from "inngest";
+import { eventType, Inngest, staticSchema } from "inngest";
 import type { MessageType } from "#/features/billing/utils";
 import type { MessageChannel, ScenarioId } from "../types";
 
@@ -99,12 +99,9 @@ export const campaignPendingReplyYesEvent = eventType(
 	}
 );
 
-export const campaignPrescreenEvent = eventType(
-	"Velocast/campaign.prescreen",
-	{
-		schema: staticSchema<CampaignPrescreenPayload>(),
-	}
-);
+export const campaignPrescreenEvent = eventType("Velocast/campaign.prescreen", {
+	schema: staticSchema<CampaignPrescreenPayload>(),
+});
 
 export const campaignPrescreenSingleEvent = eventType(
 	"Velocast/campaign.prescreen-single",
@@ -166,10 +163,10 @@ export type Events = {
  * - isDev set explicitly so local dev server works without requiring signing key
  */
 export const inngest = new Inngest({
-	id: "Velocast",
-	isDev: process.env.NODE_ENV === "development",
-	signingKey: process.env.INNGEST_SIGNING_KEY,
 	checkpointing: {
 		maxRuntime: "50s",
 	},
+	id: "Velocast",
+	isDev: process.env.NODE_ENV === "development",
+	signingKey: process.env.INNGEST_SIGNING_KEY,
 });

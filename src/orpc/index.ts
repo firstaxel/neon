@@ -1,52 +1,43 @@
 import { ORPCError, os } from "@orpc/server";
 import type {
-	RequestHeadersPluginContext,
-	ResponseHeadersPluginContext,
+	RequestHeadersHandlerPluginContext,
+	ResponseHeadersHandlerPluginContext,
 } from "@orpc/server/plugins";
 import type { Context } from "./context";
 
 interface OrpcContext
-	extends ResponseHeadersPluginContext,
-		RequestHeadersPluginContext,
+	extends ResponseHeadersHandlerPluginContext,
+		RequestHeadersHandlerPluginContext,
 		Context {}
 
 export const o = os.$context<OrpcContext>().errors({
-	UNAUTHORIZED: {
-		message: "You must be logged in to perform this action.",
-		status: 401,
-	},
-	FORBIDDEN: {
-		message: "You do not have permission to perform this action.",
-		status: 403,
-	},
-	NOT_FOUND: {
-		message: "The requested resource was not found.",
-		status: 404,
-	},
-	INTERNAL_SERVER_ERROR: {
-		message: "An internal server error occurred.",
-		status: 500,
-	},
 	BAD_REQUEST: {
 		message: "The request was invalid.",
-		status: 400,
 	},
 	CONFLICT: {
 		message: "The request conflicts with the current state of the resource.",
-		status: 409,
+	},
+	FORBIDDEN: {
+		message: "You do not have permission to perform this action.",
+	},
+	INTERNAL_SERVER_ERROR: {
+		message: "An internal server error occurred.",
+	},
+	NOT_FOUND: {
+		message: "The requested resource was not found.",
+	},
+	TIMEOUT: {
+		message: "The request timed out. Please try again.",
+	},
+	TOO_MANY_REQUESTS: {
+		message: "Too many requests. Please try again later.",
+	},
+	UNAUTHORIZED: {
+		message: "You must be logged in to perform this action.",
 	},
 	UNPROCESSABLE_ENTITY: {
 		message:
 			"The request was well-formed but was unable to be followed due to semantic errors.",
-		status: 422,
-	},
-	TOO_MANY_REQUESTS: {
-		message: "Too many requests. Please try again later.",
-		status: 429,
-	},
-	TIMEOUT: {
-		message: "The request timed out. Please try again.",
-		status: 408,
 	},
 });
 

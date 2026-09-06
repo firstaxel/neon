@@ -87,21 +87,21 @@ export async function sendTextMessage(
 ): Promise<MetaSendResult> {
 	try {
 		const res = await fetch(baseUrl(), {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-				Authorization: `Bearer ${accessToken()}`,
-			},
 			body: JSON.stringify({
 				messaging_product: "whatsapp",
 				recipient_type: "individual",
+				text: {
+					body: text,
+					preview_url: false,
+				},
 				to: normalisePhone(to),
 				type: "text",
-				text: {
-					preview_url: false,
-					body: text,
-				},
 			}),
+			headers: {
+				Authorization: `Bearer ${accessToken()}`,
+				"Content-Type": "application/json",
+			},
+			method: "POST",
 		});
 
 		const data = (await res.json()) as MetaMessageResponse | MetaErrorResponse;
@@ -109,15 +109,15 @@ export async function sendTextMessage(
 		if (!res.ok || "error" in data) {
 			const msg = "error" in data ? data.error.message : `HTTP ${res.status}`;
 			console.error("[Meta Send] Text failed:", msg);
-			return { success: false, error: msg };
+			return { error: msg, success: false };
 		}
 
 		const messageId = (data as MetaMessageResponse).messages?.[0]?.id;
-		return { success: true, messageId };
+		return { messageId, success: true };
 	} catch (err) {
 		const error = err instanceof Error ? err.message : String(err);
 		console.error("[Meta Send] Text error:", error);
-		return { success: false, error };
+		return { error, success: false };
 	}
 }
 
@@ -138,29 +138,29 @@ export async function sendTemplateMessage(
 
 	if (variables.length > 0) {
 		components.push({
+			parameters: variables.map((v) => ({ text: v, type: "text" })),
 			type: "body",
-			parameters: variables.map((v) => ({ type: "text", text: v })),
 		});
 	}
 
 	try {
 		const res = await fetch(baseUrl(), {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-				Authorization: `Bearer ${accessToken()}`,
-			},
 			body: JSON.stringify({
 				messaging_product: "whatsapp",
 				recipient_type: "individual",
+				template: {
+					components: components.length ? components : undefined,
+					language: { code: language },
+					name: templateName,
+				},
 				to: normalisePhone(to),
 				type: "template",
-				template: {
-					name: templateName,
-					language: { code: language },
-					components: components.length ? components : undefined,
-				},
 			}),
+			headers: {
+				Authorization: `Bearer ${accessToken()}`,
+				"Content-Type": "application/json",
+			},
+			method: "POST",
 		});
 
 		const data = (await res.json()) as MetaMessageResponse | MetaErrorResponse;
@@ -173,15 +173,15 @@ export async function sendTemplateMessage(
 				"template:",
 				templateName
 			);
-			return { success: false, error: msg };
+			return { error: msg, success: false };
 		}
 
 		const messageId = (data as MetaMessageResponse).messages?.[0]?.id;
-		return { success: true, messageId };
+		return { messageId, success: true };
 	} catch (err) {
 		const error = err instanceof Error ? err.message : String(err);
 		console.error("[Meta Send] Template error:", error);
-		return { success: false, error };
+		return { error, success: false };
 	}
 }
 

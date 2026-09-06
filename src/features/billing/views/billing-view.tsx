@@ -170,16 +170,16 @@ function DepositDialog({
 						<div className="grid grid-cols-2 gap-2">
 							{[
 								{
-									label: "WhatsApp",
-									count: waMsgs,
-									color: "text-primary",
 									bg: "bg-primary/5 border-primary/15",
+									color: "text-primary",
+									count: waMsgs,
+									label: "WhatsApp",
 								},
 								{
-									label: "SMS",
-									count: smsMsgs,
-									color: "text-blue-400",
 									bg: "bg-blue-400/5 border-blue-400/15",
+									color: "text-blue-400",
+									count: smsMsgs,
+									label: "SMS",
 								},
 							].map(({ label, count, color, bg }) => (
 								<div className={cn("rounded-xl border p-3", bg)} key={label}>
@@ -296,16 +296,16 @@ function WalletCard({ onDeposit }: { onDeposit: () => void }) {
 				<div className="grid grid-cols-2 gap-2">
 					{[
 						{
+							bg: "bg-primary/5 border-primary/15",
+							color: "text-primary",
 							label: "WhatsApp",
 							rate: "₦5 / msg",
-							color: "text-primary",
-							bg: "bg-primary/5 border-primary/15",
 						},
 						{
+							bg: "bg-blue-400/5 border-blue-400/15",
+							color: "text-blue-400",
 							label: "SMS",
 							rate: "₦2.50 / msg",
-							color: "text-blue-400",
-							bg: "bg-blue-400/5 border-blue-400/15",
 						},
 					].map(({ label, rate, color, bg }) => (
 						<div
@@ -345,27 +345,26 @@ const PLAN_META: Record<
 	string,
 	{ color: string; bg: string; border: string; badgeCls: string }
 > = {
-	starter: {
-		color: "text-blue-400",
-		bg: "bg-blue-400/5",
-		border: "border-blue-400/20",
-		badgeCls: "bg-blue-400/10 text-blue-400 border-blue-400/30",
-	},
 	growth: {
-		color: "text-violet-400",
+		badgeCls: "bg-violet-400/10 text-violet-400 border-violet-400/30",
 		bg: "bg-violet-400/5",
 		border: "border-violet-400/20",
-		badgeCls: "bg-violet-400/10 text-violet-400 border-violet-400/30",
+		color: "text-violet-400",
 	},
 	pro: {
-		color: "text-amber-400",
+		badgeCls: "bg-amber-400/10 text-amber-400 border-amber-400/30",
 		bg: "bg-amber-400/5",
 		border: "border-amber-400/20",
-		badgeCls: "bg-amber-400/10 text-amber-400 border-amber-400/30",
+		color: "text-amber-400",
+	},
+	starter: {
+		badgeCls: "bg-blue-400/10 text-blue-400 border-blue-400/30",
+		bg: "bg-blue-400/5",
+		border: "border-blue-400/20",
+		color: "text-blue-400",
 	},
 };
 const PLAN_FEATURES: Record<string, string[]> = {
-	starter: ["500 msgs / month", "WhatsApp + SMS", "Campaign history"],
 	growth: ["2,000 msgs / month", "WhatsApp + SMS", "Priority support"],
 	pro: [
 		"Unlimited messages",
@@ -373,6 +372,7 @@ const PLAN_FEATURES: Record<string, string[]> = {
 		"Dedicated support",
 		"Analytics",
 	],
+	starter: ["500 msgs / month", "WhatsApp + SMS", "Campaign history"],
 };
 
 function SubscriptionCard() {
@@ -390,8 +390,8 @@ function SubscriptionCard() {
 		setErr(null);
 		try {
 			const r = await initSub({
-				plan: planKey as "starter" | "growth" | "pro",
 				callbackUrl: `${window.location.origin}/billing/verify?type=subscription`,
+				plan: planKey as "starter" | "growth" | "pro",
 			});
 			window.location.href = r.checkoutUrl;
 		} catch (e) {
@@ -402,7 +402,7 @@ function SubscriptionCard() {
 	async function cancel() {
 		setErr(null);
 		try {
-			await cancelSub({});
+			await cancelSub(undefined);
 			setCancelConfirm(false);
 		} catch (e) {
 			setErr(e instanceof Error ? e.message : "Failed to cancel");
@@ -627,18 +627,18 @@ const TX_FILTERS: { label: string; value: TxFilter }[] = [
 ];
 
 const TX_ICON: Record<string, React.ReactNode> = {
+	campaign_refund: <RotateCcw className="h-3.5 w-3.5" />,
 	deposit: <ArrowDownLeft className="h-3.5 w-3.5" />,
 	message_debit: <MessageCircle className="h-3.5 w-3.5" />,
-	subscription: <RefreshCw className="h-3.5 w-3.5" />,
-	campaign_refund: <RotateCcw className="h-3.5 w-3.5" />,
 	refund: <RotateCcw className="h-3.5 w-3.5" />,
+	subscription: <RefreshCw className="h-3.5 w-3.5" />,
 };
 const TX_LABEL: Record<string, string> = {
+	campaign_refund: "Refund",
 	deposit: "Deposit",
 	message_debit: "Message",
-	subscription: "Subscription",
-	campaign_refund: "Refund",
 	refund: "Refund",
+	subscription: "Subscription",
 };
 
 function TransactionTable() {

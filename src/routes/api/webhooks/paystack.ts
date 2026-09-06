@@ -67,8 +67,8 @@ export async function paystackWebhook(req: Request) {
 
 				// Find which user this belongs to via pending transaction
 				const pending = await prisma.transaction.findUnique({
-					where: { reference },
 					include: { wallet: true },
+					where: { reference },
 				});
 
 				if (!pending) {
@@ -82,18 +82,18 @@ export async function paystackWebhook(req: Request) {
 
 				// Credit wallet
 				await creditWallet({
-					userId: pending.wallet.userId,
 					amountKobo,
 					description: `Wallet top-up of ${formatNaira(amountKobo)}`,
-					reference: `${reference}_webhook`,
 					paystackRef: reference,
+					reference: `${reference}_webhook`,
 					type: "deposit",
+					userId: pending.wallet.userId,
 				});
 
 				// Mark original pending record as completed
 				await prisma.transaction.update({
+					data: { paystackRef: reference, status: "completed" },
 					where: { reference },
-					data: { status: "completed", paystackRef: reference },
 				});
 
 				console.info(
@@ -139,29 +139,29 @@ export async function paystackWebhook(req: Request) {
 				const end = new Date(nextPayDate);
 
 				await prisma.subscription.upsert({
-					where: { userId: user.id },
 					create: {
-						userId: user.id,
+						currentPeriodEnd: end,
+						currentPeriodStart: now,
+						messagesUsedThisCycle: 0,
+						monthlyMessageLimit: planConfig.monthlyLimit,
+						paystackCustomerCode: customerCode,
+						paystackPlanCode: planCode,
+						paystackSubCode: subCode,
 						plan: planKey as PlanKey,
 						status: "active",
-						paystackCustomerCode: customerCode,
-						paystackSubCode: subCode,
-						paystackPlanCode: planCode,
-						monthlyMessageLimit: planConfig.monthlyLimit,
-						messagesUsedThisCycle: 0,
-						currentPeriodStart: now,
-						currentPeriodEnd: end,
+						userId: user.id,
 					},
 					update: {
+						currentPeriodEnd: end,
+						currentPeriodStart: now,
+						messagesUsedThisCycle: 0,
+						monthlyMessageLimit: planConfig.monthlyLimit,
+						paystackPlanCode: planCode,
+						paystackSubCode: subCode,
 						plan: planKey as PlanKey,
 						status: "active",
-						paystackSubCode: subCode,
-						paystackPlanCode: planCode,
-						monthlyMessageLimit: planConfig.monthlyLimit,
-						messagesUsedThisCycle: 0,
-						currentPeriodStart: now,
-						currentPeriodEnd: end,
 					},
+					where: { userId: user.id },
 				});
 
 				// Record subscription transaction
@@ -171,14 +171,14 @@ export async function paystackWebhook(req: Request) {
 				if (wallet) {
 					await prisma.transaction.create({
 						data: {
-							walletId: wallet.id,
-							type: "subscription",
-							status: "completed",
 							amountKobo: planConfig.priceKobo,
 							balanceAfterKobo: wallet.balanceKobo,
 							description: `${planConfig.label} plan subscription`,
-							reference: `sub_event_${uuidv4()}`,
 							paystackRef: subCode,
+							reference: `sub_event_${uuidv4()}`,
+							status: "completed",
+							type: "subscription",
+							walletId: wallet.id,
 						},
 					});
 				}
@@ -194,8 +194,8 @@ export async function paystackWebhook(req: Request) {
 				const subCode = data.subscription_code as string;
 
 				await prisma.subscription.updateMany({
+					data: { cancelledAt: new Date(), status: "cancelled" },
 					where: { paystackSubCode: subCode },
-					data: { status: "cancelled", cancelledAt: new Date() },
 				});
 
 				console.info(`[Webhook] Subscription ${subCode} cancelled`);
@@ -211,8 +211,8 @@ export async function paystackWebhook(req: Request) {
 				}
 
 				await prisma.subscription.updateMany({
-					where: { paystackSubCode: subCode },
 					data: { status: "paused" },
+					where: { paystackSubCode: subCode },
 				});
 
 				console.warn(

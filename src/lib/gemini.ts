@@ -65,6 +65,10 @@ export async function parseContactImageFromR2(
 
 	// 2. Call Gemini
 	const model = genAI.getGenerativeModel({
+		generationConfig: {
+			responseMimeType: "application/json",
+			temperature: 0.1,
+		},
 		model: "gemini-2.5-flash",
 		safetySettings: [
 			{
@@ -72,10 +76,6 @@ export async function parseContactImageFromR2(
 				threshold: HarmBlockThreshold.BLOCK_NONE,
 			},
 		],
-		generationConfig: {
-			temperature: 0.1,
-			responseMimeType: "application/json",
-		},
 	});
 
 	const imagePart = {
@@ -112,9 +112,9 @@ export async function parseContactImageFromR2(
 	}));
 
 	return {
+		confidence: raw.confidence ?? 0.8,
 		contacts,
 		rawText: raw.rawText ?? "",
-		confidence: raw.confidence ?? 0.8,
 		warnings: raw.warnings ?? [],
 	};
 }

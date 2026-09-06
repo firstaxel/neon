@@ -80,19 +80,19 @@ const BUTTON_TEXT_MAX = 25;
 
 const CATEGORIES: { value: WaCategory; label: string; desc: string }[] = [
 	{
-		value: "MARKETING",
-		label: "Marketing",
 		desc: "Promotions, offers, announcements",
+		label: "Marketing",
+		value: "MARKETING",
 	},
 	{
-		value: "UTILITY",
-		label: "Utility",
 		desc: "Transactional, account updates",
+		label: "Utility",
+		value: "UTILITY",
 	},
 	{
-		value: "AUTHENTICATION",
-		label: "Authentication",
 		desc: "OTPs, verification codes",
+		label: "Authentication",
+		value: "AUTHENTICATION",
 	},
 ];
 
@@ -101,42 +101,42 @@ const HEADER_FORMATS: {
 	label: string;
 	icon: React.ReactNode;
 }[] = [
-	{ value: "TEXT", label: "Text", icon: <Type className="h-3.5 w-3.5" /> },
-	{ value: "IMAGE", label: "Image", icon: <Image className="h-3.5 w-3.5" /> },
-	{ value: "VIDEO", label: "Video", icon: <Video className="h-3.5 w-3.5" /> },
+	{ icon: <Type className="h-3.5 w-3.5" />, label: "Text", value: "TEXT" },
+	{ icon: <Image className="h-3.5 w-3.5" />, label: "Image", value: "IMAGE" },
+	{ icon: <Video className="h-3.5 w-3.5" />, label: "Video", value: "VIDEO" },
 	{
-		value: "DOCUMENT",
-		label: "Document",
 		icon: <ExternalLink className="h-3.5 w-3.5" />,
+		label: "Document",
+		value: "DOCUMENT",
 	},
 ];
 
 const STATUS_COLORS: Record<string, string> = {
-	DRAFT: "border-border text-muted-foreground",
-	PENDING: "border-amber-500/40 text-amber-400 bg-amber-500/5",
 	APPROVED: "border-emerald-500/40 text-emerald-400 bg-emerald-500/5",
-	REJECTED: "border-destructive/40 text-destructive bg-destructive/5",
-	PAUSED: "border-orange-500/40 text-orange-400 bg-orange-500/5",
 	DISABLED: "border-muted-foreground/40 text-muted-foreground",
+	DRAFT: "border-border text-muted-foreground",
+	PAUSED: "border-orange-500/40 text-orange-400 bg-orange-500/5",
+	PENDING: "border-amber-500/40 text-amber-400 bg-amber-500/5",
+	REJECTED: "border-destructive/40 text-destructive bg-destructive/5",
 };
 
 // ─── Preview values for named vars ───────────────────────────────────────────
 
 const PREVIEW_VALUES: Record<string, string> = {
-	name: "Sarah",
+	amount: "₦5,000",
+	code: "482910",
+	date: "Sunday, 15 Dec",
+	event: "Easter Sunday",
 	firstName: "Sarah",
 	lastName: "Johnson",
-	date: "Sunday, 15 Dec",
-	time: "10:00 AM",
-	amount: "₦5,000",
-	price: "₦5,000",
-	orderId: "ORD-12345",
-	code: "482910",
-	otp: "482910",
 	link: "https://example.com",
-	phone: "+2348012345678",
+	name: "Sarah",
+	orderId: "ORD-12345",
 	org: "Grace Assembly",
-	event: "Easter Sunday",
+	otp: "482910",
+	phone: "+2348012345678",
+	price: "₦5,000",
+	time: "10:00 AM",
 	venue: "Lagos, Nigeria",
 };
 
@@ -323,14 +323,14 @@ function CustomVarInput({ onInsert }: { onInsert: (v: string) => void }) {
 // ─── Media header upload ─────────────────────────────────────────────────────
 
 const ACCEPT: Record<"IMAGE" | "VIDEO" | "DOCUMENT", string> = {
+	DOCUMENT: "application/pdf",
 	IMAGE: "image/jpeg,image/png,image/webp",
 	VIDEO: "video/mp4",
-	DOCUMENT: "application/pdf",
 };
 const MAX_MB: Record<"IMAGE" | "VIDEO" | "DOCUMENT", number> = {
+	DOCUMENT: 100,
 	IMAGE: 5,
 	VIDEO: 16,
-	DOCUMENT: 100,
 };
 
 function MediaHeaderUpload({
@@ -370,8 +370,8 @@ function MediaHeaderUpload({
 			const fd = new FormData();
 			fd.append("file", file);
 			const res = await fetch("/api/whatsapp/upload-media", {
-				method: "POST",
 				body: fd,
+				method: "POST",
 			});
 			const data = (await res.json()) as { handle?: string; error?: string };
 			if (!(res.ok && data.handle)) {
@@ -632,10 +632,10 @@ function ButtonRow({
 	onRemove: () => void;
 }) {
 	const TYPE_LABELS: Record<WaTemplateButton["type"], string> = {
+		COPY_CODE: "Copy code",
+		PHONE_NUMBER: "Phone",
 		QUICK_REPLY: "Quick reply",
 		URL: "URL",
-		PHONE_NUMBER: "Phone",
-		COPY_CODE: "Copy code",
 	};
 
 	return (
@@ -758,17 +758,17 @@ export function WaTemplateEditor({
 
 	const form = useForm({
 		defaultValues: {
-			name: template?.name ?? "",
-			displayName: template?.displayName ?? "",
-			language: template?.language ?? "en",
+			bodyText: template?.bodyText ?? "",
+			bodyVars: template?.bodyVars ?? [],
+			buttons: (template?.buttons ?? []) as WaTemplateButton[],
 			category: (template?.category as WaCategory) ?? "MARKETING",
+			displayName: template?.displayName ?? "",
+			footerText: template?.footerText ?? "",
 			headerFormat: (template?.headerFormat as WaHeaderFormat | null) ?? null,
 			headerText: template?.headerText ?? "",
 			headerVars: template?.headerVars ?? [],
-			bodyText: template?.bodyText ?? "",
-			bodyVars: template?.bodyVars ?? [],
-			footerText: template?.footerText ?? "",
-			buttons: (template?.buttons ?? []) as WaTemplateButton[],
+			language: template?.language ?? "en",
+			name: template?.name ?? "",
 		} as WaTemplateFormValues,
 		onSubmit: async ({ value }) => {
 			// Auto-extract vars from text before save
@@ -1058,9 +1058,9 @@ export function WaTemplateEditor({
 											<MediaHeaderUpload
 												disabled={isLocked}
 												existingHandle={
-													form.getFieldValue("headerFormat") !== "TEXT"
-														? (form.getFieldValue("headerText") ?? undefined)
-														: undefined
+													form.getFieldValue("headerFormat") === "TEXT"
+														? undefined
+														: (form.getFieldValue("headerText") ?? undefined)
 												}
 												format={
 													headerFormatField.state.value as
@@ -1245,11 +1245,11 @@ export function WaTemplateEditor({
 														field.handleChange([
 															...field.state.value,
 															{
-																type,
-																text: "",
-																url: type === "URL" ? "" : undefined,
 																phoneNumber:
 																	type === "PHONE_NUMBER" ? "" : undefined,
+																text: "",
+																type,
+																url: type === "URL" ? "" : undefined,
 															},
 														])
 													}

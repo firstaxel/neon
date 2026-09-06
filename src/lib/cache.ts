@@ -86,7 +86,7 @@ function cacheSet(key: string, value: unknown, ttlMs: number): void {
 			store.delete(oldest);
 		}
 	}
-	store.set(key, { value, expiresAt: Date.now() + ttlMs });
+	store.set(key, { expiresAt: Date.now() + ttlMs, value });
 }
 
 // Lazy cleanup — sweep expired entries when store is 80%+ full
@@ -187,7 +187,7 @@ export function withCache<TInput, TOutput>(
 
 		// No user session → bypass cache (shouldn't happen on protectedProcedure)
 		if (!userId) {
-			return fn({ input, context });
+			return fn({ context, input });
 		}
 
 		const key = cacheKey(userId, name, input);
@@ -198,7 +198,7 @@ export function withCache<TInput, TOutput>(
 
 		maybePurgeExpired();
 
-		const result = await fn({ input, context });
+		const result = await fn({ context, input });
 		cacheSet(key, result, ttlMs);
 		return result;
 	};
@@ -216,9 +216,9 @@ export function cacheStats() {
 		}
 	}
 	return {
-		size: store.size,
 		expired,
 		live: store.size - expired,
 		max: MAX_ENTRIES,
+		size: store.size,
 	};
 }

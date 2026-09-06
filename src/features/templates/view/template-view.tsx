@@ -124,7 +124,7 @@ function ChannelTab({
 					{label}
 				</p>
 				<p className="text-[11px] text-muted-foreground">
-					{loading ? "…" : `${count} template${count !== 1 ? "s" : ""}`}
+					{loading ? "…" : `${count} template${count === 1 ? "" : "s"}`}
 				</p>
 			</div>
 			{active && <div className={`h-2 w-2 shrink-0 rounded-full ${dotCs}`} />}
@@ -196,11 +196,11 @@ export function TemplatesView() {
 	});
 
 	const waCounts = {
-		total: waTemplates?.length ?? 0,
 		approved: waTemplates?.filter((t) => t.status === "APPROVED").length ?? 0,
+		draft: waTemplates?.filter((t) => t.status === "DRAFT").length ?? 0,
 		pending: waTemplates?.filter((t) => t.status === "PENDING").length ?? 0,
 		rejected: waTemplates?.filter((t) => t.status === "REJECTED").length ?? 0,
-		draft: waTemplates?.filter((t) => t.status === "DRAFT").length ?? 0,
+		total: waTemplates?.length ?? 0,
 	};
 	const smsCount = smsTemplates?.length ?? 0;
 

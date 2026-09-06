@@ -40,31 +40,31 @@ export const PRICING = {
 	 * Source: Meta Nigeria conversation pricing + Termii SMS rate.
 	 */
 	PER_MESSAGE: {
-		whatsapp_marketing: 9000, // N9.00  — Meta marketing conversation (Nigeria)
-		whatsapp_utility: 800, // N3.00  — Meta utility conversation (Nigeria)
-		whatsapp_service: 0, // N1.00  — Meta service conversation (24h window)
 		sms: 600, // N2.50  — Termii SMS
+		whatsapp_marketing: 9000, // N9.00  — Meta marketing conversation (Nigeria)
+		whatsapp_service: 0, // N1.00  — Meta service conversation (24h window)
+		whatsapp_utility: 800, // N3.00  — Meta utility conversation (Nigeria)
 	} as const satisfies Record<MessageType, number>,
 
 	/** Monthly plan prices in kobo */
 	PLANS: {
-		starter: {
-			priceKobo: 500_000,
-			monthlyLimit: 500,
-			label: "Starter",
-			paystackPlanCode: process.env.PAYSTACK_PLAN_STARTER ?? "",
-		},
 		growth: {
-			priceKobo: 1_500_000,
-			monthlyLimit: 2000,
 			label: "Growth",
+			monthlyLimit: 2000,
 			paystackPlanCode: process.env.PAYSTACK_PLAN_GROWTH ?? "",
+			priceKobo: 1_500_000,
 		},
 		pro: {
-			priceKobo: 3_500_000,
-			monthlyLimit: 999_999,
 			label: "Pro",
+			monthlyLimit: 999_999,
 			paystackPlanCode: process.env.PAYSTACK_PLAN_PRO ?? "",
+			priceKobo: 3_500_000,
+		},
+		starter: {
+			label: "Starter",
+			monthlyLimit: 500,
+			paystackPlanCode: process.env.PAYSTACK_PLAN_STARTER ?? "",
+			priceKobo: 500_000,
 		},
 	},
 } as const;
@@ -95,9 +95,9 @@ export function resolveMessageType(
  */
 export function getOrCreateWallet(userId: string) {
 	return prisma.wallet.upsert({
-		where: { userId },
-		create: { userId, balanceKobo: 0, heldKobo: 0 },
+		create: { balanceKobo: 0, heldKobo: 0, userId },
 		update: {},
+		where: { userId },
 	});
 }
 
@@ -122,20 +122,20 @@ export function creditWallet({
 }) {
 	return prisma.$transaction(async (tx) => {
 		const wallet = await tx.wallet.update({
-			where: { userId },
 			data: { balanceKobo: { increment: amountKobo } },
+			where: { userId },
 		});
 
 		await tx.transaction.create({
 			data: {
-				walletId: wallet.id,
-				type,
-				status: "completed",
 				amountKobo,
 				balanceAfterKobo: wallet.balanceKobo,
 				description,
-				reference,
 				paystackRef,
+				reference,
+				status: "completed",
+				type,
+				walletId: wallet.id,
 			},
 		});
 
@@ -177,32 +177,32 @@ export async function debitForMessage({
 			}
 
 			const updated = await tx.wallet.update({
-				where: { userId },
 				data: { balanceKobo: { decrement: cost } },
+				where: { userId },
 			});
 
 			await tx.transaction.create({
 				data: {
-					walletId: updated.id,
-					type: "message_debit",
-					status: "completed",
 					amountKobo: cost,
 					balanceAfterKobo: updated.balanceKobo,
-					description: `${messageType.replace("_", " ")} message sent`,
-					reference: `msg_${messageId}`,
 					campaignId,
+					description: `${messageType.replace("_", " ")} message sent`,
 					messageId,
+					reference: `msg_${messageId}`,
+					status: "completed",
+					type: "message_debit",
+					walletId: updated.id,
 				},
 			});
 
 			return updated;
 		});
 
-		return { success: true, balanceKobo: wallet.balanceKobo };
+		return { balanceKobo: wallet.balanceKobo, success: true };
 	} catch (err) {
 		if (err instanceof Error && err.message === "INSUFFICIENT_BALANCE") {
 			const w = await prisma.wallet.findUnique({ where: { userId } });
-			return { success: false, balanceKobo: w?.balanceKobo ?? 0 };
+			return { balanceKobo: w?.balanceKobo ?? 0, success: false };
 		}
 		throw err;
 	}
@@ -238,11 +238,11 @@ export async function refundForMessage({
 	const amountKobo = PRICING.PER_MESSAGE[messageType];
 
 	await creditWallet({
-		userId,
 		amountKobo,
-		type: "campaign_refund",
 		description: `Refund: ${messageType.replace(/_/g, " ")} message not delivered — ${reason}`,
 		reference: `refund_${messageId}`,
+		type: "campaign_refund",
+		userId,
 	});
 }
 
@@ -277,10 +277,10 @@ export async function canAffordCampaign(
 	const canAfford = wallet.balanceKobo >= totalCostKobo;
 
 	return {
+		balanceKobo: wallet.balanceKobo,
 		canAfford,
 		shortfallKobo: canAfford ? 0 : totalCostKobo - wallet.balanceKobo,
 		totalCostKobo,
-		balanceKobo: wallet.balanceKobo,
 	};
 }
 
@@ -289,9 +289,9 @@ export async function canAffordCampaign(
 /** Convert kobo integer to a formatted Naira string. e.g. 500 → "₦5.00" */
 export function formatNaira(kobo: number): string {
 	return new Intl.NumberFormat("en-NG", {
-		style: "currency",
 		currency: "NGN",
 		minimumFractionDigits: 2,
+		style: "currency",
 	}).format(kobo / 100);
 }
 

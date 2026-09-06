@@ -72,13 +72,13 @@ export const useFileUpload = (
 	} = options;
 
 	const [state, setState] = useState<FileUploadState>({
+		errors: [],
 		files: initialFiles.map((file) => ({
 			file,
 			id: file.id,
 			preview: file.url,
 		})),
 		isDragging: false,
-		errors: [],
 	});
 
 	const inputRef = useRef<HTMLInputElement>(null);
@@ -155,8 +155,8 @@ export const useFileUpload = (
 
 			const newState = {
 				...prev,
-				files: [],
 				errors: [],
+				files: [],
 			};
 
 			onFilesChange?.(newState.files);
@@ -244,8 +244,8 @@ export const useFileUpload = (
 					onFilesChange?.(newFiles);
 					return {
 						...prev,
-						files: newFiles,
 						errors,
+						files: newFiles,
 					};
 				});
 			} else if (errors.length > 0) {
@@ -293,8 +293,8 @@ export const useFileUpload = (
 
 				return {
 					...prev,
-					files: newFiles,
 					errors: [],
+					files: newFiles,
 				};
 			});
 		},
@@ -370,16 +370,14 @@ export const useFileUpload = (
 	}, []);
 
 	const getInputProps = useCallback(
-		(props: InputHTMLAttributes<HTMLInputElement> = {}) => {
-			return {
-				...props,
-				type: "file" as const,
-				onChange: handleFileChange,
-				accept: props.accept || accept,
-				multiple: props.multiple !== undefined ? props.multiple : multiple,
-				ref: inputRef,
-			};
-		},
+		(props: InputHTMLAttributes<HTMLInputElement> = {}) => ({
+			...props,
+			accept: props.accept || accept,
+			multiple: props.multiple === undefined ? multiple : props.multiple,
+			onChange: handleFileChange,
+			ref: inputRef,
+			type: "file" as const,
+		}),
 		[accept, multiple, handleFileChange]
 	);
 
@@ -387,16 +385,16 @@ export const useFileUpload = (
 		state,
 		{
 			addFiles,
-			removeFile,
-			clearFiles,
 			clearErrors,
+			clearFiles,
+			getInputProps,
 			handleDragEnter,
 			handleDragLeave,
 			handleDragOver,
 			handleDrop,
 			handleFileChange,
 			openFileDialog,
-			getInputProps,
+			removeFile,
 		},
 	];
 };

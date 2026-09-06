@@ -20,8 +20,8 @@ export function CampaignsView() {
 		<div className="mx-auto w-full max-w-6xl px-4 py-8">
 			<PageHeader
 				action={{
-					label: "New Campaign",
 					icon: <Plus size={15} />,
+					label: "New Campaign",
 					onClick: () => {
 						router.navigate({
 							to: "/campaigns/create",

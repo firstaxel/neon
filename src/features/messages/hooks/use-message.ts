@@ -8,15 +8,14 @@ export const useMessageConversations = ({
 }: {
 	filter: "all" | "unread" | "keyword";
 	channelFilter: "whatsapp" | "sms" | undefined;
-}) => {
-	return useQuery(
+}) =>
+	useQuery(
 		orpc.inbox.list.queryOptions({
+			input: { channel: channelFilter, filter },
 			queryKey: ["inbox.list", filter, channelFilter],
-			input: { filter, channel: channelFilter },
 			refetchInterval: 30_000,
 		})
 	);
-};
 
 export const useGetInboxThread = ({
 	phone,
@@ -24,15 +23,14 @@ export const useGetInboxThread = ({
 }: {
 	phone: string;
 	channel: "whatsapp" | "sms";
-}) => {
-	return useQuery(
+}) =>
+	useQuery(
 		orpc.inbox.get.queryOptions({
+			input: { channel, phone },
 			queryKey: ["inbox.thread", phone, channel],
-			input: { phone, channel },
 			refetchInterval: 15_000,
 		})
 	);
-};
 
 export const useMessageThread = ({
 	phone,
@@ -44,15 +42,15 @@ export const useMessageThread = ({
 	const qc = useQueryClient();
 	return useMutation(
 		orpc.inbox.markThread.mutationOptions({
+			onError: (e) => {
+				toast.error("Reply failed", {
+					description: e instanceof Error ? e.message : "Something went wrong",
+				});
+			},
 			onSuccess: () => {
 				qc.invalidateQueries({ queryKey: ["inbox.list"] });
 				qc.invalidateQueries({
 					queryKey: ["inbox.thread", phone, channel],
-				});
-			},
-			onError: (e) => {
-				toast.error("Reply failed", {
-					description: e instanceof Error ? e.message : "Something went wrong",
 				});
 			},
 		})

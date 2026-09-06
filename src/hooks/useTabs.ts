@@ -24,16 +24,16 @@ export default function useTabs({
 	});
 
 	return {
-		tabProps: {
-			tabs,
-			selectedTabIndex,
-			onChange,
-			setSelectedTab,
-		},
-		selectedTab: tabs[selectedTabIndex],
 		contentProps: {
 			direction,
 			selectedTabIndex,
+		},
+		selectedTab: tabs[selectedTabIndex],
+		tabProps: {
+			onChange,
+			selectedTabIndex,
+			setSelectedTab,
+			tabs,
 		},
 	};
 }

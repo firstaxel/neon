@@ -43,7 +43,6 @@ import {
 import { Input } from "#/components/ui/input";
 import { Label } from "#/components/ui/label";
 import { Separator } from "#/components/ui/separator";
-import { authClient } from "#/lib/auth-client";
 import {
 	getOrgSizeLabel,
 	getRoleMeta,
@@ -51,6 +50,7 @@ import {
 	type OrgType,
 	type UserRole,
 } from "#/features/miscellaneous/org";
+import { authClient } from "#/lib/auth-client";
 import {
 	useDeleteAccount,
 	useDeleteSenderNumber,
@@ -90,13 +90,7 @@ function SectionHeader({
 	);
 }
 
-function SaveRow({
-	isPending,
-	dirty,
-}: {
-	isPending: boolean;
-	dirty: boolean;
-}) {
+function SaveRow({ isPending, dirty }: { isPending: boolean; dirty: boolean }) {
 	return (
 		<div className="flex justify-end pt-2">
 			<Button
@@ -136,7 +130,9 @@ function ProfileSection() {
 				});
 				toast.success("Profile updated");
 			} catch (e) {
-				toast.error(e instanceof Error ? e.message : "Failed to update profile");
+				toast.error(
+					e instanceof Error ? e.message : "Failed to update profile"
+				);
 			}
 		},
 	});
@@ -147,7 +143,9 @@ function ProfileSection() {
 		form.setFieldValue("phone", profile.phone ?? "");
 	}
 
-	if (isLoading) return null;
+	if (isLoading) {
+		return null;
+	}
 
 	return (
 		<Card className="rounded-2xl">
@@ -162,7 +160,9 @@ function ProfileSection() {
 				<div className="mb-4 space-y-1.5">
 					<Label className="text-muted-foreground text-xs">Email address</Label>
 					<div className="flex items-center gap-2 rounded-xl border bg-muted/30 px-3 py-2.5">
-						<span className="flex-1 text-muted-foreground text-sm">{profile?.email}</span>
+						<span className="flex-1 text-muted-foreground text-sm">
+							{profile?.email}
+						</span>
 						<Badge className="text-[10px]" variant="secondary">
 							Read-only
 						</Badge>
@@ -182,7 +182,9 @@ function ProfileSection() {
 										<Label className="text-xs">Full name</Label>
 										<Input
 											className="rounded-xl"
-											onChange={(e) => form.setFieldValue("name", e.target.value)}
+											onChange={(e) =>
+												form.setFieldValue("name", e.target.value)
+											}
 											placeholder="Your full name"
 											value={values.name}
 										/>
@@ -191,7 +193,9 @@ function ProfileSection() {
 										<Label className="text-xs">Phone number</Label>
 										<Input
 											className="rounded-xl"
-											onChange={(e) => form.setFieldValue("phone", e.target.value)}
+											onChange={(e) =>
+												form.setFieldValue("phone", e.target.value)
+											}
 											placeholder="+234 800 000 0000"
 											type="tel"
 											value={values.phone}
@@ -246,7 +250,9 @@ function OrgTile<T extends string>({
 			<span className="shrink-0 text-base leading-none">{icon}</span>
 			<div className="min-w-0 flex-1">
 				<p className="truncate font-medium text-xs leading-tight">{label}</p>
-				{sub && <p className="truncate text-muted-foreground text-[10px]">{sub}</p>}
+				{sub && (
+					<p className="truncate text-[10px] text-muted-foreground">{sub}</p>
+				)}
 			</div>
 			{active && <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-primary" />}
 		</button>
@@ -256,21 +262,22 @@ function OrgTile<T extends string>({
 function OrganisationSection() {
 	const { data: profile, isLoading } = useProfile();
 	const { mutateAsync: updateProfile, isPending } = useUpdateProfile();
-	const { mutateAsync: reseedTemplates, isPending: reseeding } = useReseedTemplates();
+	const { mutateAsync: reseedTemplates, isPending: reseeding } =
+		useReseedTemplates();
 
 	const form = useForm({
 		defaultValues: {
 			orgName: profile?.orgName ?? "",
-			orgType: (profile?.orgType ?? "church") as OrgType,
 			orgSize: (profile?.orgSize ?? "1-50") as OrgSize,
+			orgType: (profile?.orgType ?? "church") as OrgType,
 			role: (profile?.role ?? "staff") as UserRole,
 		},
 		onSubmit: async ({ value }) => {
 			try {
 				await updateProfile({
 					orgName: value.orgName.trim() || undefined,
-					orgType: value.orgType,
 					orgSize: value.orgSize,
+					orgType: value.orgType,
 					role: value.role,
 				});
 				toast.success("Organisation updated");
@@ -287,9 +294,14 @@ function OrganisationSection() {
 		form.setFieldValue("role", (profile.role ?? "staff") as UserRole);
 	}
 
-	if (isLoading) return null;
+	if (isLoading) {
+		return null;
+	}
 
-	const orgTypes = Object.entries(ORG_TYPE_LABELS) as [OrgType, (typeof ORG_TYPE_LABELS)[OrgType]][];
+	const orgTypes = Object.entries(ORG_TYPE_LABELS) as [
+		OrgType,
+		(typeof ORG_TYPE_LABELS)[OrgType],
+	][];
 
 	return (
 		<Card className="rounded-2xl">
@@ -325,7 +337,9 @@ function OrganisationSection() {
 										<Label className="text-xs">Organisation name</Label>
 										<Input
 											className="rounded-xl"
-											onChange={(e) => form.setFieldValue("orgName", e.target.value)}
+											onChange={(e) =>
+												form.setFieldValue("orgName", e.target.value)
+											}
 											placeholder="Grace Assembly, Red Cross Lagos…"
 											value={values.orgName}
 										/>
@@ -333,7 +347,7 @@ function OrganisationSection() {
 
 									{/* Org type */}
 									<div className="space-y-2">
-										<p className="font-semibold text-muted-foreground text-[10px] uppercase tracking-wide">
+										<p className="font-semibold text-[10px] text-muted-foreground uppercase tracking-wide">
 											Organisation type
 										</p>
 										<div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -353,7 +367,7 @@ function OrganisationSection() {
 
 									{/* Role */}
 									<div className="space-y-2">
-										<p className="font-semibold text-muted-foreground text-[10px] uppercase tracking-wide">
+										<p className="font-semibold text-[10px] text-muted-foreground uppercase tracking-wide">
 											Your role
 										</p>
 										<div className="grid grid-cols-3 gap-2">
@@ -372,7 +386,7 @@ function OrganisationSection() {
 
 									{/* Org size */}
 									<div className="space-y-2">
-										<p className="font-semibold text-muted-foreground text-[10px] uppercase tracking-wide">
+										<p className="font-semibold text-[10px] text-muted-foreground uppercase tracking-wide">
 											Organisation size
 										</p>
 										<div className="grid grid-cols-2 gap-2">
@@ -382,7 +396,9 @@ function OrganisationSection() {
 													icon={s.icon}
 													key={s.value}
 													label={s.label}
-													onClick={(v) => form.setFieldValue("orgSize", v as OrgSize)}
+													onClick={(v) =>
+														form.setFieldValue("orgSize", v as OrgSize)
+													}
 													value={s.value as OrgSize}
 												/>
 											))}
@@ -390,31 +406,33 @@ function OrganisationSection() {
 									</div>
 
 									<div className="flex items-center justify-between gap-3 pt-1">
-									<Button
-										className="gap-1.5 rounded-xl text-xs"
-										disabled={reseeding}
-										onClick={async () => {
-											try {
-												await reseedTemplates({ orgType: values.orgType });
-												toast.success("Templates reseeded for this org type");
-											} catch (e) {
-												toast.error(e instanceof Error ? e.message : "Failed to reseed");
-											}
-										}}
-										size="sm"
-										type="button"
-										variant="outline"
-										title="Regenerate default message templates for the selected org type"
-									>
-										{reseeding ? (
-											<Loader2 className="h-3.5 w-3.5 animate-spin" />
-										) : (
-											<RefreshCw className="h-3.5 w-3.5" />
-										)}
-										Reseed templates
-									</Button>
-									<SaveRow dirty={dirty} isPending={isPending} />
-								</div>
+										<Button
+											className="gap-1.5 rounded-xl text-xs"
+											disabled={reseeding}
+											onClick={async () => {
+												try {
+													await reseedTemplates({ orgType: values.orgType });
+													toast.success("Templates reseeded for this org type");
+												} catch (e) {
+													toast.error(
+														e instanceof Error ? e.message : "Failed to reseed"
+													);
+												}
+											}}
+											size="sm"
+											title="Regenerate default message templates for the selected org type"
+											type="button"
+											variant="outline"
+										>
+											{reseeding ? (
+												<Loader2 className="h-3.5 w-3.5 animate-spin" />
+											) : (
+												<RefreshCw className="h-3.5 w-3.5" />
+											)}
+											Reseed templates
+										</Button>
+										<SaveRow dirty={dirty} isPending={isPending} />
+									</div>
 								</div>
 							);
 						}}
@@ -429,8 +447,10 @@ function OrganisationSection() {
 
 function SenderIdSection() {
 	const { data: senders, isLoading } = useSenderNumbers();
-	const { mutateAsync: submitSenderId, isPending: submitting } = useSubmitSenderId();
-	const { mutateAsync: deleteSender, isPending: deleting } = useDeleteSenderNumber();
+	const { mutateAsync: submitSenderId, isPending: submitting } =
+		useSubmitSenderId();
+	const { mutateAsync: deleteSender, isPending: deleting } =
+		useDeleteSenderNumber();
 	const [showForm, setShowForm] = useState(false);
 	const [newId, setNewId] = useState("");
 	const [newLabel, setNewLabel] = useState("");
@@ -440,9 +460,14 @@ function SenderIdSection() {
 	const idValid = cleaned.length >= 3;
 
 	async function handleSubmit() {
-		if (!idValid) return;
+		if (!idValid) {
+			return;
+		}
 		try {
-			const result = await submitSenderId({ senderId: cleaned, label: newLabel || undefined });
+			const result = await submitSenderId({
+				label: newLabel || undefined,
+				senderId: cleaned,
+			});
 			if (result.success) {
 				toast.success(result.reason ?? "Sender ID submitted");
 				setShowForm(false);
@@ -476,14 +501,14 @@ function SenderIdSection() {
 				title="SMS Sender ID"
 			/>
 			<Separator />
-			<CardContent className="pt-5 space-y-4">
+			<CardContent className="space-y-4 pt-5">
 				{/* Info callout */}
 				<div className="flex items-start gap-2 rounded-xl border border-amber-500/20 bg-amber-500/5 px-3 py-2.5">
 					<AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
 					<p className="text-[11px] text-amber-400/90 leading-relaxed">
 						Termii and NCC approval takes 2–5 business days. While pending, your
-						messages send from the platform default sender. Sender IDs only apply to
-						SMS — WhatsApp always uses your Meta WABA number.
+						messages send from the platform default sender. Sender IDs only
+						apply to SMS — WhatsApp always uses your Meta WABA number.
 					</p>
 				</div>
 
@@ -499,24 +524,28 @@ function SenderIdSection() {
 								className="flex items-center gap-3 rounded-xl border bg-muted/20 px-4 py-3"
 								key={s.id}
 							>
-								<div className="flex-1 min-w-0">
-									<div className="flex items-center gap-2 flex-wrap">
-										<span className="font-mono font-semibold text-sm">{s.number}</span>
+								<div className="min-w-0 flex-1">
+									<div className="flex flex-wrap items-center gap-2">
+										<span className="font-mono font-semibold text-sm">
+											{s.number}
+										</span>
 										{s.label && s.label !== "Primary SMS Sender ID" && (
-											<span className="text-muted-foreground text-xs">· {s.label}</span>
+											<span className="text-muted-foreground text-xs">
+												· {s.label}
+											</span>
 										)}
 										{s.isActive ? (
-											<span className="flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-400">
+											<span className="flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 font-semibold text-[10px] text-emerald-400">
 												<CheckCircle2 className="h-3 w-3" /> Active
 											</span>
 										) : (
-											<span className="flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-400">
+											<span className="flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 font-semibold text-[10px] text-amber-400">
 												<Clock className="h-3 w-3" /> Pending approval
 											</span>
 										)}
 									</div>
 									{s.sentCount > 0 && (
-										<p className="mt-0.5 text-muted-foreground text-[10px]">
+										<p className="mt-0.5 text-[10px] text-muted-foreground">
 											{s.sentCount.toLocaleString()} messages sent
 										</p>
 									)}
@@ -575,7 +604,9 @@ function SenderIdSection() {
 									value={newId}
 								/>
 								{newId.length > 0 && (
-									<p className={`text-[10px] ${idValid ? "text-primary" : "text-destructive"}`}>
+									<p
+										className={`text-[10px] ${idValid ? "text-primary" : "text-destructive"}`}
+									>
 										{idValid
 											? `✓ "${cleaned}" — ${cleaned.length}/11 characters`
 											: "Must be 3–11 alphanumeric characters"}
@@ -639,9 +670,9 @@ function SecuritySection() {
 
 	const form = useForm({
 		defaultValues: {
+			confirmPassword: "",
 			currentPassword: "",
 			newPassword: "",
-			confirmPassword: "",
 		},
 		onSubmit: async ({ value }) => {
 			if (value.newPassword !== value.confirmPassword) {
@@ -656,7 +687,9 @@ function SecuritySection() {
 				toast.success("Password changed successfully");
 				form.reset();
 			} catch (e) {
-				toast.error(e instanceof Error ? e.message : "Failed to change password");
+				toast.error(
+					e instanceof Error ? e.message : "Failed to change password"
+				);
 			}
 		},
 	});
@@ -680,7 +713,7 @@ function SecuritySection() {
 				title="Security"
 			/>
 			<Separator />
-			<CardContent className="pt-5 space-y-6">
+			<CardContent className="space-y-6 pt-5">
 				{/* Change password */}
 				<div>
 					<p className="mb-3 font-medium text-sm">Change password</p>
@@ -772,7 +805,8 @@ function SecuritySection() {
 									{values.confirmPassword.length > 0 &&
 										values.confirmPassword !== values.newPassword && (
 											<p className="flex items-center gap-1 text-destructive text-xs">
-												<AlertCircle className="h-3.5 w-3.5" /> Passwords do not match
+												<AlertCircle className="h-3.5 w-3.5" /> Passwords do not
+												match
 											</p>
 										)}
 
@@ -790,7 +824,8 @@ function SecuritySection() {
 										>
 											{isPending ? (
 												<>
-													<Loader2 className="h-3.5 w-3.5 animate-spin" /> Changing…
+													<Loader2 className="h-3.5 w-3.5 animate-spin" />{" "}
+													Changing…
 												</>
 											) : (
 												"Change password"
@@ -845,7 +880,9 @@ function DangerZone() {
 	const ready = confirmEmail.toLowerCase() === userEmail.toLowerCase();
 
 	async function handleDelete() {
-		if (!ready) return;
+		if (!ready) {
+			return;
+		}
 		try {
 			await deleteAccount({ confirmEmail });
 			toast.success("Account deleted");
@@ -865,7 +902,9 @@ function DangerZone() {
 						<Trash2 className="h-4 w-4 text-destructive" />
 					</div>
 					<div>
-						<CardTitle className="text-base text-destructive">Danger Zone</CardTitle>
+						<CardTitle className="text-base text-destructive">
+							Danger Zone
+						</CardTitle>
 						<CardDescription className="text-xs">
 							Permanent, irreversible actions
 						</CardDescription>
@@ -873,21 +912,25 @@ function DangerZone() {
 				</div>
 			</CardHeader>
 			<Separator />
-			<CardContent className="pt-5 space-y-4">
-				<div className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 space-y-3">
+			<CardContent className="space-y-4 pt-5">
+				<div className="space-y-3 rounded-xl border border-destructive/20 bg-destructive/5 p-4">
 					<div>
 						<p className="font-medium text-sm">Delete account</p>
 						<p className="mt-1 text-muted-foreground text-xs leading-relaxed">
-							Permanently deletes your account and all associated data — contacts, campaigns,
-							messages, templates, and billing history. Your wallet balance will be forfeited.
-							<span className="font-semibold text-foreground"> This cannot be undone.</span>
+							Permanently deletes your account and all associated data —
+							contacts, campaigns, messages, templates, and billing history.
+							Your wallet balance will be forfeited.
+							<span className="font-semibold text-foreground">
+								{" "}
+								This cannot be undone.
+							</span>
 						</p>
 					</div>
 					<div className="space-y-1.5">
-						<Label className="text-xs text-muted-foreground">
+						<Label className="text-muted-foreground text-xs">
 							Type your email{" "}
-							<span className="font-mono text-foreground">{userEmail}</span>{" "}
-							to confirm
+							<span className="font-mono text-foreground">{userEmail}</span> to
+							confirm
 						</Label>
 						<Input
 							className="rounded-xl"
@@ -905,9 +948,13 @@ function DangerZone() {
 						variant="destructive"
 					>
 						{isPending ? (
-							<><Loader2 className="h-3.5 w-3.5 animate-spin" /> Deleting…</>
+							<>
+								<Loader2 className="h-3.5 w-3.5 animate-spin" /> Deleting…
+							</>
 						) : (
-							<><Trash2 className="h-3.5 w-3.5" /> Delete my account permanently</>
+							<>
+								<Trash2 className="h-3.5 w-3.5" /> Delete my account permanently
+							</>
 						)}
 					</Button>
 				</div>

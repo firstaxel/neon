@@ -76,8 +76,8 @@ export function SmsOnlyTemplateEditor({
 
 	const form = useForm({
 		defaultValues: {
-			displayName: template?.displayName ?? "",
 			category: template?.category ?? "MARKETING",
+			displayName: template?.displayName ?? "",
 			smsBody: template?.smsBody ?? "",
 		} as SmsFormValues,
 		onSubmit: async ({ value }) => {
@@ -91,29 +91,29 @@ export function SmsOnlyTemplateEditor({
 				.slice(0, 60);
 
 			const full: WaTemplateFormValues = {
-				name: template?.name ?? slug,
-				displayName: value.displayName,
-				language: "en",
+				bodyText: value.smsBody, // bodyText mirrors smsBody for SMS-only
+				bodyVars: smsVars,
+				buttons: [],
 				category: "MARKETING",
+				channel: "sms",
+				displayName: value.displayName,
+				footerText: "",
 				headerFormat: null,
 				headerText: "",
 				headerVars: [],
-				bodyText: value.smsBody, // bodyText mirrors smsBody for SMS-only
-				bodyVars: smsVars,
-				footerText: "",
-				buttons: [],
+				language: "en",
+				name: template?.name ?? slug,
 				smsBody: value.smsBody,
 				smsVars,
-				channel: "sms",
 			};
 			await onSave(full);
 		},
 	});
 
 	const CATEGORY_LABELS: Record<WaCategory, string> = {
+		AUTHENTICATION: "Auth",
 		MARKETING: "Marketing",
 		UTILITY: "Utility",
-		AUTHENTICATION: "Auth",
 	};
 
 	return (

@@ -72,11 +72,11 @@ interface WizardValues {
 // ─── Step meta ────────────────────────────────────────────────────────────────
 
 const STEPS = [
-	{ label: "Welcome", icon: MessageSquare },
-	{ label: "Organisation", icon: Building2 },
-	{ label: "Sender ID", icon: Smartphone },
-	{ label: "Wallet", icon: Wallet },
-	{ label: "All Set", icon: Rocket },
+	{ icon: MessageSquare, label: "Welcome" },
+	{ icon: Building2, label: "Organisation" },
+	{ icon: Smartphone, label: "Sender ID" },
+	{ icon: Wallet, label: "Wallet" },
+	{ icon: Rocket, label: "All Set" },
 ] as const;
 
 // ─── Step indicator — matches CampaignWizard's StepIndicator exactly ─────────
@@ -353,14 +353,14 @@ function WalletStep({
 			<div className="grid grid-cols-2 gap-3">
 				{[
 					{
+						badge: "border-[#25d36640] bg-[#0d2016] text-[#25d366]",
 						label: "WhatsApp",
 						rate: "from ₦8 / msg",
-						badge: "border-[#25d36640] bg-[#0d2016] text-[#25d366]",
 					},
 					{
+						badge: "border-[#60a5fa40] bg-[#0d1a2e] text-[#60a5fa]",
 						label: "SMS",
 						rate: "₦6 / msg",
-						badge: "border-[#60a5fa40] bg-[#0d1a2e] text-[#60a5fa]",
 					},
 				].map(({ label, rate, badge }) => (
 					<div className={`rounded-xl border px-4 py-3 ${badge}`} key={label}>
@@ -608,26 +608,26 @@ export function OnboardingWizard({
 	const form = useForm({
 		defaultValues: {
 			name: initialName,
-			orgType: "church",
 			orgName: "",
 			orgSize: "1-50",
-			role: "staff",
+			orgType: "church",
 			phone: "",
-			topUpAmount: 5000,
+			role: "staff",
 			smsSenderId: "",
+			topUpAmount: 5000,
 			usePlatformSender: true,
 		} as WizardValues,
 		onSubmit: async ({ value }) => {
 			await completeStep({
-				step: 4,
 				complete: true,
 				name: value.name,
-				orgType: value.orgType,
 				orgName: value.orgName,
 				orgSize: value.orgSize,
-				role: value.role,
+				orgType: value.orgType,
 				phone: value.phone,
+				role: value.role,
 				smsSenderId: value.smsSenderId || undefined,
+				step: 4,
 				usePlatformSender: value.usePlatformSender,
 			});
 			onComplete();
@@ -638,13 +638,13 @@ export function OnboardingWizard({
 	async function handleOrgNext() {
 		const v = form.state.values;
 		await completeStep({
-			step: 1,
 			name: v.name,
-			orgType: v.orgType,
 			orgName: v.orgName,
 			orgSize: v.orgSize,
-			role: v.role,
+			orgType: v.orgType,
 			phone: v.phone,
+			role: v.role,
+			step: 1,
 		});
 		setStep(2);
 	}
@@ -653,9 +653,9 @@ export function OnboardingWizard({
 	async function handleTopUp() {
 		const v = form.state.values;
 		const callbackUrl =
-			typeof window !== "undefined"
-				? `${window.location.origin}/billing/verify?return=/onboarding`
-				: "/billing/verify?return=/onboarding";
+			typeof window === "undefined"
+				? "/billing/verify?return=/onboarding"
+				: `${window.location.origin}/billing/verify?return=/onboarding`;
 		const result = await initDeposit({
 			amountNaira: v.topUpAmount,
 			callbackUrl,

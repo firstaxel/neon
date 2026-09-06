@@ -178,9 +178,9 @@ function classifyEncoding(text: string): {
 			charCount += 2;
 			continue;
 		}
-		return { encoding: "Unicode", charCount: [...text].length };
+		return { charCount: [...text].length, encoding: "Unicode" };
 	}
-	return { encoding: "GSM7", charCount };
+	return { charCount, encoding: "GSM7" };
 }
 
 function getSmsSegments(text: string): {
@@ -196,11 +196,11 @@ function getSmsSegments(text: string): {
 
 	if (charCount === 0) {
 		return {
-			encoding,
 			charCount: 0,
-			segments: 1,
-			maxPerSeg: singleMax,
 			charsLeft: singleMax,
+			encoding,
+			maxPerSeg: singleMax,
+			segments: 1,
 		};
 	}
 
@@ -208,7 +208,7 @@ function getSmsSegments(text: string): {
 	const maxPerSeg = segments === 1 ? singleMax : multiMax;
 	const charsLeft = segments * maxPerSeg - charCount;
 
-	return { encoding, charCount, segments, maxPerSeg, charsLeft };
+	return { charCount, charsLeft, encoding, maxPerSeg, segments };
 }
 
 // ─── Insert var helper ────────────────────────────────────────────────────────
@@ -237,18 +237,18 @@ function insertAtCursor(
 // ─── Preview values ───────────────────────────────────────────────────────────
 
 const PREVIEW_VALUES: Record<string, string> = {
-	name: "Sarah",
+	amount: "₦5,000",
+	code: "ABC123",
+	date: "Sunday, 15 Dec",
+	event: "Easter Sunday",
 	firstName: "Sarah",
 	lastName: "Johnson",
-	org: "Grace Assembly",
-	date: "Sunday, 15 Dec",
-	time: "10:00 AM",
-	amount: "₦5,000",
-	event: "Easter Sunday",
-	code: "ABC123",
-	phone: "+2348012345678",
 	link: "https://example.com",
+	name: "Sarah",
 	orderId: "ORD-12345",
+	org: "Grace Assembly",
+	phone: "+2348012345678",
+	time: "10:00 AM",
 };
 
 function getPreviewValue(varName: string): string {
@@ -489,18 +489,20 @@ export function SmsTemplateSection({
 					</div>
 					<div className="flex items-center gap-1.5">
 						<Tooltip>
-							<TooltipTrigger asChild>
-								<Button
-									className="h-7 gap-1 rounded-lg text-muted-foreground text-xs hover:text-foreground"
-									disabled={disabled || value.includes("STOP")}
-									onClick={addOptOut}
-									size="sm"
-									type="button"
-									variant="ghost"
-								>
-									+ Opt-out
-								</Button>
-							</TooltipTrigger>
+							<TooltipTrigger
+								render={
+									<Button
+										className="h-7 gap-1 rounded-lg text-muted-foreground text-xs hover:text-foreground"
+										disabled={disabled || value.includes("STOP")}
+										onClick={addOptOut}
+										size="sm"
+										type="button"
+										variant="ghost"
+									>
+										+ Opt-out
+									</Button>
+								}
+							/>
 							<TooltipContent className="text-xs">
 								Append "Reply STOP to unsubscribe" — required in many regions
 							</TooltipContent>

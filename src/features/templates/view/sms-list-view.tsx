@@ -124,9 +124,9 @@ export function SmsTemplateListView({
 	);
 	// Always filter to sms channel only
 	const { data: templates, isLoading } = useTemplates({
+		category: category === ALL ? undefined : (category as WaCategory),
 		channel: "sms",
 		search: search || undefined,
-		category: category === ALL ? undefined : (category as WaCategory),
 	});
 
 	const router = useRouter();
@@ -134,9 +134,9 @@ export function SmsTemplateListView({
 	// ── List view ──────────────────────────────────────────────────────────────
 	const hasFilters = !!(search || category !== ALL);
 	const CATEGORY_LABELS: Record<WaCategory, string> = {
+		AUTHENTICATION: "Auth",
 		MARKETING: "Marketing",
 		UTILITY: "Utility",
-		AUTHENTICATION: "Auth",
 	};
 
 	return (
@@ -186,7 +186,7 @@ export function SmsTemplateListView({
 			{/* Count */}
 			{!isLoading && (templates?.length ?? 0) > 0 && (
 				<p className="text-muted-foreground text-xs">
-					{templates?.length} template{templates?.length !== 1 ? "s" : ""}
+					{templates?.length} template{templates?.length === 1 ? "" : "s"}
 					{hasFilters && " matching filters"}
 				</p>
 			)}

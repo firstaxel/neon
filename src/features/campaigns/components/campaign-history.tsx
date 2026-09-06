@@ -113,10 +113,10 @@ export function CampaignHistory({ limit = 20 }: CampaignHistoryProps) {
 								<p className="mt-0.5 text-muted-foreground text-xs">
 									{new Date(c.createdAt).toLocaleDateString("en-GB", {
 										day: "numeric",
-										month: "short",
-										year: "numeric",
 										hour: "2-digit",
 										minute: "2-digit",
+										month: "short",
+										year: "numeric",
 									})}
 								</p>
 							</div>

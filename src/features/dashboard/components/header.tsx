@@ -34,14 +34,14 @@ function Logo() {
 // ─── Breadcrumb ───────────────────────────────────────────────────────────────
 
 const ROUTE_LABELS: Record<string, string> = {
-	"/dashboard": "Dashboard",
+	"/billing": "Billing",
 	"/campaigns": "Campaigns",
 	"/contacts": "Contacts",
+	"/dashboard": "Dashboard",
 	"/messages": "Messages",
-	"/templates": "Templates",
-	"/billing": "Billing",
-	"/settings": "Settings",
 	"/onboarding": "Onboarding",
+	"/settings": "Settings",
+	"/templates": "Templates",
 };
 
 function Breadcrumb() {
@@ -78,12 +78,12 @@ function HeaderActions() {
 // ─── Nav Tabs Config ──────────────────────────────────────────────────────────
 
 const TABS = [
-	{ label: "Home", value: "home", href: "/dashboard" },
-	{ label: "Campaigns", value: "campaigns", href: "/campaigns" },
-	{ label: "Contacts", value: "contacts", href: "/contacts" },
-	{ label: "Messages", value: "messages", href: "/messages" },
-	{ label: "Templates", value: "templates", href: "/templates" },
-	{ label: "Billing", value: "billing", href: "/billing" },
+	{ href: "/dashboard", label: "Home", value: "home" },
+	{ href: "/campaigns", label: "Campaigns", value: "campaigns" },
+	{ href: "/contacts", label: "Contacts", value: "contacts" },
+	{ href: "/messages", label: "Messages", value: "messages" },
+	{ href: "/templates", label: "Templates", value: "templates" },
+	{ href: "/billing", label: "Billing", value: "billing" },
 ] as const;
 
 // ─── AnimatedHeader ───────────────────────────────────────────────────────────

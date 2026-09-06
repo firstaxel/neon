@@ -119,24 +119,24 @@ function buildPayload(tpl: {
 
 	const components: MetaTemplateComponent[] = [
 		{
-			type: "BODY",
 			text: positionalBody,
+			type: "BODY",
 		},
 	];
 
 	if (tpl.footerText) {
 		const positionalFooter = toPositionalVars(tpl.footerText, tpl.bodyVars);
 		components.push({
-			type: "FOOTER",
 			text: positionalFooter,
+			type: "FOOTER",
 		});
 	}
 
 	return {
-		name: tpl.name,
-		language: tpl.language,
 		category: tpl.category,
 		components,
+		language: tpl.language,
+		name: tpl.name,
 	};
 }
 
@@ -150,12 +150,12 @@ async function submitTemplate(
 	const url = `https://graph.facebook.com/${API_VERSION}/${WABA_ID}/message_templates`;
 
 	const res = await fetch(url, {
-		method: "POST",
-		headers: {
-			"Content-Type": "application/json",
-			Authorization: `Bearer ${TOKEN}`,
-		},
 		body: JSON.stringify(payload),
+		headers: {
+			Authorization: `Bearer ${TOKEN}`,
+			"Content-Type": "application/json",
+		},
+		method: "POST",
 	});
 
 	return res.json() as Promise<MetaApiResult>;
@@ -183,12 +183,12 @@ const allTemplates: TemplateEntry[] = [];
 for (const [orgType, scenarios] of Object.entries(META_TEMPLATE_LIBRARY)) {
 	for (const [scenarioId, tpl] of Object.entries(scenarios)) {
 		allTemplates.push({
-			name: tpl.name,
-			category: tpl.category,
-			language: tpl.language,
 			bodyText: tpl.bodyText,
 			bodyVars: tpl.bodyVars,
+			category: tpl.category,
 			footerText: tpl.footerText,
+			language: tpl.language,
+			name: tpl.name,
 			source: `${orgType}/${scenarioId} (MARKETING)`,
 		});
 	}
@@ -198,12 +198,12 @@ for (const [orgType, scenarios] of Object.entries(META_TEMPLATE_LIBRARY)) {
 for (const [orgType, scenarios] of Object.entries(UTILITY_TEMPLATES)) {
 	for (const [scenarioId, tpl] of Object.entries(scenarios)) {
 		allTemplates.push({
-			name: tpl.name,
-			category: tpl.category,
-			language: tpl.language,
 			bodyText: tpl.bodyText,
 			bodyVars: tpl.bodyVars,
+			category: tpl.category,
 			footerText: tpl.footerText,
+			language: tpl.language,
+			name: tpl.name,
 			source: `${orgType}/${scenarioId} (UTILITY)`,
 		});
 	}
@@ -211,11 +211,11 @@ for (const [orgType, scenarios] of Object.entries(UTILITY_TEMPLATES)) {
 
 // 3. Shared utility consent template (the generic fallback)
 allTemplates.push({
-	name: UTILITY_CONSENT_TEMPLATE.name,
-	category: UTILITY_CONSENT_TEMPLATE.category,
-	language: UTILITY_CONSENT_TEMPLATE.language,
 	bodyText: UTILITY_CONSENT_TEMPLATE.bodyText,
 	bodyVars: UTILITY_CONSENT_TEMPLATE.bodyVars,
+	category: UTILITY_CONSENT_TEMPLATE.category,
+	language: UTILITY_CONSENT_TEMPLATE.language,
+	name: UTILITY_CONSENT_TEMPLATE.name,
 	source: "shared/generic (UTILITY fallback)",
 });
 
@@ -251,12 +251,12 @@ async function main() {
 	console.log(`${"━".repeat(55)}\n`);
 
 	const results = {
-		submitted: 0,
 		approved: 0,
-		pending: 0,
 		duplicate: 0,
-		failed: 0,
 		errors: [] as Array<{ name: string; error: string }>,
+		failed: 0,
+		pending: 0,
+		submitted: 0,
 	};
 
 	for (let i = 0; i < filtered.length; i++) {
@@ -307,7 +307,7 @@ async function main() {
 					const msg = result.error.error_user_msg ?? result.error.message;
 					console.log(`❌  ${msg}`);
 					results.failed++;
-					results.errors.push({ name: tpl.name, error: msg });
+					results.errors.push({ error: msg, name: tpl.name });
 				}
 			} else if (result.status === "APPROVED") {
 				console.log("✅  approved immediately");
@@ -320,7 +320,7 @@ async function main() {
 			const msg = err instanceof Error ? err.message : String(err);
 			console.log(`❌  network error: ${msg}`);
 			results.failed++;
-			results.errors.push({ name: tpl.name, error: msg });
+			results.errors.push({ error: msg, name: tpl.name });
 		}
 
 		// Respect Meta's rate limit

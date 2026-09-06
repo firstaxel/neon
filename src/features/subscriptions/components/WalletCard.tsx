@@ -15,43 +15,43 @@ export function WalletCard() {
 		<>
 			<div
 				style={{
-					borderRadius: 20,
-					border: "1px solid #1e2a3a",
 					background: "#0d1420",
+					border: "1px solid #1e2a3a",
+					borderRadius: 20,
 					overflow: "hidden",
 				}}
 			>
 				<div
 					style={{
+						alignItems: "center",
 						background: "#0a1520",
-						padding: "16px 20px",
 						borderBottom: "1px solid #1e2a3a",
 						display: "flex",
-						alignItems: "center",
 						justifyContent: "space-between",
+						padding: "16px 20px",
 					}}
 				>
-					<div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+					<div style={{ alignItems: "center", display: "flex", gap: 10 }}>
 						<div
 							style={{
-								width: 32,
-								height: 32,
-								borderRadius: 9,
+								alignItems: "center",
 								background: "#0d2016",
 								border: "1px solid #25d36630",
+								borderRadius: 9,
 								display: "flex",
-								alignItems: "center",
+								height: 32,
 								justifyContent: "center",
+								width: 32,
 							}}
 						>
 							<Wallet color="#25d366" size={15} />
 						</div>
 						<span
 							style={{
-								fontFamily: "'Space Grotesk', sans-serif",
-								fontWeight: 600,
-								fontSize: 14,
 								color: "#e2e8f0",
+								fontFamily: "'Space Grotesk', sans-serif",
+								fontSize: 14,
+								fontWeight: 600,
 							}}
 						>
 							Wallet Balance
@@ -61,16 +61,16 @@ export function WalletCard() {
 						disabled={isFetching}
 						onClick={() => refetch()}
 						style={{
-							width: 28,
-							height: 28,
-							borderRadius: 8,
-							border: "1px solid #1e2a3a",
+							alignItems: "center",
 							background: "#0a1020",
+							border: "1px solid #1e2a3a",
+							borderRadius: 8,
 							color: "#8899aa",
 							cursor: "pointer",
 							display: "flex",
-							alignItems: "center",
+							height: 28,
 							justifyContent: "center",
+							width: 28,
 						}}
 						type="button"
 					>
@@ -85,10 +85,10 @@ export function WalletCard() {
 
 				<div
 					style={{
-						padding: "20px",
 						display: "flex",
 						flexDirection: "column",
 						gap: 16,
+						padding: "20px",
 					}}
 				>
 					{isLoading ? (
@@ -97,17 +97,17 @@ export function WalletCard() {
 						<div>
 							<p
 								style={{
-									fontFamily: "'Space Grotesk', sans-serif",
-									fontWeight: 700,
-									fontSize: 28,
 									color: "#e2e8f0",
+									fontFamily: "'Space Grotesk', sans-serif",
+									fontSize: 28,
+									fontWeight: 700,
 									lineHeight: 1,
 								}}
 							>
 								{balance}
 							</p>
 							{hasHeld && (
-								<p style={{ fontSize: 11, color: "#8899aa", marginTop: 6 }}>
+								<p style={{ color: "#8899aa", fontSize: 11, marginTop: 6 }}>
 									{available} available · funds reserved for active campaigns
 								</p>
 							)}
@@ -115,37 +115,37 @@ export function WalletCard() {
 					)}
 
 					<div
-						style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}
+						style={{ display: "grid", gap: 8, gridTemplateColumns: "1fr 1fr" }}
 					>
 						{[
-							{ label: "WhatsApp", rate: "₦5.00/msg", color: "#25d366" },
-							{ label: "SMS", rate: "₦2.50/msg", color: "#60a5fa" },
+							{ color: "#25d366", label: "WhatsApp", rate: "₦5.00/msg" },
+							{ color: "#60a5fa", label: "SMS", rate: "₦2.50/msg" },
 						].map(({ label, rate, color }) => (
 							<div
 								key={label}
 								style={{
-									borderRadius: 10,
-									border: "1px solid #1e2a3a",
 									background: "#0a1020",
+									border: "1px solid #1e2a3a",
+									borderRadius: 10,
 									padding: "10px 12px",
 								}}
 							>
 								<p
 									style={{
+										color,
 										fontSize: 10,
 										fontWeight: 700,
-										color,
-										textTransform: "uppercase",
 										letterSpacing: "0.05em",
+										textTransform: "uppercase",
 									}}
 								>
 									{label}
 								</p>
 								<p
 									style={{
+										color: "#e2e8f0",
 										fontSize: 13,
 										fontWeight: 600,
-										color: "#e2e8f0",
 										marginTop: 3,
 									}}
 								>
@@ -164,21 +164,21 @@ export function WalletCard() {
 							(e.currentTarget as HTMLButtonElement).style.opacity = "1";
 						}}
 						style={{
-							display: "flex",
 							alignItems: "center",
-							justifyContent: "center",
-							gap: 8,
-							width: "100%",
-							padding: "12px",
-							borderRadius: 12,
-							border: "none",
 							background: "#25d366",
+							border: "none",
+							borderRadius: 12,
 							color: "#080c14",
-							fontFamily: "'Space Grotesk', sans-serif",
-							fontWeight: 700,
-							fontSize: 14,
 							cursor: "pointer",
+							display: "flex",
+							fontFamily: "'Space Grotesk', sans-serif",
+							fontSize: 14,
+							fontWeight: 700,
+							gap: 8,
+							justifyContent: "center",
+							padding: "12px",
 							transition: "opacity 0.15s",
+							width: "100%",
 						}}
 						type="button"
 					>

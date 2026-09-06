@@ -14,6 +14,7 @@
  *   template.recordUsage  — increment usage_count + last_used_at
  */
 
+import { openapi } from "@orpc/openapi";
 import { ORPCError } from "@orpc/server";
 import { z } from "zod";
 import {
@@ -30,14 +31,33 @@ import type { WaButton, WaStatus } from "../category/whatsapp/templates";
 // ─── Zod schemas ──────────────────────────────────────────────────────────────
 
 const WaButtonSchema = z.object({
-	type: z.enum(["QUICK_REPLY", "URL", "PHONE_NUMBER", "COPY_CODE"]),
-	text: z.string().min(1).max(25),
-	url: z.string().optional(),
-	phoneNumber: z.string().optional(),
 	example: z.array(z.string()).optional(),
+	phoneNumber: z.string().optional(),
+	text: z.string().min(1).max(25),
+	type: z.enum(["QUICK_REPLY", "URL", "PHONE_NUMBER", "COPY_CODE"]),
+	url: z.string().optional(),
 });
 
 const TemplateInput = z.object({
+	bodyText: z.string().min(1, "Body text is required").max(1024),
+	bodyVars: z.array(z.string()).default([]),
+
+	buttons: z.array(WaButtonSchema).max(10).default([]),
+	category: z
+		.enum(["MARKETING", "UTILITY", "AUTHENTICATION"])
+		.default("MARKETING"),
+	channel: z.enum(["whatsapp", "sms"]).default("whatsapp"),
+	displayName: z.string().min(1).max(100),
+
+	footerText: z.string().max(60).optional(),
+
+	headerFormat: z
+		.enum(["TEXT", "IMAGE", "VIDEO", "DOCUMENT", "LOCATION"])
+		.nullable()
+		.optional(),
+	headerText: z.string().max(60).optional(),
+	headerVars: z.array(z.string()).default([]),
+	language: z.string().default("en"),
 	name: z
 		.string()
 		.min(1)
@@ -46,29 +66,9 @@ const TemplateInput = z.object({
 			/^[a-z0-9_]+$/,
 			"Name must be lowercase letters, numbers, and underscores only"
 		),
-	displayName: z.string().min(1).max(100),
-	language: z.string().default("en"),
-	category: z
-		.enum(["MARKETING", "UTILITY", "AUTHENTICATION"])
-		.default("MARKETING"),
-
-	headerFormat: z
-		.enum(["TEXT", "IMAGE", "VIDEO", "DOCUMENT", "LOCATION"])
-		.nullable()
-		.optional(),
-	headerText: z.string().max(60).optional(),
-	headerVars: z.array(z.string()).default([]),
-
-	bodyText: z.string().min(1, "Body text is required").max(1024),
-	bodyVars: z.array(z.string()).default([]),
-
-	footerText: z.string().max(60).optional(),
-
-	buttons: z.array(WaButtonSchema).max(10).default([]),
 
 	smsBody: z.string().min(1, "SMS body is required").max(918),
 	smsVars: z.array(z.string()).default([]),
-	channel: z.enum(["whatsapp", "sms"]).default("whatsapp"),
 });
 
 // ─── Helper: map DB row → client shape ───────────────────────────────────────
@@ -102,21 +102,15 @@ function mapTemplate(t: {
 	updatedAt: Date;
 }) {
 	return {
-		id: t.id,
-		name: t.name,
-		displayName: t.displayName,
-		language: t.language,
+		approvedAt: t.approvedAt?.toISOString() ?? null,
+		bodyText: t.bodyText,
+		bodyVars: t.bodyVars,
+		buttons: t.buttons as WaButton[],
 		category: t.category as "MARKETING" | "UTILITY" | "AUTHENTICATION",
-		status: t.status as
-			| "DRAFT"
-			| "PENDING"
-			| "APPROVED"
-			| "REJECTED"
-			| "PAUSED"
-			| "DISABLED",
-		waTemplateId: t.waTemplateId,
-		waAccountId: t.waAccountId,
-		rejectionReason: t.rejectionReason,
+		channel: t.channel,
+		createdAt: t.createdAt.toISOString(),
+		displayName: t.displayName,
+		footerText: t.footerText,
 		headerFormat: t.headerFormat as
 			| "TEXT"
 			| "IMAGE"
@@ -126,30 +120,41 @@ function mapTemplate(t: {
 			| null,
 		headerText: t.headerText,
 		headerVars: t.headerVars,
-		bodyText: t.bodyText,
-		bodyVars: t.bodyVars,
-		footerText: t.footerText,
-		buttons: t.buttons as WaButton[],
-		channel: t.channel,
+		id: t.id,
+		language: t.language,
+		lastUsedAt: t.lastUsedAt?.toISOString() ?? null,
+		name: t.name,
+		rejectionReason: t.rejectionReason,
 		smsBody: t.smsBody,
 		smsVars: t.smsVars,
-		usageCount: t.usageCount,
-		lastUsedAt: t.lastUsedAt?.toISOString() ?? null,
+		status: t.status as
+			| "DRAFT"
+			| "PENDING"
+			| "APPROVED"
+			| "REJECTED"
+			| "PAUSED"
+			| "DISABLED",
 		submittedAt: t.submittedAt?.toISOString() ?? null,
-		approvedAt: t.approvedAt?.toISOString() ?? null,
-		createdAt: t.createdAt.toISOString(),
 		updatedAt: t.updatedAt.toISOString(),
+		usageCount: t.usageCount,
+		waAccountId: t.waAccountId,
+		waTemplateId: t.waTemplateId,
 	};
 }
 
 // ─── list ─────────────────────────────────────────────────────────────────────
 
 export const listTemplates = protectedProcedure
-	.route({
-		method: "GET",
-	})
+	.meta(
+		openapi({
+			method: "GET",
+		})
+	)
 	.input(
 		z.object({
+			category: z.enum(["MARKETING", "UTILITY", "AUTHENTICATION"]).optional(),
+			channel: z.enum(["whatsapp", "sms"]).optional(),
+			search: z.string().optional(),
 			status: z
 				.enum([
 					"DRAFT",
@@ -160,14 +165,12 @@ export const listTemplates = protectedProcedure
 					"DISABLED",
 				])
 				.optional(),
-			category: z.enum(["MARKETING", "UTILITY", "AUTHENTICATION"]).optional(),
-			channel: z.enum(["whatsapp", "sms"]).optional(),
-			search: z.string().optional(),
 		})
 	)
 	.handler(
 		withCache("template.list", 30_000, async ({ input, context }) => {
 			const rows = await context.db.messageTemplate.findMany({
+				orderBy: [{ updatedAt: "desc" }],
 				where: {
 					userId: context.session?.user.id,
 					...(input.status ? { status: input.status } : {}),
@@ -187,7 +190,6 @@ export const listTemplates = protectedProcedure
 							}
 						: {}),
 				},
-				orderBy: [{ updatedAt: "desc" }],
 			});
 			return rows.map((t) => mapTemplate(t));
 		})
@@ -216,7 +218,7 @@ export const createTemplate = protectedProcedure
 	.handler(async ({ input, context }) => {
 		// Enforce unique name per user
 		const existing = await context.db.messageTemplate.findFirst({
-			where: { userId: context.session.user.id, name: input.name },
+			where: { name: input.name, userId: context.session.user.id },
 		});
 		if (existing) {
 			throw new ORPCError("CONFLICT", {
@@ -226,24 +228,24 @@ export const createTemplate = protectedProcedure
 
 		const t = await context.db.messageTemplate.create({
 			data: {
-				userId: context.session.user.id,
-				name: input.name,
-				displayName: input.displayName,
-				language: input.language,
+				bodyText: input.channel === "sms" ? input.smsBody : input.bodyText,
+				bodyVars: input.channel === "sms" ? input.smsVars : input.bodyVars,
+				buttons: input.channel === "sms" ? [] : input.buttons,
 				category: input.category,
-				// SMS-only templates are auto-approved — no Meta submission needed
-				status: input.channel === "sms" ? "APPROVED" : "DRAFT",
 				channel: input.channel,
+				displayName: input.displayName,
+				footerText: input.channel === "sms" ? null : (input.footerText ?? null),
 				headerFormat:
 					input.channel === "sms" ? null : (input.headerFormat ?? null),
 				headerText: input.channel === "sms" ? null : (input.headerText ?? null),
 				headerVars: input.channel === "sms" ? [] : input.headerVars,
-				bodyText: input.channel === "sms" ? input.smsBody : input.bodyText,
-				bodyVars: input.channel === "sms" ? input.smsVars : input.bodyVars,
-				footerText: input.channel === "sms" ? null : (input.footerText ?? null),
-				buttons: input.channel === "sms" ? [] : input.buttons,
+				language: input.language,
+				name: input.name,
 				smsBody: input.smsBody,
 				smsVars: input.smsVars,
+				// SMS-only templates are auto-approved — no Meta submission needed
+				status: input.channel === "sms" ? "APPROVED" : "DRAFT",
+				userId: context.session.user.id,
 				...(input.channel === "sms" ? { approvedAt: new Date() } : {}),
 			},
 		});
@@ -275,28 +277,28 @@ export const updateTemplate = protectedProcedure
 		}
 
 		const t = await context.db.messageTemplate.update({
-			where: { id: input.id },
 			data: {
-				name: input.name,
-				displayName: input.displayName,
-				language: input.language,
+				bodyText: existing.channel === "sms" ? input.smsBody : input.bodyText,
+				bodyVars: existing.channel === "sms" ? input.smsVars : input.bodyVars,
+				buttons: existing.channel === "sms" ? [] : input.buttons,
 				category: input.category,
-				// SMS-only stays APPROVED on edit; WA resets to DRAFT
-				status: existing.channel === "sms" ? "APPROVED" : "DRAFT",
+				displayName: input.displayName,
+				footerText:
+					existing.channel === "sms" ? null : (input.footerText ?? null),
 				headerFormat:
 					existing.channel === "sms" ? null : (input.headerFormat ?? null),
 				headerText:
 					existing.channel === "sms" ? null : (input.headerText ?? null),
 				headerVars: existing.channel === "sms" ? [] : input.headerVars,
-				bodyText: existing.channel === "sms" ? input.smsBody : input.bodyText,
-				bodyVars: existing.channel === "sms" ? input.smsVars : input.bodyVars,
-				footerText:
-					existing.channel === "sms" ? null : (input.footerText ?? null),
-				buttons: existing.channel === "sms" ? [] : input.buttons,
+				language: input.language,
+				name: input.name,
+				rejectionReason: null,
 				smsBody: input.smsBody,
 				smsVars: input.smsVars,
-				rejectionReason: null,
+				// SMS-only stays APPROVED on edit; WA resets to DRAFT
+				status: existing.channel === "sms" ? "APPROVED" : "DRAFT",
 			},
+			where: { id: input.id },
 		});
 		invalidateMany(context.session.user.id, [
 			"template.list",
@@ -355,18 +357,18 @@ export const submitTemplateForApproval = protectedProcedure
 		}
 
 		const payload: WaTemplatePayload = {
-			name: t.name,
-			displayName: t.displayName,
-			language: t.language,
+			bodyText: t.bodyText,
+			bodyVars: t.bodyVars,
+			buttons: (t.buttons as unknown as WaTemplatePayload["buttons"]) ?? [],
 			category: t.category as WaTemplatePayload["category"],
+			displayName: t.displayName,
+			footerText: t.footerText ?? undefined,
 			headerFormat:
 				(t.headerFormat as WaTemplatePayload["headerFormat"]) ?? undefined,
 			headerText: t.headerText ?? undefined,
 			headerVars: t.headerVars,
-			bodyText: t.bodyText,
-			bodyVars: t.bodyVars,
-			footerText: t.footerText ?? undefined,
-			buttons: (t.buttons as unknown as WaTemplatePayload["buttons"]) ?? [],
+			language: t.language,
+			name: t.name,
 			smsBody: t.smsBody,
 			smsVars: t.smsVars,
 		};
@@ -374,14 +376,14 @@ export const submitTemplateForApproval = protectedProcedure
 		const result = await submitTemplate(payload);
 
 		const updated = await context.db.messageTemplate.update({
-			where: { id: input.id },
 			data: {
-				status: "PENDING",
-				waTemplateId: result.id,
-				waAccountId: process.env.META_WABA_ID ?? null,
-				submittedAt: new Date(),
 				rejectionReason: null,
+				status: "PENDING",
+				submittedAt: new Date(),
+				waAccountId: process.env.META_WABA_ID ?? null,
+				waTemplateId: result.id,
 			},
+			where: { id: input.id },
 		});
 
 		invalidateMany(context.session.user.id, ["template.list", "template.get"]);
@@ -410,23 +412,23 @@ export const syncTemplateStatus = protectedProcedure
 
 		// Map WaStatus → WaTemplateStatus enum
 		const statusMap: Record<string, WaStatus> = {
-			PENDING: "PENDING",
 			APPROVED: "APPROVED",
-			REJECTED: "REJECTED",
-			PAUSED: "PAUSED",
 			DISABLED: "DISABLED",
+			PAUSED: "PAUSED",
+			PENDING: "PENDING",
+			REJECTED: "REJECTED",
 		};
 
 		const updated = await context.db.messageTemplate.update({
-			where: { id: input.id },
 			data: {
-				status: statusMap[result.status] ?? t.status,
-				rejectionReason: result.rejectionReason ?? null,
 				approvedAt:
 					result.status === "APPROVED" && !t.approvedAt
 						? new Date()
 						: t.approvedAt,
+				rejectionReason: result.rejectionReason ?? null,
+				status: statusMap[result.status] ?? t.status,
 			},
+			where: { id: input.id },
 		});
 
 		invalidateMany(context.session.user.id, ["template.list", "template.get"]);
@@ -446,8 +448,8 @@ export const recordTemplateUsage = protectedProcedure
 		}
 
 		await context.db.messageTemplate.update({
+			data: { lastUsedAt: new Date(), usageCount: { increment: 1 } },
 			where: { id: input.id },
-			data: { usageCount: { increment: 1 }, lastUsedAt: new Date() },
 		});
 		return { success: true };
 	});
@@ -466,26 +468,26 @@ export const getScenarioDefaults = protectedProcedure.handler(
 		);
 
 		const rows = await context.db.messageTemplate.findMany({
+			select: { bodyText: true, channel: true, scenarioId: true },
 			where: {
-				userId: context.session?.user.id,
 				isDefault: true,
 				scenarioId: { not: null },
+				userId: context.session?.user.id,
 			},
-			select: { scenarioId: true, channel: true, bodyText: true },
 		});
 
 		// Build lookup: scenarioId → { whatsapp, sms }
 		const map: Record<string, { whatsapp: string; sms: string }> = {};
 		for (const s of SCENARIOS) {
 			const seed = SCENARIO_SEED_TEMPLATES[s.id];
-			map[s.id] = { whatsapp: seed.whatsapp, sms: seed.sms };
+			map[s.id] = { sms: seed.sms, whatsapp: seed.whatsapp };
 		}
 		for (const row of rows) {
 			if (!row.scenarioId) {
 				continue;
 			}
 			if (!map[row.scenarioId]) {
-				map[row.scenarioId] = { whatsapp: "", sms: "" };
+				map[row.scenarioId] = { sms: "", whatsapp: "" };
 			}
 			if (row.channel === "whatsapp") {
 				map[row.scenarioId].whatsapp = row.bodyText;
@@ -510,8 +512,8 @@ export const seedFromLibrary = protectedProcedure.handler(
 			"#/features/miscellaneous/meta-templates"
 		);
 		const profile = await context.db.userProfile.findUnique({
-			where: { userId: context.session.user.id },
 			select: { orgType: true },
+			where: { userId: context.session.user.id },
 		});
 
 		const templates = getAllMetaTemplatesForOrg(profile?.orgType);
@@ -520,8 +522,8 @@ export const seedFromLibrary = protectedProcedure.handler(
 		const existingNames = new Set(
 			(
 				await context.db.messageTemplate.findMany({
-					where: { userId: context.session.user.id },
 					select: { name: true },
+					where: { userId: context.session.user.id },
 				})
 			).map((t) => t.name)
 		);
@@ -534,17 +536,17 @@ export const seedFromLibrary = protectedProcedure.handler(
 
 		await context.db.messageTemplate.createMany({
 			data: toCreate.map((t) => ({
-				userId: context.session.user.id,
-				name: t.name,
-				displayName: t.displayName,
-				category: t.category,
 				bodyText: t.bodyText,
 				bodyVars: t.bodyVars,
-				smsBody: t.smsBody,
-				footerText: t.footerText ?? null,
+				category: t.category,
 				channel: "whatsapp" as const,
+				displayName: t.displayName,
+				footerText: t.footerText ?? null,
+				name: t.name,
 				purpose: "general" as const,
+				smsBody: t.smsBody,
 				status: "DRAFT" as const,
+				userId: context.session.user.id,
 			})),
 		});
 

@@ -6,8 +6,8 @@ import { inngest } from "#/lib/inngest/client";
 export const Route = createFileRoute("/api/webhooks/whatsapp")({
 	server: {
 		handlers: {
-			POST: async ({ request }) => whatsappWebhookPost(request),
 			GET: async ({ request }) => whatsappGetWebhook(request),
+			POST: async ({ request }) => whatsappWebhookPost(request),
 		},
 	},
 });
@@ -29,8 +29,8 @@ export function whatsappGetWebhook(req: Request) {
 	) {
 		console.log("[WA Webhook] Verification successful");
 		return new Response(challenge, {
-			status: 200,
 			headers: { "Content-Type": "text/plain" },
+			status: 200,
 		});
 	}
 
@@ -134,11 +134,11 @@ function verifySignature(rawBody: string, signature: string | null): boolean {
 // Meta event strings → our WaTemplateStatus enum
 const STATUS_MAP: Record<string, string> = {
 	APPROVED: "APPROVED",
-	REJECTED: "REJECTED",
-	PENDING: "PENDING",
-	PAUSED: "PAUSED",
 	DISABLED: "DISABLED",
 	IN_APPEAL: "PENDING", // treat as still pending
+	PAUSED: "PAUSED",
+	PENDING: "PENDING",
+	REJECTED: "REJECTED",
 };
 
 // ─── POST — inbound events ─────────────────────────────────────────────────────
@@ -192,17 +192,17 @@ export async function whatsappWebhookPost(req: Request) {
 
 				updates.push(
 					prisma.messageTemplate.updateMany({
-						where: { waTemplateId: String(ev.message_template_id) },
 						data: {
+							rejectionReason: ev.reason ?? null,
 							status: newStatus as
 								| "APPROVED"
 								| "REJECTED"
 								| "PENDING"
 								| "PAUSED"
 								| "DISABLED",
-							rejectionReason: ev.reason ?? null,
 							...(newStatus === "APPROVED" ? { approvedAt: new Date() } : {}),
 						},
+						where: { waTemplateId: String(ev.message_template_id) },
 					})
 				);
 			}
@@ -228,7 +228,6 @@ export async function whatsappWebhookPost(req: Request) {
 
 					updates.push(
 						prisma.message.updateMany({
-							where: { metaMessageId: status.id },
 							data: {
 								status: dbStatus as "delivered" | "read" | "failed",
 								...(dbStatus === "delivered"
@@ -238,6 +237,7 @@ export async function whatsappWebhookPost(req: Request) {
 									? { errorMessage: status.errors[0].message }
 									: {}),
 							},
+							where: { metaMessageId: status.id },
 						})
 					);
 				}
@@ -258,16 +258,16 @@ export async function whatsappWebhookPost(req: Request) {
 						console.log(`[WA Webhook] STOP from ${phone}`);
 						updates.push(
 							prisma.contact.updateMany({
-								where: { phone: { in: [phone, `+${phone}`] } },
 								data: { optedOut: true, optedOutAt: new Date() },
+								where: { phone: { in: [phone, `+${phone}`] } },
 							})
 						);
 					} else if (isStart) {
 						console.log(`[WA Webhook] START from ${phone}`);
 						updates.push(
 							prisma.contact.updateMany({
-								where: { phone: { in: [phone, `+${phone}`] } },
 								data: { optedOut: false, optedOutAt: null },
+								where: { phone: { in: [phone, `+${phone}`] } },
 							})
 						);
 					}
@@ -277,16 +277,16 @@ export async function whatsappWebhookPost(req: Request) {
 					// reply ("Thanks!", "What time?", "👍") counts as consent given.
 					if (!(isStop || isStart)) {
 						const pending = await prisma.pendingDelivery.findFirst({
-							where: { phone, replied: false, expiresAt: { gt: new Date() } },
 							orderBy: { createdAt: "desc" },
+							where: { expiresAt: { gt: new Date() }, phone, replied: false },
 						});
 						if (pending) {
 							console.log(
 								`[WA Webhook] Reply from ${phone} → pending ${pending.id} ("${body.slice(0, 30)}")`
 							);
 							await inngest.send({
-								name: "Velocast/campaign.pending-reply-yes",
 								data: { pendingDeliveryId: pending.id, phone },
+								name: "Velocast/campaign.pending-reply-yes",
 							});
 						}
 					}
@@ -294,19 +294,19 @@ export async function whatsappWebhookPost(req: Request) {
 					// ── Persist all inbound messages to inbox ──────────────────────────
 					// Resolve contact + campaign owner so the message lands in the right inbox
 					const contact = await prisma.contact.findFirst({
-						where: { phone: { in: [phone, `+${phone}`] } },
 						select: { id: true, name: true, uploadedBy: true },
+						where: { phone: { in: [phone, `+${phone}`] } },
 					});
 
 					// Find the most recent campaign outbound message to this phone to
 					// attribute the inbound reply to the right campaign + userId
 					const lastOutbound = await prisma.message.findFirst({
-						where: { phone: { in: [phone, `+${phone}`] }, channel: "whatsapp" },
 						orderBy: { sentAt: "desc" },
 						select: {
-							campaignId: true,
 							campaign: { select: { userId: true } },
+							campaignId: true,
 						},
+						where: { channel: "whatsapp", phone: { in: [phone, `+${phone}`] } },
 					});
 
 					const userId = contact?.uploadedBy ?? lastOutbound?.campaign?.userId;
@@ -326,28 +326,28 @@ export async function whatsappWebhookPost(req: Request) {
 					if (!existing) {
 						await prisma.inboundMessage.create({
 							data: {
-								userId,
-								phone,
-								contactName: contact?.name ?? null,
-								contactId: contact?.id ?? null,
-								channel: "whatsapp",
 								body,
 								campaignId: lastOutbound?.campaignId ?? null,
+								channel: "whatsapp",
+								contactId: contact?.id ?? null,
+								contactName: contact?.name ?? null,
 								externalId: msg.id,
 								isKeyword: isStop || isStart,
+								phone,
 								receivedAt: new Date(Number.parseInt(msg.timestamp, 10) * 1000),
+								userId,
 							},
 						});
 
 						// Stamp lastInboundAt so the wizard can detect open service windows
 						if (contact?.id) {
 							await prisma.contact.update({
-								where: { id: contact.id },
 								data: {
 									lastInboundAt: new Date(
 										Number.parseInt(msg.timestamp, 10) * 1000
 									),
 								},
+								where: { id: contact.id },
 							});
 						}
 					}

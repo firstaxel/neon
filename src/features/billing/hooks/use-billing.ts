@@ -6,8 +6,8 @@ export function useWallet() {
 	return useQuery(
 		orpc.billing.getWallet.queryOptions({
 			queryKey: ["wallet"],
-			staleTime: 10_000,
 			refetchOnWindowFocus: true,
+			staleTime: 10_000,
 		})
 	);
 }
@@ -16,11 +16,11 @@ export function useWallet() {
 export function useTransactions(page = 1) {
 	return useQuery(
 		orpc.billing.getTransactions.queryOptions({
-			queryKey: ["transactions", page],
 			input: {
 				page,
 			},
 			placeholderData: (prev) => prev,
+			queryKey: ["transactions", page],
 			staleTime: 30_000,
 		})
 	);
@@ -46,14 +46,17 @@ export function useVerifyDeposit() {
 // ── Campaign cost check ───────────────────────────────────────────────────────
 export function useCampaignCost(
 	contacts: Array<{ channel: "whatsapp" | "sms" }>,
-	deliveryMode: "marketing" | "utility_prescreen" | "sms_fallback" = "marketing",
+	deliveryMode:
+		| "marketing"
+		| "utility_prescreen"
+		| "sms_fallback" = "marketing",
 	contactIds?: string[]
 ) {
 	return useQuery(
 		orpc.billing.checkCampaignCost.queryOptions({
-			queryKey: ["campaignCost", contacts, deliveryMode, contactIds],
-			input: { contacts, deliveryMode, contactIds },
 			enabled: contacts.length > 0,
+			input: { contactIds, contacts, deliveryMode },
+			queryKey: ["campaignCost", contacts, deliveryMode, contactIds],
 			staleTime: 5000,
 		})
 	);
@@ -63,8 +66,6 @@ export function useCampaignCost(
 export function useSubscription() {
 	return useQuery(
 		orpc.billing.getSubscription.queryOptions({
-			queryKey: ["subscription"],
-			input: {},
 			staleTime: 60_000,
 		})
 	);

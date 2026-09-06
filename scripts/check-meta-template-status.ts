@@ -74,10 +74,10 @@ async function mainSync() {
 
 	const statusEmoji: Record<string, string> = {
 		APPROVED: "✅",
+		DISABLED: "🚫",
+		PAUSED: "⏸️",
 		PENDING: "⏳",
 		REJECTED: "❌",
-		PAUSED: "⏸️",
-		DISABLED: "🚫",
 	};
 
 	for (const [status, list] of Object.entries(groups)) {

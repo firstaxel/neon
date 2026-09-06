@@ -21,34 +21,34 @@ export interface ScenarioMeta {
 
 export const SCENARIOS: ScenarioMeta[] = [
 	{
-		id: "first_timer",
-		icon: "✨",
-		label: "First-Time Welcome",
 		description: "Warm welcome for someone engaging for the first time",
+		icon: "✨",
+		id: "first_timer",
+		label: "First-Time Welcome",
 	},
 	{
-		id: "follow_up",
-		icon: "🔄",
-		label: "Follow-Up",
 		description: "Check in with an existing contact",
+		icon: "🔄",
+		id: "follow_up",
+		label: "Follow-Up",
 	},
 	{
-		id: "event_invite",
-		icon: "🎉",
-		label: "Event Invitation",
 		description: "Invite contacts to an upcoming event or gathering",
+		icon: "🎉",
+		id: "event_invite",
+		label: "Event Invitation",
 	},
 	{
-		id: "request",
-		icon: "🙏",
-		label: "Care & Support",
 		description: "Reach out to offer support or check on someone's wellbeing",
+		icon: "🙏",
+		id: "request",
+		label: "Care & Support",
 	},
 	{
-		id: "general",
-		icon: "📢",
-		label: "General Announcement",
 		description: "Broadcast an update or announcement to your contacts",
+		icon: "📢",
+		id: "general",
+		label: "General Announcement",
 	},
 ];
 
@@ -66,26 +66,26 @@ export const SCENARIO_SEED_TEMPLATES: Record<
 	ScenarioId,
 	{ whatsapp: string; sms: string }
 > = {
+	event_invite: {
+		sms: `Hi {name}, you're invited to an upcoming event from {orgName}. Reply YES to confirm. More details coming soon. Reply STOP to opt out.`,
+		whatsapp: `Hi {name}! 🎉 {orgName} has something coming up and we'd love to have you join us. Reply *YES* to confirm your spot or ask us for more details!`,
+	},
 	first_timer: {
-		whatsapp: `Hi {name}! 👋 Welcome — we're really glad to have you on board with {orgName}. Feel free to reply anytime if you have questions or need a hand. We're here to help! 😊`,
 		sms: "Hi {name}, welcome to {orgName}! Glad to have you with us. Reach out anytime. Reply STOP to opt out.",
+		whatsapp: `Hi {name}! 👋 Welcome — we're really glad to have you on board with {orgName}. Feel free to reply anytime if you have questions or need a hand. We're here to help! 😊`,
 	},
 	follow_up: {
-		whatsapp: `Hi {name}, 😊 just checking in from the team at {orgName}. How are things going? We'd love to hear from you — let us know if there's anything we can do for you.`,
 		sms: `Hi {name}, following up from {orgName}. How are things? We're here if you need anything. Reply STOP to opt out.`,
-	},
-	event_invite: {
-		whatsapp: `Hi {name}! 🎉 {orgName} has something coming up and we'd love to have you join us. Reply *YES* to confirm your spot or ask us for more details!`,
-		sms: `Hi {name}, you're invited to an upcoming event from {orgName}. Reply YES to confirm. More details coming soon. Reply STOP to opt out.`,
-	},
-	request: {
-		whatsapp: `Hi {name}, 💬 the team at {orgName} is reaching out to check in. We hope you're doing well — is there anything we can help you with or any way we can support you right now?`,
-		sms: `Hi {name}, checking in from {orgName}. We're here if you need anything — don't hesitate to reply. Reply STOP to opt out.`,
+		whatsapp: `Hi {name}, 😊 just checking in from the team at {orgName}. How are things going? We'd love to hear from you — let us know if there's anything we can do for you.`,
 	},
 	general: {
+		sms: "Hi {name}, important update from {orgName} coming soon. Thank you. Reply STOP to opt out.",
 		whatsapp:
 			"Hi {name}! 📢 {orgName} has an important update to share with you. Stay tuned — more details are on the way. Thank you for being a valued part of what we do!",
-		sms: "Hi {name}, important update from {orgName} coming soon. Thank you. Reply STOP to opt out.",
+	},
+	request: {
+		sms: `Hi {name}, checking in from {orgName}. We're here if you need anything — don't hesitate to reply. Reply STOP to opt out.`,
+		whatsapp: `Hi {name}, 💬 the team at {orgName} is reaching out to check in. We hope you're doing well — is there anything we can help you with or any way we can support you right now?`,
 	},
 };
 
@@ -101,19 +101,19 @@ export const AUTO_RESOLVED_VARS = new Set([
 ]);
 
 export const VAR_LABELS: Record<string, string> = {
-	org: "Organisation name",
-	orgName: "Organisation name",
-	org_name: "Organisation name",
-	date: "Date",
-	time: "Time",
-	event: "Event name",
 	amount: "Amount",
 	code: "Code / reference",
-	phone: "Phone number",
-	location: "Location / venue",
-	url: "Link / URL",
+	date: "Date",
 	deadline: "Deadline",
+	event: "Event name",
 	leader: "Leader / contact name",
+	location: "Location / venue",
+	org: "Organisation name",
+	org_name: "Organisation name",
+	orgName: "Organisation name",
+	phone: "Phone number",
+	time: "Time",
+	url: "Link / URL",
 };
 
 export function extractTemplateVars(text: string): string[] {
@@ -151,9 +151,9 @@ export function personalizeMessage(
 
 	const vars: Record<string, string> = {
 		...templateVars,
-		name: firstName,
-		firstName,
 		first_name: firstName,
+		firstName,
+		name: firstName,
 	};
 
 	let result = template;

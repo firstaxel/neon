@@ -60,10 +60,10 @@ function useFieldComponentContext() {
 		}
 
 		return {
+			error: errorMessage,
 			formControlId: `${idContext}-form-item`,
 			formDescriptionId: `${idContext}-form-item-description`,
 			formMessageId: `${idContext}-form-item-message`,
-			error: errorMessage,
 			hasError: showError && errorMessage !== null,
 		};
 	}, [idContext, isTouched, submissionAttempts, errors]);
@@ -174,14 +174,14 @@ function FieldError({
 }
 
 export {
-	Form,
 	Field,
-	FieldLabel,
 	FieldControl,
 	FieldDescription,
 	FieldError,
+	FieldLabel,
+	Form,
 	fieldContext,
-	useFieldContext,
 	formContext,
+	useFieldContext,
 	useFormContext,
 };

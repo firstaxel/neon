@@ -43,7 +43,7 @@ export function UserAvatar({
 
 	return (
 		<div
-			style={{ position: "relative", display: "inline-flex", flexShrink: 0 }}
+			style={{ display: "inline-flex", flexShrink: 0, position: "relative" }}
 		>
 			{image ? (
 				<img
@@ -51,34 +51,34 @@ export function UserAvatar({
 					height={size}
 					src={image}
 					style={{
-						width: size,
-						height: size,
 						borderRadius: "50%",
-						objectFit: "cover",
 						display: "block",
+						height: size,
+						objectFit: "cover",
+						width: size,
 					}}
 					width={size}
 				/>
 			) : (
 				<div
 					style={{
-						width: size,
-						height: size,
-						borderRadius: "50%",
+						alignItems: "center",
 						background: bg,
 						border: `1px solid ${fg}40`,
+						borderRadius: "50%",
 						display: "flex",
-						alignItems: "center",
-						justifyContent: "center",
 						flexShrink: 0,
+						height: size,
+						justifyContent: "center",
+						width: size,
 					}}
 				>
 					<span
 						style={{
-							fontFamily: "'Space Grotesk', sans-serif",
-							fontWeight: 700,
-							fontSize,
 							color: fg,
+							fontFamily: "'Space Grotesk', sans-serif",
+							fontSize,
+							fontWeight: 700,
 							lineHeight: 1,
 							userSelect: "none",
 						}}
@@ -91,14 +91,14 @@ export function UserAvatar({
 			{online && (
 				<span
 					style={{
-						position: "absolute",
-						bottom: 1,
-						right: 1,
-						width: Math.max(8, size * 0.24),
-						height: Math.max(8, size * 0.24),
-						borderRadius: "50%",
 						background: "#25d366",
 						border: "2px solid #080c14",
+						borderRadius: "50%",
+						bottom: 1,
+						height: Math.max(8, size * 0.24),
+						position: "absolute",
+						right: 1,
+						width: Math.max(8, size * 0.24),
 					}}
 				/>
 			)}

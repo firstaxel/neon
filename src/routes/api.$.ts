@@ -1,12 +1,16 @@
-import { SmartCoercionPlugin } from "@orpc/json-schema";
+import { SmartCoercionHandlerPlugin } from "@orpc/json-schema";
+import { OpenAPIGenerator } from "@orpc/openapi";
 import { OpenAPIHandler } from "@orpc/openapi/fetch";
-import { OpenAPIReferencePlugin } from "@orpc/openapi/plugins";
+import { OpenAPIReferenceHandlerPlugin } from "@orpc/openapi/plugins";
 import { onError } from "@orpc/server";
-import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4";
+import { ZodToJsonSchemaConverter } from "@orpc/zod";
 import { createFileRoute } from "@tanstack/react-router";
-import z from "zod";
 import { createContext } from "#/orpc/context";
 import { appRouter } from "#/orpc/router";
+
+const generator = new OpenAPIGenerator({
+	converters: [new ZodToJsonSchemaConverter()],
+});
 
 const handler = new OpenAPIHandler(appRouter, {
 	interceptors: [
@@ -15,39 +19,28 @@ const handler = new OpenAPIHandler(appRouter, {
 		}),
 	],
 	plugins: [
-		new SmartCoercionPlugin({
-			schemaConverters: [new ZodToJsonSchemaConverter()],
+		new SmartCoercionHandlerPlugin({
+			converters: [new ZodToJsonSchemaConverter()],
 		}),
-		new OpenAPIReferencePlugin({
-			schemaConverters: [new ZodToJsonSchemaConverter()],
-			specGenerateOptions: {
-				info: {
-					title: "TanStack ORPC Playground",
-					version: "1.0.0",
-				},
-				commonSchemas: {
-					Todo: { schema: z.object({}) },
-					UndefinedError: { error: "UndefinedError" },
-				},
-				security: [{ bearerAuth: [] }],
-				components: {
-					securitySchemes: {
-						bearerAuth: {
-							type: "http",
-							scheme: "bearer",
+		new OpenAPIReferenceHandlerPlugin({
+			spec: () =>
+				generator.generate(appRouter, {
+					base: {
+						components: {
+							securitySchemes: {
+								bearerAuth: {
+									scheme: "bearer",
+									type: "http",
+								},
+							},
 						},
-					},
-				},
-			},
-			docsConfig: {
-				authentication: {
-					securitySchemes: {
-						bearerAuth: {
-							token: "default-token",
+						info: {
+							title: "Velocast API",
+							version: "1.0.0",
 						},
+						security: [{ bearerAuth: [] }],
 					},
-				},
-			},
+				}),
 		}),
 	],
 });
@@ -56,8 +49,8 @@ async function handle({ request }: { request: Request }) {
 	const context = await createContext();
 
 	const { response } = await handler.handle(request, {
-		prefix: "/api",
 		context,
+		prefix: "/api",
 	});
 
 	return response ?? new Response("Not Found", { status: 404 });
@@ -66,12 +59,12 @@ async function handle({ request }: { request: Request }) {
 export const Route = createFileRoute("/api/$")({
 	server: {
 		handlers: {
-			HEAD: handle,
+			DELETE: handle,
 			GET: handle,
+			HEAD: handle,
+			PATCH: handle,
 			POST: handle,
 			PUT: handle,
-			PATCH: handle,
-			DELETE: handle,
 		},
 	},
 });

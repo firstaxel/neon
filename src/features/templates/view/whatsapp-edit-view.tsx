@@ -32,7 +32,7 @@ export function WaTemplateEditView({ id }: { id: string }) {
 
 	if (isLoading) {
 		return (
-			<div style={{ padding: "32px 28px", maxWidth: 1100, margin: "0 auto" }}>
+			<div style={{ margin: "0 auto", maxWidth: 1100, padding: "32px 28px" }}>
 				<Skeleton className="mb-6 h-8 w-48" />
 				<Skeleton className="mb-8 h-6 w-72" />
 				<div className="space-y-4">
@@ -59,7 +59,7 @@ export function WaTemplateEditView({ id }: { id: string }) {
 	}
 
 	return (
-		<div style={{ padding: "32px 28px", maxWidth: 1100, margin: "0 auto" }}>
+		<div style={{ margin: "0 auto", maxWidth: 1100, padding: "32px 28px" }}>
 			<div className="mb-6 flex items-center gap-3">
 				<Button
 					className="gap-1.5 rounded-xl"

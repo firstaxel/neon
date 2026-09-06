@@ -10,9 +10,9 @@ interface LowBalanceEmailProps {
 
 function formatNaira(kobo: number) {
 	return new Intl.NumberFormat("en-NG", {
-		style: "currency",
 		currency: "NGN",
 		minimumFractionDigits: 2,
+		style: "currency",
 	}).format(kobo / 100);
 }
 
@@ -34,10 +34,10 @@ export function LowBalanceEmail({
 			<Section
 				style={{
 					background: "#f9fafb",
-					borderRadius: 12,
-					padding: "16px 20px",
-					marginBottom: 20,
 					border: "1px solid #e5e7eb",
+					borderRadius: 12,
+					marginBottom: 20,
+					padding: "16px 20px",
 				}}
 			>
 				<Text className="m-0 text-[#374151] text-sm">
@@ -74,8 +74,8 @@ export function LowBalanceEmail({
 }
 
 LowBalanceEmail.PreviewProps = {
-	name: "Chukwuemeka",
 	campaignId: "abc-123-def",
+	name: "Chukwuemeka",
 	remainingBalanceKobo: 45,
 } satisfies LowBalanceEmailProps;
 

@@ -1,204 +1,175 @@
-import { EventSchemas, Inngest } from "inngest";
+import { Inngest, eventType, staticSchema } from "inngest";
 import type { MessageType } from "#/features/billing/utils";
 import type { MessageChannel, ScenarioId } from "../types";
 
 // ─── Shared payload types ─────────────────────────────────────────────────────
 
-// ─── Shared payload types ─────────────────────────────────────────────────────
-
-export interface ContactPayload {
+export type ContactPayload = {
 	channel: MessageChannel;
 	id: string;
 	name: string;
 	phone: string;
 	type: string;
-}
+};
 
 export type DeliveryMode = "marketing" | "utility_prescreen" | "sms_fallback";
 
-// ─── Event map ────────────────────────────────────────────────────────────────
+// ─── Event payload types ──────────────────────────────────────────────────────
 
-export interface Events {
-	// ── Billing ──────────────────────────────────────────────────────────────────
+export type CampaignPausedLowBalancePayload = {
+	campaignId: string;
+	userId: string;
+	remainingBalanceKobo: number;
+};
 
+export type CampaignPendingReplyYesPayload = {
+	pendingDeliveryId: string;
+	phone: string;
+};
+
+export type CampaignPrescreenPayload = {
+	campaignId: string;
+	userId: string;
+	orgName: string;
+	contactIds: string[];
+	realWhatsappMessage: string;
+	realSmsMessage: string;
+	scenario: ScenarioId;
+	templateVars: Record<string, string>;
+};
+
+export type CampaignPrescreenSinglePayload = {
+	campaignId: string;
+	userId: string;
+	orgName: string;
+	orgType: string;
+	scenario: ScenarioId;
+	contactId: string;
+	contactName: string;
+	phone: string;
+	channel: MessageChannel;
+	realMessage: string;
+};
+
+export type CampaignSendPayload = {
+	campaignId: string;
+	userId: string;
+	contactIds: string[];
+	whatsappTemplate: string;
+	smsTemplate: string;
+	scenario: ScenarioId;
+	templateVars: Record<string, string>;
+	forceSmsChannel?: boolean;
+};
+
+export type CampaignSendSinglePayload = {
+	campaignId: string;
+	messageId: string;
+	userId: string;
+	contactName: string;
+	phone: string;
+	channel: MessageChannel;
+	deliveryMode: DeliveryMode;
+	message: string;
+	messageType: MessageType;
+};
+
+export type ContactListParsePayload = {
+	jobId: string;
+	r2Key: string;
+	r2Bucket: string;
+	mimeType: string;
+	originalFilename: string;
+	parsedBy?: string;
+};
+
+// ─── Event Types (v4 staticSchema & eventType) ────────────────────────────────
+
+export const campaignPausedLowBalanceEvent = eventType(
+	"Velocast/campaign.paused-low-balance",
+	{
+		schema: staticSchema<CampaignPausedLowBalancePayload>(),
+	}
+);
+
+export const campaignPendingReplyYesEvent = eventType(
+	"Velocast/campaign.pending-reply-yes",
+	{
+		schema: staticSchema<CampaignPendingReplyYesPayload>(),
+	}
+);
+
+export const campaignPrescreenEvent = eventType(
+	"Velocast/campaign.prescreen",
+	{
+		schema: staticSchema<CampaignPrescreenPayload>(),
+	}
+);
+
+export const campaignPrescreenSingleEvent = eventType(
+	"Velocast/campaign.prescreen-single",
+	{
+		schema: staticSchema<CampaignPrescreenSinglePayload>(),
+	}
+);
+
+export const campaignSendEvent = eventType("Velocast/campaign.send", {
+	schema: staticSchema<CampaignSendPayload>(),
+});
+
+export const campaignSendSingleEvent = eventType(
+	"Velocast/campaign.send-single",
+	{
+		schema: staticSchema<CampaignSendSinglePayload>(),
+	}
+);
+
+export const contactListParseEvent = eventType("Velocast/contact-list.parse", {
+	schema: staticSchema<ContactListParsePayload>(),
+});
+
+// ─── Events map type for backward compatibility ──────────────────────────────
+
+export type Events = {
 	"Velocast/campaign.paused-low-balance": {
-		data: {
-			campaignId: string;
-			userId: string;
-			remainingBalanceKobo: number;
-		};
+		data: CampaignPausedLowBalancePayload;
 	};
-
 	"Velocast/campaign.pending-reply-yes": {
-		data: {
-			pendingDeliveryId: string;
-			phone: string;
-		};
+		data: CampaignPendingReplyYesPayload;
 	};
-
-	// ── Utility pre-screen flow ──────────────────────────────────────────────────
-
 	"Velocast/campaign.prescreen": {
-		data: {
-			campaignId: string;
-			userId: string;
-			orgName: string;
-			contacts: ContactPayload[];
-			realWhatsappMessage: string;
-			realSmsMessage: string;
-			scenario: ScenarioId;
-			templateVars: Record<string, string>;
-		};
+		data: CampaignPrescreenPayload;
 	};
-
 	"Velocast/campaign.prescreen-single": {
-		data: {
-			campaignId: string;
-			userId: string;
-			orgName: string;
-			contactId: string;
-			contactName: string;
-			phone: string;
-			channel: MessageChannel;
-			realMessage: string;
-		};
+		data: CampaignPrescreenSinglePayload;
 	};
-
-	// ── Standard campaign ────────────────────────────────────────────────────────
-
 	"Velocast/campaign.send": {
-		data: {
-			campaignId: string;
-			userId: string;
-			contacts: ContactPayload[];
-			whatsappTemplate: string;
-			smsTemplate: string;
-			scenario: ScenarioId;
-			templateVars: Record<string, string>;
-		};
+		data: CampaignSendPayload;
 	};
-
-	/**
-	 * Fan-out: one event per contact.
-	 * messageType is pre-resolved by the orchestrator to avoid redundant DB reads
-	 * and to ensure the worker uses the exact same billing rate as was quoted.
-	 */
 	"Velocast/campaign.send-single": {
-		data: {
-			campaignId: string;
-			messageId: string;
-			userId: string;
-			contactName: string;
-			phone: string;
-			channel: MessageChannel;
-			deliveryMode: DeliveryMode;
-			message: string;
-			messageType: MessageType; // pre-resolved — avoids per-worker re-derivation
-		};
+		data: CampaignSendSinglePayload;
 	};
-	// ── Contact parsing ──────────────────────────────────────────────────────────
-
 	"Velocast/contact-list.parse": {
-		data: {
-			jobId: string;
-			r2Key: string;
-			r2Bucket: string;
-			mimeType: string;
-			originalFilename: string;
-		};
+		data: ContactListParsePayload;
 	};
-}
-// Create a client to send and receive events
+};
+
+// ─── Client initialization ────────────────────────────────────────────────────
+
+/**
+ * Inngest client (v4 SDK).
+ *
+ * Migration notes:
+ * - EventSchemas replaced with eventType() + staticSchema()
+ * - Serve options (signingKey, baseUrl) configured here on client constructor
+ * - checkpointing.maxRuntime set for serverless execution
+ * - isDev set explicitly so local dev server works without requiring signing key
+ */
 export const inngest = new Inngest({
 	id: "Velocast",
-	schemas: new EventSchemas().fromRecord<{
-		// ── Billing ──────────────────────────────────────────────────────────────────
-
-		"Velocast/campaign.paused-low-balance": {
-			data: {
-				campaignId: string;
-				userId: string;
-				remainingBalanceKobo: number;
-			};
-		};
-
-		"Velocast/campaign.pending-reply-yes": {
-			data: {
-				pendingDeliveryId: string;
-				phone: string;
-			};
-		};
-
-		// ── Utility pre-screen flow ──────────────────────────────────────────────────
-
-		"Velocast/campaign.prescreen": {
-			data: {
-				campaignId: string;
-				userId: string;
-				orgName: string;
-				contactIds: string[];
-				realWhatsappMessage: string;
-				realSmsMessage: string;
-				scenario: ScenarioId;
-				templateVars: Record<string, string>;
-			};
-		};
-
-		"Velocast/campaign.prescreen-single": {
-			data: {
-				campaignId: string;
-				userId: string;
-				orgName: string;
-				contactId: string;
-				contactName: string;
-				phone: string;
-				channel: MessageChannel;
-				realMessage: string;
-			};
-		};
-
-		// ── Standard campaign ────────────────────────────────────────────────────────
-
-		"Velocast/campaign.send": {
-			data: {
-				campaignId: string;
-				userId: string;
-				contactIds: string[];
-				whatsappTemplate: string;
-				smsTemplate: string;
-				scenario: ScenarioId;
-				templateVars: Record<string, string>;
-			};
-		};
-
-		/**
-		 * Fan-out: one event per contact.
-		 * messageType is pre-resolved by the orchestrator to avoid redundant DB reads
-		 * and to ensure the worker uses the exact same billing rate as was quoted.
-		 */
-		"Velocast/campaign.send-single": {
-			data: {
-				campaignId: string;
-				messageId: string;
-				userId: string;
-				contactName: string;
-				phone: string;
-				channel: MessageChannel;
-				deliveryMode: DeliveryMode;
-				message: string;
-				messageType: MessageType; // pre-resolved — avoids per-worker re-derivation
-			};
-		};
-		// ── Contact parsing ──────────────────────────────────────────────────────────
-
-		"Velocast/contact-list.parse": {
-			data: {
-				jobId: string;
-				r2Key: string;
-				r2Bucket: string;
-				mimeType: string;
-				originalFilename: string;
-			};
-		};
-	}>(),
+	isDev: process.env.NODE_ENV === "development",
+	signingKey: process.env.INNGEST_SIGNING_KEY,
+	checkpointing: {
+		maxRuntime: "50s",
+	},
 });

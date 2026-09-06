@@ -9,50 +9,45 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as dashboardRouteRouteImport } from './routes/(dashboard)/route'
-import { Route as authRouteRouteImport } from './routes/(auth)/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ApiInngestRouteImport } from './routes/api/inngest'
+import { Route as authRouteRouteImport } from './routes/(auth)/route'
+import { Route as dashboardRouteRouteImport } from './routes/(dashboard)/route'
 import { Route as ApiSplatRouteImport } from './routes/api.$'
-import { Route as dashboardTemplatesIndexRouteImport } from './routes/(dashboard)/templates/index'
-import { Route as dashboardSettingsIndexRouteImport } from './routes/(dashboard)/settings/index'
-import { Route as dashboardOnboardingIndexRouteImport } from './routes/(dashboard)/onboarding/index'
-import { Route as dashboardMessagesIndexRouteImport } from './routes/(dashboard)/messages/index'
-import { Route as dashboardDashboardIndexRouteImport } from './routes/(dashboard)/dashboard/index'
-import { Route as dashboardContactsIndexRouteImport } from './routes/(dashboard)/contacts/index'
-import { Route as dashboardCampaignsIndexRouteImport } from './routes/(dashboard)/campaigns/index'
-import { Route as dashboardBillingIndexRouteImport } from './routes/(dashboard)/billing/index'
-import { Route as authResetPasswordIndexRouteImport } from './routes/(auth)/reset-password/index'
-import { Route as authRegisterIndexRouteImport } from './routes/(auth)/register/index'
-import { Route as authLoginIndexRouteImport } from './routes/(auth)/login/index'
+import { Route as ApiInngestRouteImport } from './routes/api/inngest'
 import { Route as authForgotPasswordIndexRouteImport } from './routes/(auth)/forgot-password/index'
-import { Route as ApiWebhooksWhatsappRouteImport } from './routes/api/webhooks/whatsapp'
-import { Route as ApiWebhooksPaystackRouteImport } from './routes/api/webhooks/paystack'
-import { Route as ApiRpcSplatRouteImport } from './routes/api.rpc.$'
+import { Route as authLoginIndexRouteImport } from './routes/(auth)/login/index'
+import { Route as authRegisterIndexRouteImport } from './routes/(auth)/register/index'
+import { Route as authResetPasswordIndexRouteImport } from './routes/(auth)/reset-password/index'
+import { Route as dashboardBillingIndexRouteImport } from './routes/(dashboard)/billing/index'
+import { Route as dashboardCampaignsIndexRouteImport } from './routes/(dashboard)/campaigns/index'
+import { Route as dashboardContactsIndexRouteImport } from './routes/(dashboard)/contacts/index'
+import { Route as dashboardDashboardIndexRouteImport } from './routes/(dashboard)/dashboard/index'
+import { Route as dashboardMessagesIndexRouteImport } from './routes/(dashboard)/messages/index'
+import { Route as dashboardOnboardingIndexRouteImport } from './routes/(dashboard)/onboarding/index'
+import { Route as dashboardSettingsIndexRouteImport } from './routes/(dashboard)/settings/index'
+import { Route as dashboardTemplatesIndexRouteImport } from './routes/(dashboard)/templates/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
-import { Route as dashboardCampaignsCreateIndexRouteImport } from './routes/(dashboard)/campaigns/create/index'
-import { Route as dashboardCampaignsCampaignIdIndexRouteImport } from './routes/(dashboard)/campaigns/$campaignId/index'
+import { Route as ApiRpcSplatRouteImport } from './routes/api.rpc.$'
+import { Route as ApiWebhooksPaystackRouteImport } from './routes/api/webhooks/paystack'
+import { Route as ApiWebhooksWhatsappRouteImport } from './routes/api/webhooks/whatsapp'
 import { Route as dashboardBillingVerifyIndexRouteImport } from './routes/(dashboard)/billing/verify/index'
-import { Route as dashboardTemplatesSmsTemplateIdIndexRouteImport } from './routes/(dashboard)/templates/sms/$templateId/index'
-import { Route as dashboardTemplatesCreateWhatsappIndexRouteImport } from './routes/(dashboard)/templates/create/whatsapp/index'
+import { Route as dashboardCampaignsCampaignIdIndexRouteImport } from './routes/(dashboard)/campaigns/$campaignId/index'
+import { Route as dashboardCampaignsCreateIndexRouteImport } from './routes/(dashboard)/campaigns/create/index'
 import { Route as dashboardTemplatesCreateSmsIndexRouteImport } from './routes/(dashboard)/templates/create/sms/index'
+import { Route as dashboardTemplatesCreateWhatsappIndexRouteImport } from './routes/(dashboard)/templates/create/whatsapp/index'
+import { Route as dashboardTemplatesSmsTemplateIdIndexRouteImport } from './routes/(dashboard)/templates/sms/$templateId/index'
 
-const dashboardRouteRoute = dashboardRouteRouteImport.update({
-  id: '/(dashboard)',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const authRouteRoute = authRouteRouteImport.update({
   id: '/(auth)',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiInngestRoute = ApiInngestRouteImport.update({
-  id: '/api/inngest',
-  path: '/api/inngest',
+const dashboardRouteRoute = dashboardRouteRouteImport.update({
+  id: '/(dashboard)',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiSplatRoute = ApiSplatRouteImport.update({
@@ -60,14 +55,54 @@ const ApiSplatRoute = ApiSplatRouteImport.update({
   path: '/api/$',
   getParentRoute: () => rootRouteImport,
 } as any)
-const dashboardTemplatesIndexRoute = dashboardTemplatesIndexRouteImport.update({
-  id: '/templates/',
-  path: '/templates/',
+const ApiInngestRoute = ApiInngestRouteImport.update({
+  id: '/api/inngest',
+  path: '/api/inngest',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const authForgotPasswordIndexRoute = authForgotPasswordIndexRouteImport.update({
+  id: '/forgot-password/',
+  path: '/forgot-password/',
+  getParentRoute: () => authRouteRoute,
+} as any)
+const authLoginIndexRoute = authLoginIndexRouteImport.update({
+  id: '/login/',
+  path: '/login/',
+  getParentRoute: () => authRouteRoute,
+} as any)
+const authRegisterIndexRoute = authRegisterIndexRouteImport.update({
+  id: '/register/',
+  path: '/register/',
+  getParentRoute: () => authRouteRoute,
+} as any)
+const authResetPasswordIndexRoute = authResetPasswordIndexRouteImport.update({
+  id: '/reset-password/',
+  path: '/reset-password/',
+  getParentRoute: () => authRouteRoute,
+} as any)
+const dashboardBillingIndexRoute = dashboardBillingIndexRouteImport.update({
+  id: '/billing/',
+  path: '/billing/',
   getParentRoute: () => dashboardRouteRoute,
 } as any)
-const dashboardSettingsIndexRoute = dashboardSettingsIndexRouteImport.update({
-  id: '/settings/',
-  path: '/settings/',
+const dashboardCampaignsIndexRoute = dashboardCampaignsIndexRouteImport.update({
+  id: '/campaigns/',
+  path: '/campaigns/',
+  getParentRoute: () => dashboardRouteRoute,
+} as any)
+const dashboardContactsIndexRoute = dashboardContactsIndexRouteImport.update({
+  id: '/contacts/',
+  path: '/contacts/',
+  getParentRoute: () => dashboardRouteRoute,
+} as any)
+const dashboardDashboardIndexRoute = dashboardDashboardIndexRouteImport.update({
+  id: '/dashboard/',
+  path: '/dashboard/',
+  getParentRoute: () => dashboardRouteRoute,
+} as any)
+const dashboardMessagesIndexRoute = dashboardMessagesIndexRouteImport.update({
+  id: '/messages/',
+  path: '/messages/',
   getParentRoute: () => dashboardRouteRoute,
 } as any)
 const dashboardOnboardingIndexRoute =
@@ -76,59 +111,19 @@ const dashboardOnboardingIndexRoute =
     path: '/onboarding/',
     getParentRoute: () => dashboardRouteRoute,
   } as any)
-const dashboardMessagesIndexRoute = dashboardMessagesIndexRouteImport.update({
-  id: '/messages/',
-  path: '/messages/',
+const dashboardSettingsIndexRoute = dashboardSettingsIndexRouteImport.update({
+  id: '/settings/',
+  path: '/settings/',
   getParentRoute: () => dashboardRouteRoute,
 } as any)
-const dashboardDashboardIndexRoute = dashboardDashboardIndexRouteImport.update({
-  id: '/dashboard/',
-  path: '/dashboard/',
+const dashboardTemplatesIndexRoute = dashboardTemplatesIndexRouteImport.update({
+  id: '/templates/',
+  path: '/templates/',
   getParentRoute: () => dashboardRouteRoute,
 } as any)
-const dashboardContactsIndexRoute = dashboardContactsIndexRouteImport.update({
-  id: '/contacts/',
-  path: '/contacts/',
-  getParentRoute: () => dashboardRouteRoute,
-} as any)
-const dashboardCampaignsIndexRoute = dashboardCampaignsIndexRouteImport.update({
-  id: '/campaigns/',
-  path: '/campaigns/',
-  getParentRoute: () => dashboardRouteRoute,
-} as any)
-const dashboardBillingIndexRoute = dashboardBillingIndexRouteImport.update({
-  id: '/billing/',
-  path: '/billing/',
-  getParentRoute: () => dashboardRouteRoute,
-} as any)
-const authResetPasswordIndexRoute = authResetPasswordIndexRouteImport.update({
-  id: '/reset-password/',
-  path: '/reset-password/',
-  getParentRoute: () => authRouteRoute,
-} as any)
-const authRegisterIndexRoute = authRegisterIndexRouteImport.update({
-  id: '/register/',
-  path: '/register/',
-  getParentRoute: () => authRouteRoute,
-} as any)
-const authLoginIndexRoute = authLoginIndexRouteImport.update({
-  id: '/login/',
-  path: '/login/',
-  getParentRoute: () => authRouteRoute,
-} as any)
-const authForgotPasswordIndexRoute = authForgotPasswordIndexRouteImport.update({
-  id: '/forgot-password/',
-  path: '/forgot-password/',
-  getParentRoute: () => authRouteRoute,
-} as any)
-const ApiWebhooksWhatsappRoute = ApiWebhooksWhatsappRouteImport.update({
-  id: '/api/webhooks/whatsapp',
-  path: '/api/webhooks/whatsapp',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiWebhooksPaystackRoute = ApiWebhooksPaystackRouteImport.update({
-  id: '/api/webhooks/paystack',
-  path: '/api/webhooks/paystack',
+const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
+  id: '/api/auth/$',
+  path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiRpcSplatRoute = ApiRpcSplatRouteImport.update({
@@ -136,15 +131,20 @@ const ApiRpcSplatRoute = ApiRpcSplatRouteImport.update({
   path: '/api/rpc/$',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
-  id: '/api/auth/$',
-  path: '/api/auth/$',
+const ApiWebhooksPaystackRoute = ApiWebhooksPaystackRouteImport.update({
+  id: '/api/webhooks/paystack',
+  path: '/api/webhooks/paystack',
   getParentRoute: () => rootRouteImport,
 } as any)
-const dashboardCampaignsCreateIndexRoute =
-  dashboardCampaignsCreateIndexRouteImport.update({
-    id: '/campaigns/create/',
-    path: '/campaigns/create/',
+const ApiWebhooksWhatsappRoute = ApiWebhooksWhatsappRouteImport.update({
+  id: '/api/webhooks/whatsapp',
+  path: '/api/webhooks/whatsapp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const dashboardBillingVerifyIndexRoute =
+  dashboardBillingVerifyIndexRouteImport.update({
+    id: '/billing/verify/',
+    path: '/billing/verify/',
     getParentRoute: () => dashboardRouteRoute,
   } as any)
 const dashboardCampaignsCampaignIdIndexRoute =
@@ -153,16 +153,16 @@ const dashboardCampaignsCampaignIdIndexRoute =
     path: '/campaigns/$campaignId/',
     getParentRoute: () => dashboardRouteRoute,
   } as any)
-const dashboardBillingVerifyIndexRoute =
-  dashboardBillingVerifyIndexRouteImport.update({
-    id: '/billing/verify/',
-    path: '/billing/verify/',
+const dashboardCampaignsCreateIndexRoute =
+  dashboardCampaignsCreateIndexRouteImport.update({
+    id: '/campaigns/create/',
+    path: '/campaigns/create/',
     getParentRoute: () => dashboardRouteRoute,
   } as any)
-const dashboardTemplatesSmsTemplateIdIndexRoute =
-  dashboardTemplatesSmsTemplateIdIndexRouteImport.update({
-    id: '/templates/sms/$templateId/',
-    path: '/templates/sms/$templateId/',
+const dashboardTemplatesCreateSmsIndexRoute =
+  dashboardTemplatesCreateSmsIndexRouteImport.update({
+    id: '/templates/create/sms/',
+    path: '/templates/create/sms/',
     getParentRoute: () => dashboardRouteRoute,
   } as any)
 const dashboardTemplatesCreateWhatsappIndexRoute =
@@ -171,10 +171,10 @@ const dashboardTemplatesCreateWhatsappIndexRoute =
     path: '/templates/create/whatsapp/',
     getParentRoute: () => dashboardRouteRoute,
   } as any)
-const dashboardTemplatesCreateSmsIndexRoute =
-  dashboardTemplatesCreateSmsIndexRouteImport.update({
-    id: '/templates/create/sms/',
-    path: '/templates/create/sms/',
+const dashboardTemplatesSmsTemplateIdIndexRoute =
+  dashboardTemplatesSmsTemplateIdIndexRouteImport.update({
+    id: '/templates/sms/$templateId/',
+    path: '/templates/sms/$templateId/',
     getParentRoute: () => dashboardRouteRoute,
   } as any)
 
@@ -362,11 +362,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/(dashboard)': {
-      id: '/(dashboard)'
-      path: ''
-      fullPath: ''
-      preLoaderRoute: typeof dashboardRouteRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/(auth)': {
@@ -376,18 +376,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof authRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/inngest': {
-      id: '/api/inngest'
-      path: '/api/inngest'
-      fullPath: '/api/inngest'
-      preLoaderRoute: typeof ApiInngestRouteImport
+    '/(dashboard)': {
+      id: '/(dashboard)'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof dashboardRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/$': {
@@ -397,74 +390,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/(dashboard)/templates/': {
-      id: '/(dashboard)/templates/'
-      path: '/templates'
-      fullPath: '/templates/'
-      preLoaderRoute: typeof dashboardTemplatesIndexRouteImport
-      parentRoute: typeof dashboardRouteRoute
+    '/api/inngest': {
+      id: '/api/inngest'
+      path: '/api/inngest'
+      fullPath: '/api/inngest'
+      preLoaderRoute: typeof ApiInngestRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/(dashboard)/settings/': {
-      id: '/(dashboard)/settings/'
-      path: '/settings'
-      fullPath: '/settings/'
-      preLoaderRoute: typeof dashboardSettingsIndexRouteImport
-      parentRoute: typeof dashboardRouteRoute
-    }
-    '/(dashboard)/onboarding/': {
-      id: '/(dashboard)/onboarding/'
-      path: '/onboarding'
-      fullPath: '/onboarding/'
-      preLoaderRoute: typeof dashboardOnboardingIndexRouteImport
-      parentRoute: typeof dashboardRouteRoute
-    }
-    '/(dashboard)/messages/': {
-      id: '/(dashboard)/messages/'
-      path: '/messages'
-      fullPath: '/messages/'
-      preLoaderRoute: typeof dashboardMessagesIndexRouteImport
-      parentRoute: typeof dashboardRouteRoute
-    }
-    '/(dashboard)/dashboard/': {
-      id: '/(dashboard)/dashboard/'
-      path: '/dashboard'
-      fullPath: '/dashboard/'
-      preLoaderRoute: typeof dashboardDashboardIndexRouteImport
-      parentRoute: typeof dashboardRouteRoute
-    }
-    '/(dashboard)/contacts/': {
-      id: '/(dashboard)/contacts/'
-      path: '/contacts'
-      fullPath: '/contacts/'
-      preLoaderRoute: typeof dashboardContactsIndexRouteImport
-      parentRoute: typeof dashboardRouteRoute
-    }
-    '/(dashboard)/campaigns/': {
-      id: '/(dashboard)/campaigns/'
-      path: '/campaigns'
-      fullPath: '/campaigns/'
-      preLoaderRoute: typeof dashboardCampaignsIndexRouteImport
-      parentRoute: typeof dashboardRouteRoute
-    }
-    '/(dashboard)/billing/': {
-      id: '/(dashboard)/billing/'
-      path: '/billing'
-      fullPath: '/billing/'
-      preLoaderRoute: typeof dashboardBillingIndexRouteImport
-      parentRoute: typeof dashboardRouteRoute
-    }
-    '/(auth)/reset-password/': {
-      id: '/(auth)/reset-password/'
-      path: '/reset-password'
-      fullPath: '/reset-password/'
-      preLoaderRoute: typeof authResetPasswordIndexRouteImport
-      parentRoute: typeof authRouteRoute
-    }
-    '/(auth)/register/': {
-      id: '/(auth)/register/'
-      path: '/register'
-      fullPath: '/register/'
-      preLoaderRoute: typeof authRegisterIndexRouteImport
+    '/(auth)/forgot-password/': {
+      id: '/(auth)/forgot-password/'
+      path: '/forgot-password'
+      fullPath: '/forgot-password/'
+      preLoaderRoute: typeof authForgotPasswordIndexRouteImport
       parentRoute: typeof authRouteRoute
     }
     '/(auth)/login/': {
@@ -474,25 +411,81 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof authLoginIndexRouteImport
       parentRoute: typeof authRouteRoute
     }
-    '/(auth)/forgot-password/': {
-      id: '/(auth)/forgot-password/'
-      path: '/forgot-password'
-      fullPath: '/forgot-password/'
-      preLoaderRoute: typeof authForgotPasswordIndexRouteImport
+    '/(auth)/register/': {
+      id: '/(auth)/register/'
+      path: '/register'
+      fullPath: '/register/'
+      preLoaderRoute: typeof authRegisterIndexRouteImport
       parentRoute: typeof authRouteRoute
     }
-    '/api/webhooks/whatsapp': {
-      id: '/api/webhooks/whatsapp'
-      path: '/api/webhooks/whatsapp'
-      fullPath: '/api/webhooks/whatsapp'
-      preLoaderRoute: typeof ApiWebhooksWhatsappRouteImport
-      parentRoute: typeof rootRouteImport
+    '/(auth)/reset-password/': {
+      id: '/(auth)/reset-password/'
+      path: '/reset-password'
+      fullPath: '/reset-password/'
+      preLoaderRoute: typeof authResetPasswordIndexRouteImport
+      parentRoute: typeof authRouteRoute
     }
-    '/api/webhooks/paystack': {
-      id: '/api/webhooks/paystack'
-      path: '/api/webhooks/paystack'
-      fullPath: '/api/webhooks/paystack'
-      preLoaderRoute: typeof ApiWebhooksPaystackRouteImport
+    '/(dashboard)/billing/': {
+      id: '/(dashboard)/billing/'
+      path: '/billing'
+      fullPath: '/billing/'
+      preLoaderRoute: typeof dashboardBillingIndexRouteImport
+      parentRoute: typeof dashboardRouteRoute
+    }
+    '/(dashboard)/campaigns/': {
+      id: '/(dashboard)/campaigns/'
+      path: '/campaigns'
+      fullPath: '/campaigns/'
+      preLoaderRoute: typeof dashboardCampaignsIndexRouteImport
+      parentRoute: typeof dashboardRouteRoute
+    }
+    '/(dashboard)/contacts/': {
+      id: '/(dashboard)/contacts/'
+      path: '/contacts'
+      fullPath: '/contacts/'
+      preLoaderRoute: typeof dashboardContactsIndexRouteImport
+      parentRoute: typeof dashboardRouteRoute
+    }
+    '/(dashboard)/dashboard/': {
+      id: '/(dashboard)/dashboard/'
+      path: '/dashboard'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof dashboardDashboardIndexRouteImport
+      parentRoute: typeof dashboardRouteRoute
+    }
+    '/(dashboard)/messages/': {
+      id: '/(dashboard)/messages/'
+      path: '/messages'
+      fullPath: '/messages/'
+      preLoaderRoute: typeof dashboardMessagesIndexRouteImport
+      parentRoute: typeof dashboardRouteRoute
+    }
+    '/(dashboard)/onboarding/': {
+      id: '/(dashboard)/onboarding/'
+      path: '/onboarding'
+      fullPath: '/onboarding/'
+      preLoaderRoute: typeof dashboardOnboardingIndexRouteImport
+      parentRoute: typeof dashboardRouteRoute
+    }
+    '/(dashboard)/settings/': {
+      id: '/(dashboard)/settings/'
+      path: '/settings'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof dashboardSettingsIndexRouteImport
+      parentRoute: typeof dashboardRouteRoute
+    }
+    '/(dashboard)/templates/': {
+      id: '/(dashboard)/templates/'
+      path: '/templates'
+      fullPath: '/templates/'
+      preLoaderRoute: typeof dashboardTemplatesIndexRouteImport
+      parentRoute: typeof dashboardRouteRoute
+    }
+    '/api/auth/$': {
+      id: '/api/auth/$'
+      path: '/api/auth/$'
+      fullPath: '/api/auth/$'
+      preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/rpc/$': {
@@ -502,18 +495,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiRpcSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/auth/$': {
-      id: '/api/auth/$'
-      path: '/api/auth/$'
-      fullPath: '/api/auth/$'
-      preLoaderRoute: typeof ApiAuthSplatRouteImport
+    '/api/webhooks/paystack': {
+      id: '/api/webhooks/paystack'
+      path: '/api/webhooks/paystack'
+      fullPath: '/api/webhooks/paystack'
+      preLoaderRoute: typeof ApiWebhooksPaystackRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/(dashboard)/campaigns/create/': {
-      id: '/(dashboard)/campaigns/create/'
-      path: '/campaigns/create'
-      fullPath: '/campaigns/create/'
-      preLoaderRoute: typeof dashboardCampaignsCreateIndexRouteImport
+    '/api/webhooks/whatsapp': {
+      id: '/api/webhooks/whatsapp'
+      path: '/api/webhooks/whatsapp'
+      fullPath: '/api/webhooks/whatsapp'
+      preLoaderRoute: typeof ApiWebhooksWhatsappRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(dashboard)/billing/verify/': {
+      id: '/(dashboard)/billing/verify/'
+      path: '/billing/verify'
+      fullPath: '/billing/verify/'
+      preLoaderRoute: typeof dashboardBillingVerifyIndexRouteImport
       parentRoute: typeof dashboardRouteRoute
     }
     '/(dashboard)/campaigns/$campaignId/': {
@@ -523,18 +523,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof dashboardCampaignsCampaignIdIndexRouteImport
       parentRoute: typeof dashboardRouteRoute
     }
-    '/(dashboard)/billing/verify/': {
-      id: '/(dashboard)/billing/verify/'
-      path: '/billing/verify'
-      fullPath: '/billing/verify/'
-      preLoaderRoute: typeof dashboardBillingVerifyIndexRouteImport
+    '/(dashboard)/campaigns/create/': {
+      id: '/(dashboard)/campaigns/create/'
+      path: '/campaigns/create'
+      fullPath: '/campaigns/create/'
+      preLoaderRoute: typeof dashboardCampaignsCreateIndexRouteImport
       parentRoute: typeof dashboardRouteRoute
     }
-    '/(dashboard)/templates/sms/$templateId/': {
-      id: '/(dashboard)/templates/sms/$templateId/'
-      path: '/templates/sms/$templateId'
-      fullPath: '/templates/sms/$templateId/'
-      preLoaderRoute: typeof dashboardTemplatesSmsTemplateIdIndexRouteImport
+    '/(dashboard)/templates/create/sms/': {
+      id: '/(dashboard)/templates/create/sms/'
+      path: '/templates/create/sms'
+      fullPath: '/templates/create/sms/'
+      preLoaderRoute: typeof dashboardTemplatesCreateSmsIndexRouteImport
       parentRoute: typeof dashboardRouteRoute
     }
     '/(dashboard)/templates/create/whatsapp/': {
@@ -544,11 +544,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof dashboardTemplatesCreateWhatsappIndexRouteImport
       parentRoute: typeof dashboardRouteRoute
     }
-    '/(dashboard)/templates/create/sms/': {
-      id: '/(dashboard)/templates/create/sms/'
-      path: '/templates/create/sms'
-      fullPath: '/templates/create/sms/'
-      preLoaderRoute: typeof dashboardTemplatesCreateSmsIndexRouteImport
+    '/(dashboard)/templates/sms/$templateId/': {
+      id: '/(dashboard)/templates/sms/$templateId/'
+      path: '/templates/sms/$templateId'
+      fullPath: '/templates/sms/$templateId/'
+      preLoaderRoute: typeof dashboardTemplatesSmsTemplateIdIndexRouteImport
       parentRoute: typeof dashboardRouteRoute
     }
   }

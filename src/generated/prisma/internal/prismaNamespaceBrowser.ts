@@ -54,11 +54,11 @@ export const ModelName = {
   User: 'User',
   Session: 'Session',
   Account: 'Account',
+  Verification: 'Verification',
   ParseJob: 'ParseJob',
   Contact: 'Contact',
   Campaign: 'Campaign',
   Message: 'Message',
-  Verification: 'Verification',
   Wallet: 'Wallet',
   Transaction: 'Transaction',
   Subscription: 'Subscription',
@@ -94,7 +94,6 @@ export const UserScalarFieldEnum = {
   updatedAt: 'updatedAt',
   email: 'email',
   name: 'name',
-  password: 'password',
   emailVerified: 'emailVerified',
   image: 'image'
 } as const
@@ -118,24 +117,33 @@ export type SessionScalarFieldEnum = (typeof SessionScalarFieldEnum)[keyof typeo
 
 export const AccountScalarFieldEnum = {
   id: 'id',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
+  accountId: 'accountId',
+  providerId: 'providerId',
   userId: 'userId',
   accessToken: 'accessToken',
   refreshToken: 'refreshToken',
-  expiresAt: 'expiresAt',
-  tokenType: 'tokenType',
-  scope: 'scope',
   idToken: 'idToken',
-  sessionState: 'sessionState',
-  accountId: 'accountId',
-  providerId: 'providerId',
   accessTokenExpiresAt: 'accessTokenExpiresAt',
   refreshTokenExpiresAt: 'refreshTokenExpiresAt',
-  password: 'password'
+  scope: 'scope',
+  password: 'password',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 } as const
 
 export type AccountScalarFieldEnum = (typeof AccountScalarFieldEnum)[keyof typeof AccountScalarFieldEnum]
+
+
+export const VerificationScalarFieldEnum = {
+  id: 'id',
+  identifier: 'identifier',
+  value: 'value',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type VerificationScalarFieldEnum = (typeof VerificationScalarFieldEnum)[keyof typeof VerificationScalarFieldEnum]
 
 
 export const ParseJobScalarFieldEnum = {
@@ -221,18 +229,6 @@ export const MessageScalarFieldEnum = {
 } as const
 
 export type MessageScalarFieldEnum = (typeof MessageScalarFieldEnum)[keyof typeof MessageScalarFieldEnum]
-
-
-export const VerificationScalarFieldEnum = {
-  id: 'id',
-  identifier: 'identifier',
-  value: 'value',
-  expiresAt: 'expiresAt',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type VerificationScalarFieldEnum = (typeof VerificationScalarFieldEnum)[keyof typeof VerificationScalarFieldEnum]
 
 
 export const WalletScalarFieldEnum = {

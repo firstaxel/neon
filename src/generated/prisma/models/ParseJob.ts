@@ -269,7 +269,7 @@ export type ParseJobGroupByOutputType = {
   _max: ParseJobMaxAggregateOutputType | null
 }
 
-type GetParseJobGroupByPayload<T extends ParseJobGroupByArgs> = Prisma.PrismaPromise<
+export type GetParseJobGroupByPayload<T extends ParseJobGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<ParseJobGroupByOutputType, T['by']> &
       {
@@ -671,6 +671,14 @@ export type ParseJobCreatewarningsInput = {
 
 export type EnumParseJobStatusFieldUpdateOperationsInput = {
   set?: $Enums.ParseJobStatus
+}
+
+export type NullableIntFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
 }
 
 export type NullableFloatFieldUpdateOperationsInput = {
@@ -1737,6 +1745,11 @@ export type ParseJobFindManyArgs<ExtArgs extends runtime.Types.Extensions.Intern
    * Skip the first `n` ParseJobs.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of ParseJobs.
+   */
   distinct?: Prisma.ParseJobScalarFieldEnum | Prisma.ParseJobScalarFieldEnum[]
 }
 

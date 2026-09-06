@@ -14,7 +14,6 @@ model User {
   updatedAt     DateTime  @updatedAt @db.Timestamp
   email         String    @unique
   name          String?
-  password      String @default("")
   sessions      Session[]
   accounts      Account[]
    contacts Contact[]
@@ -24,7 +23,6 @@ model User {
   emailVerified Boolean   @default(false)
   image         String?
 
-  @@map("user")
 
   subscriptions Subscription[]
   wallets Wallet[]
@@ -39,6 +37,8 @@ model User {
   orgMemberships     OrgMember[]       @relation("OrgMemberships")
   joinRequestsOwned  OrgJoinRequest[]  @relation("OrgJoinRequestsOwned")
   joinRequestsSent   OrgJoinRequest[]  @relation("OrgJoinRequestsSent")
+
+  @@map("user")
 }
 
 model Session {
@@ -57,30 +57,37 @@ model Session {
 }
 
 model Account {
-  id                String   @id @default(cuid())
-  createdAt         DateTime @default(now()) @db.Timestamp
-  updatedAt         DateTime @updatedAt @db.Timestamp
-  userId            String
-  accessToken       String?
-  refreshToken      String?
-  expiresAt         Int?
-  tokenType         String?
-  scope             String?
-  idToken           String?
-  sessionState      String?
-
-  user User @relation(fields: [userId], references: [id])
-
+  id                    String    @id
   accountId             String
   providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
   accessTokenExpiresAt  DateTime?
   refreshTokenExpiresAt DateTime?
+  scope                 String?
   password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
 
-  @@unique([providerId, accountId])
   @@index([userId])
   @@map("account")
 }
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
 
 // ─── Enums ────────────────────────────────────────────────────────────────────
 
@@ -291,17 +298,7 @@ model Message {
   users User[]
 }
 
-model Verification {
-  id         String   @id
-  identifier String
-  value      String
-  expiresAt  DateTime
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
 
-  @@index([identifier])
-  @@map("verification")
-}
 
 
 // ─── Billing ──────────────────────────────────────────────────────────────────

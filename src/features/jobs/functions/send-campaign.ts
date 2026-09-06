@@ -39,8 +39,6 @@
  *   atomically once all workers have had a chance to finish.
  */
 
-import LowBalanceEmail from "emails/low-balance-email";
-
 import { v4 as uuidv4 } from "uuid";
 import { prisma } from "#/db";
 import {
@@ -52,9 +50,15 @@ import {
 import { sendMail } from "#/features/email/lib/sender";
 import { personalizeMessage } from "#/features/miscellaneous/scenario";
 import { checkContent } from "#/lib/content-check";
-import { inngest } from "#/lib/inngest/client";
+import {
+	campaignPausedLowBalanceEvent,
+	campaignSendEvent,
+	campaignSendSingleEvent,
+	inngest,
+} from "#/lib/inngest/client";
 import { sendWhatsAppMessage } from "#/lib/meta-send";
 import { sendSmsMessage } from "#/lib/termii";
+import LowBalanceEmail from "@/emails/low-balance-email";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -73,9 +77,8 @@ export const sendCampaign = inngest.createFunction(
 		name: "Send Campaign Messages (Orchestrator)",
 		retries: 1,
 		timeouts: { finish: "15m" },
+		triggers: [campaignSendEvent],
 	},
-	{ event: "Velocast/campaign.send" },
-
 	async ({ event, step, logger }) => {
 		const {
 			campaignId,
@@ -105,8 +108,8 @@ export const sendCampaign = inngest.createFunction(
 		// ── Step 1: Mark processing ──────────────────────────────────────────────
 		await step.run("mark-processing", async () => {
 			await prisma.campaign.update({
+				data: { startedAt: new Date(), status: "processing" },
 				where: { id: campaignId },
-				data: { status: "processing", startedAt: new Date() },
 			});
 		});
 
@@ -116,14 +119,14 @@ export const sendCampaign = inngest.createFunction(
 		// 10k contacts = ~400KB IDs vs ~2MB objects.
 		const contacts = await step.run("fetch-contacts", async () => {
 			const rows = await prisma.contact.findMany({
-				where: { id: { in: contactIds }, uploadedBy: userId },
 				select: {
+					channel: true,
 					id: true,
 					name: true,
 					phone: true,
-					channel: true,
 					type: true,
 				},
+				where: { id: { in: contactIds }, uploadedBy: userId },
 			});
 			// sms_fallback: force every contact to SMS channel
 			if (forceSmsChannel) {
@@ -152,20 +155,20 @@ export const sendCampaign = inngest.createFunction(
 					`[AI Filter] Blocking campaign ${campaignId}: ${contentCheck.reason}`
 				);
 				await prisma.campaign.update({
-					where: { id: campaignId },
 					data: {
-						status: "failed",
 						completedAt: new Date(),
-						totalMessages: contacts.length,
 						failedMessages: contacts.length,
+						status: "failed",
+						totalMessages: contacts.length,
 					},
+					where: { id: campaignId },
 				});
 			});
 			return {
-				campaignId,
-				scenario,
 				blocked: true,
+				campaignId,
 				reason: contentCheck.reason,
+				scenario,
 			};
 		}
 
@@ -173,8 +176,8 @@ export const sendCampaign = inngest.createFunction(
 		const eligibleContacts = await step.run("filter-opted-out", async () => {
 			const phones = contacts.map((c) => c.phone);
 			const optedOut = await prisma.contact.findMany({
-				where: { phone: { in: phones }, optedOut: true },
 				select: { phone: true },
+				where: { optedOut: true, phone: { in: phones } },
 			});
 			const optedOutSet = new Set(optedOut.map((c) => c.phone));
 			const eligible = contacts.filter((c) => !optedOutSet.has(c.phone));
@@ -188,18 +191,18 @@ export const sendCampaign = inngest.createFunction(
 
 		if (eligibleContacts.length === 0) {
 			await prisma.campaign.update({
-				where: { id: campaignId },
 				data: {
-					status: "completed",
 					completedAt: new Date(),
+					status: "completed",
 					totalMessages: 0,
 				},
+				where: { id: campaignId },
 			});
 			return {
 				campaignId,
 				scenario,
-				totalQueued: 0,
 				skippedOptedOut: contacts.length,
+				totalQueued: 0,
 			};
 		}
 
@@ -209,21 +212,21 @@ export const sendCampaign = inngest.createFunction(
 				const template =
 					c.channel === "whatsapp" ? whatsappTemplate : smsTemplate;
 				return {
-					id: uuidv4(),
 					campaignId,
+					channel: c.channel as "whatsapp" | "sms",
 					contactId: c.id,
 					contactName: c.name,
-					phone: c.phone,
-					channel: c.channel as "whatsapp" | "sms",
+					id: uuidv4(),
 					message: personalizeMessage(template, c.name, templateVars),
+					phone: c.phone,
 					status: "queued" as const,
 				};
 			});
 
 			await prisma.message.createMany({ data: rows });
 			await prisma.campaign.update({
-				where: { id: campaignId },
 				data: { totalMessages: rows.length },
+				where: { id: campaignId },
 			});
 
 			logger.info(`[Campaign] Inserted ${rows.length} message rows`);
@@ -235,26 +238,23 @@ export const sendCampaign = inngest.createFunction(
 			"get-delivery-mode",
 			async () => {
 				const c = await prisma.campaign.findUnique({
-					where: { id: campaignId },
 					select: { deliveryMode: true },
+					where: { id: campaignId },
 				});
 				return c?.deliveryMode ?? "marketing";
 			}
 		);
 		const events = messageRows.map((m) => ({
-			name: "Velocast/campaign.send-single" as const,
 			data: {
 				campaignId,
-				userId,
-				messageId: m.id,
-				contactName: m.contactName,
-				phone: m.phone,
 				channel: m.channel,
+				contactName: m.contactName,
 				deliveryMode: campaignDeliveryMode as
 					| "marketing"
 					| "utility_prescreen"
 					| "sms_fallback",
 				message: m.message,
+				messageId: m.id,
 				messageType: resolveMessageType(
 					m.channel,
 					campaignDeliveryMode as
@@ -262,19 +262,33 @@ export const sendCampaign = inngest.createFunction(
 						| "utility_prescreen"
 						| "sms_fallback"
 				),
+				phone: m.phone,
+				userId,
 			},
+			name: "Velocast/campaign.send-single" as const,
 		}));
 
-		for (let i = 0; i < events.length; i += FAN_OUT_BATCH_SIZE) {
-			await step.sendEvent(
-				`fan-out-batch-${i}`,
-				events.slice(i, i + FAN_OUT_BATCH_SIZE)
-			);
-			if (i + FAN_OUT_BATCH_SIZE < events.length) {
-				// Stagger batches to avoid free-plan concurrency cancellations
-				await step.sleep(`fan-out-delay-${i}`, "3s");
-			}
-		}
+		const batchStarts = Array.from(
+			{ length: Math.ceil(events.length / FAN_OUT_BATCH_SIZE) },
+			(_, index) => index * FAN_OUT_BATCH_SIZE
+		);
+
+		await batchStarts.reduce(
+			(promise, i, index) =>
+				promise
+					.then(() =>
+						step.sendEvent(
+							`fan-out-batch-${i}`,
+							events.slice(i, i + FAN_OUT_BATCH_SIZE)
+						)
+					)
+					.then(() =>
+						index + 1 < batchStarts.length
+							? step.sleep(`fan-out-delay-${i}`, "3s")
+							: undefined
+					),
+			Promise.resolve()
+		);
 
 		logger.info(
 			`[Campaign] Fanned out ${events.length} events in ${Math.ceil(events.length / FAN_OUT_BATCH_SIZE)} batch(es)`
@@ -283,9 +297,9 @@ export const sendCampaign = inngest.createFunction(
 		return {
 			campaignId,
 			scenario,
+			sms: messageRows.filter((m) => m.channel === "sms").length,
 			totalQueued: messageRows.length,
 			whatsapp: messageRows.filter((m) => m.channel === "whatsapp").length,
-			sms: messageRows.filter((m) => m.channel === "sms").length,
 		};
 	}
 );
@@ -296,11 +310,6 @@ export const sendSingleMessage = inngest.createFunction(
 	{
 		id: "send-single-message",
 		name: "Send Single Message (Worker)",
-		// retries: 1 — only for genuine infrastructure failures (DB down, network timeout).
-		// A send failure (Meta/Termii returns error) is handled gracefully and does NOT retry.
-		retries: 1,
-
-		timeouts: { finish: "30s" },
 		onFailure: async ({ event, error, logger: log }) => {
 			// This only fires when ALL retries are exhausted on an INFRASTRUCTURE error
 			// (e.g. DB unreachable). Normal send failures are handled gracefully below.
@@ -329,11 +338,11 @@ export const sendSingleMessage = inngest.createFunction(
 			);
 			try {
 				await refundForMessage({
-					userId: d.userId,
-					messageType: d.messageType as MessageType,
 					campaignId: d.campaignId,
 					messageId: d.messageId,
+					messageType: d.messageType as MessageType,
 					reason: `infrastructure failure: ${error.message}`,
+					userId: d.userId,
 				});
 				log.info(`[onFailure] Refund successful for messageId=${d.messageId}`);
 			} catch (e) {
@@ -342,9 +351,13 @@ export const sendSingleMessage = inngest.createFunction(
 				);
 			}
 		},
-	},
-	{ event: "Velocast/campaign.send-single" },
+		// retries: 1 — only for genuine infrastructure failures (DB down, network timeout).
+		// A send failure (Meta/Termii returns error) is handled gracefully and does NOT retry.
+		retries: 1,
 
+		timeouts: { finish: "30s" },
+		triggers: [campaignSendSingleEvent],
+	},
 	async ({ event, step, logger }) => {
 		const {
 			campaignId,
@@ -384,9 +397,9 @@ export const sendSingleMessage = inngest.createFunction(
 				logger.info(
 					`[Billing] Already debited messageId=${messageId} — skipping`
 				);
-				return { success: true, balanceKobo: 0, alreadyDebited: true };
+				return { alreadyDebited: true, balanceKobo: 0, success: true };
 			}
-			return debitForMessage({ userId, messageType, campaignId, messageId });
+			return debitForMessage({ campaignId, messageId, messageType, userId });
 		});
 
 		if (!billing.success) {
@@ -396,42 +409,42 @@ export const sendSingleMessage = inngest.createFunction(
 					`[Campaign] Pausing ${campaignId} — wallet empty for ${userId}`
 				);
 				await prisma.message.update({
-					where: { id: messageId },
 					data: {
-						status: "failed",
 						errorMessage: "Insufficient wallet balance",
+						status: "failed",
 					},
+					where: { id: messageId },
 				});
 				await prisma.campaign.update({
-					where: { id: campaignId },
 					data: {
-						status: "failed",
-						failedMessages: { increment: 1 },
 						completedAt: new Date(),
+						failedMessages: { increment: 1 },
+						status: "failed",
 					},
+					where: { id: campaignId },
 				});
 			});
 
 			// FIX: inngest.send() MUST be outside step.run() — Inngest can replay
-			// step bodies, which would fire duplicate low-balance emails.
+			// step bodies, which would fire duplicate low-balance @/emails.
 			// Use step.sendEvent() which is idempotent and checkpoint-safe.
 			await step.sendEvent("notify-low-balance", {
-				name: "Velocast/campaign.paused-low-balance",
 				data: {
 					campaignId,
-					userId,
 					remainingBalanceKobo: billing.balanceKobo,
+					userId,
 				},
+				name: "Velocast/campaign.paused-low-balance",
 			});
 
-			return { messageId, success: false, reason: "insufficient_balance" };
+			return { messageId, reason: "insufficient_balance", success: false };
 		}
 
 		// ── Step 2: Mark sending ─────────────────────────────────────────────────
 		await step.run("mark-sending", async () => {
 			await prisma.message.update({
-				where: { id: messageId },
 				data: { status: "sending" },
+				where: { id: messageId },
 			});
 		});
 
@@ -439,10 +452,10 @@ export const sendSingleMessage = inngest.createFunction(
 		const result = await step.run("send-message", async () => {
 			if (channel === "whatsapp") {
 				const r = await sendWhatsAppMessage(phone, message);
-				return { success: r.success, externalId: r.messageId, error: r.error };
+				return { error: r.error, externalId: r.messageId, success: r.success };
 			}
 			const r = await sendSmsMessage(phone, message);
-			return { success: r.success, externalId: r.messageId, error: r.error };
+			return { error: r.error, externalId: r.messageId, success: r.success };
 		});
 
 		// ── Step 4: Persist result ───────────────────────────────────────────────
@@ -454,16 +467,16 @@ export const sendSingleMessage = inngest.createFunction(
 		await step.run("persist-result", async () => {
 			if (result.success) {
 				await prisma.message.update({
-					where: { id: messageId },
 					data: {
-						status: "sent",
 						metaMessageId: result.externalId ?? null,
 						sentAt: new Date(),
+						status: "sent",
 					},
+					where: { id: messageId },
 				});
 				await prisma.campaign.update({
-					where: { id: campaignId },
 					data: { sentMessages: { increment: 1 } },
+					where: { id: campaignId },
 				});
 				logger.info(
 					`[Send] ✅ ${contactName} via ${channel} — ID: ${result.externalId}`
@@ -472,20 +485,20 @@ export const sendSingleMessage = inngest.createFunction(
 				// Send failure is a normal outcome — persist it and fall through to
 				// check-complete so the campaign can still finish.
 				await prisma.message.update({
+					data: { errorMessage: result.error, status: "failed" },
 					where: { id: messageId },
-					data: { status: "failed", errorMessage: result.error },
 				});
 				await refundForMessage({
-					userId,
-					messageType,
 					campaignId,
 					messageId,
+					messageType,
 					reason: `send failure: ${result.error}`,
+					userId,
 				});
 
 				await prisma.campaign.update({
-					where: { id: campaignId },
 					data: { failedMessages: { increment: 1 } },
+					where: { id: campaignId },
 				});
 
 				logger.warn(`[Send] ❌ ${contactName} via ${channel}: ${result.error}`);
@@ -495,15 +508,15 @@ export const sendSingleMessage = inngest.createFunction(
 		// ── FIX: clean completion check — removed the broken empty AND/OR block ──
 		await step.run("check-complete", async () => {
 			const campaign = await prisma.campaign.findUnique({
-				where: { id: campaignId },
 				select: {
-					totalMessages: true,
-					sentMessages: true,
 					failedMessages: true,
+					sentMessages: true,
 					status: true,
+					totalMessages: true,
 				},
+				where: { id: campaignId },
 			});
-			if (!campaign || campaign.status !== "processing") {
+			if (campaign?.status !== "processing") {
 				return;
 			}
 
@@ -514,8 +527,8 @@ export const sendSingleMessage = inngest.createFunction(
 						? "failed"
 						: "completed";
 				await prisma.campaign.updateMany({
+					data: { completedAt: new Date(), status: finalStatus },
 					where: { id: campaignId, status: "processing" },
-					data: { status: finalStatus, completedAt: new Date() },
 				});
 				logger.info(
 					`[Campaign] ${campaignId} → ${finalStatus} (${done}/${campaign.totalMessages})`
@@ -524,9 +537,9 @@ export const sendSingleMessage = inngest.createFunction(
 		});
 
 		return {
+			externalId: result.externalId,
 			messageId,
 			success: result.success,
-			externalId: result.externalId,
 		};
 		// Note: no throw here. onFailure only fires for true step exceptions
 		// (DB down, network timeout) after the retry is exhausted.
@@ -539,9 +552,8 @@ export const handleLowBalancePause = inngest.createFunction(
 	{
 		id: "campaign-paused-low-balance",
 		name: "Notify User: Campaign Paused (Low Balance)",
+		triggers: [campaignPausedLowBalanceEvent],
 	},
-	{ event: "Velocast/campaign.paused-low-balance" },
-
 	async ({ event, step, logger }) => {
 		const { campaignId, userId, remainingBalanceKobo } = event.data as {
 			campaignId: string;
@@ -551,8 +563,8 @@ export const handleLowBalancePause = inngest.createFunction(
 
 		await step.run("notify-user", async () => {
 			const user = await prisma.user.findUnique({
-				where: { id: userId },
 				select: { email: true, name: true },
+				where: { id: userId },
 			});
 			if (!user) {
 				return;
@@ -563,13 +575,13 @@ export const handleLowBalancePause = inngest.createFunction(
 			);
 
 			await sendMail({
-				to: user.email,
 				subject: "Your Velocast campaign was paused — low balance",
 				template: LowBalanceEmail({
-					name: user.name ?? "",
 					campaignId,
+					name: user.name ?? "",
 					remainingBalanceKobo,
 				}),
+				to: user.email,
 			});
 		});
 	}

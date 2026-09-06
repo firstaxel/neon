@@ -205,7 +205,7 @@ export type PendingDeliveryGroupByOutputType = {
   _max: PendingDeliveryMaxAggregateOutputType | null
 }
 
-type GetPendingDeliveryGroupByPayload<T extends PendingDeliveryGroupByArgs> = Prisma.PrismaPromise<
+export type GetPendingDeliveryGroupByPayload<T extends PendingDeliveryGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<PendingDeliveryGroupByOutputType, T['by']> &
       {
@@ -1337,6 +1337,11 @@ export type PendingDeliveryFindManyArgs<ExtArgs extends runtime.Types.Extensions
    * Skip the first `n` PendingDeliveries.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of PendingDeliveries.
+   */
   distinct?: Prisma.PendingDeliveryScalarFieldEnum | Prisma.PendingDeliveryScalarFieldEnum[]
 }
 

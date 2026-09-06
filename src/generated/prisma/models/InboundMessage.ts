@@ -224,7 +224,7 @@ export type InboundMessageGroupByOutputType = {
   _max: InboundMessageMaxAggregateOutputType | null
 }
 
-type GetInboundMessageGroupByPayload<T extends InboundMessageGroupByArgs> = Prisma.PrismaPromise<
+export type GetInboundMessageGroupByPayload<T extends InboundMessageGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<InboundMessageGroupByOutputType, T['by']> &
       {
@@ -1639,6 +1639,11 @@ export type InboundMessageFindManyArgs<ExtArgs extends runtime.Types.Extensions.
    * Skip the first `n` InboundMessages.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of InboundMessages.
+   */
   distinct?: Prisma.InboundMessageScalarFieldEnum | Prisma.InboundMessageScalarFieldEnum[]
 }
 

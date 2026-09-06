@@ -28,7 +28,9 @@ export * from "./enums.ts"
  * Type-safe database client for TypeScript
  * @example
  * ```
- * const prisma = new PrismaClient()
+ * const prisma = new PrismaClient({
+ *   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL })
+ * })
  * // Fetch zero or more Users
  * const users = await prisma.user.findMany()
  * ```
@@ -55,6 +57,11 @@ export type Session = Prisma.SessionModel
  */
 export type Account = Prisma.AccountModel
 /**
+ * Model Verification
+ * 
+ */
+export type Verification = Prisma.VerificationModel
+/**
  * Model ParseJob
  * 
  */
@@ -74,11 +81,6 @@ export type Campaign = Prisma.CampaignModel
  * One row per individual message send attempt within a campaign.
  */
 export type Message = Prisma.MessageModel
-/**
- * Model Verification
- * 
- */
-export type Verification = Prisma.VerificationModel
 /**
  * Model Wallet
  * One wallet per user. All amounts stored in kobo (₦1 = 100 kobo).

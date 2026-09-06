@@ -346,7 +346,7 @@ export type MessageTemplateGroupByOutputType = {
   _max: MessageTemplateMaxAggregateOutputType | null
 }
 
-type GetMessageTemplateGroupByPayload<T extends MessageTemplateGroupByArgs> = Prisma.PrismaPromise<
+export type GetMessageTemplateGroupByPayload<T extends MessageTemplateGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<MessageTemplateGroupByOutputType, T['by']> &
       {
@@ -2027,6 +2027,11 @@ export type MessageTemplateFindManyArgs<ExtArgs extends runtime.Types.Extensions
    * Skip the first `n` MessageTemplates.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of MessageTemplates.
+   */
   distinct?: Prisma.MessageTemplateScalarFieldEnum | Prisma.MessageTemplateScalarFieldEnum[]
 }
 

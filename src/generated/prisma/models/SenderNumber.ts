@@ -228,7 +228,7 @@ export type SenderNumberGroupByOutputType = {
   _max: SenderNumberMaxAggregateOutputType | null
 }
 
-type GetSenderNumberGroupByPayload<T extends SenderNumberGroupByArgs> = Prisma.PrismaPromise<
+export type GetSenderNumberGroupByPayload<T extends SenderNumberGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<SenderNumberGroupByOutputType, T['by']> &
       {
@@ -1342,6 +1342,11 @@ export type SenderNumberFindManyArgs<ExtArgs extends runtime.Types.Extensions.In
    * Skip the first `n` SenderNumbers.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of SenderNumbers.
+   */
   distinct?: Prisma.SenderNumberScalarFieldEnum | Prisma.SenderNumberScalarFieldEnum[]
 }
 

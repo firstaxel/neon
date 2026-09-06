@@ -19,7 +19,7 @@ interface EmailLayoutProps {
 }
 
 /**
- * Shared wrapper for all Velocast transactional emails.
+ * Shared wrapper for all Velocast transactional @/emails.
  *
  * Provides consistent branding: logo, card container, footer.
  * Uses @react-email/components Tailwind support — classes are

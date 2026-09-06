@@ -1,6 +1,6 @@
 import { prisma } from "#/db";
 import { parseContactImageFromR2 } from "#/lib/gemini";
-import { inngest } from "#/lib/inngest/client";
+import { contactListParseEvent, inngest } from "#/lib/inngest/client";
 
 /**
  * Background job: Parse a contact list image using Google Gemini AI.
@@ -20,48 +20,47 @@ import { inngest } from "#/lib/inngest/client";
  */
 export const parseContactList = inngest.createFunction(
 	{
+		concurrency: { limit: 3 },
 		id: "parse-contact-list",
 		name: "Parse Contact List Image (Gemini AI + R2)",
-		retries: 2,
-		concurrency: { limit: 3 },
-		timeouts: { finish: "3m" },
 		onFailure: async ({ event, step }) => {
 			if (event.data.function_id !== "parse-contact-list") {
 				return;
 			}
 
-			const jobId = (event.data.event?.data as { jobId?: string })?.jobId;
+			const jobId = (event.data.event.data as { jobId?: string })?.jobId;
 			if (!jobId) {
 				return;
 			}
 
 			await step.run("mark-error", async () => {
 				await prisma.parseJob.update({
-					where: { id: jobId },
 					data: {
-						status: "error",
-						errorMessage: event.data.error?.message ?? "Unknown Inngest error",
 						completedAt: new Date(),
+						errorMessage: event.data.error?.message ?? "Unknown Inngest error",
+						status: "error",
 					},
+					where: { id: jobId },
 				});
 			});
 		},
+		retries: 2,
+		timeouts: { finish: "3m" },
+		triggers: [contactListParseEvent],
 	},
-	{ event: "Velocast/contact-list.parse" },
-
 	async ({ event, step, logger }) => {
 		const { jobId, r2Key, mimeType } = event.data;
 
 		logger.info(`[ParseJob] Starting jobId=${jobId} r2Key=${r2Key}`);
 
 		// ── Step 1: Mark ParseJob as "parsing" ────────────────────────────────────
-		const parseJob = await step.run("mark-parsing", () => {
-			return prisma.parseJob.update({
-				where: { id: jobId },
-				data: { status: "parsing", startedAt: new Date() },
+		const parseJob = await step.run("mark-parsing", () =>
+			prisma.parseJob.update({
+				data: { startedAt: new Date(), status: "parsing" },
 				select: { parsedBy: true },
-			});
-		});
+				where: { id: jobId },
+			})
+		);
 
 		const userId = parseJob.parsedBy;
 
@@ -87,55 +86,61 @@ export const parseContactList = inngest.createFunction(
 				//   - New phone → INSERT a fresh Contact row
 				//   - Existing phone → UPDATE name / type / notes / parseJobId (most recent wins)
 				//     but leave optedOut alone — we never re-opt someone in on a fresh upload.
-				for (const c of geminiResult.contacts) {
+				const results = await Promise.all(
+					geminiResult.contacts.map(async (c) => {
 					const existing = await prisma.contact.findUnique({
-						where: { uploadedBy_phone: { uploadedBy: userId, phone: c.phone } },
 						select: { id: true },
+						where: { uploadedBy_phone: { phone: c.phone, uploadedBy: userId } },
 					});
 
 					await prisma.contact.upsert({
-						where: { uploadedBy_phone: { uploadedBy: userId, phone: c.phone } },
 						create: {
-							id: c.id,
-							parseJobId: jobId,
-							uploadedBy: userId,
-							name: c.name,
-							phone: c.phone,
 							channel: c.channel,
-							type: c.type,
+							id: c.id,
+							name: c.name,
 							notes: c.notes ?? null,
+							parseJobId: jobId,
+							phone: c.phone,
 							rawRow: c.rawRow ?? null,
+							type: c.type,
+							uploadedBy: userId,
 						},
 						update: {
 							// Update mutable fields from the latest import
 							name: c.name,
-							type: c.type,
 							notes: c.notes ?? null,
-							rawRow: c.rawRow ?? null,
 							parseJobId: jobId, // attribute to the most recent import
+							rawRow: c.rawRow ?? null,
+							type: c.type,
 							// channel: intentionally not updated — changing whatsapp→sms
 							//   would silently break ongoing campaigns. Let the user edit manually.
 							// optedOut: intentionally not updated — never overwrite an opt-out.
 						},
+						where: { uploadedBy_phone: { phone: c.phone, uploadedBy: userId } },
 					});
 
-					if (existing) {
-						updatedCount++;
+					return existing ? "updated" : "inserted";
+					})
+				);
+
+				for (const result of results) {
+					if (result === "updated") {
+						updatedCount += 1;
 					} else {
-						insertedCount++;
+						insertedCount += 1;
 					}
 				}
 
 				// Mark ParseJob done
 				await prisma.parseJob.update({
-					where: { id: jobId },
 					data: {
-						status: "done",
-						rawExtractedText: geminiResult.rawText,
-						confidence: geminiResult.confidence,
-						warnings: geminiResult.warnings,
 						completedAt: new Date(),
+						confidence: geminiResult.confidence,
+						rawExtractedText: geminiResult.rawText,
+						status: "done",
+						warnings: geminiResult.warnings,
 					},
+					where: { id: jobId },
 				});
 
 				logger.info(
@@ -147,11 +152,11 @@ export const parseContactList = inngest.createFunction(
 		);
 
 		return {
-			jobId,
+			confidence: geminiResult.confidence,
 			contactsFound: geminiResult.contacts.length,
 			inserted,
+			jobId,
 			updated,
-			confidence: geminiResult.confidence,
 			warnings: geminiResult.warnings,
 		};
 	}

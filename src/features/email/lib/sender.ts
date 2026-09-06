@@ -1,5 +1,5 @@
 import { render } from "@react-email/render";
-import nodemailer from "nodemailer";
+import nodemailer, { type Transporter } from "nodemailer";
 import type { ReactElement } from "react";
 
 /**
@@ -22,10 +22,10 @@ import type { ReactElement } from "react";
 
 declare global {
 	// eslint-disable-next-line no-var
-	var __nodemailerTransport: nodemailer.Transporter | undefined;
+	var __nodemailerTransport: Transporter | undefined;
 }
 
-function createTransport(): nodemailer.Transporter {
+function createTransport(): Transporter {
 	const host = process.env.SMTP_HOST;
 	const port = Number.parseInt(process.env.SMTP_PORT ?? "587", 10);
 	const user = process.env.SMTP_USER;
@@ -38,18 +38,18 @@ function createTransport(): nodemailer.Transporter {
 	}
 
 	const transport = nodemailer.createTransport({
-		host,
-		port,
-		secure: process.env.SMTP_SECURE === "true", // true = SSL/TLS, false = STARTTLS
-		auth: { user, pass },
+		auth: { pass, user },
 		// Sane production timeouts
 		connectionTimeout: 10_000,
 		greetingTimeout: 10_000,
-		socketTimeout: 30_000,
-		// Pool connections for high-volume sending
-		pool: true,
+		host,
 		maxConnections: 5,
 		maxMessages: 100,
+		// Pool connections for high-volume sending
+		pool: true,
+		port,
+		secure: process.env.SMTP_SECURE === "true", // true = SSL/TLS, false = STARTTLS
+		socketTimeout: 30_000,
 	});
 
 	return transport;
@@ -86,24 +86,24 @@ export async function sendMail({ to, subject, template }: SendMailOptions) {
 	const text = await render(template, { plainText: true });
 
 	if (process.env.NODE_ENV === "development") {
-		// Ethereal catch-all in dev — emails are captured, never delivered.
+		// Ethereal catch-all in dev — @/emails are captured, never delivered.
 		// View sent messages at https://ethereal.email
 		const testAccount = await nodemailer.createTestAccount();
 		const devTransport = nodemailer.createTransport({
+			auth: {
+				pass: testAccount.pass,
+				user: testAccount.user,
+			},
 			host: "smtp.ethereal.email",
 			port: 587,
-			auth: {
-				user: testAccount.user,
-				pass: testAccount.pass,
-			},
 		});
 
 		const info = await devTransport.sendMail({
 			from: process.env.EMAIL_FROM ?? '"Velocast Dev" <dev@Velocast.local>',
-			to,
-			subject,
 			html,
+			subject,
 			text,
+			to,
 		});
 
 		console.log(
@@ -114,9 +114,9 @@ export async function sendMail({ to, subject, template }: SendMailOptions) {
 
 	return transport.sendMail({
 		from: process.env.EMAIL_FROM,
-		to,
-		subject,
 		html,
+		subject,
 		text,
+		to,
 	});
 }

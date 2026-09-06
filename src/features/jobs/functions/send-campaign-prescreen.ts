@@ -26,7 +26,12 @@ import { debitForMessage, refundForMessage } from "#/features/billing/utils";
 import { getUtilityTemplate } from "#/features/miscellaneous/meta-templates";
 import { personalizeMessage } from "#/features/miscellaneous/scenario";
 import { checkContent } from "#/lib/content-check";
-import { inngest } from "#/lib/inngest/client";
+import {
+	campaignPendingReplyYesEvent,
+	campaignPrescreenEvent,
+	campaignPrescreenSingleEvent,
+	inngest,
+} from "#/lib/inngest/client";
 import { sendTemplateMessage, sendTextMessage } from "#/lib/meta-send";
 import { sendSmsMessage } from "#/lib/termii";
 
@@ -44,9 +49,8 @@ export const sendCampaignPrescreen = inngest.createFunction(
 		name: "Send Campaign — Utility Pre-Screen (Orchestrator)",
 		retries: 1,
 		timeouts: { finish: "15m" },
+		triggers: [campaignPrescreenEvent],
 	},
-	{ event: "Velocast/campaign.prescreen" },
-
 	async ({ event, step, logger }) => {
 		const {
 			campaignId,
@@ -65,16 +69,16 @@ export const sendCampaignPrescreen = inngest.createFunction(
 
 		await step.run("mark-processing", async () => {
 			await prisma.campaign.update({
+				data: { startedAt: new Date(), status: "processing" },
 				where: { id: campaignId },
-				data: { status: "processing", startedAt: new Date() },
 			});
 		});
 
 		// Fetch orgType for per-scenario utility template selection
 		const orgType = await step.run("fetch-org-type", async () => {
 			const profile = await prisma.userProfile.findUnique({
-				where: { userId },
 				select: { orgType: true },
+				where: { userId },
 			});
 			return profile?.orgType ?? "other";
 		});
@@ -82,8 +86,8 @@ export const sendCampaignPrescreen = inngest.createFunction(
 		// Fetch full contact data from DB — event only contains IDs
 		const contacts = await step.run("fetch-contacts", async () => {
 			const rows = await prisma.contact.findMany({
+				select: { channel: true, id: true, name: true, phone: true },
 				where: { id: { in: contactIds }, uploadedBy: userId },
-				select: { id: true, name: true, phone: true, channel: true },
 			});
 			return rows as Array<{
 				id: string;
@@ -106,24 +110,24 @@ export const sendCampaignPrescreen = inngest.createFunction(
 					`[AI Filter] Blocking prescreen campaign ${campaignId}: ${contentCheck.reason}`
 				);
 				await prisma.campaign.update({
-					where: { id: campaignId },
 					data: {
-						status: "failed",
 						completedAt: new Date(),
-						totalMessages: contacts.length,
 						failedMessages: contacts.length,
+						status: "failed",
+						totalMessages: contacts.length,
 					},
+					where: { id: campaignId },
 				});
 			});
-			return { campaignId, blocked: true, reason: contentCheck.reason };
+			return { blocked: true, campaignId, reason: contentCheck.reason };
 		}
 
 		// Filter opted-out contacts
 		const eligible = await step.run("filter-opted-out", async () => {
 			const phones = contacts.map((c) => c.phone);
 			const optedOut = await prisma.contact.findMany({
-				where: { phone: { in: phones }, optedOut: true },
 				select: { phone: true },
+				where: { optedOut: true, phone: { in: phones } },
 			});
 			const set = new Set(optedOut.map((c) => c.phone));
 			return contacts.filter((c) => !set.has(c.phone));
@@ -131,51 +135,68 @@ export const sendCampaignPrescreen = inngest.createFunction(
 
 		if (eligible.length === 0) {
 			await prisma.campaign.update({
-				where: { id: campaignId },
 				data: {
-					status: "completed",
 					completedAt: new Date(),
+					status: "completed",
 					totalMessages: 0,
 				},
+				where: { id: campaignId },
 			});
 			return { campaignId, totalQueued: 0 };
 		}
 
 		await step.run("update-total", async () => {
 			await prisma.campaign.update({
-				where: { id: campaignId },
 				data: { totalMessages: eligible.length },
+				where: { id: campaignId },
 			});
 		});
 
 		// Batched fan-out — stagger to avoid free-plan cancellations
-		for (let i = 0; i < eligible.length; i += FAN_OUT_BATCH_SIZE) {
-			const batch = eligible.slice(i, i + FAN_OUT_BATCH_SIZE);
-			const events = batch.map((c) => ({
-				name: "Velocast/campaign.prescreen-single" as const,
-				data: {
-					campaignId,
-					userId,
-					orgName,
-					orgType,
-					scenario,
-					contactId: c.id,
-					contactName: c.name,
-					phone: c.phone,
-					channel: c.channel,
-					realMessage:
-						c.channel === "whatsapp"
-							? personalizeMessage(realWhatsappMessage, c.name, templateVars)
-							: personalizeMessage(realSmsMessage, c.name, templateVars),
-				},
-			}));
-
-			await step.sendEvent(`fan-out-batch-${i}`, events);
-
-			if (i + FAN_OUT_BATCH_SIZE < eligible.length) {
-				await step.sleep(`fan-out-delay-${i}`, "3s");
+		const batches = Array.from(
+			{ length: Math.ceil(eligible.length / FAN_OUT_BATCH_SIZE) },
+			(_, batchIndex) => {
+				const i = batchIndex * FAN_OUT_BATCH_SIZE;
+				const batch = eligible.slice(i, i + FAN_OUT_BATCH_SIZE);
+				return {
+					events: batch.map((c) => ({
+						data: {
+							campaignId,
+							channel: c.channel,
+							contactId: c.id,
+							contactName: c.name,
+							orgName,
+							orgType,
+							phone: c.phone,
+							realMessage:
+								c.channel === "whatsapp"
+									? personalizeMessage(
+											realWhatsappMessage,
+											c.name,
+											templateVars
+										)
+									: personalizeMessage(realSmsMessage, c.name, templateVars),
+							scenario,
+							userId,
+						},
+						name: "Velocast/campaign.prescreen-single" as const,
+					})),
+					i,
+				};
 			}
-		}
+		);
+
+		await batches.reduce(
+			(chain, { i, events }, batchIndex) =>
+				chain
+					.then(() => step.sendEvent(`fan-out-batch-${i}`, events))
+					.then(() =>
+						batchIndex < batches.length - 1
+							? step.sleep(`fan-out-delay-${i}`, "3s")
+							: undefined
+					),
+			Promise.resolve()
+		);
 
 		logger.info(
 			`[Prescreen] Fanned out ${eligible.length} events in ${Math.ceil(eligible.length / FAN_OUT_BATCH_SIZE)} batch(es)`
@@ -195,9 +216,8 @@ export const sendPrescreenSingle = inngest.createFunction(
 		retries: 0,
 
 		timeouts: { finish: "30s" },
+		triggers: [campaignPrescreenSingleEvent],
 	},
-	{ event: "Velocast/campaign.prescreen-single" },
-
 	async ({ event, step, logger }) => {
 		const {
 			campaignId,
@@ -232,19 +252,19 @@ export const sendPrescreenSingle = inngest.createFunction(
 					where: { reference: `msg_${smsBillingId}` },
 				});
 				if (existing) {
-					return { success: true, balanceKobo: 0 };
+					return { balanceKobo: 0, success: true };
 				}
 				return debitForMessage({
-					userId,
-					messageType: "sms",
 					campaignId,
 					messageId: smsBillingId,
+					messageType: "sms",
+					userId,
 				});
 			});
 
 			if (!billing.success) {
 				logger.warn(`[Prescreen/SMS] Wallet empty for userId=${userId}`);
-				return { success: false, reason: "insufficient_balance" };
+				return { reason: "insufficient_balance", success: false };
 			}
 
 			const result = await step.run("send-sms", async () =>
@@ -254,30 +274,30 @@ export const sendPrescreenSingle = inngest.createFunction(
 			if (result.success) {
 				await prisma.$transaction(async (tx) => {
 					await tx.campaign.update({
-						where: { id: campaignId },
 						data: { sentMessages: { increment: 1 } },
+						where: { id: campaignId },
 					});
 					const camp = await tx.campaign.findUnique({
-						where: { id: campaignId },
 						select: {
-							sentMessages: true,
 							failedMessages: true,
+							sentMessages: true,
 							totalMessages: true,
 						},
+						where: { id: campaignId },
 					});
 					if (
 						camp &&
 						camp.sentMessages + camp.failedMessages >= camp.totalMessages
 					) {
 						await tx.campaign.update({
-							where: { id: campaignId },
 							data: {
+								completedAt: new Date(),
 								status:
 									camp.failedMessages >= camp.totalMessages
 										? "failed"
 										: "completed",
-								completedAt: new Date(),
 							},
+							where: { id: campaignId },
 						});
 					}
 				});
@@ -289,39 +309,39 @@ export const sendPrescreenSingle = inngest.createFunction(
 				});
 				if (!alreadyRefunded) {
 					await refundForMessage({
-						userId,
-						messageType: "sms",
 						campaignId,
 						messageId: smsBillingId,
+						messageType: "sms",
 						reason: result.error ?? "SMS send failed",
+						userId,
 					});
 				}
 				await prisma.$transaction(async (tx) => {
 					await tx.campaign.update({
-						where: { id: campaignId },
 						data: { failedMessages: { increment: 1 } },
+						where: { id: campaignId },
 					});
 					const camp = await tx.campaign.findUnique({
-						where: { id: campaignId },
 						select: {
-							sentMessages: true,
 							failedMessages: true,
+							sentMessages: true,
 							totalMessages: true,
 						},
+						where: { id: campaignId },
 					});
 					if (
 						camp &&
 						camp.sentMessages + camp.failedMessages >= camp.totalMessages
 					) {
 						await tx.campaign.update({
-							where: { id: campaignId },
 							data: {
+								completedAt: new Date(),
 								status:
 									camp.failedMessages >= camp.totalMessages
 										? "failed"
 										: "completed",
-								completedAt: new Date(),
 							},
+							where: { id: campaignId },
 						});
 					}
 				});
@@ -347,23 +367,23 @@ export const sendPrescreenSingle = inngest.createFunction(
 				logger.info(
 					`[Prescreen] Already debited consent for ${phone} — skipping`
 				);
-				return { success: true, balanceKobo: 0 };
+				return { balanceKobo: 0, success: true };
 			}
 			return debitForMessage({
-				userId,
-				messageType: "whatsapp_utility",
 				campaignId,
 				messageId: prescreenBillingId,
+				messageType: "whatsapp_utility",
+				userId,
 			});
 		});
 
 		if (!billing.success) {
 			logger.warn(`[Prescreen] Wallet empty for userId=${userId}`);
 			await inngest.send({
+				data: { campaignId, remainingBalanceKobo: billing.balanceKobo, userId },
 				name: "Velocast/campaign.paused-low-balance",
-				data: { campaignId, userId, remainingBalanceKobo: billing.balanceKobo },
 			});
-			return { success: false, reason: "insufficient_balance" };
+			return { reason: "insufficient_balance", success: false };
 		}
 
 		const result = await step.run("send-consent-template", () => {
@@ -393,11 +413,11 @@ export const sendPrescreenSingle = inngest.createFunction(
 					return;
 				}
 				await refundForMessage({
-					userId,
-					messageType: "whatsapp_utility",
 					campaignId,
 					messageId: prescreenBillingId,
+					messageType: "whatsapp_utility",
 					reason: result.error ?? "consent send failed",
+					userId,
 				});
 
 				logger.error(
@@ -407,18 +427,18 @@ export const sendPrescreenSingle = inngest.createFunction(
 
 			await step.run("throw-sending error", async () => {
 				await prisma.message.update({
+					data: { errorMessage: result.error, status: "failed" },
 					where: { id: prescreenBillingId },
-					data: { status: "failed", errorMessage: result.error },
 				});
 
 				await prisma.$transaction(async (tx) => {
 					const campaignDetails = await tx.campaign.findUnique({
+						select: {
+							failedMessages: true,
+							totalMessages: true,
+						},
 						where: {
 							id: campaignId,
-						},
-						select: {
-							totalMessages: true,
-							failedMessages: true,
 						},
 					});
 
@@ -426,8 +446,8 @@ export const sendPrescreenSingle = inngest.createFunction(
 						campaignDetails?.totalMessages === campaignDetails?.failedMessages
 					) {
 						await prisma.campaign.update({
-							where: { id: campaignId },
 							data: { status: "failed" },
+							where: { id: campaignId },
 						});
 					}
 				});
@@ -442,35 +462,35 @@ export const sendPrescreenSingle = inngest.createFunction(
 				Date.now() + PENDING_TTL_HOURS * 60 * 60 * 1000
 			);
 			await prisma.pendingDelivery.upsert({
-				where: { id: `pd_${campaignId}_${phone.replace(/\D/g, "")}` },
 				create: {
-					id: `pd_${campaignId}_${phone.replace(/\D/g, "")}`,
 					campaignId,
 					contactId: contactId || null,
 					contactName,
-					phone: phone.replace(phoneRegex, ""),
-					realMessage,
-					prescreenMsgId: result.messageId ?? null,
 					expiresAt,
+					id: `pd_${campaignId}_${phone.replace(/\D/g, "")}`,
+					phone: phone.replace(phoneRegex, ""),
+					prescreenMsgId: result.messageId ?? null,
+					realMessage,
 				},
 				update: {
+					expiresAt,
 					// Idempotent: if consent was re-sent (e.g. step retried), refresh expiry
 					prescreenMsgId: result.messageId ?? null,
-					expiresAt,
 					replied: false,
 				},
+				where: { id: `pd_${campaignId}_${phone.replace(/\D/g, "")}` },
 			});
 		});
 
 		await prisma.campaign.update({
-			where: { id: campaignId },
 			data: { sentMessages: { increment: 1 } },
+			where: { id: campaignId },
 		});
 
 		logger.info(
 			`[Prescreen] ✅ Consent sent to ${contactName} — pending YES reply`
 		);
-		return { success: true, pendingPhone: phone };
+		return { pendingPhone: phone, success: true };
 	}
 );
 
@@ -482,38 +502,37 @@ export const sendPendingMessage = inngest.createFunction(
 		name: "Send Real Message After YES Reply",
 		retries: 2,
 		timeouts: { finish: "30s" },
+		triggers: [campaignPendingReplyYesEvent],
 	},
-	{ event: "Velocast/campaign.pending-reply-yes" },
-
 	async ({ event, step, logger }) => {
 		const { pendingDeliveryId, phone } = event.data as {
 			pendingDeliveryId: string;
 			phone: string;
 		};
 
-		const pending = await step.run("load-pending", () => {
-			return prisma.pendingDelivery.findUnique({
+		const pending = await step.run("load-pending", () =>
+			prisma.pendingDelivery.findUnique({
+				include: { campaign: { select: { id: true, userId: true } } },
 				where: { id: pendingDeliveryId },
-				include: { campaign: { select: { userId: true, id: true } } },
-			});
-		});
+			})
+		);
 
 		if (!pending) {
 			logger.warn(`[PendingDelivery] ${pendingDeliveryId} not found`);
-			return { success: false, reason: "not_found" };
+			return { reason: "not_found", success: false };
 		}
 		if (pending.replied) {
 			logger.info(
 				`[PendingDelivery] Already replied — skipping ${pendingDeliveryId}`
 			);
-			return { success: false, reason: "already_replied" };
+			return { reason: "already_replied", success: false };
 		}
 		if (new Date(pending.expiresAt) < new Date()) {
 			logger.info(`[PendingDelivery] Expired — skipping ${pendingDeliveryId}`);
-			return { success: false, reason: "expired" };
+			return { reason: "expired", success: false };
 		}
 
-		const userId = pending.campaign.userId;
+		const { userId } = pending.campaign;
 
 		// Billing debit — idempotent
 		const billing = await step.run("billing-debit-real", async () => {
@@ -524,32 +543,32 @@ export const sendPendingMessage = inngest.createFunction(
 				logger.info(
 					`[PendingDelivery] Already debited ${pendingDeliveryId} — skipping`
 				);
-				return { success: true, balanceKobo: 0 };
+				return { balanceKobo: 0, success: true };
 			}
 			return debitForMessage({
-				userId,
-				messageType: "whatsapp_service",
 				campaignId: pending.campaignId,
 				messageId: pendingDeliveryId,
+				messageType: "whatsapp_service",
+				userId,
 			});
 		});
 
 		if (!billing.success) {
 			logger.warn(`[PendingDelivery] Wallet empty for userId=${userId}`);
 			await inngest.send({
-				name: "Velocast/campaign.paused-low-balance",
 				data: {
 					campaignId: pending.campaignId,
-					userId,
 					remainingBalanceKobo: billing.balanceKobo,
+					userId,
 				},
+				name: "Velocast/campaign.paused-low-balance",
 			});
-			return { success: false, reason: "insufficient_balance" };
+			return { reason: "insufficient_balance", success: false };
 		}
 
-		const result = await step.run("send-real-message", () => {
-			return sendTextMessage(phone, pending.realMessage);
-		});
+		const result = await step.run("send-real-message", () =>
+			sendTextMessage(phone, pending.realMessage)
+		);
 
 		await step.run("finalize", async () => {
 			if (!result.success) {
@@ -559,11 +578,11 @@ export const sendPendingMessage = inngest.createFunction(
 				});
 				if (!alreadyRefunded) {
 					await refundForMessage({
-						userId,
-						messageType: "whatsapp_service",
 						campaignId: pending.campaignId,
 						messageId: pendingDeliveryId,
+						messageType: "whatsapp_service",
 						reason: result.error ?? "real message send failed",
+						userId,
 					});
 				}
 				logger.warn(
@@ -573,22 +592,22 @@ export const sendPendingMessage = inngest.createFunction(
 
 			await prisma.$transaction([
 				prisma.pendingDelivery.update({
-					where: { id: pendingDeliveryId },
 					data: { replied: true, repliedAt: new Date() },
+					where: { id: pendingDeliveryId },
 				}),
 				prisma.message.create({
 					data: {
-						id: uuidv4(),
 						campaignId: pending.campaignId,
+						channel: "whatsapp",
 						contactId: pending.contactId ?? undefined,
 						contactName: pending.contactName,
-						phone,
-						channel: "whatsapp",
-						message: pending.realMessage,
-						status: result.success ? "sent" : "failed",
-						metaMessageId: result.messageId ?? null,
 						errorMessage: result.error ?? null,
+						id: uuidv4(),
+						message: pending.realMessage,
+						metaMessageId: result.messageId ?? null,
+						phone,
 						sentAt: result.success ? new Date() : null,
+						status: result.success ? "sent" : "failed",
 					},
 				}),
 			]);
@@ -597,7 +616,7 @@ export const sendPendingMessage = inngest.createFunction(
 		logger.info(
 			`[PendingDelivery] ${result.success ? "✅ Real message sent" : "❌ Send failed, refunded"} — ${pending.contactName}`
 		);
-		return { success: result.success, messageId: result.messageId };
+		return { messageId: result.messageId, success: result.success };
 	}
 );
 

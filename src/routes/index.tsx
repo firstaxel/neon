@@ -103,9 +103,9 @@ function LogoMark({ size = 32 }: { size?: number }) {
 		<div
 			className="flex shrink-0 items-center justify-center rounded-[31%] bg-gradient-to-br from-[var(--lp-accent)] to-[var(--lp-violet)]"
 			style={{
-				width: size,
-				height: size,
 				boxShadow: "0 0 20px var(--lp-glow)",
+				height: size,
+				width: size,
 			}}
 		>
 			<svg
@@ -135,29 +135,29 @@ function LogoMark({ size = 32 }: { size?: number }) {
 const MSGS = [
 	{
 		from: "📢 Campaign",
-		text: "Hi Sarah! Your order #4821 has shipped and will arrive by Thursday.",
 		side: "right" as const,
+		text: "Hi Sarah! Your order #4821 has shipped and will arrive by Thursday.",
 	},
 	{
 		from: "💬 Sarah",
-		text: "Wow that was fast! Thanks for the update 🙌",
 		side: "left" as const,
+		text: "Wow that was fast! Thanks for the update 🙌",
 	},
 	{
 		from: "🔔 Consent",
-		text: "Hi Marcus, TechCorp wants to send you exclusive offers. Reply YES to opt in.",
 		side: "right" as const,
+		text: "Hi Marcus, TechCorp wants to send you exclusive offers. Reply YES to opt in.",
 	},
-	{ from: "💬 Marcus", text: "YES! Sounds good 👍", side: "left" as const },
+	{ from: "💬 Marcus", side: "left" as const, text: "YES! Sounds good 👍" },
 	{
 		from: "✨ Welcome",
-		text: "Hi Priya! Welcome to the team. Your account is set up and ready to go.",
 		side: "right" as const,
+		text: "Hi Priya! Welcome to the team. Your account is set up and ready to go.",
 	},
 	{
 		from: "🔄 Follow-up",
-		text: "Hi James — we noticed you haven't checked in lately. Need any help?",
 		side: "right" as const,
+		text: "Hi James — we noticed you haven't checked in lately. Need any help?",
 	},
 ];
 
@@ -475,32 +475,32 @@ function Hero() {
 								<div className="flex flex-col gap-2">
 									{[
 										{
+											ch: "WhatsApp",
+											done: true,
 											name: "New Customer Onboarding",
-											ch: "WhatsApp",
+											pct: 100,
 											sent: 1204,
-											pct: 100,
-											done: true,
 										},
 										{
-											name: "Product Launch Blast",
 											ch: "SMS + WA",
-											sent: 892,
+											done: false,
+											name: "Product Launch Blast",
 											pct: 68,
-											done: false,
+											sent: 892,
 										},
 										{
-											name: "Abandoned Cart Recovery",
 											ch: "WhatsApp",
-											sent: 346,
-											pct: 100,
 											done: true,
+											name: "Abandoned Cart Recovery",
+											pct: 100,
+											sent: 346,
 										},
 										{
-											name: "Weekly Newsletter",
 											ch: "SMS",
-											sent: 2841,
-											pct: 55,
 											done: false,
+											name: "Weekly Newsletter",
+											pct: 55,
+											sent: 2841,
 										},
 									].map((c) => (
 										<div
@@ -592,19 +592,19 @@ function Problem() {
 				<div className="flex flex-col gap-6">
 					{[
 						{
-							icon: "📧",
-							title: "Email open rates are dying",
 							body: "Average business email: 21% open rate. WhatsApp: 98%. The gap only keeps growing.",
+							icon: "�",
+							title: "Email open rates are dying",
 						},
 						{
-							icon: "🕐",
-							title: "Manual messaging eats your day",
 							body: "Copy-pasting numbers, maintaining spreadsheets, chasing replies — it's a chore, not a system.",
+							icon: "�",
+							title: "Manual messaging eats your day",
 						},
 						{
+							body: "Generic blasts feel like spam. Every message needs to feel like it was written for that one person.",
 							icon: "💸",
 							title: "Bulk SMS has no personalisation",
-							body: "Generic blasts feel like spam. Every message needs to feel like it was written for that one person.",
 						},
 					].map((p) => (
 						<div className="flex items-start gap-[18px]" key={p.title}>
@@ -685,10 +685,10 @@ function MockupCampaign() {
 				</p>
 				<div className="mb-4 grid grid-cols-1 xs:grid-cols-2 gap-2">
 					{[
-						{ icon: "🛒", label: "Abandoned Cart", active: true },
-						{ icon: "🎉", label: "Product Launch", active: false },
-						{ icon: "🔄", label: "Re-engagement", active: false },
-						{ icon: "📢", label: "Announcement", active: false },
+						{ active: true, icon: "🛒", label: "Abandoned Cart" },
+						{ active: false, icon: "🎉", label: "Product Launch" },
+						{ active: false, icon: "🔄", label: "Re-engagement" },
+						{ active: false, icon: "📢", label: "Announcement" },
 					].map((s) => (
 						<div
 							className={`flex items-center gap-[9px] rounded-[9px] border px-3 py-[10px] ${s.active ? "border-[var(--lp-border)] bg-[var(--lp-accent-lo)]" : "border-[var(--lp-border-sub)] bg-transparent"}`}
@@ -739,10 +739,10 @@ function MockupImport() {
 		return () => clearInterval(t);
 	}, []);
 	const contacts = [
-		{ name: "Sarah Chen", phone: "+234 803 456 7890", ch: "WhatsApp" },
-		{ name: "Marcus Okafor", phone: "+234 701 234 5678", ch: "SMS" },
-		{ name: "Priya Nwosu", phone: "+234 815 678 9012", ch: "WhatsApp" },
-		{ name: "James Eze", phone: "+234 803 901 2345", ch: "WhatsApp" },
+		{ ch: "WhatsApp", name: "Sarah Chen", phone: "+234 803 456 7890" },
+		{ ch: "SMS", name: "Marcus Okafor", phone: "+234 701 234 5678" },
+		{ ch: "WhatsApp", name: "Priya Nwosu", phone: "+234 815 678 9012" },
+		{ ch: "WhatsApp", name: "James Eze", phone: "+234 803 901 2345" },
 	];
 	return (
 		<AppChrome url="app.messagedesk.io/contacts/import">
@@ -819,36 +819,36 @@ function MockupConsent() {
 				<div className="flex flex-col gap-2">
 					{[
 						{
-							label: "1. Consent message sent",
-							note: "₦8 × 500 = ₦4,000",
 							color: "var(--lp-amber)",
 							done: true,
+							label: "1. Consent message sent",
+							note: "₦8 × 500 = ₦4,000",
 						},
 						{
-							label: "2. Replies collected",
-							note: "312 / 500 replied",
 							color: "var(--lp-green)",
 							done: true,
+							label: "2. Replies collected",
+							note: "312 / 500 replied",
 						},
 						{
-							label: "3. Full campaign sent",
-							note: "₦90 × 312 = ₦28,080",
 							color: "var(--lp-accent)",
 							done: true,
+							label: "3. Full campaign sent",
+							note: "₦90 × 312 = ₦28,080",
 						},
 						{
-							label: "4. 188 contacts skipped",
-							note: "Saved ₦16,920",
 							color: "var(--lp-text-sub)",
 							done: false,
+							label: "4. 188 contacts skipped",
+							note: "Saved ₦16,920",
 						},
 					].map((s) => (
 						<div
 							className="flex items-center gap-[13px] rounded-[9px] p-[9px_12px]"
 							key={s.label}
 							style={{
-								border: `1px solid ${s.done ? s.color + "28" : "var(--lp-border-sub)"}`,
 								background: s.done ? s.color + "09" : "transparent",
+								border: `1px solid ${s.done ? s.color + "28" : "var(--lp-border-sub)"}`,
 							}}
 						>
 							<div
@@ -950,28 +950,28 @@ function HowItWorks() {
 	const { appTheme } = useTheme();
 	const steps = [
 		{
-			n: "01",
-			icon: <Users color="var(--lp-accent)" size={20} />,
-			title: "Import contacts",
 			body: "Drop a spreadsheet, paste a list, or type manually. AI handles the messy data.",
+			icon: <Users color="var(--lp-accent)" size={20} />,
+			n: "01",
+			title: "Import contacts",
 		},
 		{
-			n: "02",
-			icon: <Sparkles color="var(--lp-accent)" size={20} />,
-			title: "Pick a template",
 			body: "Choose from pre-built scenarios or write your own. Variables filled automatically.",
+			icon: <Sparkles color="var(--lp-accent)" size={20} />,
+			n: "02",
+			title: "Pick a template",
 		},
 		{
-			n: "03",
-			icon: <Zap color="var(--lp-accent)" size={20} />,
-			title: "Review & send",
 			body: "Preview every message, confirm your cost, hit send. Thousands of messages in seconds.",
+			icon: <Zap color="var(--lp-accent)" size={20} />,
+			n: "03",
+			title: "Review & send",
 		},
 		{
-			n: "04",
-			icon: <MessageCircle color="var(--lp-accent)" size={20} />,
-			title: "Track replies live",
 			body: "Watch the dashboard fill in real time. Reply to conversations from your inbox.",
+			icon: <MessageCircle color="var(--lp-accent)" size={20} />,
+			n: "04",
+			title: "Track replies live",
 		},
 	];
 	return (
@@ -1025,11 +1025,10 @@ function Pricing() {
 
 	const plans = [
 		{
-			name: "Starter",
-			desc: "For small teams getting started",
-			monthly: 10_000,
-			highlight: false,
 			badge: null,
+			cta: "Start free trial",
+			ctaTo: "/register",
+			desc: "For small teams getting started",
 			features: [
 				"2,000 messages/month included",
 				"WhatsApp + SMS campaigns",
@@ -1038,15 +1037,15 @@ function Pricing() {
 				"Basic analytics dashboard",
 				"Email support",
 			],
-			cta: "Start free trial",
-			ctaTo: "/register",
+			highlight: false,
+			monthly: 10_000,
+			name: "Starter",
 		},
 		{
-			name: "Growth",
-			desc: "For businesses scaling fast",
-			monthly: 30_000,
-			highlight: true,
 			badge: "Most popular",
+			cta: "Get started",
+			ctaTo: "/register",
+			desc: "For businesses scaling fast",
 			features: [
 				"10,000 messages/month included",
 				"Everything in Starter",
@@ -1056,15 +1055,15 @@ function Pricing() {
 				"Priority support",
 				"Custom sender ID",
 			],
-			cta: "Get started",
-			ctaTo: "/register",
+			highlight: true,
+			monthly: 30_000,
+			name: "Growth",
 		},
 		{
-			name: "Pro",
-			desc: "For high-volume, enterprise teams",
-			monthly: 70_000,
-			highlight: false,
 			badge: null,
+			cta: "Contact sales",
+			ctaTo: "/register",
+			desc: "For high-volume, enterprise teams",
 			features: [
 				"Unlimited messages",
 				"Everything in Growth",
@@ -1074,8 +1073,9 @@ function Pricing() {
 				"Custom integrations",
 				"SLA guarantee",
 			],
-			cta: "Contact sales",
-			ctaTo: "/register",
+			highlight: false,
+			monthly: 70_000,
+			name: "Pro",
 		},
 	];
 
@@ -1132,12 +1132,12 @@ function Pricing() {
 								className="relative rounded-[20px] p-[30px_28px]"
 								key={p.name}
 								style={{
-									border: `1px solid ${p.highlight ? "var(--lp-accent)" : "var(--lp-border)"}`,
 									background: p.highlight
 										? dark
 											? "linear-gradient(165deg,rgba(99,102,241,0.22) 0%,var(--lp-card) 55%)"
 											: "linear-gradient(165deg,rgba(99,102,241,0.1) 0%,var(--lp-card) 55%)"
 										: "var(--lp-card)",
+									border: `1px solid ${p.highlight ? "var(--lp-accent)" : "var(--lp-border)"}`,
 									boxShadow: p.highlight
 										? `0 0 48px rgba(99,102,241,${dark ? "0.18" : "0.12"})`
 										: "none",
@@ -1202,11 +1202,11 @@ function Pricing() {
 											: dark
 												? "rgba(255,255,255,0.06)"
 												: "rgba(0,0,0,0.04)",
-										color: p.highlight ? "#fff" : "var(--lp-text)",
 										border: p.highlight
 											? "none"
 											: "1px solid var(--lp-border-sub)",
 										boxShadow: p.highlight ? "0 0 24px var(--lp-glow)" : "none",
+										color: p.highlight ? "#fff" : "var(--lp-text)",
 									}}
 									to={p.ctaTo}
 								>
@@ -1236,14 +1236,14 @@ function Pricing() {
 								className="flex items-center justify-between p-[14px_18px]"
 								key={r.ch}
 								style={{
+									background:
+										i % 2 === 0
+											? "transparent"
+											: dark
+												? "rgba(99,102,241,0.025)"
+												: "rgba(99,102,241,0.015)",
 									borderBottom:
 										i < 3 ? "1px solid var(--lp-border-sub)" : "none",
-									background:
-										i % 2 !== 0
-											? dark
-												? "rgba(99,102,241,0.025)"
-												: "rgba(99,102,241,0.015)"
-											: "transparent",
 								}}
 							>
 								<div>
@@ -1279,25 +1279,25 @@ function Pricing() {
 function Testimonials() {
 	const quotes = [
 		{
+			name: "Adaeze O.",
+			org: "Kuda",
 			quote:
 				"We used to spend hours every Monday sending WhatsApp follow-ups manually. MessageDesk cut that to 8 minutes flat. Absolute game-changer.",
-			name: "Adaeze O.",
 			role: "Head of Growth",
-			org: "Kuda",
 		},
 		{
+			name: "Tunde B.",
+			org: "Flutterwave",
 			quote:
 				"The consent flow alone saved us ₦120,000 last month. Sending only to opted-in contacts actually improved our reply rates as well.",
-			name: "Tunde B.",
 			role: "Marketing Lead",
-			org: "Flutterwave",
 		},
 		{
+			name: "Chioma N.",
+			org: "PiggyVest",
 			quote:
 				"I uploaded a photo of a handwritten attendance sheet. MessageDesk parsed out 200 contacts in 45 seconds. I genuinely could not believe it.",
-			name: "Chioma N.",
 			role: "Operations Manager",
-			org: "PiggyVest",
 		},
 	];
 	return (
@@ -1478,7 +1478,7 @@ function Footer() {
 
 // ─── Root ─────────────────────────────────────────────────────────────────────
 
-export default function LandingPage() {
+function LandingPage() {
 	return (
 		<div className="min-h-screen w-full bg-[var(--lp-bg)] font-[family-name:var(--lp-font-body)] text-[var(--lp-text)]">
 			<Navbar />

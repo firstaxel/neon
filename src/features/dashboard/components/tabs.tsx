@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { AnimatePresence, motion, type Transition } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import React from "react";
 import { cn } from "#/lib/utils";
 
@@ -18,49 +18,60 @@ interface AnimatedTabsProps {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const transition = {
-	duration: 0.15,
-	ease: "easeOut",
-	type: "tween",
-};
-
-const getHoverProps = (hoveredRect: DOMRect, navRect: DOMRect) => ({
-	height: hoveredRect.height + 10,
-	width: hoveredRect.width + 20,
-	x: hoveredRect.left - navRect.left - 10,
-	y: hoveredRect.top - navRect.top - 4,
-});
-
 function isTabActive(pathname: string, tab: Tab): boolean {
 	if (pathname === tab.href) {
 		return true;
-	}
-	if (tab.href === "/" || tab.href === "/dashboard") {
-		return false;
 	}
 	if (
 		tab.subRoutes?.some((r) => pathname === r || pathname.startsWith(`${r}/`))
 	) {
 		return true;
 	}
-	return pathname.startsWith(`${tab.href}/`);
+	if (tab.href !== "/" && pathname.startsWith(`${tab.href}/`)) {
+		return true;
+	}
+	return false;
 }
 
 // ─── Mobile Drawer ────────────────────────────────────────────────────────────
 
-function MobileNav({ tabs }: { tabs: Tab[] }) {
-	const routerState = useRouterState();
-	const pathname = routerState.location.pathname;
+export function MobileNav({ tabs }: { tabs: Tab[] }) {
+	const { location } = useRouterState();
+	const { pathname } = location;
 	const [open, setOpen] = React.useState(false);
 
 	const activeTab = tabs.find((tab) => isTabActive(pathname, tab));
 
+	const handleToggleOpen = React.useCallback(() => {
+		setOpen((v) => !v);
+	}, []);
+
+	const handleClose = React.useCallback(() => {
+		setOpen(false);
+	}, []);
+
+	// Close on Escape key
+	React.useEffect(() => {
+		if (!open) {
+			return;
+		}
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if (e.key === "Escape") {
+				setOpen(false);
+			}
+		};
+		window.addEventListener("keydown", handleKeyDown);
+		return () => window.removeEventListener("keydown", handleKeyDown);
+	}, [open]);
+
 	return (
-		<div className="relative w-full md:hidden">
+		<div className="relative w-full max-w-full overflow-hidden md:hidden">
 			<button
+				aria-controls="mobile-nav-drawer"
 				aria-expanded={open}
-				className="flex w-full items-center justify-between px-4 py-2 font-medium text-sm"
-				onClick={() => setOpen((v) => !v)}
+				aria-label="Toggle navigation drawer"
+				className="flex min-h-[44px] w-full items-center justify-between rounded-2xl border border-border/60 bg-card px-4 py-2.5 font-medium text-foreground text-sm shadow-xs transition-colors focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
+				onClick={handleToggleOpen}
 				type="button"
 			>
 				<span className="font-semibold text-foreground">
@@ -84,32 +95,34 @@ function MobileNav({ tabs }: { tabs: Tab[] }) {
 			</button>
 
 			<AnimatePresence>
-				{open && (
+				{Boolean(open) && (
 					<motion.div
 						animate={{ height: "auto", opacity: 1 }}
-						className="overflow-hidden border-border border-t bg-background"
+						aria-label="Mobile navigation"
+						className="mt-1 overflow-hidden rounded-2xl border border-border/60 bg-card shadow-md"
 						exit={{ height: 0, opacity: 0 }}
+						id="mobile-nav-drawer"
 						initial={{ height: 0, opacity: 0 }}
 						transition={{ duration: 0.2, ease: "easeOut" }}
 					>
-						<div className="flex flex-col py-1">
+						<div className="flex flex-col space-y-0.5 p-1.5">
 							{tabs.map((tab) => {
 								const isActive = isTabActive(pathname, tab);
 								return (
 									<Link
 										className={cn(
-											"px-4 py-2.5 text-sm transition-colors",
+											"flex min-h-[44px] items-center justify-between rounded-xl px-4 py-2.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
 											isActive
-												? "bg-muted/50 font-semibold text-foreground"
-												: "text-muted-foreground hover:bg-muted/30 hover:text-foreground"
+												? "bg-muted font-semibold text-foreground"
+												: "text-muted-foreground hover:bg-muted/50 hover:text-foreground active:bg-muted"
 										)}
 										key={tab.value}
-										onClick={() => setOpen(false)}
+										onClick={handleClose}
 										to={tab.href}
 									>
-										{tab.label}
+										<span>{tab.label}</span>
 										{isActive && (
-											<span className="ml-2 inline-block h-1.5 w-1.5 rounded-full bg-primary align-middle" />
+											<span className="h-2 w-2 rounded-full bg-primary" />
 										)}
 									</Link>
 								);
@@ -124,90 +137,102 @@ function MobileNav({ tabs }: { tabs: Tab[] }) {
 
 // ─── Desktop Tabs ─────────────────────────────────────────────────────────────
 
-function DesktopTabs({ tabs }: { tabs: Tab[] }) {
-	const routerState = useRouterState();
-	const pathname = routerState.location.pathname;
+interface DesktopTabItemProps {
+	index: number;
+	isActive: boolean;
+	isHovered: boolean;
+	onHover: (index: number) => void;
+	tab: Tab;
+}
 
+function DesktopTabItem({
+	index,
+	isActive,
+	isHovered,
+	onHover,
+	tab,
+}: DesktopTabItemProps) {
+	const handleHover = React.useCallback(() => {
+		onHover(index);
+	}, [index, onHover]);
+
+	return (
+		<Link
+			className="relative z-20 flex h-8 items-center justify-center rounded-full px-4 text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring"
+			key={tab.value}
+			onFocus={handleHover}
+			onPointerEnter={handleHover}
+			to={tab.href}
+		>
+			{/* Active background pill */}
+			{Boolean(isActive) && (
+				<motion.span
+					className="absolute inset-0 rounded-full bg-background shadow-xs ring-1 ring-foreground/5 dark:ring-foreground/10"
+					layoutId="active-nav-pill"
+					transition={{ damping: 30, stiffness: 380, type: "spring" }}
+				/>
+			)}
+
+			{/* Active bottom indicator line */}
+			{Boolean(isActive) && (
+				<motion.span
+					className="absolute right-3 bottom-1 left-3 h-0.5 rounded-full bg-primary"
+					layoutId="active-nav-underline"
+					transition={{ damping: 30, stiffness: 380, type: "spring" }}
+				/>
+			)}
+
+			{/* Hover highlight */}
+			{Boolean(isHovered && !isActive) && (
+				<motion.span
+					className="absolute inset-0 rounded-full bg-background/50 dark:bg-muted"
+					layoutId="hover-nav-pill"
+					transition={{ damping: 35, stiffness: 400, type: "spring" }}
+				/>
+			)}
+
+			<span
+				className={cn("relative z-10 block whitespace-nowrap text-sm", {
+					"font-semibold text-foreground": isActive,
+					"text-muted-foreground hover:text-foreground": !isActive,
+				})}
+			>
+				{tab.label}
+			</span>
+		</Link>
+	);
+}
+
+export function DesktopTabs({ tabs }: { tabs: Tab[] }) {
+	const { location } = useRouterState();
+	const { pathname } = location;
 	const activeIndex = tabs.findIndex((tab) => isTabActive(pathname, tab));
-
-	const [linkRefs, setLinkRefs] = React.useState<Array<HTMLElement | null>>([]);
-	React.useEffect(() => {
-		setLinkRefs((prev) => {
-			const next = [...prev];
-			next.length = tabs.length;
-			return next;
-		});
-	}, [tabs.length]);
-
-	const navRef = React.useRef<HTMLDivElement>(null);
-	const navRect = navRef.current?.getBoundingClientRect();
-	const selectedRect = linkRefs[activeIndex]?.getBoundingClientRect();
-
 	const [hoveredIndex, setHoveredIndex] = React.useState<number | null>(null);
-	const hoveredRect = linkRefs[hoveredIndex ?? -1]?.getBoundingClientRect();
+
+	const handleLeave = React.useCallback(() => {
+		setHoveredIndex(null);
+	}, []);
+
+	const handleHover = React.useCallback((index: number) => {
+		setHoveredIndex(index);
+	}, []);
 
 	return (
 		<nav
-			className="relative hidden shrink-0 items-center justify-center py-2 md:flex"
-			onPointerLeave={() => setHoveredIndex(null)}
-			ref={navRef}
+			aria-label="Main dashboard navigation"
+			className="relative hidden shrink-0 items-center justify-center rounded-full bg-muted/70 p-1 ring-1 ring-foreground/5 md:flex dark:ring-foreground/10"
+			onPointerLeave={handleLeave}
 		>
-			{tabs.map((tab, i) => {
-				const isActive = activeIndex === i;
-
-				return (
-					<Link
-						className="relative z-20 flex h-8 cursor-pointer select-none items-center rounded-md bg-transparent px-4 transition-colors"
-						key={tab.value}
-						onFocus={() => setHoveredIndex(i)}
-						onPointerEnter={() => setHoveredIndex(i)}
-						to={tab.href}
-					>
-						<motion.span
-							className={cn("block whitespace-nowrap text-sm", {
-								"font-semibold text-foreground": isActive,
-								"text-muted-foreground": !isActive,
-							})}
-							ref={(el) => {
-								linkRefs[i] = el;
-							}}
-						>
-							{tab.label}
-						</motion.span>
-					</Link>
-				);
-			})}
-
-			{/* Hover background pill */}
-			<AnimatePresence>
-				{hoveredRect && navRect && (
-					<motion.div
-						animate={{ ...getHoverProps(hoveredRect, navRect), opacity: 1 }}
-						className="absolute top-0 left-0 z-10 rounded-md bg-muted"
-						exit={{ ...getHoverProps(hoveredRect, navRect), opacity: 0 }}
-						initial={{ ...getHoverProps(hoveredRect, navRect), opacity: 0 }}
-						key="hover"
-						transition={transition as Transition}
-					/>
-				)}
-			</AnimatePresence>
-
-			{/* Active underline */}
-			<AnimatePresence>
-				{selectedRect && navRect && (
-					<motion.div
-						animate={{
-							opacity: 1,
-							width: selectedRect.width + 18,
-							x: `calc(${selectedRect.left - navRect.left - 9}px)`,
-						}}
-						className="absolute bottom-0 left-0 z-10 h-0.5 bg-primary"
-						initial={false}
-						key="underline"
-						transition={transition as Transition}
-					/>
-				)}
-			</AnimatePresence>
+			{tabs.map((tab, i) => (
+				<DesktopTabItem
+					index={i}
+					isActive={activeIndex === i}
+					isHovered={hoveredIndex === i}
+					key={tab.value}
+					onHover={handleHover}
+					tab={tab}
+				/>
+			))}
 		</nav>
 	);
 }
@@ -216,7 +241,7 @@ function DesktopTabs({ tabs }: { tabs: Tab[] }) {
 
 export function AnimatedTabs({ tabs }: AnimatedTabsProps) {
 	return (
-		<div className="relative flex w-full items-start justify-start overflow-x-auto overflow-y-hidden">
+		<div className="relative flex w-full items-center justify-center">
 			<DesktopTabs tabs={tabs} />
 			<MobileNav tabs={tabs} />
 		</div>

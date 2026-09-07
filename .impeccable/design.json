@@ -1,0 +1,292 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-06T21:33:00.000Z",
+  "title": "Design System: Velocast",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Carbon Slate",
+        "canonical": "oklch(0.21 0.006 285.885)",
+        "tonalRamp": [
+          "#09090b",
+          "#18181b",
+          "#27272a",
+          "#3f3f46",
+          "#71717a",
+          "#a1a1aa",
+          "#e4e4e7",
+          "#fafafa"
+        ]
+      },
+      "signal-emerald": {
+        "role": "secondary",
+        "displayName": "WhatsApp Signal Emerald",
+        "canonical": "#25d366",
+        "tonalRamp": [
+          "#063b1a",
+          "#0b5b29",
+          "#128c3e",
+          "#1eb853",
+          "#25d366",
+          "#5ee58f",
+          "#9ef2be",
+          "#e6fbee"
+        ]
+      },
+      "telecom-blue": {
+        "role": "secondary",
+        "displayName": "Telecom Blue",
+        "canonical": "#60a5fa",
+        "tonalRamp": [
+          "#11244e",
+          "#1e3a8a",
+          "#2563eb",
+          "#3b82f6",
+          "#60a5fa",
+          "#93c5fd",
+          "#bfdbfe",
+          "#eff6ff"
+        ]
+      },
+      "dispatch-indigo": {
+        "role": "tertiary",
+        "displayName": "Dispatch Indigo",
+        "canonical": "#6366f1",
+        "tonalRamp": [
+          "#1e1b4b",
+          "#312e81",
+          "#4338ca",
+          "#4f46e5",
+          "#6366f1",
+          "#818cf8",
+          "#c7d2fe",
+          "#eef2ff"
+        ]
+      },
+      "canvas": {
+        "role": "neutral",
+        "displayName": "Clean Canvas",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "#09090b",
+          "#18181b",
+          "#27272a",
+          "#52525b",
+          "#a1a1aa",
+          "#d4d4d8",
+          "#f4f4f5",
+          "#ffffff"
+        ]
+      },
+      "card": {
+        "role": "neutral",
+        "displayName": "Card Surface",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "#09090b",
+          "#18181b",
+          "#27272a",
+          "#52525b",
+          "#a1a1aa",
+          "#d4d4d8",
+          "#f4f4f5",
+          "#ffffff"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Soft Muted",
+        "canonical": "#f4f4f5",
+        "tonalRamp": [
+          "#09090b",
+          "#18181b",
+          "#27272a",
+          "#3f3f46",
+          "#71717a",
+          "#d4d4d8",
+          "#f4f4f5",
+          "#fafafa"
+        ]
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Perimeter Border",
+        "canonical": "#e4e4e7",
+        "tonalRamp": [
+          "#18181b",
+          "#27272a",
+          "#3f3f46",
+          "#52525b",
+          "#a1a1aa",
+          "#d4d4d8",
+          "#e4e4e7",
+          "#f4f4f5"
+        ]
+      },
+      "destructive": {
+        "role": "destructive",
+        "displayName": "Signal Crimson",
+        "canonical": "#e11d48",
+        "tonalRamp": [
+          "#4c0519",
+          "#881337",
+          "#be123c",
+          "#e11d48",
+          "#f43f5e",
+          "#fb7185",
+          "#fecdd3",
+          "#fff1f2"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Hero headers, landing titles, and high-level numerical summaries."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Section titles, onboarding step banners, and modal headers."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Card headings, dialog titles, and campaign list item labels."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Interface copy, form labels, table cells, and message previews."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Status tags, route breadcrumbs, and GSM character counters."
+      }
+    },
+    "shadows": [
+      {
+        "name": "ambient-card",
+        "value": "0 4px 12px rgba(0, 0, 0, 0.05)",
+        "purpose": "Soft grounding beneath cards and elevated stadium containers."
+      },
+      {
+        "name": "popover-lift",
+        "value": "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
+        "purpose": "Modal dialogs, popovers, and slide-over drawers."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-standard",
+        "value": "cubic-bezier(0.4, 0, 0.2, 1)",
+        "purpose": "Default easing for tab pill slides and mode transitions."
+      },
+      {
+        "name": "transition-fast",
+        "value": "150ms ease-out",
+        "purpose": "Micro-interactions on buttons, inputs, and list rows."
+      }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Tactile pill button for key dispatch and commit actions.",
+      "html": "<button class=\"ds-btn-primary\"><svg class=\"ds-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z\"/></svg><span>Send Campaign</span></button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 36px; padding: 0 16px; background-color: #18181b; color: #fafafa; font-family: 'Inter Variable', sans-serif; font-size: 14px; font-weight: 500; border: 1px solid transparent; border-radius: 26px; cursor: pointer; transition: background-color 150ms, transform 100ms; } .ds-btn-primary:hover { background-color: #27272a; } .ds-btn-primary:active { transform: translateY(1px); } .ds-btn-primary:focus-visible { outline: 2px solid #18181b; outline-offset: 2px; } .ds-btn-primary .ds-icon { width: 16px; height: 16px; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Recessed neutral button for secondary workflows and cancellation.",
+      "html": "<button class=\"ds-btn-secondary\"><span>Save as Draft</span></button>",
+      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; justify-content: center; height: 36px; padding: 0 16px; background-color: #f4f4f5; color: #18181b; font-family: 'Inter Variable', sans-serif; font-size: 14px; font-weight: 500; border: 1px solid transparent; border-radius: 26px; cursor: pointer; transition: background-color 150ms, transform 100ms; } .ds-btn-secondary:hover { background-color: #e4e4e7; } .ds-btn-secondary:active { transform: translateY(1px); } .ds-btn-secondary:focus-visible { outline: 2px solid #71717a; outline-offset: 2px; }"
+    },
+    {
+      "name": "WhatsApp Channel Badge",
+      "kind": "chip",
+      "refersTo": "badge",
+      "description": "Specialized channel identifier for WhatsApp template and delivery states.",
+      "html": "<span class=\"ds-badge-wa\"><svg class=\"ds-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z\"/></svg><span>WhatsApp</span></span>",
+      "css": ".ds-badge-wa { display: inline-flex; align-items: center; gap: 4px; height: 20px; padding: 0 8px; background-color: rgba(37, 211, 102, 0.12); color: #128c3e; border: 1px solid rgba(37, 211, 102, 0.25); border-radius: 22px; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; } .ds-badge-wa .ds-icon { width: 12px; height: 12px; }"
+    },
+    {
+      "name": "SMS Channel Badge",
+      "kind": "chip",
+      "refersTo": "badge",
+      "description": "Specialized channel identifier for SMS routes and carrier delivery.",
+      "html": "<span class=\"ds-badge-sms\"><svg class=\"ds-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z\"/></svg><span>SMS (Termii)</span></span>",
+      "css": ".ds-badge-sms { display: inline-flex; align-items: center; gap: 4px; height: 20px; padding: 0 8px; background-color: rgba(96, 165, 250, 0.12); color: #2563eb; border: 1px solid rgba(96, 165, 250, 0.25); border-radius: 22px; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; } .ds-badge-sms .ds-icon { width: 12px; height: 12px; }"
+    },
+    {
+      "name": "Stadium Container Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Stadium-curved container framed with hairline perimeter ring.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-header\"><div class=\"ds-card-title\">Campaign Summary</div><span class=\"ds-badge-wa\">Active</span></div><p class=\"ds-card-desc\">1,420 recipients queued for WhatsApp dispatch.</p><div class=\"ds-card-footer\"><span class=\"ds-kobo\">₦ 14,200.00</span></div></div>",
+      "css": ".ds-card { display: flex; flex-direction: column; gap: 16px; padding: 24px; background-color: #ffffff; border-radius: 26px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); border: 1px solid rgba(0, 0, 0, 0.06); font-family: 'Inter Variable', sans-serif; } .ds-card-header { display: flex; align-items: center; justify-content: space-between; } .ds-card-title { font-size: 18px; font-weight: 600; color: #18181b; letter-spacing: -0.01em; } .ds-card-desc { font-size: 14px; color: #71717a; margin: 0; line-height: 1.5; } .ds-card-footer { display: flex; align-items: center; justify-content: flex-end; padding-top: 12px; border-top: 1px solid #f4f4f5; } .ds-kobo { font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: 600; color: #18181b; }"
+    },
+    {
+      "name": "Tactile Input Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Soft recessed stadium input field with focus ring.",
+      "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"Filter contacts or paste numbers...\" />",
+      "css": ".ds-input { width: 100%; height: 36px; padding: 0 14px; background-color: #f4f4f5; color: #18181b; border: 1px solid transparent; border-radius: 22px; font-family: 'Inter Variable', sans-serif; font-size: 14px; outline: none; transition: border-color 150ms, box-shadow 150ms, background-color 150ms; } .ds-input::placeholder { color: #a1a1aa; } .ds-input:focus { background-color: #ffffff; border-color: #e4e4e7; box-shadow: 0 0 0 3px rgba(24, 24, 27, 0.1); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Tactile Dispatch Console",
+    "overview": "Velocast is designed as an ultra-responsive, ergonomic operations console for community and organization broadcasts. The interface rejects brittle corporate dashboard styling in favor of physical, confidence-inspiring controls: generous stadium-radius cards (26px), pill-shaped tactile buttons, and clean hairline perimeter rings (ring-1 ring-foreground/5). Every surface feels grounded, deliberate, and optimized for rapid scanning and unambiguous operational decision-making under high-volume pressure.\n\nThe visual atmosphere balances quiet discipline with focused telecom energy. Neutral canvases establish a calm foundation, while high-clarity signal accents—WhatsApp Signal Emerald (#25d366), Telecom Blue (#60a5fa), and Dispatch Indigo (#6366f1)—guide attention strictly to dispatch channels, verification states, and wallet movements.\n\nOn mobile and touch screens, the interface adapts effortlessly into a handheld dispatch tool with generous hit zones, high-contrast typography, and fluid tab navigation.",
+    "keyCharacteristics": [
+      "Stadium & Pill Form Language: High-curvature stadium containers (rounded-4xl / 26px) and pill buttons provide a distinctly physical, friendly tactile footprint.",
+      "Hairline Perimeter Framing: Subtle 1px perimeter rings (ring-1 ring-foreground/5) define component edges without heavy contrasting borders.",
+      "Channel Purity: Emerald and Blue accents are reserved exclusively for WhatsApp and SMS channel indicators, preventing cognitive confusion.",
+      "Financial Precision: Currency, kobo values, and recipient counts are rendered with monospace clarity and strict alignment."
+    ],
+    "rules": [
+      {
+        "name": "The Signal Purity Rule",
+        "body": "Emerald (#25d366) and Telecom Blue (#60a5fa) are semantic channel colors. They may never be used for general styling, random iconography, or non-messaging decorations.",
+        "section": "colors"
+      },
+      {
+        "name": "The Kobo Exactitude Rule",
+        "body": "Any element presenting wallet balances, fees, or message debits must display the exact integer currency without rounding ambiguity, styled in high-legibility tabular format.",
+        "section": "colors"
+      },
+      {
+        "name": "The Tabular Numbers Rule",
+        "body": "All numerical data in tables, wallet displays, phone lists, and segment calculators must use monospace or tabular figure formatting (font-mono / tnum) to ensure columns align perfectly.",
+        "section": "typography"
+      },
+      {
+        "name": "The Hairline Ring Rule",
+        "body": "Elevated containers must pair their soft elevation shadow with a 1px subtle perimeter ring (ring-1 ring-foreground/5 in light, ring-foreground/10 in dark). Borderless floating cards are prohibited.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do wrap cards and dialogs in rounded-4xl with ring-1 ring-foreground/5 for crisp perimeter framing.",
+      "Do format all currency and financial values in integer kobo converted to standard Naira (₦X,XXX.XX) with tabular numbers (font-mono).",
+      "Do restrict WhatsApp emerald (#25d366) and SMS telecom blue (#60a5fa) exclusively to channel-specific context.",
+      "Do ensure all form controls maintain accessible focus rings (focus-visible:ring-3 focus-visible:ring-ring/30).",
+      "Do use org-adaptive terminology (e.g. Members vs Beneficiaries vs Customers) from src/features/miscellaneous/org.ts."
+    ],
+    "donts": [
+      "Don't use sharp square corners (rounded-none or rounded-xs) for buttons or cards; preserve the tactile stadium silhouette.",
+      "Don't apply heavy, opaque drop shadows that muddy the background canvas; rely on layered surface tonality.",
+      "Don't invent random neon accent colors outside the defined palette roles.",
+      "Don't hide campaign cost estimates or wallet balances behind nested menus; surface them transparently before dispatch.",
+      "Don't allow message textareas to omit GSM segment warnings when exceeding the 160-character threshold."
+    ]
+  }
+}

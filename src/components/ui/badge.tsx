@@ -21,6 +21,9 @@ const badgeVariants = cva(
 					"border-border text-foreground [a]:hover:bg-muted [a]:hover:text-muted-foreground",
 				secondary:
 					"bg-secondary text-secondary-foreground [a]:hover:bg-secondary/80",
+				sms: "border-[#60a5fa40] bg-[#60a5fa15] font-mono text-[#1d4ed8] dark:bg-[#0d1a2e] dark:text-[#60a5fa]",
+				whatsapp:
+					"border-[#25d36640] bg-[#25d36615] font-mono text-[#15803d] dark:bg-[#0d2016] dark:text-[#25d366]",
 			},
 		},
 	}

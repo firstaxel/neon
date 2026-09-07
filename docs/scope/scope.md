@@ -14,9 +14,9 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | A | Stack and runtime foundation | Foundation | existing |
 | B | Procedure API router | Foundation | existing |
 | C | Durable background queues | Foundation | existing |
-| 1 | Design system and UI foundation | Foundation | planned |
+| 1 | Design system and UI foundation | Foundation | in-progress |
 | 2 | Data model consolidation | Foundation | in-progress |
-| 3 | Landing page and brand identity | Foundation | planned |
+| 3 | Landing page and brand identity | Foundation | in-progress |
 | 4 | Auth and onboarding flow | Slice 1 | planned |
 | 5 | Prepaid wallet and Paystack deposit | Slice 1 | planned |
 | 6 | Contact management and CSV import | Slice 1 | planned |
@@ -39,10 +39,19 @@ Inngest client and edge serve endpoint for event driven background job execution
 
 ## Foundations
 
-### 1. Design system and UI foundation · needs a decision
-Unified design tokens, Tailwind CSS v4 variables, Radix UI primitives, responsive layout shell, and theme switching.
+### 1. Design system and UI foundation · in-progress
+Unified design tokens, Tailwind CSS v4 variables, Radix UI primitives, responsive layout shell, and theme switching. Established product truth in `PRODUCT.md` and design system tokens in `DESIGN.md`.
 **Done when:** reusable layout primitives, navigation sidebar, theme toggle, and base accessible inputs render consistently.
-- [ ] Design it (spec): `/architect design system and UI foundation`
+- [x] Design it (spec): [docs/specs/0001-design-system-and-ui-foundation/index.md](docs/specs/0001-design-system-and-ui-foundation/index.md)
+- [x] Build it: `/develop design system and UI foundation`
+  - [x] Core tokens and stadium variables in styles.css
+  - [x] Accessible Base UI primitives with perimeter rings
+  - [x] Dashboard layout shell with sticky animated tabs
+  - [x] Touch accessible mobile navigation drawer
+  - [x] Synchronous three mode theme switching
+- [x] Verify it: `/check verify design system and UI foundation`
+- [x] Test it: `/test design system and UI foundation`
+spec [docs/specs/0001-design-system-and-ui-foundation/index.md](docs/specs/0001-design-system-and-ui-foundation/index.md) · code in `src/styles.css`, `src/components/ui/`, `src/features/dashboard/components/`, `src/providers/theme.tsx`
 
 ### 2. Data model consolidation · in-progress · needs a decision
 Refactor Prisma schema to remove deprecated fields, enforce phone number uniqueness, index critical relations, and establish clean migrations.
@@ -50,10 +59,13 @@ Refactor Prisma schema to remove deprecated fields, enforce phone number uniquen
 - [ ] Design it (spec): `/architect data model consolidation`
 code in `prisma/`
 
-### 3. Landing page and brand identity · needs a decision
-Decompose the monolithic landing page into modern, responsive sections with clear Velocast brand identity, value propositions, and live pricing preview.
+### 3. Landing page and brand identity · in-progress
+Modern, responsive public landing page with clear Velocast brand identity, tactile console showcase (Gemini AI roster scanning to WhatsApp dispatch), authentic Nigerian infrastructure proof, and transparent Paystack prepaid kobo wallet pricing.
 **Done when:** public landing page loads fast with modular components, responsive mobile layout, accurate brand copy, and search metadata.
-- [ ] Design it (spec): `/architect landing page and brand identity`
+- [x] Clarify branding, proof, and Paystack kobo wallet: `$impeccable clarify src/routes/index.tsx`
+- [x] Amplify AI roster extraction and dispatch hero: `$impeccable bolder src/routes/index.tsx`
+- [x] Polish stadium curves, type scale, and accessibility: `$impeccable polish src/routes/index.tsx`
+code in `src/routes/index.tsx`
 
 ## Slice 1: Core broadcast loop
 

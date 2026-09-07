@@ -3,6 +3,7 @@ import type { QueryClient } from "@tanstack/react-query";
 import {
 	createRootRouteWithContext,
 	HeadContent,
+	ScriptOnce,
 	Scripts,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
@@ -10,7 +11,7 @@ import { NuqsAdapter } from "nuqs/adapters/tanstack-router";
 import { Toaster } from "sonner";
 import { SidebarProvider } from "#/components/ui/sidebar";
 import { TooltipProvider } from "#/components/ui/tooltip";
-import { ThemeProvider } from "#/providers/theme";
+import { ThemeProvider, themeScript } from "#/providers/theme";
 import PostHogProvider from "../integrations/posthog/provider";
 import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
 import TanStackQueryProvider from "../integrations/tanstack-query/root-provider";
@@ -49,6 +50,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 		<html lang="en" suppressHydrationWarning>
 			<head>
 				<HeadContent />
+				<ScriptOnce>{themeScript}</ScriptOnce>
 			</head>
 			<body>
 				<PostHogProvider>

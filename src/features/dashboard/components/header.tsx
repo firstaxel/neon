@@ -2,7 +2,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { motion } from "motion/react";
 import React from "react";
 import { ModeToggle } from "./mode-toggle";
-import { AnimatedTabs } from "./tabs";
+import { DesktopTabs, MobileNav } from "./tabs";
 import { UserMenu } from "./user-menu";
 
 // ─── Logo / Wordmark ──────────────────────────────────────────────────────────
@@ -45,8 +45,8 @@ const ROUTE_LABELS: Record<string, string> = {
 };
 
 function Breadcrumb() {
-	const routerState = useRouterState();
-	const pathname = routerState.location.pathname;
+	const { location } = useRouterState();
+	const { pathname } = location;
 
 	// Find the best matching label (longest prefix match)
 	const label =
@@ -135,23 +135,21 @@ export default function AnimatedHeader() {
 
 			{/* ── Sticky nav bar ── */}
 			<div className="sticky top-0 z-40 border-border border-b bg-background/95 backdrop-blur-sm">
-				<div className="flex items-center justify-center">
+				<div className="mx-auto flex w-full max-w-7xl items-center justify-center px-4 py-1.5 md:py-2">
 					{/* Desktop: animate position on scroll. Mobile: no shift. */}
 					<motion.div
 						animate={{
-							// Only shift on md+ — but motion doesn't know breakpoints,
-							// so we gate it via CSS (the inner DesktopTabs is hidden on mobile)
 							x: tabsShiftX,
 						}}
 						className="hidden flex-1 justify-center md:flex"
 						transition={{ duration: 0.05, ease: "linear" }}
 					>
-						<AnimatedTabs tabs={[...TABS]} />
+						<DesktopTabs tabs={[...TABS]} />
 					</motion.div>
 
 					{/* Mobile nav — no scroll-shift, full width */}
 					<div className="flex w-full md:hidden">
-						<AnimatedTabs tabs={[...TABS]} />
+						<MobileNav tabs={[...TABS]} />
 					</div>
 				</div>
 			</div>

@@ -10,17 +10,25 @@ export type UserTheme = z.infer<typeof UserThemeSchema>;
 export type AppTheme = z.infer<typeof AppThemeSchema>;
 
 const themeStorageKey = "ui-theme";
+const UI_THEME_COOKIE_REGEX = /(?:^|;\s*)ui-theme=([^;]*)/;
 
 const getStoredUserTheme = createIsomorphicFn()
 	.server((): UserTheme => "system")
 	.client((): UserTheme => {
 		const stored = localStorage.getItem(themeStorageKey);
-		return UserThemeSchema.parse(stored);
+		if (stored) {
+			return UserThemeSchema.parse(stored);
+		}
+		const match = document.cookie.match(UI_THEME_COOKIE_REGEX);
+		const cookieValue = match ? decodeURIComponent(match[1]) : "system";
+		return UserThemeSchema.parse(cookieValue);
 	});
 
 const setStoredTheme = createClientOnlyFn((theme: UserTheme) => {
 	const validatedTheme = UserThemeSchema.parse(theme);
 	localStorage.setItem(themeStorageKey, validatedTheme);
+	// biome-ignore lint/suspicious/noDocumentCookie: client cookie persistence for zero flash SSR theme
+	document.cookie = `${themeStorageKey}=${encodeURIComponent(validatedTheme)}; path=/; max-age=31536000; SameSite=Lax`;
 });
 
 const getSystemTheme = createIsomorphicFn()
@@ -53,29 +61,38 @@ const setupPreferredListener = createClientOnlyFn(() => {
 	return () => mediaQuery.removeEventListener("change", handler);
 });
 
-const themeScript = (() => {
+export const themeScript = (() => {
 	function themeFn() {
 		try {
-			const storedTheme = localStorage.getItem("ui-theme") || "system";
-			const validTheme = ["light", "dark", "system"].includes(storedTheme)
-				? storedTheme
+			let stored = localStorage.getItem("ui-theme");
+			if (!stored) {
+				// biome-ignore lint/performance/useTopLevelRegex: self-contained serialized script function
+				const match = document.cookie.match(/(?:^|;\s*)ui-theme=([^;]*)/);
+				stored = match ? decodeURIComponent(match[1]) : "system";
+			}
+			const valid = ["light", "dark", "system"].includes(stored)
+				? stored
 				: "system";
-
-			if (validTheme === "system") {
-				const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
-					.matches
-					? "dark"
-					: "light";
-				document.documentElement.classList.add(systemTheme, "system");
+			const isDark =
+				valid === "dark" ||
+				(valid === "system" &&
+					window.matchMedia("(prefers-color-scheme: dark)").matches);
+			const root = document.documentElement;
+			root.classList.remove("light", "dark", "system");
+			if (isDark) {
+				root.classList.add("dark");
 			} else {
-				document.documentElement.classList.add(validTheme);
+				root.classList.add("light");
+			}
+			if (valid === "system") {
+				root.classList.add("system");
 			}
 		} catch {
-			const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
-				.matches
-				? "dark"
-				: "light";
-			document.documentElement.classList.add(systemTheme, "system");
+			const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+			document.documentElement.classList.add(
+				isDark ? "dark" : "light",
+				"system"
+			);
 		}
 	}
 	return `(${themeFn.toString()})();`;

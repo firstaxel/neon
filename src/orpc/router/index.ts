@@ -1,11 +1,8 @@
 import {
-	cancelSubscription,
 	checkCampaignCost,
-	getSubscription,
 	getTransactions,
 	getWallet,
 	initDeposit,
-	initSubscription,
 	verifyDeposit,
 } from "#/features/billing/billing.router";
 import {
@@ -75,13 +72,10 @@ import { o } from "..";
  */
 export const appRouter = o.router({
 	billing: o.router({
-		cancelSubscription,
 		checkCampaignCost,
-		getSubscription,
 		getTransactions,
 		getWallet,
 		initDeposit,
-		initSubscription,
 		verifyDeposit,
 	}),
 	campaign: o.router({

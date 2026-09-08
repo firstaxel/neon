@@ -151,37 +151,42 @@ export function ContactDialog({
 							)}
 						</div>
 
-						<Separator />
-
 						{/* Source parse job */}
-						<div className="space-y-1.5 rounded-xl border bg-muted/30 px-3 py-3">
-							<div className="flex items-center gap-1.5">
-								<FileImage className="h-3.5 w-3.5 text-muted-foreground" />
-								<span className="font-medium text-muted-foreground text-xs">
-									Source file
-								</span>
-							</div>
-							<p className="truncate font-medium text-sm">
-								{contact.sourceFilename ?? "Unknown file"}
-							</p>
-							<div className="flex items-center gap-3 text-muted-foreground text-xs">
-								{contact.sourceConfidence != null && (
-									<span>
-										{Math.round(contact.sourceConfidence * 100)}% AI confidence
-									</span>
-								)}
-								<span>
-									{new Date(contact.sourceCreatedAt).toLocaleDateString(
-										"en-GB",
-										{
-											day: "numeric",
-											month: "short",
-											year: "numeric",
-										}
-									)}
-								</span>
-							</div>
-						</div>
+						{(contact.sourceFilename || contact.sourceCreatedAt) && (
+							<>
+								<Separator />
+								<div className="space-y-1.5 rounded-xl border bg-muted/30 px-3 py-3">
+									<div className="flex items-center gap-1.5">
+										<FileImage className="h-3.5 w-3.5 text-muted-foreground" />
+										<span className="font-medium text-muted-foreground text-xs">
+											Source file
+										</span>
+									</div>
+									<p className="truncate font-medium text-sm">
+										{contact.sourceFilename ?? "Parsed roster"}
+									</p>
+									<div className="flex items-center gap-3 text-muted-foreground text-xs">
+										{contact.sourceConfidence != null && (
+											<span>
+												{Math.round(contact.sourceConfidence * 100)}% AI confidence
+											</span>
+										)}
+										{contact.sourceCreatedAt ? (
+											<span>
+												{new Date(contact.sourceCreatedAt).toLocaleDateString(
+													"en-GB",
+													{
+														day: "numeric",
+														month: "short",
+														year: "numeric",
+													}
+												)}
+											</span>
+										) : null}
+									</div>
+								</div>
+							</>
+						)}
 
 						{contact.rawRow && (
 							<div className="rounded-xl border bg-muted/20 px-3 py-2.5">

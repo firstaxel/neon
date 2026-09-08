@@ -7,11 +7,14 @@ interface UserAvatarProps {
 }
 
 function initials(name: string) {
+	if (!(name && name.trim())) {
+		return "VC";
+	}
 	const parts = name.trim().split(" ");
 	if (parts.length === 1) {
 		return parts[0].slice(0, 2).toUpperCase();
 	}
-	return (parts[0][0] + parts.at(-1)?.[0]).toUpperCase();
+	return (parts[0][0] + (parts.at(-1)?.[0] ?? "")).toUpperCase();
 }
 
 /** Deterministic colour from name — cycles through a set of accents */
@@ -43,6 +46,8 @@ export function UserAvatar({
 
 	return (
 		<div
+			aria-label={name}
+			role="img"
 			style={{ display: "inline-flex", flexShrink: 0, position: "relative" }}
 		>
 			{image ? (
@@ -76,7 +81,7 @@ export function UserAvatar({
 					<span
 						style={{
 							color: fg,
-							fontFamily: "'Space Grotesk', sans-serif",
+							fontFamily: "var(--font-sans, inherit)",
 							fontSize,
 							fontWeight: 700,
 							lineHeight: 1,
@@ -92,7 +97,7 @@ export function UserAvatar({
 				<span
 					style={{
 						background: "#25d366",
-						border: "2px solid #080c14",
+						border: "2px solid var(--card, #18181b)",
 						borderRadius: "50%",
 						bottom: 1,
 						height: Math.max(8, size * 0.24),

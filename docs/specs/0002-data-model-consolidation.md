@@ -1,10 +1,102 @@
+# 0002. Data Model Consolidation
+
+**Date**: 2026-09-07
+**Status**: Accepted
+
+## Summary
+
+This specification defines the consolidation of the PostgreSQL database schema using Prisma ORM. We prune deprecated subscription models and unused SMS provider columns, fix one to one relationship declarations, make contact image parsing optional, and add composite database indexes. These changes establish an efficient, clean foundation for prepaid Paystack kobo wallet billing, audience contact management, and multi channel campaigns.
+
+## Context
+
+Velocast is a multi channel broadcast and messaging platform built on PostgreSQL, Prisma ORM, and Bun. The initial database schema accumulated several inconsistencies during rapid prototyping:
+
+1. The `Message` model contained a legacy `twilioSid` column and an invalid `users User[]` relation, even though the platform dispatches SMS via Termii and WhatsApp via Meta Cloud API.
+2. The `Contact` model strictly required `parseJobId`, forcing manual contact entry and CSV imports to fabricate synthetic `ParseJob` records.
+3. The `User` model declared plural arrays for `wallets Wallet[]` and `userProfiles UserProfile[]`, despite both relations being strictly one to one with unique user identifiers.
+4. The schema included a `Subscription` model and plan enums that conflict with the product truth of prepaid Paystack kobo wallet billing.
+5. Critical query paths across campaigns, transactions, and audience contacts lacked composite database indexes.
+
+Leaving these defects in place increases database overhead, creates confusion in generated TypeScript types, and complicates upcoming features such as CSV contact imports, Paystack deposit flows, and Termii delivery tracking. Consolidating the schema now provides clean data boundaries and predictable migrations before implementing further product slices.
+
+## Requirements
+
+**User stories**:
+- As a developer, I want a clean and consolidated Prisma schema so that our application code interacts with accurate types and well structured database tables.
+- As an organization owner, I want my contacts, campaigns, and financial transactions cleanly indexed and isolated so that dispatches and ledger calculations execute quickly without duplicate data.
+
+**Acceptance criteria**:
+- **AC-1**: The Prisma schema defines clean, validated models for Better Auth authentication, prepaid billing, audience contacts, campaign messaging, two way inbox replies, sender identities, organization profiles, and workspace memberships.
+- **AC-2**: The `Message` model removes the deprecated `twilioSid` column and the invalid `users User[]` relation, adding `termiiMessageId` for SMS delivery tracking alongside `metaMessageId` for WhatsApp.
+- **AC-3**: The `Contact` model makes `parseJobId` optional with `onDelete: SetNull`, allowing manual contact entries and CSV imports to persist without synthetic `ParseJob` records.
+- **AC-4**: Phone numbers are sanitized to E.164 format via shared Zod validation in router input schemas, and phone uniqueness is enforced per user on the `Contact` model via `@@unique([uploadedBy, phone])`.
+- **AC-5**: `User` relations to `Wallet` and `UserProfile` are defined as strict one to one relations (`wallet Wallet?`, `userProfile UserProfile?`).
+- **AC-6**: The `Subscription` table and its associated enums (`SubscriptionPlan`, `SubscriptionStatus`) are removed, concentrating all billing logic on the prepaid `Wallet` and immutable `Transaction` ledger.
+- **AC-7**: A native PostgreSQL text array `tags String[] @default([])` is added to `Contact` to support fast audience filtering without join table overhead.
+- **AC-8**: Composite indexes exist across all active query paths, including `[walletId, createdAt(sort: Desc)]` on transactions, `[campaignId, status]` and `[campaignId, channel]` on messages, `[userId, channel]` on sender numbers and templates, `[phone]` on contacts, and `[userId, replied]` on inbound messages.
+- **AC-9**: The consolidated schema validates with `prisma validate`, generates TypeScript types with `prisma generate`, and applies cleanly to PostgreSQL via an incremental migration containing automated data sanitization scripts.
+
+## Options considered
+
+### Option 1: Fix in place with clean incremental migration (Chosen)
+
+Refactor `prisma/schema.prisma` directly to remove dead columns, align relations to singular, add missing indexes, and generate a standard Prisma migration script that safely alters the existing tables.
+
+**Pros**:
+- Preserves existing development and test records without requiring a full database reset.
+- Generates a versioned migration file that runs reliably in development, staging, and production environments.
+- Directly resolves schema defects and updates generated types across the codebase.
+
+**Cons**:
+- Migration SQL must run automated deduplication before creating unique constraints to prevent deployment crashes.
+
+### Option 2: Reset the database and recreate baseline schema
+
+Wipe existing migrations and generate a single fresh baseline migration from scratch against an empty database.
+
+**Pros**:
+- Produces a single migration file without intermediate historical migration baggage.
+
+**Cons**:
+- Destructive to existing local database state and requires re seeding all user and profile records.
+- Breaks continuous migration history for any existing deployment.
+
+### Option 3: Retain subscriptions and legacy provider fields as deprecated
+
+Keep `Subscription`, `twilioSid`, and required parse jobs in the schema, marking them as deprecated in code comments.
+
+**Pros**:
+- Zero risk of breaking any uncommitted branch or legacy router query.
+
+**Cons**:
+- Preserves technical debt, forces developers to continue creating synthetic parse jobs, and clutters the data model with unused tables.
+
+## Decision
+
+**Chosen option**: Option 1: Fix in place with clean incremental migration
+
+We refactor `prisma/schema.prisma` in place and produce an incremental migration that prunes dead columns, fixes relation cardinality, adds contact tags and Termii tracking, establishes composite indexes, and embeds automated SQL safety checks.
+
+**Implementation skills**: `prisma-client-api` (`prisma/skills`, `.agents/skills/prisma-client-api/`) · `prisma-cli` (`prisma/skills`, `.agents/skills/prisma-cli/`)
+
+## Rationale
+
+Option 1 provides a clean, safe path forward. Because Velocast is actively being developed with real database connections, resetting the database (Option 2) introduces unnecessary disruption and discards migration continuity. Leaving unused models and broken relations in place (Option 3) would directly contradict the project mission of building a dependable foundation before proceeding to Slice 1.
+
+By generating a targeted incremental migration, we safely update existing tables, make `parseJobId` optional, add `termiiMessageId`, remove `twilioSid`, and drop the `Subscription` table while preserving the integrity of user and wallet records. Incorporating automated deduplication and database check constraints in the migration SQL guarantees that local and remote deployments execute without failure.
+
+## Feature design
+
+**Data model sketch**:
+
+```prisma
+datasource db {
+  provider = "postgresql"
+}
+
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
-}
-
-datasource db {
-  provider = "postgresql"
 }
 
 // ─── Authentication (Better Auth) ─────────────────────────────────────────────
@@ -19,8 +111,8 @@ model User {
   image         String?
 
   // One to one relations
-  wallet      Wallet?
-  userProfile UserProfile?
+  wallet        Wallet?
+  userProfile   UserProfile?
 
   // One to many relations
   sessions         Session[]
@@ -33,11 +125,11 @@ model User {
   inboundMessages  InboundMessage[]
 
   // Team workspace relations
-  orgInvitesSent    OrgInvite[]      @relation("OrgInvitesSent")
-  orgMembersOwned   OrgMember[]      @relation("OrgMembersOwned")
-  orgMemberships    OrgMember[]      @relation("OrgMemberships")
-  joinRequestsOwned OrgJoinRequest[] @relation("OrgJoinRequestsOwned")
-  joinRequestsSent  OrgJoinRequest[] @relation("OrgJoinRequestsSent")
+  orgInvitesSent     OrgInvite[]       @relation("OrgInvitesSent")
+  orgMembersOwned    OrgMember[]       @relation("OrgMembersOwned")
+  orgMemberships     OrgMember[]       @relation("OrgMemberships")
+  joinRequestsOwned  OrgJoinRequest[]  @relation("OrgJoinRequestsOwned")
+  joinRequestsSent   OrgJoinRequest[]  @relation("OrgJoinRequestsSent")
 
   @@map("user")
 }
@@ -450,13 +542,6 @@ enum WaHeaderFormat {
   LOCATION
 }
 
-enum WaButtonType {
-  QUICK_REPLY
-  URL
-  PHONE_NUMBER
-  COPY_CODE
-}
-
 enum Purpose {
   general
   welcome
@@ -605,3 +690,118 @@ model OrgJoinRequest {
   @@index([userId])
   @@map("org_join_requests")
 }
+```
+
+**State transitions**:
+- Contact lifecycle: raw input &rarr; phone sanitized to E.164 &rarr; active contact &rarr; optional opt out.
+- ParseJob lifecycle: `pending` &rarr; `parsing` &rarr; `done` (or `error`).
+- Campaign lifecycle: `pending` &rarr; `processing` &rarr; `completed` (or `failed`).
+- Message dispatch lifecycle: `queued` &rarr; `sending` &rarr; `sent` &rarr; `delivered` (or `failed` / `rate_limited`).
+- Transaction ledger lifecycle: `pending` &rarr; `completed` (or `failed` / `reversed`).
+
+**API surface**:
+
+| Surface / Method | Type | Key inputs | Key outputs | Auth | Purpose |
+|---|---|---|---|---|---|
+| `bun run db:migrate` | CLI command | PostgreSQL connection string | Migration SQL applied | Local / CI env | Applies incremental schema changes safely |
+| `bun run db:generate` | CLI command | `prisma/schema.prisma` | Updated client in `src/generated/prisma` | Local / CI env | Regenerates type safe Prisma Client bindings |
+| `src/db.ts` | Module export | None | Singleton client and exported model types | Application internal | Provides database access across all routers and jobs |
+| `src/features/billing/billing.router.ts` | ORPC router | Deposit inputs, wallet queries | Wallet balance, transaction records | Protected session | Prunes subscription endpoints to focus on prepaid wallet |
+| `src/features/contacts/server/router.ts` | ORPC router | Contact fields, search params | Paginated contacts, contact record | Protected session | Drops synthetic parse job creation on manual insert |
+
+**Value sourcing**:
+
+| Action | Value produced / displayed | Source |
+|---|---|---|
+| Read wallet balance | `balanceKobo`, `heldKobo` | DB columns on `Wallet` table |
+| Record top up deposit | `amountKobo`, `balanceAfterKobo`, `reference` | Input params plus Paystack verification result |
+| Add manual contact | `name`, `phone`, `tags` | Input params sanitized to E.164 with `parseJobId: null` |
+| Track SMS delivery | `termiiMessageId` | Termii dispatch response or inbound delivery webhook |
+| Track WhatsApp delivery | `metaMessageId` | Meta Cloud API dispatch response or inbound webhook |
+| Resolve inbound reply | `serviceWindowActive` | Derived from `now() - inboundMessage.receivedAt <= 24h` |
+
+**Key invariants**:
+- Currency values are stored strictly as positive integers representing kobo (100 kobo equals 1 Naira).
+- Database check constraint enforces that wallet balance is never lower than held funds: `CHECK (balance_kobo >= held_kobo)`.
+- Phone numbers are validated and sanitized to standard E.164 format in shared Zod schemas before database insertion.
+- Contact phone number must be unique per user account (`@@unique([uploadedBy, phone])`).
+- Outbound SMS messages record their Termii message reference in `termiiMessageId`.
+- Transaction records are immutable append only entries; balance calculations reflect cumulative ledger entries.
+
+**Security model**:
+- All operations require an authenticated session via Better Auth middleware.
+- Data access is strictly scoped to the authenticated `userId` or `uploadedBy`.
+- When an organization membership exists in `OrgMember`, workspace data access is delegated based on `ownerId`.
+- Financial ledger records are protected against client tampering by calculating balance updates exclusively inside database transactions on the server.
+
+**Configuration required**:
+- `DATABASE_URL`: PostgreSQL connection string for local development.
+- `PROD_DATABASE_URL`: PostgreSQL connection string for production deployment when `PROD=true`.
+
+**Critical test scenarios**:
+- Happy path: Saving a manual contact without a parse job and creating a campaign with reserved wallet funds, verifies **AC-1**, **AC-3**, **AC-5**.
+- Duplicate rejection: Inserting a duplicate phone number for the same user account triggers a unique constraint error, verifies **AC-4**.
+- SMS tracking: Dispatching an SMS and recording the Termii identifier in `termiiMessageId` for webhook matching, verifies **AC-2**.
+- Financial ledger: Crediting a wallet and recording an immutable deposit transaction with updated `balanceAfterKobo`, verifies **AC-6**.
+- Schema integrity: Executing `prisma validate` and running the incremental migration without syntax or relation errors, verifies **AC-8**, **AC-9**.
+
+## Build plan
+
+- [x] 1. Update `prisma/schema.prisma` to drop the `Subscription` model, remove `twilioSid`, make `Contact.parseJobId` optional, add `tags` and `termiiMessageId`, and fix one to one user relations, satisfies **AC-1**, **AC-2**, **AC-3**, **AC-5**, **AC-6**, **AC-7**.
+- [x] 2. Add composite indexes across `transactions`, `campaigns`, `messages`, `contacts`, and `inbound_messages` in `prisma/schema.prisma`, satisfies **AC-8**.
+- [x] 3. Generate and apply the incremental database migration with automated contact deduplication and wallet check constraint using `bun run db:migrate`, satisfies **AC-4**, **AC-9**.
+- [x] 4. Prune deprecated subscription procedures (`getSubscription`, `initSubscription`, `cancelSubscription`) from `src/features/billing/billing.router.ts`, satisfies **AC-6**.
+- [x] 5. Update `src/features/contacts/server/router.ts` to omit synthetic parse job creation on manual contact inserts, satisfies **AC-3**, **AC-4**.
+- [x] 6. Update `src/db.ts` type exports and regenerate Prisma Client using `bun run db:generate`, satisfies **AC-1**, **AC-9**.
+
+## Consequences
+
+**Positive**:
+- Database schema matches the actual architecture of prepaid kobo billing, Termii SMS, and Meta WhatsApp.
+- Eliminates synthetic `ParseJob` rows on manual contact additions and CSV imports.
+- Replaces plural array relations on one to one models with clean singular types.
+- Composite indexes significantly improve lookup performance for campaign status, wallet history, and contact search.
+
+**Negative / tradeoffs**:
+- Removing subscription endpoints from the billing router requires any interface referencing monthly plans to be redirected to prepaid wallet balances; frontend adjustments are tracked as part of Feature 5 (Prepaid wallet and Paystack deposit).
+- Historical Twilio message references in `twilioSid` and existing development subscription records are permanently discarded without data migration or prorated credit.
+
+**Neutral**:
+- Team models (`OrgMember`, `OrgInvite`, `OrgJoinRequest`) remain in the schema for multi user workspace readiness without affecting single user workflows.
+
+## Migration plan
+
+**Strategy**: Safe incremental migration using standard Prisma migration tooling with automated SQL data sanitization.
+
+**Phases**:
+1. Schema update: Update `prisma/schema.prisma` with optional `parse_job_id`, new indexes, `termii_message_id`, and remove `subscriptions`.
+2. Automated deduplication in `migration.sql`:
+   ```sql
+   -- Deduplicate contacts per (uploaded_by, phone) keeping the latest record
+   DELETE FROM contacts a USING contacts b
+   WHERE a.uploaded_by = b.uploaded_by
+     AND a.phone = b.phone
+     AND a.created_at < b.created_at;
+
+   -- Deduplicate wallets per user keeping the latest balance
+   DELETE FROM wallets a USING wallets b
+   WHERE a.user_id = b.user_id
+     AND a.created_at < b.created_at;
+
+   -- Enforce database level financial balance check
+   ALTER TABLE wallets ADD CONSTRAINT check_balance_held CHECK (balance_kobo >= held_kobo);
+   ```
+3. Migration execution: Run `bun run db:migrate --name consolidate_schema_models` to generate and apply the SQL migration.
+4. Client generation: Run `bun run db:generate` to refresh TypeScript types in `src/generated/prisma`.
+5. Application code alignment: Remove dead subscription code in `billing.router.ts` and clean up contact insertion in `contacts/server/router.ts`.
+
+**Rollback**:
+If migration fails, revert the schema changes and restore previous table definitions using Prisma migrate commands. Because the migration drops the unused `subscriptions` table and `twilio_sid` column, any test data in those columns is intentionally discarded.
+
+**Risks**:
+The automated SQL deduplication step deletes duplicate contact rows if any exist in the local or remote database before applying the unique index.
+
+## Follow-up
+
+- [ ] Run `bun run fix` after updating router files to enforce Ultracite formatting and linting rules.
+- [ ] Ensure Zod input schemas for contact creation enforce E.164 phone normalization before inserting records.

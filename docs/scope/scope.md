@@ -14,8 +14,8 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | A | Stack and runtime foundation | Foundation | existing |
 | B | Procedure API router | Foundation | existing |
 | C | Durable background queues | Foundation | existing |
-| 1 | Design system and UI foundation | Foundation | in-progress |
-| 2 | Data model consolidation | Foundation | in-progress |
+| 1 | Design system and UI foundation | Foundation | done |
+| 2 | Data model consolidation | Foundation | done |
 | 3 | Landing page and brand identity | Foundation | in-progress |
 | 4 | Auth and onboarding flow | Slice 1 | planned |
 | 5 | Prepaid wallet and Paystack deposit | Slice 1 | planned |
@@ -39,7 +39,7 @@ Inngest client and edge serve endpoint for event driven background job execution
 
 ## Foundations
 
-### 1. Design system and UI foundation · in-progress
+### 1. Design system and UI foundation · done
 Unified design tokens, Tailwind CSS v4 variables, Radix UI primitives, responsive layout shell, and theme switching. Established product truth in `PRODUCT.md` and design system tokens in `DESIGN.md`.
 **Done when:** reusable layout primitives, navigation sidebar, theme toggle, and base accessible inputs render consistently.
 - [x] Design it (spec): [docs/specs/0001-design-system-and-ui-foundation/index.md](docs/specs/0001-design-system-and-ui-foundation/index.md)
@@ -53,11 +53,18 @@ Unified design tokens, Tailwind CSS v4 variables, Radix UI primitives, responsiv
 - [x] Test it: `/test design system and UI foundation`
 spec [docs/specs/0001-design-system-and-ui-foundation/index.md](docs/specs/0001-design-system-and-ui-foundation/index.md) · code in `src/styles.css`, `src/components/ui/`, `src/features/dashboard/components/`, `src/providers/theme.tsx`
 
-### 2. Data model consolidation · in-progress · needs a decision
+### 2. Data model consolidation · done
 Refactor Prisma schema to remove deprecated fields, enforce phone number uniqueness, index critical relations, and establish clean migrations.
 **Done when:** consolidated PostgreSQL schema passes validation and supports wallet balances, contacts, campaigns, and delivery logs cleanly.
-- [ ] Design it (spec): `/architect data model consolidation`
-code in `prisma/`
+- [x] Design it (spec): [docs/specs/0002-data-model-consolidation.md](docs/specs/0002-data-model-consolidation.md)
+- [x] Build it: `/develop data model consolidation`
+  - [x] Consolidate schema models, optional parseJob, tags, and composite indexes (AC-1, AC-2, AC-3, AC-5, AC-7, AC-8)
+  - [x] Execute incremental migration with automated deduplication and check constraints (AC-4, AC-9)
+  - [x] Prune subscription billing procedures and update router contact creation (AC-3, AC-6)
+  - [x] Regenerate Prisma Client types and verify schema validation (AC-1, AC-9)
+- [x] Verify it: `/check verify data model consolidation`
+- [x] Test it: `/test data model consolidation`
+spec [docs/specs/0002-data-model-consolidation.md](docs/specs/0002-data-model-consolidation.md) · code in `prisma/`, `src/db.ts`, `src/features/billing/`, `src/features/contacts/`
 
 ### 3. Landing page and brand identity · in-progress
 Modern, responsive public landing page with clear Velocast brand identity, tactile console showcase (Gemini AI roster scanning to WhatsApp dispatch), authentic Nigerian infrastructure proof, and transparent Paystack prepaid kobo wallet pricing.

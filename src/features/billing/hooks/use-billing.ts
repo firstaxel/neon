@@ -62,26 +62,58 @@ export function useCampaignCost(
 	);
 }
 
-// ── Subscription ──────────────────────────────────────────────────────────────
+// ── Subscription (Deprecated — prepaid wallet migration) ──────────────────────
+export interface BillingPlan {
+	key: string;
+	label: string;
+	monthlyLimit: string;
+	paystackPlanCode?: string;
+	priceFormatted: string;
+	priceKobo: number;
+}
+
+export interface UserSubscription {
+	currentPeriodEnd: string;
+	id: string;
+	messagesUsedThisCycle: number;
+	monthlyMessageLimit: number;
+	paystackSubCode?: string | null;
+	plan: string;
+	remainingMessages: number;
+	status: string;
+	usagePercent: number;
+}
+
 export function useSubscription() {
-	return useQuery(
-		orpc.billing.getSubscription.queryOptions({
-			staleTime: 60_000,
-		})
-	);
+	return {
+		data: {
+			plans: [] as BillingPlan[],
+			subscription: null as UserSubscription | null,
+		},
+		isError: false,
+		isLoading: false,
+	};
 }
 
 export function useInitSubscription() {
-	return useMutation(orpc.billing.initSubscription.mutationOptions());
+	return {
+		isPending: false,
+		mutateAsync: async (_args: {
+			callbackUrl: string;
+			plan: "starter" | "growth" | "pro";
+		}) => ({
+			checkoutUrl: "",
+		}),
+	};
 }
 
 export function useCancelSubscription() {
-	const queryClient = useQueryClient();
-	return useMutation(
-		orpc.billing.cancelSubscription.mutationOptions({
-			onSuccess: () => {
-				queryClient.invalidateQueries({ queryKey: ["subscription"] });
-			},
-		})
-	);
+	return {
+		isPending: false,
+		mutateAsync: async (_args?: unknown) => ({
+			cancelled: true,
+			currentPeriodEnd: new Date().toISOString(),
+			message: "Subscription cancelled",
+		}),
+	};
 }

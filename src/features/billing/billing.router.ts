@@ -11,13 +11,11 @@ import {
 	formatNaira,
 	getOrCreateWallet,
 	nairaToKobo,
-	type PlanKey,
 	PRICING,
 	resolveMessageType,
 } from "#/features/billing/utils";
 import {
 	initializeDeposit,
-	cancelSubscription as paystackCancelSub,
 	verifyTransaction,
 } from "#/features/payment/paystack";
 import { invalidate, withCache } from "#/lib/cache";
@@ -140,7 +138,7 @@ export const getTransactions = protectedProcedure
 				.enum([
 					"deposit",
 					"message_debit",
-					"subscription",
+					"campaign_hold",
 					"campaign_refund",
 					"refund",
 				])
@@ -301,123 +299,3 @@ export const checkCampaignCost = protectedProcedure
 			totalCostKobo,
 		};
 	});
-
-// ── Subscription ──────────────────────────────────────────────────────────────
-export const getSubscription = protectedProcedure.handler(
-	withCache("billing.getSubscription", 120_000, async ({ context }) => {
-		const sub = await context.db.subscription.findUnique({
-			where: { userId: context.session?.user.id ?? "" },
-		});
-		const plans = Object.entries(PRICING.PLANS).map(([key, p]) => ({
-			key,
-			label: p.label,
-			monthlyLimit:
-				p.monthlyLimit === 999_999
-					? "Unlimited"
-					: p.monthlyLimit.toLocaleString(),
-			paystackPlanCode: p.paystackPlanCode,
-			priceFormatted: formatNaira(p.priceKobo),
-			priceKobo: p.priceKobo,
-		}));
-		if (!sub) {
-			return { plans, subscription: null };
-		}
-		return {
-			plans,
-			subscription: {
-				currentPeriodEnd: sub.currentPeriodEnd.toISOString(),
-				id: sub.id,
-				messagesUsedThisCycle: sub.messagesUsedThisCycle,
-				monthlyMessageLimit: sub.monthlyMessageLimit,
-				paystackSubCode: sub.paystackSubCode,
-				plan: sub.plan,
-				remainingMessages: Math.max(
-					0,
-					sub.monthlyMessageLimit - sub.messagesUsedThisCycle
-				),
-				status: sub.status,
-				usagePercent:
-					sub.monthlyMessageLimit === 999_999
-						? 0
-						: Math.round(
-								(sub.messagesUsedThisCycle / sub.monthlyMessageLimit) * 100
-							),
-			},
-		};
-	})
-);
-
-export const initSubscription = protectedProcedure
-	.input(
-		z.object({
-			callbackUrl: z.string().url(),
-			plan: z.enum(["starter", "growth", "pro"]),
-		})
-	)
-	.handler(async ({ input, context }) => {
-		const planConfig = PRICING.PLANS[input.plan as PlanKey];
-		const reference = `sub_${input.plan}_${uuidv4()}`;
-		const result = await initializeDeposit(
-			context.session.user.email,
-			5000,
-			reference,
-			input.callbackUrl
-		);
-		const wallet = await getOrCreateWallet(context.session.user.id);
-		await context.db.transaction.create({
-			data: {
-				amountKobo: planConfig.priceKobo,
-				balanceAfterKobo: 0,
-				description: `Subscription to ${planConfig.label} plan`,
-				reference,
-				status: "pending",
-				type: "subscription",
-				walletId: wallet.id,
-			},
-		});
-		return {
-			checkoutUrl: result.authorization_url,
-			plan: input.plan,
-			planLabel: planConfig.label,
-			priceFormatted: formatNaira(planConfig.priceKobo),
-			reference,
-		};
-	});
-
-export const cancelSubscription = protectedProcedure.handler(
-	async ({ context }) => {
-		const sub = await context.db.subscription.findUnique({
-			where: { userId: context.session.user.id },
-		});
-		if (!sub) {
-			throw new ORPCError("NOT_FOUND", {
-				message: "No active subscription found",
-			});
-		}
-		if (sub.status === "cancelled") {
-			throw new ORPCError("BAD_REQUEST", {
-				message: "Subscription already cancelled",
-			});
-		}
-		if (sub.paystackSubCode) {
-			try {
-				await paystackCancelSub(
-					sub.paystackSubCode,
-					sub.paystackCustomerCode ?? ""
-				);
-			} catch {
-				/* continue */
-			}
-		}
-		const updated = await context.db.subscription.update({
-			data: { cancelledAt: new Date(), status: "cancelled" },
-			where: { userId: context.session.user.id },
-		});
-		invalidate(context.session.user.id, "billing.getSubscription");
-		return {
-			cancelled: true,
-			currentPeriodEnd: updated.currentPeriodEnd.toISOString(),
-			message: `Your ${sub.plan} plan remains active until ${updated.currentPeriodEnd.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}.`,
-		};
-	}
-);

@@ -84,8 +84,9 @@ export const listContacts = protectedProcedure
 					parseJobId: c.parseJobId,
 					phone: c.phone,
 					rawRow: c.rawRow,
-					sourceCreatedAt: c.parseJob.createdAt.toISOString(),
-					sourceFilename: c.parseJob.originalFilename,
+					sourceCreatedAt: c.parseJob?.createdAt?.toISOString() ?? null,
+					sourceFilename: c.parseJob?.originalFilename ?? null,
+					tags: c.tags,
 					type: c.type as "new_contact" | "returning" | "contact" | "prospect",
 				})),
 				duplicateCount: duplicatePhoneSet.size,
@@ -133,9 +134,10 @@ export const getContact = protectedProcedure
 				parseJobId: c.parseJobId,
 				phone: c.phone,
 				rawRow: c.rawRow,
-				sourceConfidence: c.parseJob.confidence,
-				sourceCreatedAt: c.parseJob.createdAt.toISOString(),
-				sourceFilename: c.parseJob.originalFilename,
+				sourceConfidence: c.parseJob?.confidence ?? null,
+				sourceCreatedAt: c.parseJob?.createdAt?.toISOString() ?? null,
+				sourceFilename: c.parseJob?.originalFilename ?? null,
+				tags: c.tags,
 				type: c.type as "new_contact" | "returning" | "contact" | "prospect",
 			};
 		})
@@ -280,8 +282,8 @@ export const getDuplicates = protectedProcedure.handler(async ({ context }) => {
 			notes: c.notes,
 			optedOut: c.optedOut,
 			phone: c.phone,
-			sourceDate: c.parseJob.createdAt.toISOString(),
-			sourceFilename: c.parseJob.originalFilename,
+			sourceDate: c.parseJob?.createdAt?.toISOString() ?? null,
+			sourceFilename: c.parseJob?.originalFilename ?? null,
 			type: c.type,
 		})),
 		phone,
@@ -449,6 +451,7 @@ export const createContact = protectedProcedure
 			name: z.string().min(1, "Name is required"),
 			notes: z.string().optional().nullable(),
 			phone: z.string().min(7, "Phone is required"),
+			tags: z.array(z.string()).default([]),
 			type: ContactTypeSchema,
 		})
 	)
@@ -470,33 +473,15 @@ export const createContact = protectedProcedure
 			);
 		}
 
-		// Manual contacts need a parse job to satisfy the FK constraint.
-		// We upsert a single "manual-{userId}" parse job so all manual contacts
-		// share one row rather than creating a new job per contact.
-		const parseJobId = `manual-${userId}`;
-		await context.db.parseJob.upsert({
-			create: {
-				confidence: 1,
-				id: parseJobId,
-				mimeType: "text/plain",
-				originalFilename: "Manual entry",
-				parsedBy: userId,
-				r2Bucket: "manual",
-				r2Key: "manual",
-				status: "done",
-			},
-			update: {},
-			where: { id: parseJobId },
-		});
-
 		const contact = await context.db.contact.create({
 			data: {
 				channel: input.channel,
 				email: input.email ?? null,
 				name: input.name,
 				notes: input.notes ?? null,
-				parseJobId,
+				parseJobId: null,
 				phone: input.phone,
+				tags: input.tags ?? [],
 				type: input.type,
 				uploadedBy: userId,
 			},
@@ -508,6 +493,7 @@ export const createContact = protectedProcedure
 			id: contact.id,
 			name: contact.name,
 			phone: contact.phone,
+			tags: contact.tags,
 			type: contact.type as
 				| "new_contact"
 				| "returning"

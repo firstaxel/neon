@@ -173,6 +173,7 @@ export function SmsTemplateListView({
 						(createHref ? (
 							<Button
 								className="shrink-0 gap-2 rounded-xl bg-[#60a5fa] text-white hover:bg-[#60a5fa]/90"
+								nativeButton={false}
 								render={
 									<Link to={createHref}>
 										<Plus className="h-4 w-4" /> New SMS template

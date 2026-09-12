@@ -12,9 +12,9 @@
 		}
 		const store = storage || root.localStorage;
 		const makeId = idFactory || (() => Math.random().toString(16).slice(2, 10));
-		const sessionKey = prefix + "-session";
-		const handledKey = sessionKey + "-handled";
-		const scrollKey = sessionKey + "-scroll";
+		const sessionKey = `${prefix}-session`;
+		const handledKey = `${sessionKey}-handled`;
+		const scrollKey = `${sessionKey}-scroll`;
 		let checkpointRevision = 0;
 		const owner = makeId();
 
@@ -62,7 +62,7 @@
 		}
 
 		function saveSession(session) {
-			if (!(session && session.id)) {
+			if (!session?.id) {
 				return;
 			}
 			const payload = {

@@ -11,6 +11,7 @@ export interface ContactFilters {
 	pageSize?: number;
 	parseJobId?: string;
 	search?: string;
+	tag?: string;
 	type?: ContactType;
 }
 
@@ -24,6 +25,7 @@ export function useContacts(filters: ContactFilters = {}) {
 				pageSize: filters.pageSize ?? 20,
 				parseJobId: filters.parseJobId || undefined,
 				search: filters.search || undefined,
+				tag: filters.tag || undefined,
 				type: filters.type || undefined,
 			},
 			placeholderData: (prev) => prev,
@@ -49,6 +51,49 @@ export function useCreateContact() {
 		...orpc.contacts.create.mutationOptions(),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["contacts"] });
+			queryClient.invalidateQueries({ queryKey: ["tags"] });
 		},
 	});
+}
+
+export function useTags(search?: string) {
+	return useQuery(
+		orpc.contacts.listTags.queryOptions({
+			input: search ? { search } : undefined,
+			queryKey: ["tags", search ?? ""],
+			staleTime: 60_000,
+		})
+	);
+}
+
+export function useBatchTagContacts() {
+	const queryClient = useQueryClient();
+	return useMutation({
+		...orpc.contacts.batchTag.mutationOptions(),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["contacts"] });
+			queryClient.invalidateQueries({ queryKey: ["tags"] });
+		},
+	});
+}
+
+export function useDeleteContacts() {
+	const queryClient = useQueryClient();
+	return useMutation({
+		...orpc.contacts.deleteContacts.mutationOptions(),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["contacts"] });
+			queryClient.invalidateQueries({ queryKey: ["tags"] });
+		},
+	});
+}
+
+export function useImports(page = 1, pageSize = 10) {
+	return useQuery(
+		orpc.contacts.listImports.queryOptions({
+			input: { page, pageSize },
+			queryKey: ["contact-imports", page, pageSize],
+			staleTime: 30_000,
+		})
+	);
 }

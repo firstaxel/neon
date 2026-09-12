@@ -4,12 +4,15 @@ import { useForm, useStore } from "@tanstack/react-form";
 import { useRouter } from "@tanstack/react-router";
 import {
 	AlertCircle,
+	Calendar,
 	CheckCircle2,
 	ChevronLeft,
 	ChevronRight,
 	FileText,
+	Info,
 	Loader2,
 	MessageCircle,
+	Plus,
 	Send,
 	Sparkles,
 	Users,
@@ -32,11 +35,14 @@ import { Label } from "#/components/ui/label";
 import { Separator } from "#/components/ui/separator";
 import { Switch } from "#/components/ui/switch";
 import { Textarea } from "#/components/ui/textarea";
-import { useCampaignCost } from "#/features/billing/hooks/use-billing";
+import { DepositDialog } from "#/features/billing/components/deposit-dialog";
+import { useWallet } from "#/features/billing/hooks/use-billing";
+import { formatNaira, PRICING } from "#/features/billing/utils/format";
 import {
 	ContactsTable,
 	type SelectedContact,
 } from "#/features/contacts/components/contact-table";
+import { normalizePhoneNumber } from "#/features/contacts/utils/phone";
 import { getScenarioMeta } from "#/features/miscellaneous/org";
 import {
 	getManualVars,
@@ -45,7 +51,6 @@ import {
 	VAR_LABELS,
 } from "#/features/miscellaneous/scenario";
 import { useProfile } from "#/features/profile/hooks/use-profile";
-import { DepositDialog } from "#/features/subscriptions/components/DepositDialog";
 import {
 	type ChannelTemplate,
 	TemplatePickerDialog,
@@ -55,46 +60,35 @@ import {
 	useRecordTemplateUsage,
 	useScenarioDefaults,
 } from "#/features/templates/hooks/use-templates";
+import { appendOptOutNotice, calculateSmsSegments } from "#/lib/sms";
 import type { ScenarioId } from "#/lib/types";
-import { useSendCampaign } from "../hooks/use-campaign";
+import { useCreateSmsCampaign } from "../hooks/use-campaign";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface WizardValues {
+	campaignName: string;
 	contacts: SelectedContact[];
 	customSms: string;
 	customWhatsapp: string;
-	// How WhatsApp contacts receive the message:
-	//   marketing         → send approved template directly (standard, ~₦100)
-	//   utility_prescreen → send cheap consent message first, real msg on YES (~₦5 + ₦100 for replies only)
-	//   sms_fallback      → send as SMS to their WhatsApp number via Termii (~₦5–8)
 	deliveryMode: "marketing" | "utility_prescreen" | "sms_fallback";
 	savedSmsTemplate: ChannelTemplate | null;
-	// Independent per-channel picks. null = fall back to scenario default for that channel.
 	savedWaTemplate: ChannelTemplate | null;
 	scenario: ScenarioId;
-	// Template source — exactly one of these modes is active at a time:
-	//   "scenario"   → use the built-in scenario defaults
-	//   "saved"      → user picked templates from saved library (one per channel, independently)
-	//   "custom"     → user typed a one-off override
+	scheduledAt: string;
+	sendTiming: "immediate" | "scheduled";
 	templateSource: "scenario" | "saved" | "custom";
-	/** User-supplied values for manual template vars (non-name vars like org, date, event) */
 	templateVars: Record<string, string>;
 }
-
-const CHANNEL_BADGE = {
-	sms: "border-[#60a5fa40] bg-[#0d1a2e] text-[#60a5fa]",
-	whatsapp: "border-[#25d36640] bg-[#0d2016] text-[#25d366]",
-} as const;
 
 // ─── Step indicator ───────────────────────────────────────────────────────────
 
 const STEPS = [
 	{ icon: MessageCircle, label: "Scenario" },
 	{ icon: Users, label: "Contacts" },
-	{ icon: FileText, label: "Review" },
+	{ icon: FileText, label: "Message" },
 	{ icon: Variable, label: "Variables" },
-	{ icon: Send, label: "Send" },
+	{ icon: Send, label: "Review" },
 ] as const;
 
 function StepIndicator({
@@ -104,12 +98,10 @@ function StepIndicator({
 	current: number;
 	hasVarsStep: boolean;
 }) {
-	// Only show Variables step in the indicator when there are manual vars to fill
 	const visibleSteps = hasVarsStep
 		? STEPS
 		: STEPS.filter((s) => s.label !== "Variables");
 
-	// Map the logical step index to the visible step index
 	const visibleCurrent = hasVarsStep
 		? current
 		: Math.min(current, visibleSteps.length - 1);
@@ -160,49 +152,75 @@ function StepIndicator({
 function ScenarioStep({
 	value,
 	onChange,
+	campaignName,
+	onChangeName,
 }: {
 	value: ScenarioId;
 	onChange: (v: ScenarioId) => void;
+	campaignName: string;
+	onChangeName: (name: string) => void;
 }) {
 	const { data: profile } = useProfile();
 	return (
-		<div className="space-y-3">
-			<p className="text-muted-foreground text-sm">
-				Choose the purpose of this campaign. The message template will be
-				personalised for each recipient.
-			</p>
-			<div className="grid gap-3 sm:grid-cols-2">
-				{SCENARIOS.map((s) => {
-					const meta = getScenarioMeta(s.id, profile?.orgType);
-					return (
-						<button
-							className={[
-								"rounded-xl border p-4 text-left transition-all",
-								value === s.id
-									? "border-primary bg-primary/5 ring-2 ring-primary/20"
-									: "border-border hover:border-muted-foreground/40 hover:bg-muted/30",
-							].join(" ")}
-							key={s.id}
-							onClick={() => onChange(s.id)}
-							type="button"
-						>
-							<div className="flex items-start gap-3">
-								<span className="text-2xl leading-none">{meta.icon}</span>
-								<div className="min-w-0 flex-1">
-									<p className="font-medium text-sm leading-tight">
-										{meta.label}
-									</p>
-									<p className="mt-0.5 text-muted-foreground text-xs">
-										{meta.description}
-									</p>
+		<div className="space-y-4">
+			<div className="space-y-1.5">
+				<Label className="font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+					Campaign Name (Optional)
+				</Label>
+				<Input
+					className="rounded-xl"
+					onChange={(e) => onChangeName(e.target.value)}
+					placeholder="e.g. Sunday Service Reminder"
+					value={campaignName}
+				/>
+				<p className="text-[11px] text-muted-foreground">
+					Give your broadcast a recognizable label for tracking in history.
+				</p>
+			</div>
+
+			<Separator />
+
+			<div className="space-y-3">
+				<div>
+					<p className="font-medium text-sm">Campaign Purpose</p>
+					<p className="text-muted-foreground text-xs">
+						Choose the purpose of this outreach. Preconfigured templates will be
+						loaded for your scenario.
+					</p>
+				</div>
+				<div className="grid gap-3 sm:grid-cols-2">
+					{SCENARIOS.map((s) => {
+						const meta = getScenarioMeta(s.id, profile?.orgType);
+						return (
+							<button
+								className={[
+									"rounded-xl border p-4 text-left transition-all",
+									value === s.id
+										? "border-primary bg-primary/5 ring-2 ring-primary/20"
+										: "border-border hover:border-muted-foreground/40 hover:bg-muted/30",
+								].join(" ")}
+								key={s.id}
+								onClick={() => onChange(s.id)}
+								type="button"
+							>
+								<div className="flex items-start gap-3">
+									<span className="text-2xl leading-none">{meta.icon}</span>
+									<div className="min-w-0 flex-1">
+										<p className="font-medium text-sm leading-tight">
+											{meta.label}
+										</p>
+										<p className="mt-0.5 text-muted-foreground text-xs">
+											{meta.description}
+										</p>
+									</div>
+									{value === s.id && (
+										<CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+									)}
 								</div>
-								{value === s.id && (
-									<CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-								)}
-							</div>
-						</button>
-					);
-				})}
+							</button>
+						);
+					})}
+				</div>
 			</div>
 		</div>
 	);
@@ -227,11 +245,43 @@ function ContactsStep({
 		onSelectionChange(contacts);
 	}
 
+	// Audience deduplication analysis
+	const seenPhones = new Set<string>();
+	for (const c of selected) {
+		const norm = normalizePhoneNumber(c.phone);
+		const canonical =
+			norm.success && norm.phone ? norm.phone : c.phone.replace(/\D/g, "");
+		seenPhones.add(canonical);
+	}
+	const uniqueCount = seenPhones.size;
+	const duplicatesCount = selected.length - uniqueCount;
+
 	return (
 		<div className="space-y-3">
-			<p className="text-muted-foreground text-sm">
-				Select recipients. Selections persist as you navigate between pages.
-			</p>
+			<div className="flex flex-wrap items-center justify-between gap-2">
+				<p className="text-muted-foreground text-sm">
+					Select recipients. Use search or tag filters to build your audience.
+				</p>
+				{selected.length > 0 && (
+					<Badge className="font-medium" variant="secondary">
+						{selected.length} selected
+					</Badge>
+				)}
+			</div>
+
+			{duplicatesCount > 0 && (
+				<div className="flex items-center gap-2.5 rounded-xl border border-blue-500/30 bg-blue-500/10 px-3.5 py-2.5 text-blue-700 text-xs dark:border-[#60a5fa40] dark:bg-[#0d1a2e] dark:text-[#60a5fa]">
+					<CheckCircle2 className="h-4 w-4 shrink-0 text-blue-500" />
+					<span>
+						<strong>{selected.length}</strong> contacts selected (
+						<strong>{uniqueCount}</strong> unique Nigerian phone numbers).{" "}
+						{duplicatesCount} duplicate number
+						{duplicatesCount === 1 ? " was" : "s were"} automatically
+						deduplicated so each recipient gets only one message.
+					</span>
+				</div>
+			)}
+
 			<ContactsTable
 				disableUrlSync
 				onSelectionChange={handleChange}
@@ -243,186 +293,45 @@ function ContactsStep({
 	);
 }
 
-// ─── Delivery mode selector ───────────────────────────────────────────────────
+// ─── Delivery channel information ─────────────────────────────────────────────
 
-const DELIVERY_MODES = [
-	{
-		badge: "bg-[#25d36615] text-[#25d366] border-[#25d36630]",
-		color: "border-[#25d36650] bg-[#0d2016] text-[#25d366]",
-		cost: "~₦90 / contact",
-		detail:
-			"Send your approved WhatsApp marketing template straight to contacts. Fastest delivery.",
-		icon: "💬",
-		id: "marketing" as const,
-		label: "Direct WhatsApp",
-		sublabel: "Marketing template",
-	},
-	{
-		badge: "bg-[#f59e0b15] text-[#f59e0b] border-[#f59e0b30]",
-		color: "border-[#f59e0b50] bg-[#1a1200] text-[#f59e0b]",
-		cost: "~₦8 + ₦0 for replies",
-		detail:
-			"Send a cheap consent message first. Only contacts who reply YES receive the full message. Best for large lists.",
-		icon: "🔔",
-		id: "utility_prescreen" as const,
-		label: "Consent first",
-		sublabel: "Utility → Marketing",
-	},
-	{
-		badge: "bg-[#60a5fa15] text-[#60a5fa] border-[#60a5fa30]",
-		color: "border-[#60a5fa50] bg-[#0d1a2e] text-[#60a5fa]",
-		cost: "~₦6 / contact",
-		detail:
-			"Send as a regular SMS to their WhatsApp phone number. No Meta approval needed. Works even if WhatsApp isn't open.",
-		icon: "📱",
-		id: "sms_fallback" as const,
-		label: "SMS to WA number",
-		sublabel: "Termii SMS",
-	},
-] as const;
-
-function DeliveryModeSelector({
-	value,
-	onChange,
-	hasWhatsappContacts,
-	hasSmsOnlyContacts,
-	hasMixedContacts,
-}: {
-	value: "marketing" | "utility_prescreen" | "sms_fallback";
-	onChange: (v: "marketing" | "utility_prescreen" | "sms_fallback") => void;
-	hasWhatsappContacts: boolean;
-	hasSmsOnlyContacts: boolean; // true = ALL selected contacts are SMS
-	hasMixedContacts: boolean; // true = mix of WA + SMS contacts
-}) {
-	if (!(hasWhatsappContacts || hasSmsOnlyContacts)) {
-		return null;
-	}
-
-	// SMS-only list: only sms_fallback makes sense, hide the WA options entirely
-	if (hasSmsOnlyContacts && !hasWhatsappContacts) {
-		return (
-			<div className="space-y-2">
-				<p className="font-semibold text-[10px] text-muted-foreground uppercase tracking-wide">
-					Delivery method
-				</p>
-				<div className="rounded-xl border border-[#60a5fa50] bg-[#0d1a2e] px-3.5 py-3">
-					<div className="flex items-start justify-between gap-3">
-						<div className="flex min-w-0 items-center gap-2.5">
-							<span className="shrink-0 text-base">📱</span>
-							<div className="min-w-0">
-								<div className="flex flex-wrap items-center gap-2">
-									<span className="font-semibold text-[#60a5fa] text-sm">
-										SMS
-									</span>
-									<span className="rounded border border-[#60a5fa30] bg-[#60a5fa15] px-1.5 py-0.5 font-bold text-[#60a5fa] text-[9px] uppercase tracking-wide">
-										Termii
-									</span>
-								</div>
-								<p className="mt-0.5 text-[11px] text-muted-foreground leading-relaxed">
-									All selected contacts are SMS. Messages are sent via Termii.
-								</p>
-								<p className="mt-1 text-[10px] text-amber-400/80">
-									⚠️ One-way only — SMS contacts cannot reply to these messages.
-								</p>
-							</div>
-						</div>
-						<span className="mt-0.5 shrink-0 font-semibold text-[#60a5fa] text-[11px]">
-							~₦6 / contact
-						</span>
-					</div>
-				</div>
-			</div>
-		);
-	}
-
+function DeliveryChannelInfo() {
 	return (
 		<div className="space-y-2">
 			<p className="font-semibold text-[10px] text-muted-foreground uppercase tracking-wide">
-				WhatsApp delivery method
+				Delivery channel
 			</p>
-			{hasMixedContacts && (
-				<div className="flex items-start gap-1.5 rounded-lg border border-amber-500/20 bg-amber-500/5 px-2.5 py-2">
-					<AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-400" />
-					<p className="text-[11px] text-amber-400/80">
-						SMS contacts in this list are sent directly — they can't participate
-						in the consent flow.
-					</p>
-				</div>
-			)}
-			<div className="grid gap-2">
-				{DELIVERY_MODES.map((mode) => {
-					const active = value === mode.id;
-					const disabled =
-						mode.id === "utility_prescreen" && hasSmsOnlyContacts;
-					return (
-						<button
-							className={[
-								"w-full rounded-xl border px-3.5 py-3 text-left transition-all",
-								disabled
-									? "cursor-not-allowed border-border opacity-40"
-									: active
-										? mode.color
-										: "border-border hover:border-muted-foreground/40",
-							].join(" ")}
-							disabled={disabled}
-							key={mode.id}
-							onClick={() => !disabled && onChange(mode.id)}
-							title={
-								disabled
-									? "Consent flow requires WhatsApp contacts — SMS contacts cannot reply"
-									: undefined
-							}
-							type="button"
-						>
-							<div className="flex items-start justify-between gap-3">
-								<div className="flex min-w-0 items-center gap-2.5">
-									<span className="shrink-0 text-base">{mode.icon}</span>
-									<div className="min-w-0">
-										<div className="flex flex-wrap items-center gap-2">
-											<span className="font-semibold text-sm">
-												{mode.label}
-											</span>
-											<span
-												className={`rounded border px-1.5 py-0.5 font-bold text-[9px] uppercase tracking-wide ${active && !disabled ? mode.badge : "border-transparent bg-muted text-muted-foreground"}`}
-											>
-												{mode.sublabel}
-											</span>
-											{mode.id === "sms_fallback" && (
-												<span className="rounded border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 font-bold text-[9px] text-amber-400 uppercase tracking-wide">
-													one-way
-												</span>
-											)}
-										</div>
-										{active && !disabled && (
-											<p className="mt-0.5 text-[11px] text-muted-foreground leading-relaxed">
-												{mode.detail}
-											</p>
-										)}
-										{mode.id === "sms_fallback" && active && (
-											<p className="mt-1 text-[10px] text-amber-400/80">
-												Recipients cannot reply — Termii uses alphanumeric
-												sender IDs.
-											</p>
-										)}
-									</div>
-								</div>
-								<span
-									className={`mt-0.5 shrink-0 font-semibold text-[11px] ${active && !disabled ? "" : "text-muted-foreground"}`}
-								>
-									{mode.cost}
+			<div className="rounded-xl border border-blue-500/30 bg-blue-500/10 px-3.5 py-3 dark:border-[#60a5fa50] dark:bg-[#0d1a2e]">
+				<div className="flex items-start justify-between gap-3">
+					<div className="flex min-w-0 items-center gap-2.5">
+						<span className="shrink-0 text-base">📱</span>
+						<div className="min-w-0">
+							<div className="flex flex-wrap items-center gap-2">
+								<span className="font-semibold text-blue-700 text-sm dark:text-[#60a5fa]">
+									SMS Broadcast
+								</span>
+								<span className="rounded border border-[#60a5fa30] bg-[#60a5fa15] px-1.5 py-0.5 font-bold text-[#60a5fa] text-[9px] uppercase tracking-wide">
+									Termii Gateway
 								</span>
 							</div>
-						</button>
-					);
-				})}
+							<p className="mt-0.5 text-[11px] text-muted-foreground leading-relaxed">
+								Messages will be dispatched directly to mobile networks across
+								Nigeria via Termii.
+							</p>
+						</div>
+					</div>
+					<span className="mt-0.5 shrink-0 font-semibold text-[#60a5fa] text-[11px]">
+						₦6.00 / segment
+					</span>
+				</div>
 			</div>
 		</div>
 	);
 }
 
-// ─── Step 3: Review & Send ────────────────────────────────────────────────────
+// ─── Step 3: Message Editor & Segment Calculator ──────────────────────────────
 
-function ReviewStep({
+function MessageStep({
 	values,
 	setFieldValue,
 	scenarioDefaults,
@@ -435,11 +344,9 @@ function ReviewStep({
 	scenarioDefaults?: Record<string, { whatsapp: string; sms: string }>;
 }) {
 	const [pickerOpen, setPickerOpen] = useState(false);
+	const { data: profile } = useProfile();
 
-	const scenarioMeta = SCENARIOS.find((s) => s.id === values.scenario);
-	const waContacts = values.contacts.filter((c) => c.channel === "whatsapp");
-	const smsContacts = values.contacts.filter((c) => c.channel === "sms");
-	const previewName = values.contacts[0]?.name ?? "John";
+	const previewName = values.contacts[0]?.name || "Friend";
 
 	const dbDefault = scenarioDefaults?.[values.scenario] ?? {
 		sms: "",
@@ -460,8 +367,19 @@ function ReviewStep({
 		};
 	})();
 
+	const resolvedTemplateVars: Record<string, string> = {
+		...values.templateVars,
+		org: profile?.orgName ?? "Velocast",
+		orgName: profile?.orgName ?? "Velocast",
+		phone: values.contacts[0]?.phone ?? "08012345678",
+	};
+
 	const preview = (t: string) =>
-		personalizeMessage(t, previewName, values.templateVars);
+		appendOptOutNotice(
+			personalizeMessage(t, previewName, resolvedTemplateVars)
+		);
+
+	const smsCalc = calculateSmsSegments(activeTemplate.sms ?? "", true);
 
 	function handleTemplatePair(pair: WizardTemplatePair) {
 		const hasAnyPick = pair.wa !== null || pair.sms !== null;
@@ -476,70 +394,35 @@ function ReviewStep({
 		setFieldValue("templateSource", "scenario");
 	}
 
+	function insertPlaceholder(placeholder: string) {
+		if (values.templateSource === "custom") {
+			setFieldValue("customSms", `${values.customSms} ${placeholder}`);
+		} else {
+			setFieldValue("templateSource", "custom");
+			setFieldValue("customSms", `${activeTemplate.sms} ${placeholder}`);
+			setFieldValue("customWhatsapp", activeTemplate.whatsapp);
+		}
+	}
+
 	return (
 		<div className="space-y-5">
-			{/* Summary chips */}
-			<div className="grid grid-cols-3 gap-3">
-				{[
-					{
-						label: "Scenario",
-						value: scenarioMeta
-							? `${scenarioMeta.icon} ${scenarioMeta.label}`
-							: values.scenario,
-					},
-					{
-						label: "Recipients",
-						value: `${values.contacts.length} contact${values.contacts.length === 1 ? "" : "s"}`,
-					},
-					{
-						label: "Channels",
-						value:
-							[
-								waContacts.length ? `${waContacts.length} WA` : "",
-								smsContacts.length ? `${smsContacts.length} SMS` : "",
-							]
-								.filter(Boolean)
-								.join(" · ") || "—",
-					},
-				].map(({ label, value }) => (
-					<div
-						className="rounded-xl border bg-muted/30 px-3 py-2.5 text-center"
-						key={label}
-					>
-						<p className="text-[10px] text-muted-foreground uppercase tracking-wide">
-							{label}
-						</p>
-						<p className="mt-0.5 truncate font-semibold text-sm">{value}</p>
-					</div>
-				))}
-			</div>
-
-			{/* ── Template source selector ── */}
+			{/* Template source selector */}
 			<div className="overflow-hidden rounded-xl border">
-				{/* Saved template row */}
 				<div className="flex items-center gap-3 px-4 py-3">
 					<FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
 					<div className="min-w-0 flex-1">
-						<p className="font-medium text-sm">Saved templates</p>
+						<p className="font-medium text-sm">Template source</p>
 						<p className="text-muted-foreground text-xs">
 							{values.savedWaTemplate || values.savedSmsTemplate ? (
 								<>
-									{values.savedWaTemplate && (
-										<span className="font-medium text-[#25d366]">
-											WA: {values.savedWaTemplate.displayName}
-										</span>
-									)}
-									{values.savedWaTemplate && values.savedSmsTemplate && (
-										<span className="mx-1 text-muted-foreground/50">·</span>
-									)}
-									{values.savedSmsTemplate && (
+									{values.savedSmsTemplate ? (
 										<span className="font-medium text-[#60a5fa]">
 											SMS: {values.savedSmsTemplate.displayName}
 										</span>
-									)}
+									) : null}
 								</>
 							) : (
-								"Pick independently for WhatsApp and SMS"
+								"Using default scenario template"
 							)}
 						</p>
 					</div>
@@ -569,19 +452,18 @@ function ReviewStep({
 							size="sm"
 							variant="outline"
 						>
-							<Sparkles className="h-3 w-3" /> Browse
+							<Sparkles className="h-3 w-3" /> Browse saved
 						</Button>
 					)}
 				</div>
 
 				<Separator />
 
-				{/* Custom override row */}
 				<div className="flex items-center gap-3 px-4 py-3">
 					<div className="flex-1">
-						<p className="font-medium text-sm">Custom one-off message</p>
+						<p className="font-medium text-sm">Custom message editor</p>
 						<p className="text-muted-foreground text-xs">
-							Write a message just for this campaign
+							Edit or write a custom message for this broadcast
 						</p>
 					</div>
 					<Switch
@@ -589,8 +471,8 @@ function ReviewStep({
 						onCheckedChange={(v) => {
 							if (v) {
 								setFieldValue("templateSource", "custom");
-								setFieldValue("savedWaTemplate", null);
-								setFieldValue("savedSmsTemplate", null);
+								setFieldValue("customSms", activeTemplate.sms);
+								setFieldValue("customWhatsapp", activeTemplate.whatsapp);
 							} else {
 								setFieldValue("templateSource", "scenario");
 							}
@@ -599,151 +481,169 @@ function ReviewStep({
 				</div>
 			</div>
 
-			{/* Custom fields */}
-			{values.templateSource === "custom" && (
-				<div className="space-y-3">
-					<div className="space-y-1.5">
-						<Label className="text-sm">WhatsApp message</Label>
-						<Textarea
-							className="min-h-25 resize-none rounded-xl font-mono text-xs"
-							onChange={(e) => setFieldValue("customWhatsapp", e.target.value)}
-							placeholder="Hi {name}! …"
-							value={values.customWhatsapp}
-						/>
-					</div>
-					<div className="space-y-1.5">
-						<Label className="text-sm">SMS message</Label>
-						<Textarea
-							className="min-h-20 resize-none rounded-xl font-mono text-xs"
-							onChange={(e) => setFieldValue("customSms", e.target.value)}
-							placeholder="Hi {name}! …"
-							value={values.customSms}
-						/>
-					</div>
-					<p className="text-muted-foreground text-xs">
-						Use{" "}
-						<code className="rounded bg-muted px-1 py-0.5 font-mono">
-							{"{name}"}
-						</code>{" "}
-						to insert the contact's first name.
-					</p>
-				</div>
-			)}
-
-			{/* Message preview */}
+			{/* SMS message editor */}
 			<div className="space-y-2">
-				<p className="font-semibold text-[10px] text-muted-foreground uppercase tracking-wide">
-					Message preview — {previewName.split(" ")[0]}
-					{(values.savedWaTemplate || values.savedSmsTemplate) && (
-						<span className="ml-2 font-normal text-muted-foreground normal-case">
-							· saved templates
+				<div className="flex items-center justify-between">
+					<Label className="font-medium text-sm">SMS Message Body</Label>
+					<div className="flex items-center gap-1">
+						<span className="text-[11px] text-muted-foreground">
+							Insert variable:
 						</span>
-					)}
-				</p>
-				{waContacts.length > 0 && (
-					<div className="space-y-1.5 rounded-xl border bg-[#0d2016] px-4 py-3">
-						<Badge
-							className="border-[#25d36640] px-1.5 text-[#25d366] text-[10px]"
+						<Button
+							className="h-6 gap-1 rounded-lg px-2 text-[10px]"
+							onClick={() => insertPlaceholder("{{name}}")}
+							size="sm"
+							type="button"
 							variant="outline"
 						>
-							WhatsApp
-						</Badge>
-						<p className="whitespace-pre-wrap text-foreground/80 text-xs leading-relaxed">
-							{preview(activeTemplate?.whatsapp ?? "") || (
-								<span className="text-muted-foreground italic">
-									No message yet
-								</span>
-							)}
-						</p>
-					</div>
-				)}
-				{smsContacts.length > 0 && (
-					<div className="space-y-1.5 rounded-xl border bg-[#0d1a2e] px-4 py-3">
-						<Badge
-							className="border-[#60a5fa40] px-1.5 text-[#60a5fa] text-[10px]"
+							<Plus className="h-2.5 w-2.5" /> {"{{name}}"}
+						</Button>
+						<Button
+							className="h-6 gap-1 rounded-lg px-2 text-[10px]"
+							onClick={() => insertPlaceholder("{{phone}}")}
+							size="sm"
+							type="button"
 							variant="outline"
 						>
-							SMS
-						</Badge>
-						<p className="text-foreground/80 text-xs">
-							{preview(activeTemplate?.sms ?? "") || (
-								<span className="text-muted-foreground italic">
-									No message yet
-								</span>
-							)}
-						</p>
+							<Plus className="h-2.5 w-2.5" /> {"{{phone}}"}
+						</Button>
+						<Button
+							className="h-6 gap-1 rounded-lg px-2 text-[10px]"
+							onClick={() => insertPlaceholder("{{org}}")}
+							size="sm"
+							type="button"
+							variant="outline"
+						>
+							<Plus className="h-2.5 w-2.5" /> {"{{org}}"}
+						</Button>
 					</div>
-				)}
-				{waContacts.length === 0 && smsContacts.length === 0 && (
-					<p className="text-muted-foreground text-xs">
-						No recipients selected yet.
-					</p>
+				</div>
+
+				{values.templateSource === "custom" ? (
+					<Textarea
+						className="min-h-24 resize-none rounded-xl font-mono text-xs"
+						onChange={(e) => setFieldValue("customSms", e.target.value)}
+						placeholder="Type your message with {{name}} placeholders…"
+						value={values.customSms}
+					/>
+				) : (
+					<div className="rounded-xl border bg-muted/30 p-3 font-mono text-xs">
+						{activeTemplate.sms || (
+							<span className="text-muted-foreground italic">
+								No template body
+							</span>
+						)}
+					</div>
 				)}
 			</div>
 
-			{/* Delivery method selector */}
-			{(waContacts.length > 0 || smsContacts.length > 0) && (
-				<>
-					<Separator />
-					<DeliveryModeSelector
-						hasMixedContacts={waContacts.length > 0 && smsContacts.length > 0}
-						hasSmsOnlyContacts={
-							smsContacts.length > 0 && waContacts.length === 0
-						}
-						hasWhatsappContacts={waContacts.length > 0}
-						onChange={(v) => {
-							// If user somehow picks prescreen on a SMS-only list, silently ignore
-							if (v === "utility_prescreen" && waContacts.length === 0) {
-								return;
+			{/* Live GSM Character Analyzer & Segment Calculator */}
+			<div className="space-y-3 rounded-2xl border bg-muted/20 p-4">
+				<div className="flex flex-wrap items-center justify-between gap-2">
+					<div className="flex items-center gap-2">
+						<Badge
+							className={
+								smsCalc.encoding === "GSM_7"
+									? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+									: "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400"
 							}
-							setFieldValue("deliveryMode", v);
-						}}
-						value={
-							// Auto-switch: if all contacts are SMS, force sms_fallback
-							smsContacts.length > 0 && waContacts.length === 0
-								? "sms_fallback"
-								: values.deliveryMode
-						}
-					/>
-				</>
-			)}
-
-			{/* Recipient scroll list */}
-			{values.contacts.length > 0 && (
-				<>
-					<Separator />
-					<div>
-						<p className="mb-2 font-semibold text-[10px] text-muted-foreground uppercase tracking-wide">
-							Recipients ({values.contacts.length})
-						</p>
-						<div className="max-h-44 space-y-1 overflow-y-auto pr-0.5">
-							{values.contacts.map((c) => (
-								<div
-									className="flex items-center gap-2.5 rounded-lg px-3 py-2 odd:bg-muted/30"
-									key={c.id}
-								>
-									<div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muted font-bold text-[10px]">
-										{c.name.charAt(0).toUpperCase()}
-									</div>
-									<span className="flex-1 truncate text-sm">{c.name}</span>
-									<span
-										className={`shrink-0 rounded border px-1.5 py-0.5 font-bold text-[9px] uppercase tracking-wide ${CHANNEL_BADGE[c.channel]}`}
-									>
-										{c.channel === "whatsapp" ? "WA" : "SMS"}
-									</span>
-								</div>
-							))}
-						</div>
+							variant="outline"
+						>
+							{smsCalc.encoding === "GSM_7"
+								? "GSM 7 Encoding"
+								: "Unicode Encoding"}
+						</Badge>
+						<Badge className="border-border" variant="outline">
+							{smsCalc.segments}{" "}
+							{smsCalc.segments === 1 ? "Segment" : "Segments"}
+						</Badge>
 					</div>
-				</>
-			)}
+					<span className="font-semibold text-xs">
+						₦{(smsCalc.segments * (PRICING.PER_MESSAGE.sms / 100)).toFixed(2)} /
+						recipient
+					</span>
+				</div>
+
+				<div className="grid grid-cols-2 gap-2 text-xs sm:grid-cols-3">
+					<div className="rounded-xl border bg-background/60 p-2.5">
+						<p className="text-[10px] text-muted-foreground uppercase">
+							Total Characters
+						</p>
+						<p className="mt-0.5 font-bold text-foreground text-sm">
+							{smsCalc.totalCharacterCount}{" "}
+							<span className="font-normal text-[10px] text-muted-foreground">
+								({smsCalc.rawCharacterCount} text + 23 opt-out)
+							</span>
+						</p>
+					</div>
+					<div className="rounded-xl border bg-background/60 p-2.5">
+						<p className="text-[10px] text-muted-foreground uppercase">
+							Max Per Segment
+						</p>
+						<p className="mt-0.5 font-bold text-foreground text-sm">
+							{smsCalc.charsPerSegment} chars
+						</p>
+					</div>
+					<div className="col-span-2 rounded-xl border bg-background/60 p-2.5 sm:col-span-1">
+						<p className="text-[10px] text-muted-foreground uppercase">
+							Remaining in Segment
+						</p>
+						<p className="mt-0.5 font-bold text-foreground text-sm">
+							{smsCalc.charsRemainingInSegment} characters
+						</p>
+					</div>
+				</div>
+
+				{smsCalc.encoding === "UNICODE" && (
+					<div className="flex items-start gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 p-2.5 text-amber-700 text-xs dark:text-amber-400">
+						<Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+						<p className="leading-tight">
+							Non-GSM characters or emojis detected. Unicode restricts message
+							capacity to 70 characters for single segment and 67 characters for
+							multi-part segments.
+						</p>
+					</div>
+				)}
+
+				<p className="text-[11px] text-muted-foreground">
+					Nigerian telecom regulation mandates opt out notice (automatically
+					appended):{" "}
+					<code className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px]">
+						Reply STOP to opt out
+					</code>
+				</p>
+			</div>
+
+			{/* Real time preview with fallback to "Friend" */}
+			<div className="space-y-1.5">
+				<p className="font-semibold text-[10px] text-muted-foreground uppercase tracking-wide">
+					Live Preview (Recipient: {previewName})
+				</p>
+				<div className="space-y-1.5 rounded-xl border border-blue-500/20 bg-blue-500/5 px-4 py-3 dark:border-border dark:bg-[#0d1a2e]">
+					<Badge
+						className="border-blue-500/30 bg-blue-500/10 px-1.5 text-blue-700 text-xs dark:border-[#60a5fa40] dark:bg-transparent dark:text-[#60a5fa]"
+						variant="outline"
+					>
+						SMS Preview
+					</Badge>
+					<p className="whitespace-pre-wrap text-foreground/90 text-xs leading-relaxed">
+						{preview(activeTemplate.sms) || (
+							<span className="text-muted-foreground italic">
+								Message is empty
+							</span>
+						)}
+					</p>
+				</div>
+			</div>
+
+			{/* Delivery Channel */}
+			<DeliveryChannelInfo />
 
 			{/* Template picker dialog */}
 			<TemplatePickerDialog
 				currentSmsId={values.savedSmsTemplate?.id}
-				currentWaId={values.savedWaTemplate?.id}
-				hasSms={smsContacts.length > 0}
-				hasWa={waContacts.length > 0}
+				hasSms={true}
+				hasWa={false}
 				onConfirm={handleTemplatePair}
 				onOpenChange={setPickerOpen}
 				open={pickerOpen}
@@ -752,9 +652,8 @@ function ReviewStep({
 	);
 }
 
-// ─── Step 4: Fill template variables ─────────────────────────────────────────
+// ─── Step 4: Variables ────────────────────────────────────────────────────────
 
-const highlightedRegex = /^\{+[a-zA-Z_]/;
 function VariablesStep({
 	manualVars,
 	templateVars,
@@ -772,46 +671,25 @@ function VariablesStep({
 	previewName: string;
 }) {
 	function setVar(key: string, value: string) {
-		setFieldValue("templateVars", { ...templateVars, [key]: value });
+		setFieldValue("templateVars", {
+			...templateVars,
+			[key]: value,
+		});
 	}
 
-	const previewWa = personalizeMessage(
-		activeTemplate.whatsapp,
-		previewName,
-		templateVars
-	);
 	const previewSms = personalizeMessage(
 		activeTemplate.sms,
 		previewName,
 		templateVars
 	);
 
-	// Highlight unfilled vars in the preview
-	function highlightUnfilled(text: string) {
-		// Split on remaining {{var}} or {var} patterns, colour them red
-		const parts = text.split(/(\{+[a-zA-Z_][a-zA-Z0-9_]*\}+)/g);
-		return parts.map((p, i) =>
-			highlightedRegex.test(p) ? (
-				<span
-					className="rounded bg-destructive/20 px-0.5 font-mono text-destructive"
-					key={i.toString()}
-				>
-					{p}
-				</span>
-			) : (
-				p
-			)
-		);
-	}
-
 	return (
 		<div className="space-y-5">
 			<p className="text-muted-foreground text-sm">
-				This template contains variables that need values before sending. Fill
-				them in below — they'll be the same for every recipient.
+				Fill in values for campaign placeholders. They will be dynamically
+				inserted into each message.
 			</p>
 
-			{/* Variable fields */}
 			<div className="space-y-3">
 				{manualVars.map((varName) => {
 					const label = VAR_LABELS[varName] ?? varName;
@@ -840,39 +718,210 @@ function VariablesStep({
 				})}
 			</div>
 
-			{/* Live preview */}
 			<div className="space-y-2">
 				<p className="font-semibold text-[10px] text-muted-foreground uppercase tracking-wide">
-					Live preview — {previewName.split(" ")[0]}
+					Live Preview ({previewName})
 				</p>
-				<div className="space-y-1.5 rounded-xl border bg-[#0d2016] px-4 py-3">
+				<div className="rounded-xl border border-blue-500/20 bg-blue-500/5 px-4 py-3 dark:border-border dark:bg-[#0d1a2e]">
 					<Badge
-						className="border-[#25d36640] px-1.5 text-[#25d366] text-[10px]"
-						variant="outline"
-					>
-						WhatsApp
-					</Badge>
-					<p className="whitespace-pre-wrap text-foreground/80 text-xs leading-relaxed">
-						{highlightUnfilled(previewWa)}
-					</p>
-				</div>
-				<div className="space-y-1.5 rounded-xl border bg-[#0d1a2e] px-4 py-3">
-					<Badge
-						className="border-[#60a5fa40] px-1.5 text-[#60a5fa] text-[10px]"
+						className="border-blue-500/30 bg-blue-500/10 px-1.5 text-blue-700 text-xs dark:border-[#60a5fa40] dark:bg-transparent dark:text-[#60a5fa]"
 						variant="outline"
 					>
 						SMS
 					</Badge>
-					<p className="whitespace-pre-wrap text-foreground/80 text-xs leading-relaxed">
-						{highlightUnfilled(previewSms)}
+					<p className="mt-1 whitespace-pre-wrap text-foreground/80 text-xs leading-relaxed">
+						{previewSms}
 					</p>
 				</div>
-				{manualVars.some((v) => !templateVars[v]?.trim()) && (
-					<p className="flex items-center gap-1.5 text-destructive/80 text-xs">
-						<AlertCircle className="h-3.5 w-3.5 shrink-0" />
-						Highlighted placeholders above will appear literally in messages if
-						left blank.
+			</div>
+		</div>
+	);
+}
+
+// ─── Step 5: Review & Schedule ────────────────────────────────────────────────
+
+function FinalReviewStep({
+	values,
+	setFieldValue,
+	uniqueContactsCount,
+	calc,
+	availableBalanceKobo,
+	onTopUp,
+}: {
+	values: WizardValues;
+	setFieldValue: <K extends keyof WizardValues>(
+		k: K,
+		v: WizardValues[K]
+	) => void;
+	uniqueContactsCount: number;
+	calc: ReturnType<typeof calculateSmsSegments>;
+	availableBalanceKobo: number;
+	onTopUp: () => void;
+}) {
+	const totalEstimatedCostKobo =
+		uniqueContactsCount * calc.segments * PRICING.PER_MESSAGE.sms;
+	const isSufficient = availableBalanceKobo >= totalEstimatedCostKobo;
+	const shortfallKobo = Math.max(
+		0,
+		totalEstimatedCostKobo - availableBalanceKobo
+	);
+
+	const minScheduleTime = new Date(Date.now() + 60_000)
+		.toISOString()
+		.slice(0, 16);
+
+	return (
+		<div className="space-y-5">
+			{/* Budget & Cost Summary */}
+			<div className="space-y-3 rounded-2xl border bg-muted/20 p-4">
+				<p className="font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+					Campaign Estimate & Budget
+				</p>
+				<div className="grid grid-cols-2 gap-3 text-xs sm:grid-cols-4">
+					<div className="rounded-xl border bg-background/70 p-3">
+						<p className="text-[10px] text-muted-foreground uppercase">
+							Recipients
+						</p>
+						<p className="mt-1 font-bold text-base">{uniqueContactsCount}</p>
+					</div>
+					<div className="rounded-xl border bg-background/70 p-3">
+						<p className="text-[10px] text-muted-foreground uppercase">
+							Segments / Recipient
+						</p>
+						<p className="mt-1 font-bold text-base">{calc.segments}</p>
+					</div>
+					<div className="rounded-xl border bg-background/70 p-3">
+						<p className="text-[10px] text-muted-foreground uppercase">
+							Rate / Segment
+						</p>
+						<p className="mt-1 font-bold text-base">
+							₦{(PRICING.PER_MESSAGE.sms / 100).toFixed(2)}
+						</p>
+					</div>
+					<div className="rounded-xl border bg-background/70 p-3">
+						<p className="text-[10px] text-muted-foreground uppercase">
+							Total Estimated Cost
+						</p>
+						<p className="mt-1 font-bold text-base text-primary">
+							{formatNaira(totalEstimatedCostKobo)}
+						</p>
+					</div>
+				</div>
+			</div>
+
+			{/* Spendable Balance Check */}
+			<div
+				className={[
+					"rounded-2xl border p-4 transition-all",
+					isSufficient
+						? "border-emerald-500/30 bg-emerald-500/5 dark:bg-[#0d2016]/40"
+						: "border-amber-500/40 bg-amber-500/10 dark:bg-[#1a1200]",
+				].join(" ")}
+			>
+				<div className="flex items-start justify-between gap-3">
+					<div className="space-y-1">
+						<div className="flex items-center gap-2">
+							{isSufficient ? (
+								<CheckCircle2 className="h-4 w-4 text-emerald-500" />
+							) : (
+								<AlertCircle className="h-4 w-4 text-amber-500" />
+							)}
+							<p className="font-medium text-sm">
+								{isSufficient
+									? "Spendable Balance Verified"
+									: "Insufficient Wallet Funds"}
+							</p>
+						</div>
+						<p className="text-muted-foreground text-xs">
+							Spendable balance:{" "}
+							<strong>{formatNaira(availableBalanceKobo)}</strong> (Estimated
+							cost: {formatNaira(totalEstimatedCostKobo)})
+						</p>
+						{!isSufficient && (
+							<p className="font-medium text-amber-600 text-xs dark:text-amber-400">
+								Shortfall of {formatNaira(shortfallKobo)}. Please top up your
+								wallet before launching.
+							</p>
+						)}
+					</div>
+					{!isSufficient && (
+						<Button
+							className="rounded-xl text-xs"
+							onClick={onTopUp}
+							size="sm"
+							type="button"
+						>
+							Top up wallet
+						</Button>
+					)}
+				</div>
+			</div>
+
+			{/* Scheduling Controls */}
+			<div className="space-y-3 rounded-2xl border p-4">
+				<div>
+					<p className="font-medium text-sm">Dispatch Schedule</p>
+					<p className="text-muted-foreground text-xs">
+						Send immediately or queue for delivery at a future time.
 					</p>
+				</div>
+
+				<div className="grid grid-cols-2 gap-3">
+					<button
+						className={[
+							"rounded-xl border p-3.5 text-left transition-all",
+							values.sendTiming === "immediate"
+								? "border-primary bg-primary/10 ring-1 ring-primary"
+								: "border-border hover:bg-muted/30",
+						].join(" ")}
+						onClick={() => setFieldValue("sendTiming", "immediate")}
+						type="button"
+					>
+						<div className="flex items-center gap-2">
+							<Send className="h-4 w-4 text-primary" />
+							<p className="font-semibold text-xs">Send Immediately</p>
+						</div>
+						<p className="mt-1 text-[11px] text-muted-foreground leading-relaxed">
+							Starts delivery right away upon submission.
+						</p>
+					</button>
+
+					<button
+						className={[
+							"rounded-xl border p-3.5 text-left transition-all",
+							values.sendTiming === "scheduled"
+								? "border-primary bg-primary/10 ring-1 ring-primary"
+								: "border-border hover:bg-muted/30",
+						].join(" ")}
+						onClick={() => setFieldValue("sendTiming", "scheduled")}
+						type="button"
+					>
+						<div className="flex items-center gap-2">
+							<Calendar className="h-4 w-4 text-primary" />
+							<p className="font-semibold text-xs">Schedule for Later</p>
+						</div>
+						<p className="mt-1 text-[11px] text-muted-foreground leading-relaxed">
+							Specify a future date and time for dispatch.
+						</p>
+					</button>
+				</div>
+
+				{values.sendTiming === "scheduled" && (
+					<div className="space-y-2 pt-2">
+						<Label className="text-xs">Dispatch Date and Time</Label>
+						<Input
+							className="rounded-xl text-xs"
+							min={minScheduleTime}
+							onChange={(e) => setFieldValue("scheduledAt", e.target.value)}
+							type="datetime-local"
+							value={values.scheduledAt}
+						/>
+						<p className="text-[11px] text-muted-foreground">
+							Funds will be reserved via a campaign hold. You can cancel this
+							scheduled campaign at any time before dispatch starts to release
+							the hold.
+						</p>
+					</div>
 				)}
 			</div>
 		</div>
@@ -886,149 +935,163 @@ export function CampaignWizard({ onCancel }: { onCancel?: () => void } = {}) {
 	const [depositOpen, setDepositOpen] = useState(false);
 	const router = useRouter();
 
-	const { mutateAsync: sendCampaign, isPending, error } = useSendCampaign();
+	const { mutateAsync: createSms, isPending } = useCreateSmsCampaign();
 	const { mutateAsync: recordUsage } = useRecordTemplateUsage();
-	// User's own DB-stored default template bodies per scenario.
-	// Falls back to seed content if the user hasn't completed onboarding yet.
 	const { data: scenarioDefaults } = useScenarioDefaults();
+	const { data: wallet } = useWallet();
 
 	const form = useForm({
 		defaultValues: {
+			campaignName: "",
 			contacts: [],
 			customSms: "",
 			customWhatsapp: "",
-			deliveryMode: "marketing",
+			deliveryMode: "sms_fallback",
 			savedSmsTemplate: null,
 			savedWaTemplate: null,
 			scenario: "first_timer",
+			scheduledAt: "",
+			sendTiming: "immediate",
 			templateSource: "scenario",
 			templateVars: {},
 		} as WizardValues,
 		onSubmit: async ({ value }) => {
-			const useCustom = value.templateSource !== "scenario";
-
-			// Resolve the template body: DB defaults > saved pick > custom override.
-			// scenarioDefaults comes from the DB — the user's own editable templates.
 			const dbDefaults = scenarioDefaults?.[value.scenario] ?? {
 				sms: "",
 				whatsapp: "",
 			};
 
-			const customTemplate = useCustom
-				? value.templateSource === "saved"
-					? {
-							sms: value.savedSmsTemplate?.body ?? dbDefaults.sms,
-							whatsapp: value.savedWaTemplate?.body ?? dbDefaults.whatsapp,
-						}
-					: { sms: value.customSms, whatsapp: value.customWhatsapp }
-				: undefined;
+			const activeSms =
+				value.templateSource === "custom"
+					? value.customSms
+					: value.savedSmsTemplate?.body || dbDefaults.sms;
 
-			const result = await sendCampaign({
-				contacts: value.contacts,
-				customTemplate: customTemplate ?? {
-					sms: "",
-					whatsapp: "",
-				},
-				deliveryMode: value.deliveryMode,
-				scenario: value.scenario,
-				templateVars: value.templateVars,
-				useCustom,
-			});
+			try {
+				// We create via SMS campaign flow (satisfying AC-6, AC-7)
+				const result = await createSms({
+					contactIds: value.contacts.map((c) => c.id),
+					messageText: activeSms,
+					name: value.campaignName.trim() || undefined,
+					scenario: value.scenario,
+					scheduledAt:
+						value.sendTiming === "scheduled" && value.scheduledAt
+							? new Date(value.scheduledAt).toISOString()
+							: null,
+					templateVars: value.templateVars,
+				});
 
-			// Record usage on saved templates (fire-and-forget — one per picked channel)
-			if (value.templateSource === "saved") {
-				if (value.savedWaTemplate) {
-					recordUsage({
-						id: value.savedWaTemplate.id,
-					}).catch(() => {
-						toast.error("Failed to record template usage");
-					});
+				if (value.templateSource === "saved" && value.savedSmsTemplate) {
+					recordUsage({ id: value.savedSmsTemplate.id }).catch(() => {});
 				}
-				if (
-					value.savedSmsTemplate &&
-					value.savedSmsTemplate.id !== value.savedWaTemplate?.id
-				) {
-					recordUsage({
-						id: value.savedSmsTemplate.id,
-					}).catch(() => {
-						toast.error("Failed to record template usage");
-					});
-				}
+
+				toast.success(
+					value.sendTiming === "scheduled"
+						? "Campaign scheduled successfully!"
+						: "Campaign created and queued for dispatch!"
+				);
+
+				router.navigate({
+					to: `/campaigns/${result.campaignId}`,
+				});
+			} catch (err: unknown) {
+				const message =
+					err instanceof Error ? err.message : "Failed to launch campaign";
+				toast.error(message);
 			}
-
-			// Navigate	 to the campaign detail page — shareable URL with live progress
-			router.navigate({
-				to: `/campaigns/${result.campaignId}`,
-			});
 		},
 	});
 
-	// Reactive form state needed for cost calculation — lifted here to satisfy Rules of Hooks
-	const contacts = useStore(form.store, (s) => s.values.contacts);
-	const deliveryMode = useStore(form.store, (s) => s.values.deliveryMode);
-	const templateSource = useStore(form.store, (s) => s.values.templateSource);
-	const savedWaTemplate = useStore(form.store, (s) => s.values.savedWaTemplate);
-	const savedSmsTemplate = useStore(
-		form.store,
-		(s) => s.values.savedSmsTemplate
-	);
-	const customWhatsapp = useStore(form.store, (s) => s.values.customWhatsapp);
-	const customSms = useStore(form.store, (s) => s.values.customSms);
-	const scenarioId = useStore(form.store, (s) => s.values.scenario);
+	const values = useStore(form.store, (s) => s.values);
 
-	const dbDefault0 = scenarioDefaults?.[scenarioId] ?? {
+	const dbDefault0 = scenarioDefaults?.[values.scenario] ?? {
 		sms: "",
 		whatsapp: "",
 	};
 	const activeTemplateForCost =
-		templateSource === "custom"
-			? { sms: customSms, whatsapp: customWhatsapp }
-			: templateSource === "saved"
+		values.templateSource === "custom"
+			? { sms: values.customSms, whatsapp: values.customWhatsapp }
+			: values.templateSource === "saved"
 				? {
-						sms: savedSmsTemplate?.body ?? dbDefault0.sms,
-						whatsapp: savedWaTemplate?.body ?? dbDefault0.whatsapp,
+						sms: values.savedSmsTemplate?.body ?? dbDefault0.sms,
+						whatsapp: values.savedWaTemplate?.body ?? dbDefault0.whatsapp,
 					}
 				: dbDefault0;
-	const manualVarsForCost = getManualVars(
+
+	const manualVars = getManualVars(
 		activeTemplateForCost.whatsapp,
 		activeTemplateForCost.sms
 	);
-	const hasManualVarsForCost = manualVarsForCost.length > 0;
-	const isLastStepForCost = step === 3 || (step === 2 && !hasManualVarsForCost);
+	const hasManualVars = manualVars.length > 0;
 
-	const { data: costData } = useCampaignCost(
-		isLastStepForCost ? contacts.map((c) => ({ channel: c.channel })) : [],
-		deliveryMode,
-		isLastStepForCost ? contacts.map((c) => c.id) : undefined
-	);
+	// Steps:
+	// 0: Scenario & Name
+	// 1: Contacts
+	// 2: Message & Segment Analyzer
+	// 3: Variables (only if manual vars present)
+	// 4: Final Review, Budget & Schedule
+	const LAST_STEP = hasManualVars ? 4 : 3;
+
+	// Deduplicated contacts count
+	const seenPhones = new Set<string>();
+	for (const c of values.contacts) {
+		const norm = normalizePhoneNumber(c.phone);
+		const canonical =
+			norm.success && norm.phone ? norm.phone : c.phone.replace(/\D/g, "");
+		seenPhones.add(canonical);
+	}
+	const uniqueContactsCount = seenPhones.size;
+
+	const smsCalc = calculateSmsSegments(activeTemplateForCost.sms, true);
+	const totalEstimatedCostKobo =
+		uniqueContactsCount * smsCalc.segments * PRICING.PER_MESSAGE.sms;
+	const availableBalanceKobo =
+		(wallet?.balanceKobo ?? 0) - (wallet?.heldKobo ?? 0);
+	const canAfford = availableBalanceKobo >= totalEstimatedCostKobo;
+
+	const canProceed =
+		step === 0
+			? Boolean(values.scenario)
+			: step === 1
+				? values.contacts.length > 0
+				: step === 2
+					? values.templateSource === "custom"
+						? values.customSms.trim().length > 0
+						: Boolean(activeTemplateForCost.sms)
+					: step === 3 && hasManualVars
+						? true
+						: canAfford &&
+							(values.sendTiming === "immediate" ||
+								Boolean(values.scheduledAt));
+
+	function handleNext() {
+		if (step === 2 && !hasManualVars) {
+			// Skip variables step directly to final review
+			setStep(3);
+		} else if (step < LAST_STEP) {
+			setStep((s) => s + 1);
+		} else {
+			form.handleSubmit();
+		}
+	}
+
+	function handleBack() {
+		if (step === 0) {
+			onCancel?.();
+			return;
+		}
+		if (step === 3 && !hasManualVars) {
+			setStep(2);
+			return;
+		}
+		setStep((s) => s - 1);
+	}
 
 	return (
 		<Card className="w-full rounded-2xl">
 			<CardHeader className="pb-4">
 				<div className="flex items-center justify-between">
-					<CardTitle className="text-lg">New Campaign</CardTitle>
-					<form.Subscribe
-						selector={(s) => {
-							const dbDef = scenarioDefaults?.[s.values.scenario] ?? {
-								sms: "",
-								whatsapp: "",
-							};
-							const t =
-								s.values.templateSource === "custom"
-									? { sms: s.values.customSms, wa: s.values.customWhatsapp }
-									: s.values.templateSource === "saved"
-										? {
-												sms: s.values.savedSmsTemplate?.body ?? dbDef.sms,
-												wa: s.values.savedWaTemplate?.body ?? dbDef.whatsapp,
-											}
-										: { sms: dbDef.sms, wa: dbDef.whatsapp };
-							return getManualVars(t.wa ?? "", t.sms ?? "").length > 0;
-						}}
-					>
-						{(hasVarsStep) => (
-							<StepIndicator current={step} hasVarsStep={hasVarsStep} />
-						)}
-					</form.Subscribe>
+					<CardTitle className="text-lg">New SMS Campaign</CardTitle>
+					<StepIndicator current={step} hasVarsStep={hasManualVars} />
 				</div>
 			</CardHeader>
 
@@ -1036,281 +1099,97 @@ export function CampaignWizard({ onCancel }: { onCancel?: () => void } = {}) {
 
 			<CardContent className="pt-5">
 				{step === 0 && (
-					<form.Field name="scenario">
-						{(field) => (
-							<ScenarioStep
-								onChange={(v) => field.handleChange(v)}
-								value={field.state.value}
-							/>
-						)}
-					</form.Field>
+					<ScenarioStep
+						campaignName={values.campaignName}
+						onChange={(v) => form.setFieldValue("scenario", v)}
+						onChangeName={(name) => form.setFieldValue("campaignName", name)}
+						value={values.scenario}
+					/>
 				)}
 
 				{step === 1 && (
-					<form.Field name="contacts">
-						{(field) => (
-							<ContactsStep
-								onSelectionChange={(c) => field.handleChange(c)}
-								selected={field.state.value}
-							/>
-						)}
-					</form.Field>
+					<ContactsStep
+						onSelectionChange={(c) => form.setFieldValue("contacts", c)}
+						selected={values.contacts}
+					/>
 				)}
 
 				{step === 2 && (
-					<form.Subscribe selector={(s) => s.values}>
-						{(values) => (
-							<ReviewStep
-								scenarioDefaults={scenarioDefaults}
-								setFieldValue={(k, v) => form.setFieldValue(k, v as never)}
-								values={values}
-							/>
-						)}
-					</form.Subscribe>
+					<MessageStep
+						scenarioDefaults={scenarioDefaults}
+						setFieldValue={(k, v) => form.setFieldValue(k, v as never)}
+						values={values}
+					/>
 				)}
 
-				{step === 3 && (
-					<form.Subscribe selector={(s) => s.values}>
-						{(values) => {
-							const dbDefault = scenarioDefaults?.[values.scenario] ?? {
-								sms: "",
-								whatsapp: "",
-							};
-							const activeTemplate = (() => {
-								if (values.templateSource === "custom") {
-									return {
-										sms: values.customSms,
-										whatsapp: values.customWhatsapp,
-									};
-								}
-								if (values.templateSource === "saved") {
-									return {
-										sms: values.savedSmsTemplate?.body ?? dbDefault.sms,
-										whatsapp:
-											values.savedWaTemplate?.body ?? dbDefault.whatsapp,
-									};
-								}
-								return {
-									sms: dbDefault.sms,
-									whatsapp: dbDefault.whatsapp,
-								};
-							})();
-							const manualVars = getManualVars(
-								activeTemplate.whatsapp,
-								activeTemplate.sms
-							);
-							const previewName = values.contacts[0]?.name ?? "John";
-							return (
-								<VariablesStep
-									activeTemplate={activeTemplate}
-									manualVars={manualVars}
-									previewName={previewName}
-									setFieldValue={(k, v) => form.setFieldValue(k, v as never)}
-									templateVars={values.templateVars}
-								/>
-							);
-						}}
-					</form.Subscribe>
+				{step === 3 && hasManualVars && (
+					<VariablesStep
+						activeTemplate={activeTemplateForCost}
+						manualVars={manualVars}
+						previewName={values.contacts[0]?.name || "Friend"}
+						setFieldValue={(k, v) => form.setFieldValue(k, v as never)}
+						templateVars={values.templateVars}
+					/>
 				)}
 
-				{error && (
-					<div className="mt-4 flex items-start gap-2 rounded-xl border border-destructive/30 bg-destructive/5 px-3 py-2.5">
-						<AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
-						<p className="text-destructive text-xs">
-							{error instanceof Error
-								? error.message
-								: "Failed to send campaign. Please try again."}
-						</p>
-					</div>
+				{(step === LAST_STEP || (step === 3 && !hasManualVars)) && (
+					<FinalReviewStep
+						availableBalanceKobo={availableBalanceKobo}
+						calc={smsCalc}
+						onTopUp={() => setDepositOpen(true)}
+						setFieldValue={(k, v) => form.setFieldValue(k, v as never)}
+						uniqueContactsCount={uniqueContactsCount}
+						values={values}
+					/>
 				)}
 			</CardContent>
 
 			<Separator />
 
-			<form.Subscribe selector={(s) => s.values}>
-				{(values) => {
-					// Resolve the active template so we know how many manual vars there are
-					const dbDefault_ = scenarioDefaults?.[values.scenario] ?? {
-						sms: "",
-						whatsapp: "",
-					};
-					const activeTemplate_ = (() => {
-						if (values.templateSource === "custom") {
-							return { sms: values.customSms, whatsapp: values.customWhatsapp };
-						}
-						if (values.templateSource === "saved") {
-							return {
-								sms: values.savedSmsTemplate?.body ?? dbDefault_.sms,
-								whatsapp: values.savedWaTemplate?.body ?? dbDefault_.whatsapp,
-							};
-						}
-						return dbDefault_;
-					})();
-					const manualVars_ = getManualVars(
-						activeTemplate_?.whatsapp ?? "",
-						activeTemplate_?.sms ?? ""
-					);
-					const hasManualVars = manualVars_.length > 0;
+			<CardFooter className="flex justify-between gap-3 pt-4">
+				<Button
+					className="gap-1 rounded-xl"
+					disabled={isPending}
+					onClick={handleBack}
+					variant="outline"
+				>
+					<ChevronLeft className="h-4 w-4" /> Back
+				</Button>
 
-					// Navigation: skip step 3 (Variables) if there are no manual vars
-					const LAST_STEP = 3; // 0-Scenario 1-Contacts 2-Review 3-Variables(or send)
-					const isLastStep =
-						step === LAST_STEP || (step === 2 && !hasManualVars);
-					const isVariablesStep = step === 3;
+				{step === LAST_STEP || (step === 3 && !hasManualVars) ? (
+					<Button
+						className="gap-2 rounded-xl"
+						disabled={!canProceed || isPending}
+						onClick={handleNext}
+					>
+						{isPending ? (
+							<>
+								<Loader2 className="h-4 w-4 animate-spin" /> Launching…
+							</>
+						) : values.sendTiming === "scheduled" ? (
+							<>
+								<Calendar className="h-4 w-4" /> Schedule Broadcast
+							</>
+						) : (
+							<>
+								<Send className="h-4 w-4" /> Launch Campaign (
+								{uniqueContactsCount} recipients)
+							</>
+						)}
+					</Button>
+				) : (
+					<Button
+						className="gap-1 rounded-xl"
+						disabled={!canProceed}
+						onClick={handleNext}
+					>
+						{step === 2 && hasManualVars ? "Fill variables" : "Next"}
+						<ChevronRight className="h-4 w-4" />
+					</Button>
+				)}
+			</CardFooter>
 
-					const canProceed =
-						step === 0
-							? !!values.scenario
-							: step === 1
-								? values.contacts.length > 0
-								: step === 2
-									? values.templateSource === "scenario"
-										? true
-										: values.templateSource === "saved"
-											? true // at least one channel has a saved pick or falls back to scenario default
-											: values.customWhatsapp.trim().length > 0 &&
-												values.customSms.trim().length > 0
-									: isVariablesStep; // variables step — user can proceed even with blanks (warned but not blocked)
-
-					const canAfford = costData?.canAfford ?? true;
-					const shortfall = costData?.shortfallFormatted;
-					const totalCost = costData?.totalCostFormatted;
-					const isPrescreen = values.deliveryMode === "utility_prescreen";
-					const consentCost = costData?.prescreenConsentCostFormatted;
-					const fullCost = costData?.prescreenFullCostFormatted;
-					const serviceWindowCount = costData?.serviceWindowCount ?? 0;
-
-					function handleNext() {
-						if (step === 2 && !hasManualVars) {
-							// Skip Variables step — no vars to fill
-							form.handleSubmit();
-						} else if (step < LAST_STEP) {
-							setStep((s) => s + 1);
-						} else {
-							form.handleSubmit();
-						}
-					}
-
-					function handleBack() {
-						if (step === 0) {
-							onCancel?.();
-							return;
-						}
-						if (step === 3 && !hasManualVars) {
-							setStep(2);
-							return;
-						}
-						setStep((s) => s - 1);
-					}
-
-					return (
-						<>
-							<CardFooter className="flex flex-col gap-3 pt-4">
-								{/* Service window notice — contacts who can be sent free */}
-								{isLastStep &&
-									serviceWindowCount > 0 &&
-									!isPrescreen &&
-									values.deliveryMode === "marketing" && (
-										<div className="flex w-full items-start gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/5 px-3 py-2.5">
-											<CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
-											<p className="text-emerald-400 text-xs">
-												<strong>{serviceWindowCount}</strong> contact
-												{serviceWindowCount === 1 ? "" : "s"} replied recently —
-												sent free within their 24h window.
-											</p>
-										</div>
-									)}
-
-								{/* Cost info for prescreen mode */}
-								{isLastStep && isPrescreen && consentCost && fullCost && (
-									<div className="flex w-full items-start gap-2 rounded-xl border border-primary/20 bg-primary/5 px-3 py-2.5">
-										<AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-										<p className="text-primary/80 text-xs">
-											Consent messages cost{" "}
-											<strong className="text-primary">{consentCost}</strong>{" "}
-											upfront. If all contacts reply YES, total rises to{" "}
-											<strong className="text-primary">{fullCost}</strong>.
-											WhatsApp only — SMS contacts sent directly.
-										</p>
-									</div>
-								)}
-
-								{/* Insufficient balance warning */}
-								{isLastStep && costData && !canAfford && (
-									<div className="flex w-full items-start gap-2 rounded-xl border border-amber-500/30 bg-amber-500/5 px-3 py-2.5">
-										<AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
-										<div className="min-w-0 flex-1">
-											<p className="font-medium text-amber-400 text-xs">
-												Insufficient balance — need {totalCost}, short by{" "}
-												{shortfall}
-											</p>
-											<button
-												className="mt-0.5 cursor-pointer border-none bg-transparent p-0 text-amber-400 text-xs underline"
-												onClick={() => setDepositOpen(true)}
-												type="button"
-											>
-												Top up wallet →
-											</button>
-										</div>
-									</div>
-								)}
-
-								<div className="flex w-full justify-between gap-3">
-									<Button
-										className="gap-1 rounded-xl"
-										disabled={isPending}
-										onClick={handleBack}
-										variant="outline"
-									>
-										<ChevronLeft className="h-4 w-4" /> Back
-									</Button>
-
-									{isLastStep ? (
-										<div className="flex flex-col items-end gap-1">
-											<Button
-												className="gap-2 rounded-xl"
-												disabled={!(canProceed && canAfford) || isPending}
-												onClick={handleNext}
-											>
-												{isPending ? (
-													<>
-														<Loader2 className="h-4 w-4 animate-spin" />{" "}
-														Sending…
-													</>
-												) : (
-													<>
-														<Send className="h-4 w-4" /> Send to{" "}
-														{values.contacts.length} contact
-														{values.contacts.length === 1 ? "" : "s"}
-													</>
-												)}
-											</Button>
-											{costData && canAfford && (
-												<p className="text-[10px] text-muted-foreground">
-													{isPrescreen
-														? `from ${consentCost} · up to ${fullCost}`
-														: `est. ${totalCost}`}
-												</p>
-											)}
-										</div>
-									) : (
-										<Button
-											className="gap-1 rounded-xl"
-											disabled={!canProceed}
-											onClick={handleNext}
-										>
-											{step === 2 && hasManualVars ? "Fill variables" : "Next"}
-											<ChevronRight className="h-4 w-4" />
-										</Button>
-									)}
-								</div>
-							</CardFooter>
-
-							<DepositDialog onOpenChange={setDepositOpen} open={depositOpen} />
-						</>
-					);
-				}}
-			</form.Subscribe>
+			<DepositDialog onOpenChange={setDepositOpen} open={depositOpen} />
 		</Card>
 	);
 }

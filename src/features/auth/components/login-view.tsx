@@ -151,20 +151,50 @@ function MagicLinkForm({ callbackURL }: { callbackURL: string }) {
 function PasswordForm({ callbackURL }: { callbackURL: string }) {
 	const navigate = useNavigate();
 	const [showPassword, setShowPassword] = useState(false);
+	const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
+	const [isResending, setIsResending] = useState(false);
+
+	const handleResendUnverified = async () => {
+		if (!unverifiedEmail) {
+			return;
+		}
+		setIsResending(true);
+		try {
+			await authClient.sendVerificationEmail({
+				callbackURL: "/onboarding",
+				email: unverifiedEmail,
+			});
+			toast.success("Verification email sent! Check your inbox.");
+		} catch {
+			toast.error("Failed to resend verification email.");
+		} finally {
+			setIsResending(false);
+		}
+	};
 
 	const form = useAppForm({
 		defaultValues: { email: "", password: "" },
 		onSubmit: async ({ value }) => {
+			const destination = callbackURL || "/dashboard";
 			const { error } = await authClient.signIn.email({
-				callbackURL: callbackURL ?? "/dashboard",
+				callbackURL: destination,
 				email: value.email,
 				password: value.password,
 			});
 			if (error) {
+				const isUnverified =
+					error.code === "EMAIL_NOT_VERIFIED" ||
+					error.status === 403 ||
+					error.message?.toLowerCase().includes("verif");
+				if (isUnverified) {
+					setUnverifiedEmail(value.email);
+					toast.error("Please verify your email before logging in.");
+					return;
+				}
 				toast.error(error.message ?? "Invalid email or password");
 				return; // Early return to prevent unauthorized redirection!
 			}
-			navigate({ to: callbackURL ?? "/dashboard" });
+			navigate({ to: destination });
 		},
 		validators: {
 			onBlur: loginSchema,
@@ -181,6 +211,22 @@ function PasswordForm({ callbackURL }: { callbackURL: string }) {
 					form.handleSubmit();
 				}}
 			>
+				{unverifiedEmail ? (
+					<div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 p-3 text-amber-700 text-xs dark:text-amber-300">
+						<p className="font-medium">Email not verified</p>
+						<p className="mt-0.5 text-muted-foreground">
+							Please verify your address before accessing the dashboard.
+						</p>
+						<button
+							className="mt-2 font-medium text-primary underline underline-offset-2 hover:text-primary/80 disabled:opacity-50"
+							disabled={isResending}
+							onClick={handleResendUnverified}
+							type="button"
+						>
+							{isResending ? "Sending…" : "Resend verification email"}
+						</button>
+					</div>
+				) : null}
 				{/* Email */}
 				<form.AppField
 					name="email"

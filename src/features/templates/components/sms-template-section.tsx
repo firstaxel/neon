@@ -370,18 +370,18 @@ function SmsBubble({ text, vars }: { text: string; vars: string[] }) {
 	const preview = previewText(text, vars, pvMap);
 
 	return (
-		<div className="space-y-2 rounded-xl border border-[#60a5fa25] bg-[#0d1a2e] p-3">
+		<div className="space-y-2 rounded-xl border border-blue-500/25 bg-blue-500/5 p-3 dark:border-[#60a5fa25] dark:bg-[#0d1a2e]">
 			<div className="flex items-center gap-1.5">
-				<Phone className="h-3 w-3 text-[#60a5fa]" />
-				<span className="font-bold text-[#60a5fa] text-[10px] uppercase tracking-wider">
+				<Phone className="h-3 w-3 text-blue-600 dark:text-[#60a5fa]" />
+				<span className="font-bold text-blue-700 text-xs uppercase tracking-wider dark:text-[#60a5fa]">
 					SMS Preview
 				</span>
-				<span className="ml-auto text-[9px] text-muted-foreground">
+				<span className="ml-auto text-muted-foreground text-xs">
 					Sarah Johnson · now
 				</span>
 			</div>
-			<div className="max-w-[85%] rounded-xl rounded-tl-sm border border-[#60a5fa20] bg-[#1a2a3e] px-3 py-2.5">
-				<p className="whitespace-pre-wrap text-[11px] text-foreground/80 leading-relaxed">
+			<div className="max-w-[85%] rounded-xl rounded-tl-sm border border-blue-200/80 bg-white px-3 py-2.5 shadow-xs dark:border-[#60a5fa20] dark:bg-[#1a2a3e]">
+				<p className="whitespace-pre-wrap text-slate-800 text-xs leading-relaxed dark:text-foreground/80">
 					{preview || (
 						<span className="text-muted-foreground italic">
 							Your SMS will appear here…
@@ -541,16 +541,16 @@ export function SmsTemplateSection({
 
 				{/* Detected vars */}
 				{detectedVars.length > 0 && (
-					<div className="flex flex-wrap items-center gap-1.5 rounded-xl border border-[#60a5fa20] bg-[#0d1a2e] px-3 py-2">
-						<span className="font-medium text-[#60a5fa] text-[10px]">
+					<div className="flex flex-wrap items-center gap-1.5 rounded-xl border border-blue-500/20 bg-blue-500/5 px-3 py-2 dark:border-[#60a5fa20] dark:bg-[#0d1a2e]">
+						<span className="font-medium text-blue-700 text-xs dark:text-[#60a5fa]">
 							Variables:
 						</span>
 						{detectedVars.map((v) => (
 							<div className="flex items-center gap-1" key={v}>
-								<span className="rounded-md border border-[#60a5fa30] bg-[#60a5fa10] px-1.5 py-0.5 font-mono text-[#60a5fa] text-[10px]">
+								<span className="rounded-md border border-blue-500/25 bg-blue-500/10 px-1.5 py-0.5 font-mono text-blue-700 text-xs dark:border-[#60a5fa30] dark:bg-[#60a5fa10] dark:text-[#60a5fa]">
 									{`{{${v}}}`}
 								</span>
-								<span className="text-[9px] text-muted-foreground">
+								<span className="text-muted-foreground text-xs">
 									→ {getPreviewValue(v)}
 								</span>
 							</div>

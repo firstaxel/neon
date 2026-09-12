@@ -13,6 +13,8 @@
  * Docs: https://developers.termii.com/messaging
  */
 
+import { appendOptOutNotice } from "#/lib/sms";
+
 export interface SmsSendResult {
 	error?: string;
 	messageId?: string;
@@ -61,19 +63,18 @@ function normalisePhone(phone: string): string {
  */
 export async function sendSmsMessage(
 	to: string,
-	body: string
+	body: string,
+	options?: { senderId?: string }
 ): Promise<SmsSendResult> {
 	// Append STOP instruction if not already present
-	const fullBody = body.includes("Reply STOP")
-		? body
-		: `${body}\n\nReply STOP to opt out`;
+	const fullBody = appendOptOutNotice(body);
 
 	try {
 		const res = await fetch(BASE_URL, {
 			body: JSON.stringify({
 				api_key: apiKey(),
-				channel: "generic", // DND channel bypasses Nigerian DND registry
-				from: senderId(),
+				channel: "dnd", // DND channel bypasses Nigerian DND registry
+				from: options?.senderId ?? senderId(),
 				media: { caption: null, url: null },
 				sms: fullBody,
 				to: normalisePhone(to),

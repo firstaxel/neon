@@ -26,6 +26,7 @@ model User {
   sessions         Session[]
   accounts         Account[]
   contacts         Contact[]
+  contactImports   ContactImport[]
   campaigns        Campaign[]
   parseJobs        ParseJob[]
   messageTemplates MessageTemplate[]
@@ -170,9 +171,11 @@ model Transaction {
 
   description      String
   reference        String            @unique
-  paystackRef      String?           @map("paystack_ref")
+  paystackRef      String?           @unique @map("paystack_ref")
+  metadata         Json?
 
   campaignId       String?           @map("campaign_id")
+  campaign         Campaign?         @relation(fields: [campaignId], references: [id], onDelete: SetNull)
   messageId        String?           @map("message_id")
 
   createdAt        DateTime          @default(now()) @map("created_at")
@@ -239,6 +242,42 @@ model ParseJob {
   @@map("parse_jobs")
 }
 
+enum ImportStatus {
+  in_progress
+  completed
+  failed
+}
+
+enum ImportStrategy {
+  skip_duplicates
+  overwrite
+  tags_only
+}
+
+model ContactImport {
+  id           String         @id @default(uuid())
+  ownerId      String         @map("owner_id")
+  uploadedBy   String         @map("uploaded_by")
+  user         User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  filename     String
+  status       ImportStatus   @default(in_progress)
+  strategy     ImportStrategy @default(skip_duplicates)
+  totalRows    Int            @map("total_rows")
+  createdCount Int            @default(0) @map("created_count")
+  updatedCount Int            @default(0) @map("updated_count")
+  skippedCount Int            @default(0) @map("skipped_count")
+  errorCount   Int            @default(0) @map("error_count")
+  errors       Json?
+  tagsApplied  String[]       @default([]) @map("tags_applied")
+  createdAt    DateTime       @default(now()) @map("created_at")
+
+  contacts     Contact[]
+
+  @@index([ownerId])
+  @@index([status])
+  @@map("contact_imports")
+}
+
 model Contact {
   id            String         @id @default(uuid())
   uploadedBy    String         @map("uploaded_by")
@@ -247,6 +286,9 @@ model Contact {
   parseJobId    String?        @map("parse_job_id")
   parseJob      ParseJob?      @relation(fields: [parseJobId], references: [id], onDelete: SetNull)
 
+  importBatchId String?        @map("import_batch_id")
+  importBatch   ContactImport? @relation(fields: [importBatchId], references: [id], onDelete: SetNull)
+
   name          String
   phone         String
   channel       MessageChannel
@@ -254,6 +296,7 @@ model Contact {
   tags          String[]       @default([])
   email         String?
   notes         String?
+  metadata      Json?
   rawRow        String?        @map("raw_row")
 
   optedOut      Boolean        @default(false) @map("opted_out")
@@ -264,6 +307,7 @@ model Contact {
 
   @@unique([uploadedBy, phone])
   @@index([parseJobId])
+  @@index([importBatchId])
   @@index([uploadedBy])
   @@index([channel])
   @@index([type])
@@ -275,9 +319,11 @@ model Contact {
 
 enum JobStatus {
   pending
+  dispatching
   processing
   completed
   failed
+  cancelled
 }
 
 enum DeliveryMode {
@@ -311,6 +357,7 @@ model Campaign {
   userId            String            @map("user_id")
   user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  name              String?
   scenario          Scenario
   status            JobStatus         @default(pending)
   deliveryMode      DeliveryMode      @default(marketing) @map("delivery_mode")
@@ -323,19 +370,23 @@ model Campaign {
   totalMessages     Int               @default(0) @map("total_messages")
   sentMessages      Int               @default(0) @map("sent_messages")
   failedMessages    Int               @default(0) @map("failed_messages")
+  estimatedCostKobo Int               @default(0) @map("estimated_cost_kobo")
 
   inngestEventId    String?           @map("inngest_event_id")
 
+  scheduledAt       DateTime?         @map("scheduled_at")
   createdAt         DateTime          @default(now()) @map("created_at")
   startedAt         DateTime?         @map("started_at")
   completedAt       DateTime?         @map("completed_at")
 
   messages          Message[]
+  transactions      Transaction[]
   pendingDeliveries PendingDelivery[]
   inboundMessages   InboundMessage[]
 
   @@index([userId])
   @@index([status])
+  @@index([scheduledAt])
   @@index([createdAt(sort: Desc)])
   @@map("campaigns")
 }
@@ -350,6 +401,9 @@ model Message {
   phone           String
   channel         MessageChannel
   message         String         @db.Text
+
+  segments        Int            @default(1)
+  costKobo        Int?           @map("cost_kobo")
 
   status          MessageStatus  @default(queued)
   fromNumber      String?        @map("from_number")

@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { describe, expect, it } from "vitest";
-import { prisma } from "./db";
 import type { Contact, Message, Wallet } from "./db";
+import { prisma } from "./db";
 
 describe("Database client and consolidated data model", () => {
 	// covers: AC-1
@@ -44,11 +44,11 @@ describe("Database client and consolidated data model", () => {
 		expect((message as any).twilioSid).toBeUndefined(); // AC-2: twilioSid removed
 
 		const wallet: Partial<Wallet> = {
-			balanceKobo: 50000,
-			heldKobo: 10000,
+			balanceKobo: 50_000,
+			heldKobo: 10_000,
 			userId: "usr_1",
 		};
-		expect(wallet.balanceKobo).toBe(50000);
-		expect(wallet.heldKobo).toBe(10000);
+		expect(wallet.balanceKobo).toBe(50_000);
+		expect(wallet.heldKobo).toBe(10_000);
 	});
 });

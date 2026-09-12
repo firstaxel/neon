@@ -38,6 +38,8 @@ const GoogleIcon = (
 	</svg>
 );
 
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 // ─── Registration Form ────────────────────────────────────────────────────────
 
 function PasswordRegisterForm({ callbackURL }: { callbackURL: string }) {
@@ -53,8 +55,9 @@ function PasswordRegisterForm({ callbackURL }: { callbackURL: string }) {
 			password: "",
 		},
 		onSubmit: async ({ value }) => {
+			const destination = callbackURL || "/onboarding";
 			const { error } = await authClient.signUp.email({
-				callbackURL: callbackURL ?? "/dashboard",
+				callbackURL: destination,
 				email: value.email,
 				name: value.name,
 				password: value.password,
@@ -63,8 +66,11 @@ function PasswordRegisterForm({ callbackURL }: { callbackURL: string }) {
 				toast.error(error.message ?? "Failed to create account");
 				return;
 			}
-			toast.success("Account created successfully!");
-			navigate({ to: callbackURL ?? "/dashboard" });
+			toast.success("Account created! Please verify your email.");
+			navigate({
+				search: { email: value.email },
+				to: "/verify-email",
+			});
 		},
 		validators: {
 			onBlur: registerSchema,
@@ -131,7 +137,7 @@ function PasswordRegisterForm({ callbackURL }: { callbackURL: string }) {
 							if (!value.trim()) {
 								return "Email address is required";
 							}
-							if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+							if (!emailRegex.test(value)) {
 								return "Please enter a valid email address";
 							}
 						},

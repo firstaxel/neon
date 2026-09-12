@@ -286,32 +286,32 @@ function TemplateCard({
 				{/* Preview snippets */}
 				<div className="flex flex-1 flex-col gap-2 p-4 pt-3">
 					{/* WhatsApp body preview */}
-					<div className="rounded-lg border border-[#25d36625] bg-[#0d2016] px-3 py-2">
+					<div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-2 dark:border-[#25d36625] dark:bg-[#0d2016]">
 						<div className="mb-1 flex items-center gap-1">
-							<MessageSquare className="h-2.5 w-2.5 text-[#25d366]" />
-							<span className="font-bold text-[#25d366] text-[9px] uppercase tracking-wider">
+							<MessageSquare className="h-3 w-3 text-emerald-600 dark:text-[#25d366]" />
+							<span className="font-bold text-emerald-700 text-xs uppercase tracking-wider dark:text-[#25d366]">
 								WhatsApp
 							</span>
 							{template.headerFormat && (
-								<span className="ml-auto text-[9px] text-muted-foreground uppercase">
+								<span className="ml-auto text-muted-foreground text-xs uppercase">
 									{template.headerFormat.toLowerCase()} header
 								</span>
 							)}
 						</div>
-						<p className="line-clamp-2 text-[11px] text-foreground/70 leading-relaxed">
+						<p className="line-clamp-2 text-foreground/80 text-xs leading-relaxed dark:text-foreground/70">
 							{template.bodyText.replace(/\{\{(\w+)\}\}/g, (_, v) => `[${v}]`)}
 						</p>
 					</div>
 
 					{/* SMS fallback */}
-					<div className="rounded-lg border border-[#60a5fa25] bg-[#0d1a2e] px-3 py-2">
+					<div className="rounded-lg border border-blue-500/20 bg-blue-500/5 px-3 py-2 dark:border-[#60a5fa25] dark:bg-[#0d1a2e]">
 						<div className="mb-1 flex items-center gap-1">
-							<Phone className="h-2.5 w-2.5 text-[#60a5fa]" />
-							<span className="font-bold text-[#60a5fa] text-[9px] uppercase tracking-wider">
+							<Phone className="h-3 w-3 text-blue-600 dark:text-[#60a5fa]" />
+							<span className="font-bold text-blue-700 text-xs uppercase tracking-wider dark:text-[#60a5fa]">
 								SMS Fallback
 							</span>
 						</div>
-						<p className="line-clamp-1 text-[11px] text-foreground/70 leading-relaxed">
+						<p className="line-clamp-1 text-foreground/80 text-xs leading-relaxed dark:text-foreground/70">
 							{template.smsBody.replace(/\{\{(\w+)\}\}/g, (_, v) => `[${v}]`)}
 						</p>
 					</div>
@@ -655,6 +655,7 @@ export function WaTemplateListView({
 									"gap-2 rounded-xl",
 									"bg-[#25d366] text-white hover:bg-[#25d366]/90",
 								].join(" ")}
+								nativeButton={false}
 								render={
 									<Link to={"/templates/create/whatsapp"}>
 										<Plus className="h-4 w-4" />

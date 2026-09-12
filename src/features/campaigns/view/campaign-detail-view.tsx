@@ -11,7 +11,9 @@
  *   Message list  — per-contact status rows with channel badge
  */
 
+import { Link } from "@tanstack/react-router";
 import {
+	AlertTriangle,
 	ArrowLeft,
 	CheckCircle2,
 	Clock,
@@ -22,12 +24,17 @@ import {
 	Send,
 	XCircle,
 } from "lucide-react";
-import Link from "next/link";
+import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "#/components/ui/button";
 import { Progress } from "#/components/ui/progress";
 import { Separator } from "#/components/ui/separator";
 import { Skeleton } from "#/components/ui/skeleton";
-import { useCampaignStatus } from "#/features/campaigns/hooks/use-campaign";
+import { UserAvatar } from "#/features/auth/components/user-avatar";
+import {
+	useCampaignStatus,
+	useCancelScheduledCampaign,
+} from "#/features/campaigns/hooks/use-campaign";
 import { getScenarioMeta } from "#/features/miscellaneous/org";
 import { useProfile } from "#/features/profile/hooks/use-profile";
 
@@ -46,7 +53,13 @@ function fmtDate(iso: string | Date | null | undefined) {
 	});
 }
 
-function StatusBadge({ status }: { status: string }) {
+function StatusBadge({
+	status,
+	scheduledAt,
+}: {
+	status: string;
+	scheduledAt?: string | Date | null;
+}) {
 	switch (status) {
 		case "completed":
 			return (
@@ -54,10 +67,17 @@ function StatusBadge({ status }: { status: string }) {
 					<CheckCircle2 className="h-3 w-3" /> Completed
 				</span>
 			);
+		case "dispatching":
 		case "processing":
 			return (
 				<span className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 font-semibold text-primary text-xs">
-					<Loader2 className="h-3 w-3 animate-spin" /> Sending
+					<Loader2 className="h-3 w-3 animate-spin" /> Dispatching
+				</span>
+			);
+		case "cancelled":
+			return (
+				<span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 font-semibold text-amber-500 text-xs">
+					<XCircle className="h-3 w-3" /> Cancelled
 				</span>
 			);
 		case "failed":
@@ -69,7 +89,7 @@ function StatusBadge({ status }: { status: string }) {
 		default:
 			return (
 				<span className="inline-flex items-center gap-1.5 rounded-full border border-muted-foreground/30 bg-muted/50 px-3 py-1 font-semibold text-muted-foreground text-xs">
-					<Clock className="h-3 w-3" /> Queued
+					<Clock className="h-3 w-3" /> {scheduledAt ? "Scheduled" : "Queued"}
 				</span>
 			);
 	}
@@ -121,12 +141,30 @@ function StatCard({
 // ─── CampaignDetailView ───────────────────────────────────────────────────────
 
 export function CampaignDetailView({ campaignId }: { campaignId: string }) {
-	const { data, isLoading } = useCampaignStatus(campaignId);
+	const { data, isLoading, refetch } = useCampaignStatus(campaignId);
 	const { data: profile } = useProfile();
+	const { mutateAsync: cancelCampaign, isPending: isCancelling } =
+		useCancelScheduledCampaign();
+	const [confirmCancel, setConfirmCancel] = useState(false);
+
+	async function handleCancel() {
+		try {
+			await cancelCampaign({ campaignId });
+			toast.success(
+				"Campaign cancelled successfully. Reserved funds have been released."
+			);
+			setConfirmCancel(false);
+			await refetch();
+		} catch (err: unknown) {
+			const message =
+				err instanceof Error ? err.message : "Failed to cancel campaign";
+			toast.error(message);
+		}
+	}
 
 	if (isLoading) {
 		return (
-			<div style={{ margin: "0 auto", maxWidth: 900, padding: "32px 28px" }}>
+			<div className="mx-auto w-full max-w-6xl px-4 py-8">
 				<Skeleton className="mb-6 h-5 w-32" />
 				<Skeleton className="mb-2 h-8 w-56" />
 				<Skeleton className="mb-8 h-5 w-72" />
@@ -147,15 +185,13 @@ export function CampaignDetailView({ campaignId }: { campaignId: string }) {
 
 	if (!data) {
 		return (
-			<div
-				className="py-20 text-center text-muted-foreground"
-				style={{ padding: "32px 28px" }}
-			>
+			<div className="mx-auto w-full max-w-6xl px-4 py-20 text-center text-muted-foreground">
 				<p className="mb-2 font-medium">Campaign not found</p>
 				<Button
 					className="mt-3 gap-1.5 rounded-xl"
+					nativeButton={false}
 					render={
-						<Link href="/campaigns">
+						<Link to="/campaigns">
 							<ArrowLeft className="h-4 w-4" /> Back to campaigns
 						</Link>
 					}
@@ -171,20 +207,21 @@ export function CampaignDetailView({ campaignId }: { campaignId: string }) {
 	const failed = data.failed ?? 0;
 	const pending = total - sent - failed;
 	const sentPct = total ? (sent / total) * 100 : 0;
-	const isLive = data.status === "processing" || data.status === "pending";
+	const isLive = data.status === "processing" || data.status === "dispatching";
+	const isPending = data.status === "pending";
 
 	const waMessages =
 		data.messages?.filter((m) => m.channel === "whatsapp") ?? [];
 	const smsMessages = data.messages?.filter((m) => m.channel === "sms") ?? [];
 
 	return (
-		<div style={{ margin: "0 auto", maxWidth: 900, padding: "32px 28px" }}>
+		<div className="mx-auto w-full max-w-6xl px-4 py-8">
 			{/* Back link */}
 			<Button
 				className="mb-6 gap-1.5 rounded-xl"
 				nativeButton={false}
 				render={
-					<Link href="/campaigns">
+					<Link to="/campaigns">
 						<ArrowLeft className="h-4 w-4" /> All campaigns
 					</Link>
 				}
@@ -193,31 +230,82 @@ export function CampaignDetailView({ campaignId }: { campaignId: string }) {
 			/>
 
 			{/* Header */}
-			<div className="mb-6 flex items-start gap-4">
-				<div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border bg-muted/50 text-2xl">
-					{meta.icon}
+			<div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
+				<div className="flex items-start gap-4">
+					<div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border bg-muted/50 text-2xl">
+						{meta.icon}
+					</div>
+					<div className="min-w-0 flex-1">
+						<div className="mb-1 flex flex-wrap items-center gap-3">
+							<h1 className="font-bold text-xl">{data.name || meta.label}</h1>
+							<StatusBadge
+								scheduledAt={data.scheduledAt}
+								status={data.status}
+							/>
+						</div>
+						<div className="flex flex-wrap gap-x-4 gap-y-1 text-muted-foreground text-xs">
+							<span>Created {fmtDate(data.createdAt)}</span>
+							{data.scheduledAt && (
+								<span className="font-medium text-blue-500">
+									Scheduled for {fmtDate(data.scheduledAt)}
+								</span>
+							)}
+							{data.completedAt && (
+								<span>Completed {fmtDate(data.completedAt)}</span>
+							)}
+							<span className="font-mono text-[10px] opacity-50">
+								{campaignId}
+							</span>
+						</div>
+					</div>
 				</div>
-				<div className="min-w-0 flex-1">
-					<div className="mb-1 flex flex-wrap items-center gap-3">
-						<h1 className="font-bold text-xl">{meta.label}</h1>
-						<StatusBadge status={data.status} />
-					</div>
-					<div className="flex flex-wrap gap-x-4 gap-y-1 text-muted-foreground text-xs">
-						<span>Created {fmtDate(data.createdAt)}</span>
-						{data.completedAt && (
-							<span>Completed {fmtDate(data.completedAt)}</span>
-						)}
-						<span className="font-mono text-[10px] opacity-50">
-							{campaignId}
-						</span>
-					</div>
+
+				<div className="flex items-center gap-2">
+					{isLive && (
+						<div className="flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/5 px-2.5 py-1">
+							<span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
+							<span className="font-medium text-[10px] text-primary">Live</span>
+						</div>
+					)}
+					{isPending && (
+						<div>
+							{confirmCancel ? (
+								<div className="flex items-center gap-2">
+									<Button
+										disabled={isCancelling}
+										onClick={handleCancel}
+										size="sm"
+										variant="destructive"
+									>
+										{isCancelling ? (
+											<Loader2 className="h-3.5 w-3.5 animate-spin" />
+										) : (
+											"Confirm Cancel"
+										)}
+									</Button>
+									<Button
+										disabled={isCancelling}
+										onClick={() => setConfirmCancel(false)}
+										size="sm"
+										variant="outline"
+									>
+										Back
+									</Button>
+								</div>
+							) : (
+								<Button
+									className="text-amber-500 hover:text-amber-600"
+									onClick={() => setConfirmCancel(true)}
+									size="sm"
+									variant="outline"
+								>
+									<AlertTriangle className="mr-1.5 h-3.5 w-3.5" /> Cancel
+									Broadcast
+								</Button>
+							)}
+						</div>
+					)}
 				</div>
-				{isLive && (
-					<div className="flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/5 px-2.5 py-1">
-						<span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
-						<span className="font-medium text-[10px] text-primary">Live</span>
-					</div>
-				)}
 			</div>
 
 			{/* Stats */}
@@ -285,9 +373,7 @@ export function CampaignDetailView({ campaignId }: { campaignId: string }) {
 										key={m.id}
 									>
 										<MsgStatusDot status={m.status} />
-										<div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted font-bold text-[11px]">
-											{m.contactName.charAt(0).toUpperCase()}
-										</div>
+										<UserAvatar name={m.contactName} size={28} />
 										<div className="min-w-0 flex-1">
 											<p className="truncate font-medium text-sm">
 												{m.contactName}
@@ -346,13 +432,19 @@ export function CampaignDetailView({ campaignId }: { campaignId: string }) {
 										key={m.id}
 									>
 										<MsgStatusDot status={m.status} />
-										<div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted font-bold text-[11px]">
-											{m.contactName.charAt(0).toUpperCase()}
-										</div>
+										<UserAvatar name={m.contactName} size={28} />
 										<div className="min-w-0 flex-1">
-											<p className="truncate font-medium text-sm">
-												{m.contactName}
-											</p>
+											<div className="flex items-center gap-2">
+												<p className="truncate font-medium text-sm">
+													{m.contactName}
+												</p>
+												{m.segments && (
+													<span className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
+														{m.segments}{" "}
+														{m.segments === 1 ? "segment" : "segments"}
+													</span>
+												)}
+											</div>
 											<p className="truncate text-[10px] text-muted-foreground">
 												{m.phone}
 											</p>
@@ -377,6 +469,11 @@ export function CampaignDetailView({ campaignId }: { campaignId: string }) {
 														hour: "2-digit",
 														minute: "2-digit",
 													})}
+												</p>
+											)}
+											{m.errorMessage && (
+												<p className="max-w-40 truncate text-[10px] text-destructive">
+													{m.errorMessage}
 												</p>
 											)}
 										</div>

@@ -28,8 +28,9 @@ interface ContactDialogProps {
 }
 
 const CHANNEL_STYLE: Record<string, string> = {
-	sms: "border-[#60a5fa40] bg-[#0d1a2e] text-[#60a5fa]",
-	whatsapp: "border-[#25d36640] bg-[#0d2016] text-[#25d366]",
+	sms: "border-blue-500/30 bg-blue-500/10 text-blue-700 dark:border-[#60a5fa40] dark:bg-[#0d1a2e] dark:text-[#60a5fa]",
+	whatsapp:
+		"border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:border-[#25d36640] dark:bg-[#0d2016] dark:text-[#25d366]",
 };
 
 // ─── Detail row ───────────────────────────────────────────────────────────────
@@ -168,7 +169,8 @@ export function ContactDialog({
 									<div className="flex items-center gap-3 text-muted-foreground text-xs">
 										{contact.sourceConfidence != null && (
 											<span>
-												{Math.round(contact.sourceConfidence * 100)}% AI confidence
+												{Math.round(contact.sourceConfidence * 100)}% AI
+												confidence
 											</span>
 										)}
 										{contact.sourceCreatedAt ? (

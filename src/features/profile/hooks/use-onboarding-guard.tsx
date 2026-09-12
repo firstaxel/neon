@@ -33,10 +33,16 @@ export function useOnboardingGuard() {
 	const location = useLocation();
 	const { data: profile, isLoading } = useProfile();
 
-	const pathname = location.pathname;
+	const { pathname } = location;
 
 	useEffect(() => {
 		if (isLoading) {
+			return;
+		}
+		if (profile?.onboardingComplete && pathname.startsWith("/onboarding")) {
+			router.navigate({
+				to: "/dashboard",
+			});
 			return;
 		}
 		if (EXEMPT_PREFIXES.some((p) => pathname.startsWith(p))) {

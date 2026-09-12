@@ -1,5 +1,5 @@
+import { useRouter } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { PageHeader } from "#/components/shared/page-header";
 import { Button } from "#/components/ui/button";
@@ -16,15 +16,22 @@ export function WaTemplateEditView({ id }: { id: string }) {
 	const { data: template, isLoading } = useTemplate(id);
 	const { mutateAsync: update, isPending } = useUpdateTemplate();
 
+	const navigateBack = () => {
+		router.navigate({
+			search: { channel: "whatsapp" },
+			to: "/templates",
+		});
+	};
+
 	async function handleSave(values: WaTemplateFormValues) {
 		try {
 			await update({ id, ...values, smsBody: values.smsBody ?? "" });
 			toast.success("Template saved", {
 				description: `"${values.displayName}" updated.`,
 			});
-			router.push("/templatess?channel=whatsapp");
+			navigateBack();
 		} catch (e) {
-			toast("Error", {
+			toast.error("Error", {
 				description: (e as Error).message,
 			});
 		}
@@ -32,7 +39,7 @@ export function WaTemplateEditView({ id }: { id: string }) {
 
 	if (isLoading) {
 		return (
-			<div style={{ margin: "0 auto", maxWidth: 1100, padding: "32px 28px" }}>
+			<div className="mx-auto w-full max-w-6xl px-4 py-8">
 				<Skeleton className="mb-6 h-8 w-48" />
 				<Skeleton className="mb-8 h-6 w-72" />
 				<div className="space-y-4">
@@ -46,12 +53,9 @@ export function WaTemplateEditView({ id }: { id: string }) {
 
 	if (!template) {
 		return (
-			<div
-				className="text-center text-muted-foreground"
-				style={{ padding: "32px 28px" }}
-			>
+			<div className="mx-auto w-full max-w-6xl px-4 py-20 text-center text-muted-foreground">
 				Template not found.{" "}
-				<Button onClick={() => router.push("/templatess")} variant="link">
+				<Button onClick={navigateBack} variant="link">
 					Go back
 				</Button>
 			</div>
@@ -59,11 +63,11 @@ export function WaTemplateEditView({ id }: { id: string }) {
 	}
 
 	return (
-		<div style={{ margin: "0 auto", maxWidth: 1100, padding: "32px 28px" }}>
+		<div className="mx-auto w-full max-w-6xl px-4 py-8">
 			<div className="mb-6 flex items-center gap-3">
 				<Button
 					className="gap-1.5 rounded-xl"
-					onClick={() => router.push("/templatess?channel=whatsapp")}
+					onClick={navigateBack}
 					size="sm"
 					variant="ghost"
 				>
@@ -77,7 +81,7 @@ export function WaTemplateEditView({ id }: { id: string }) {
 			<div className="mt-6">
 				<WaTemplateEditor
 					isSaving={isPending}
-					onCancel={() => router.push("/templatess?channel=whatsapp")}
+					onCancel={navigateBack}
 					onSave={handleSave}
 					template={template}
 				/>

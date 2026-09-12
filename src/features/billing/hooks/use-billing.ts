@@ -13,14 +13,43 @@ export function useWallet() {
 }
 
 // ── Transactions ──────────────────────────────────────────────────────────────
-export function useTransactions(page = 1) {
+export type TransactionTypeFilter =
+	| "deposit"
+	| "message_debit"
+	| "campaign_hold"
+	| "campaign_refund"
+	| "refund";
+
+export interface UseTransactionsParams {
+	page?: number;
+	pageSize?: number;
+	type?: TransactionTypeFilter;
+}
+
+export function useTransactions(params: number | UseTransactionsParams = 1) {
+	const normalized =
+		typeof params === "number"
+			? { page: params, pageSize: 20, type: undefined }
+			: {
+					page: params.page ?? 1,
+					pageSize: params.pageSize ?? 20,
+					type: params.type,
+				};
+
 	return useQuery(
 		orpc.billing.getTransactions.queryOptions({
 			input: {
-				page,
+				page: normalized.page,
+				pageSize: normalized.pageSize,
+				...(normalized.type ? { type: normalized.type } : {}),
 			},
 			placeholderData: (prev) => prev,
-			queryKey: ["transactions", page],
+			queryKey: [
+				"transactions",
+				normalized.page,
+				normalized.pageSize,
+				normalized.type,
+			],
 			staleTime: 30_000,
 		})
 	);
@@ -60,60 +89,4 @@ export function useCampaignCost(
 			staleTime: 5000,
 		})
 	);
-}
-
-// ── Subscription (Deprecated — prepaid wallet migration) ──────────────────────
-export interface BillingPlan {
-	key: string;
-	label: string;
-	monthlyLimit: string;
-	paystackPlanCode?: string;
-	priceFormatted: string;
-	priceKobo: number;
-}
-
-export interface UserSubscription {
-	currentPeriodEnd: string;
-	id: string;
-	messagesUsedThisCycle: number;
-	monthlyMessageLimit: number;
-	paystackSubCode?: string | null;
-	plan: string;
-	remainingMessages: number;
-	status: string;
-	usagePercent: number;
-}
-
-export function useSubscription() {
-	return {
-		data: {
-			plans: [] as BillingPlan[],
-			subscription: null as UserSubscription | null,
-		},
-		isError: false,
-		isLoading: false,
-	};
-}
-
-export function useInitSubscription() {
-	return {
-		isPending: false,
-		mutateAsync: async (_args: {
-			callbackUrl: string;
-			plan: "starter" | "growth" | "pro";
-		}) => ({
-			checkoutUrl: "",
-		}),
-	};
-}
-
-export function useCancelSubscription() {
-	return {
-		isPending: false,
-		mutateAsync: async (_args?: unknown) => ({
-			cancelled: true,
-			currentPeriodEnd: new Date().toISOString(),
-			message: "Subscription cancelled",
-		}),
-	};
 }

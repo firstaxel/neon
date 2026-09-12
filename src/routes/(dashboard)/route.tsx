@@ -1,5 +1,7 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
-import AnimatedHeader from "#/features/dashboard/components/header";
+import { SidebarInset, SidebarProvider } from "#/components/ui/sidebar";
+import { AppSidebar } from "#/features/dashboard/components/app-sidebar";
+import { DashboardTopbar } from "#/features/dashboard/components/dashboard-topbar";
 import { useOnboardingGuard } from "#/features/profile/hooks/use-onboarding-guard";
 import { authMiddleware } from "#/middleware/auth";
 
@@ -13,9 +15,14 @@ export const Route = createFileRoute("/(dashboard)")({
 function RouteComponent() {
 	useOnboardingGuard();
 	return (
-		<main className="flex w-full flex-col items-center">
-			<AnimatedHeader />
-			<Outlet />
-		</main>
+		<SidebarProvider defaultOpen={true}>
+			<AppSidebar />
+			<SidebarInset>
+				<DashboardTopbar />
+				<div className="w-full flex-1">
+					<Outlet />
+				</div>
+			</SidebarInset>
+		</SidebarProvider>
 	);
 }

@@ -91,13 +91,17 @@ function ChannelTab({
 }) {
 	const isWa = channel === "whatsapp";
 	const activeCs = isWa
-		? "border-[#25d36650] bg-[#0d2016] ring-1 ring-[#25d36625]"
-		: "border-[#60a5fa50] bg-[#0d1a2e] ring-1 ring-[#60a5fa25]";
-	const iconCs = isWa ? "text-[#25d366]" : "text-[#60a5fa]";
+		? "border-emerald-500/30 bg-emerald-500/10 ring-1 ring-emerald-500/20 dark:border-[#25d36650] dark:bg-[#0d2016] dark:ring-[#25d36625]"
+		: "border-blue-500/30 bg-blue-500/10 ring-1 ring-blue-500/20 dark:border-[#60a5fa50] dark:bg-[#0d1a2e] dark:ring-[#60a5fa25]";
+	const iconCs = isWa
+		? "text-emerald-700 dark:text-[#25d366]"
+		: "text-blue-700 dark:text-[#60a5fa]";
 	const iconBg = isWa
-		? "bg-[#0d2016] border-[#25d36630]"
-		: "bg-[#0d1a2e] border-[#60a5fa30]";
-	const dotCs = isWa ? "bg-[#25d366]" : "bg-[#60a5fa]";
+		? "bg-emerald-500/15 border-emerald-500/25 dark:bg-[#0d2016] dark:border-[#25d36630]"
+		: "bg-blue-500/15 border-blue-500/25 dark:bg-[#0d1a2e] dark:border-[#60a5fa30]";
+	const dotCs = isWa
+		? "bg-emerald-600 dark:bg-[#25d366]"
+		: "bg-blue-600 dark:bg-[#60a5fa]";
 
 	return (
 		<button
@@ -119,11 +123,17 @@ function ChannelTab({
 			</div>
 			<div className="min-w-0 flex-1">
 				<p
-					className={`font-semibold text-sm ${active ? "text-foreground" : "text-muted-foreground"}`}
+					className={`font-semibold text-sm ${
+						active
+							? isWa
+								? "text-emerald-900 dark:text-foreground"
+								: "text-blue-900 dark:text-foreground"
+							: "text-muted-foreground"
+					}`}
 				>
 					{label}
 				</p>
-				<p className="text-[11px] text-muted-foreground">
+				<p className="text-muted-foreground text-xs">
 					{loading ? "…" : `${count} template${count === 1 ? "" : "s"}`}
 				</p>
 			</div>
@@ -309,7 +319,7 @@ export function TemplatesView() {
 				<WaTemplateListView
 					category={category as WaCategory | undefined}
 					createHref="/templates/create/whatsapp"
-					editHref={(id) => `/template/whatsapp/${id}`}
+					editHref={(id) => `/templates/whatsapp/${id}`}
 					// Navigation handled by list view — no inline create/edit
 					search={search || undefined}
 					statusFilter={

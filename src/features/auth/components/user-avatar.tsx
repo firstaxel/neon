@@ -1,3 +1,5 @@
+import { cn } from "#/lib/utils";
+
 interface UserAvatarProps {
 	image?: string | null;
 	name: string;
@@ -18,14 +20,42 @@ function initials(name: string) {
 }
 
 /** Deterministic colour from name — cycles through a set of accents */
-function avatarColor(name: string): { bg: string; fg: string } {
+function avatarColor(name: string): {
+	bgClass: string;
+	fgClass: string;
+	borderClass: string;
+} {
 	const PALETTES = [
-		{ bg: "#0d2016", fg: "#25d366" }, // green
-		{ bg: "#0d1a2e", fg: "#60a5fa" }, // blue
-		{ bg: "#1a0d2e", fg: "#a78bfa" }, // purple
-		{ bg: "#1a1200", fg: "#f59e0b" }, // amber
-		{ bg: "#2e0d1a", fg: "#f472b6" }, // pink
-		{ bg: "#0d1a1a", fg: "#2dd4bf" }, // teal
+		{
+			bgClass: "bg-emerald-500/15 dark:bg-emerald-950/60",
+			borderClass: "border-emerald-500/30 dark:border-emerald-500/40",
+			fgClass: "text-emerald-700 dark:text-emerald-400",
+		},
+		{
+			bgClass: "bg-blue-500/15 dark:bg-blue-950/60",
+			borderClass: "border-blue-500/30 dark:border-blue-500/40",
+			fgClass: "text-blue-700 dark:text-blue-400",
+		},
+		{
+			bgClass: "bg-purple-500/15 dark:bg-purple-950/60",
+			borderClass: "border-purple-500/30 dark:border-purple-500/40",
+			fgClass: "text-purple-700 dark:text-purple-400",
+		},
+		{
+			bgClass: "bg-amber-500/15 dark:bg-amber-950/60",
+			borderClass: "border-amber-500/30 dark:border-amber-500/40",
+			fgClass: "text-amber-700 dark:text-amber-400",
+		},
+		{
+			bgClass: "bg-pink-500/15 dark:bg-pink-950/60",
+			borderClass: "border-pink-500/30 dark:border-pink-500/40",
+			fgClass: "text-pink-700 dark:text-pink-400",
+		},
+		{
+			bgClass: "bg-teal-500/15 dark:bg-teal-950/60",
+			borderClass: "border-teal-500/30 dark:border-teal-500/40",
+			fgClass: "text-teal-700 dark:text-teal-400",
+		},
 	];
 	let hash = 0;
 	for (let i = 0; i < name.length; i++) {
@@ -41,51 +71,36 @@ export function UserAvatar({
 	size = 36,
 	online,
 }: UserAvatarProps) {
-	const { bg, fg } = avatarColor(name);
+	const { bgClass, fgClass, borderClass } = avatarColor(name);
 	const fontSize = Math.round(size * 0.36);
 
 	return (
-		<div
-			aria-label={name}
-			role="img"
-			style={{ display: "inline-flex", flexShrink: 0, position: "relative" }}
-		>
+		<div aria-label={name} className="relative inline-flex shrink-0" role="img">
 			{image ? (
 				<img
 					alt={name}
+					className="block rounded-full object-cover"
 					height={size}
 					src={image}
-					style={{
-						borderRadius: "50%",
-						display: "block",
-						height: size,
-						objectFit: "cover",
-						width: size,
-					}}
+					style={{ height: size, width: size }}
 					width={size}
 				/>
 			) : (
 				<div
+					className={cn(
+						"flex shrink-0 items-center justify-center rounded-full border",
+						bgClass,
+						borderClass
+					)}
 					style={{
-						alignItems: "center",
-						background: bg,
-						border: `1px solid ${fg}40`,
-						borderRadius: "50%",
-						display: "flex",
-						flexShrink: 0,
 						height: size,
-						justifyContent: "center",
 						width: size,
 					}}
 				>
 					<span
+						className={cn("select-none font-bold leading-none", fgClass)}
 						style={{
-							color: fg,
-							fontFamily: "var(--font-sans, inherit)",
 							fontSize,
-							fontWeight: 700,
-							lineHeight: 1,
-							userSelect: "none",
 						}}
 					>
 						{initials(name)}
@@ -95,14 +110,9 @@ export function UserAvatar({
 
 			{online && (
 				<span
+					className="absolute right-0.5 bottom-0.5 rounded-full border-2 border-background bg-emerald-500"
 					style={{
-						background: "#25d366",
-						border: "2px solid var(--card, #18181b)",
-						borderRadius: "50%",
-						bottom: 1,
 						height: Math.max(8, size * 0.24),
-						position: "absolute",
-						right: 1,
 						width: Math.max(8, size * 0.24),
 					}}
 				/>

@@ -5,9 +5,9 @@ import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { prisma } from "#/db";
 import { env } from "#/env";
 import { sendMail } from "#/features/email/lib/sender";
-import { MagicLinkEmail } from "@/emails/magic-link";
-import { PasswordResetEmail } from "@/emails/password-reset";
-import { VerificationEmail } from "@/emails/verify";
+import { MagicLinkEmail } from "../../emails/magic-link";
+import { PasswordResetEmail } from "../../emails/password-reset";
+import { VerificationEmail } from "../../emails/verify";
 
 export const auth = betterAuth({
 	account: {
@@ -20,6 +20,8 @@ export const auth = betterAuth({
 	advanced: {
 		cookiePrefix: "Velocast",
 		crossSubDomainCookies: { enabled: false },
+		trustHost: true,
+		useForwardedHeaders: true,
 	},
 
 	appName: "Velocast",

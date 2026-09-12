@@ -490,24 +490,24 @@ function PhonePreview({ values }: { values: WaTemplateFormValues }) {
 			</p>
 			{/* Phone shell */}
 			<div className="mx-auto w-[220px]">
-				<div className="relative rounded-[28px] border-2 border-border bg-[#111827] p-1.5 shadow-xl">
+				<div className="relative rounded-[28px] border-2 border-slate-300/80 bg-slate-100 p-1.5 shadow-xl dark:border-border dark:bg-[#111827]">
 					{/* Notch */}
-					<div className="mx-auto mb-1 h-1.5 w-16 rounded-full bg-border" />
+					<div className="mx-auto mb-1 h-1.5 w-16 rounded-full bg-slate-300 dark:bg-border" />
 					{/* Screen */}
 					<div
-						className="overflow-hidden rounded-[22px] bg-[#0d1420]"
+						className="overflow-hidden rounded-[22px] bg-[#efeae2] dark:bg-[#0b141a]"
 						style={{ minHeight: 320 }}
 					>
 						{/* WA header bar */}
-						<div className="flex items-center gap-2 bg-[#0d2016] px-3 py-2">
-							<div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/20">
-								<MessageSquare className="h-3.5 w-3.5 text-primary" />
+						<div className="flex items-center gap-2 bg-[#008069] px-3 py-2 text-white dark:bg-[#0d2016] dark:text-foreground">
+							<div className="flex h-7 w-7 items-center justify-center rounded-full bg-white/20 text-white dark:bg-primary/20 dark:text-primary">
+								<MessageSquare className="h-3.5 w-3.5" />
 							</div>
 							<div>
-								<p className="font-semibold text-[10px] text-foreground leading-tight">
+								<p className="font-semibold text-white text-xs leading-tight dark:text-foreground">
 									{values.displayName || "Your Business"}
 								</p>
-								<p className="text-[8px] text-muted-foreground">
+								<p className="text-[10px] text-white/80 dark:text-muted-foreground">
 									Business Account
 								</p>
 							</div>
@@ -517,7 +517,7 @@ function PhonePreview({ values }: { values: WaTemplateFormValues }) {
 						<div className="space-y-0.5 p-3">
 							{/* Media header placeholder */}
 							{values.headerFormat && values.headerFormat !== "TEXT" && (
-								<div className="flex h-20 items-center justify-center rounded-t-xl rounded-br-xl border border-border bg-muted/40 text-muted-foreground">
+								<div className="flex h-20 items-center justify-center rounded-t-xl rounded-br-xl border border-slate-300/70 bg-white/80 text-muted-foreground shadow-xs dark:border-border dark:bg-muted/40">
 									{values.headerFormat === "IMAGE" && (
 										<Image className="h-6 w-6 opacity-40" />
 									)}
@@ -532,7 +532,7 @@ function PhonePreview({ values }: { values: WaTemplateFormValues }) {
 
 							<div
 								className={[
-									"max-w-[180px] rounded-xl border border-border bg-card px-3 py-2 shadow-sm",
+									"max-w-[180px] rounded-xl border border-emerald-950/10 bg-white px-3 py-2 text-slate-900 shadow-sm dark:border-border dark:bg-card dark:text-foreground",
 									values.headerFormat && values.headerFormat !== "TEXT"
 										? "rounded-t-none"
 										: "",
@@ -540,13 +540,13 @@ function PhonePreview({ values }: { values: WaTemplateFormValues }) {
 							>
 								{/* Text header */}
 								{headerText && (
-									<p className="mb-1.5 font-bold text-[11px] text-foreground leading-tight">
+									<p className="mb-1.5 font-bold text-slate-900 text-xs leading-tight dark:text-foreground">
 										{headerText}
 									</p>
 								)}
 
 								{/* Body */}
-								<p className="whitespace-pre-wrap text-[10px] text-foreground/85 leading-relaxed">
+								<p className="whitespace-pre-wrap text-[11px] text-slate-800 leading-relaxed dark:text-foreground/85">
 									{bodyPreview || (
 										<span className="text-muted-foreground italic">
 											Body text…
@@ -556,13 +556,13 @@ function PhonePreview({ values }: { values: WaTemplateFormValues }) {
 
 								{/* Footer */}
 								{values.footerText && (
-									<p className="mt-1.5 text-[9px] text-muted-foreground leading-tight">
+									<p className="mt-1.5 text-[10px] text-slate-500 leading-tight dark:text-muted-foreground">
 										{values.footerText}
 									</p>
 								)}
 
 								{/* Timestamp */}
-								<p className="mt-1 text-right text-[8px] text-muted-foreground">
+								<p className="mt-1 text-right text-[10px] text-slate-400 dark:text-muted-foreground">
 									{new Date().toLocaleTimeString([], {
 										hour: "2-digit",
 										minute: "2-digit",
@@ -575,10 +575,10 @@ function PhonePreview({ values }: { values: WaTemplateFormValues }) {
 								<div className="mt-1 space-y-1">
 									{values.buttons.map((btn, i) => (
 										<div
-											className="max-w-[180px] rounded-xl border border-[#25d36640] bg-[#0d2016] px-3 py-1.5 text-center"
+											className="max-w-[180px] rounded-xl border border-emerald-500/30 bg-white px-3 py-1.5 text-center shadow-xs transition-colors hover:bg-emerald-50/50 dark:border-[#25d36640] dark:bg-[#0d2016]"
 											key={i.toString()}
 										>
-											<p className="truncate font-medium text-[10px] text-primary">
+											<p className="truncate font-medium text-emerald-600 text-xs dark:text-primary">
 												{btn.type === "URL" && (
 													<ExternalLink className="mr-1 inline h-2.5 w-2.5" />
 												)}

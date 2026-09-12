@@ -1,158 +1,365 @@
 /**
- * src/lib/billing.ts
+ * src/features/billing/utils/index.ts
  *
  * Core billing helpers used by oRPC procedures and Inngest workers.
  *
  * Rules:
  *  - All amounts stored and passed as kobo (integer). ₦1 = 100 kobo.
  *  - The wallet has two values:
- *      balanceKobo — spendable funds
- *      heldKobo    — reserved for in-flight campaigns (not spendable)
+ *      balanceKobo: spendable funds
+ *      heldKobo: reserved for in-flight campaigns (not spendable)
  *  - Every financial event creates an immutable Transaction row.
- *  - We never update balance without writing a Transaction first.
+ *  - We never update balance without row level locking and writing a Transaction.
  */
 
 import { prisma } from "#/db";
+import type { Prisma } from "#/generated/prisma/client";
 
-// ─── Pricing constants (edit here to change rates) ───────────────────────────
+// ─── Format helpers & pricing ─────────────────────────────────────────────────
+import { type MessageType, PRICING, resolveMessageType } from "./format";
 
-/**
- * MessageType drives billing — not raw channel alone.
- *
- *  whatsapp_marketing — Meta template sent outside any active 24h session.
- *                       Charged at the Nigerian marketing conversation rate.
- *  whatsapp_utility   — Meta template sent as a utility conversation (e.g. the
- *                       consent pre-screen message). Cheaper than marketing.
- *  whatsapp_service   — Free-form text sent within 24h of an inbound message
- *                       (e.g. the real body after a YES reply). Meta charges
- *                       this as a service conversation; we pass the saving on.
- *  sms                — Termii SMS, flat rate regardless of content.
- */
-export type MessageType =
-	| "whatsapp_marketing"
-	| "whatsapp_utility"
-	| "whatsapp_service"
-	| "sms";
-
-export const PRICING = {
-	/**
-	 * Per-message costs in kobo (N1 = 100 kobo).
-	 * Source: Meta Nigeria conversation pricing + Termii SMS rate.
-	 */
-	PER_MESSAGE: {
-		sms: 600, // N2.50  — Termii SMS
-		whatsapp_marketing: 9000, // N9.00  — Meta marketing conversation (Nigeria)
-		whatsapp_service: 0, // N1.00  — Meta service conversation (24h window)
-		whatsapp_utility: 800, // N3.00  — Meta utility conversation (Nigeria)
-	} as const satisfies Record<MessageType, number>,
-
-	/** Monthly plan prices in kobo */
-	PLANS: {
-		growth: {
-			label: "Growth",
-			monthlyLimit: 2000,
-			paystackPlanCode: process.env.PAYSTACK_PLAN_GROWTH ?? "",
-			priceKobo: 1_500_000,
-		},
-		pro: {
-			label: "Pro",
-			monthlyLimit: 999_999,
-			paystackPlanCode: process.env.PAYSTACK_PLAN_PRO ?? "",
-			priceKobo: 3_500_000,
-		},
-		starter: {
-			label: "Starter",
-			monthlyLimit: 500,
-			paystackPlanCode: process.env.PAYSTACK_PLAN_STARTER ?? "",
-			priceKobo: 500_000,
-		},
-	},
-} as const;
-
-export type PlanKey = keyof typeof PRICING.PLANS;
+// ─── Core Wallet Operations ───────────────────────────────────────────────────
 
 /**
- * Resolve the MessageType for a contact based on channel + delivery mode.
- * This is the single source of truth for "what does this send cost?"
+ * Ensure a wallet exists for a user and return it.
  */
-export function resolveMessageType(
-	channel: "whatsapp" | "sms",
-	deliveryMode: "marketing" | "utility_prescreen" | "sms_fallback"
-): MessageType {
-	if (channel === "sms" || deliveryMode === "sms_fallback") {
-		return "sms";
-	}
-	if (deliveryMode === "utility_prescreen") {
-		return "whatsapp_utility";
-	}
-	return "whatsapp_marketing";
-}
-
-// ─── Wallet helpers ───────────────────────────────────────────────────────────
-
-/**
- * Get or create a wallet for a user. Idempotent.
- */
-export function getOrCreateWallet(userId: string) {
-	return prisma.wallet.upsert({
-		create: { balanceKobo: 0, heldKobo: 0, userId },
+export async function getOrCreateWallet(userId: string) {
+	return await prisma.wallet.upsert({
+		create: {
+			balanceKobo: 0,
+			heldKobo: 0,
+			userId,
+		},
 		update: {},
 		where: { userId },
 	});
 }
 
 /**
- * Credit a wallet and write a Transaction row.
- * Used for confirmed Paystack deposits.
+ * Credit a user wallet atomically and append an immutable transaction row.
+ * Uses SELECT FOR UPDATE on the wallet record to serialize concurrent updates.
  */
-export function creditWallet({
+export async function creditWallet({
 	userId,
 	amountKobo,
-	description,
+	type = "deposit",
 	reference,
 	paystackRef,
-	type = "deposit",
+	description,
+	metadata,
 }: {
 	userId: string;
 	amountKobo: number;
-	description: string;
+	type?: "deposit" | "refund" | "campaign_refund";
 	reference: string;
 	paystackRef?: string;
-	type?: "deposit" | "campaign_refund" | "refund";
+	description?: string;
+	metadata?: Record<string, unknown> | Prisma.InputJsonValue;
 }) {
-	return prisma.$transaction(async (tx) => {
-		const wallet = await tx.wallet.update({
-			data: { balanceKobo: { increment: amountKobo } },
+	return await prisma.$transaction(async (tx) => {
+		// Row level write lock
+		const wallet = await tx.wallet.upsert({
+			create: { balanceKobo: 0, heldKobo: 0, userId },
+			update: {},
 			where: { userId },
 		});
 
+		await tx.$queryRaw`SELECT id FROM wallets WHERE id = ${wallet.id} FOR UPDATE`;
+
+		// Check if transaction with this reference already exists
+		const existingTx = await tx.transaction.findUnique({
+			where: { reference },
+		});
+
+		if (existingTx) {
+			if (existingTx.walletId !== wallet.id) {
+				throw new Error("TRANSACTION_WALLET_MISMATCH");
+			}
+			if (existingTx.status === "completed") {
+				return wallet;
+			}
+		}
+
+		// Increment wallet balance
+		const updatedWallet = await tx.wallet.update({
+			data: { balanceKobo: { increment: amountKobo } },
+			where: { id: wallet.id },
+		});
+
+		const txDescription =
+			description ??
+			(type === "deposit" ? "Deposit to wallet" : "Wallet transaction");
+
+		if (existingTx) {
+			await tx.transaction.update({
+				data: {
+					balanceAfterKobo: updatedWallet.balanceKobo,
+					...(metadata !== undefined && {
+						metadata: metadata as Prisma.InputJsonValue,
+					}),
+					...(paystackRef && { paystackRef }),
+					status: "completed",
+				},
+				where: { reference },
+			});
+		} else {
+			await tx.transaction.create({
+				data: {
+					amountKobo,
+					balanceAfterKobo: updatedWallet.balanceKobo,
+					description: txDescription,
+					...(metadata !== undefined && {
+						metadata: metadata as Prisma.InputJsonValue,
+					}),
+					...(paystackRef && { paystackRef }),
+					reference,
+					status: "completed",
+					type,
+					walletId: wallet.id,
+				},
+			});
+		}
+
+		return updatedWallet;
+	});
+}
+
+/**
+ * Reserve wallet balance for an in flight broadcast campaign.
+ */
+export async function holdCampaignFunds({
+	userId,
+	campaignId,
+	amountKobo,
+	description,
+}: {
+	userId: string;
+	campaignId: string;
+	amountKobo: number;
+	description?: string;
+}): Promise<{
+	balanceKobo: number;
+	heldKobo: number;
+	holdReference: string;
+	success: boolean;
+}> {
+	return await prisma.$transaction(async (tx) => {
+		const wallet = await tx.wallet.findUnique({ where: { userId } });
+		if (!wallet) {
+			throw new Error("WALLET_NOT_FOUND");
+		}
+
+		// Row level write lock
+		await tx.$queryRaw`SELECT id FROM wallets WHERE id = ${wallet.id} FOR UPDATE`;
+
+		const availableKobo = wallet.balanceKobo - wallet.heldKobo;
+		if (availableKobo < amountKobo) {
+			throw new Error("INSUFFICIENT_BALANCE");
+		}
+
+		const updatedWallet = await tx.wallet.update({
+			data: { heldKobo: { increment: amountKobo } },
+			where: { id: wallet.id },
+		});
+
+		const holdReference = `hold_${campaignId}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 		await tx.transaction.create({
 			data: {
 				amountKobo,
-				balanceAfterKobo: wallet.balanceKobo,
-				description,
-				paystackRef,
-				reference,
+				balanceAfterKobo: updatedWallet.balanceKobo,
+				campaignId,
+				description: description ?? `Hold for campaign ${campaignId}`,
+				reference: holdReference,
 				status: "completed",
-				type,
+				type: "campaign_hold",
 				walletId: wallet.id,
 			},
 		});
 
-		return wallet;
+		return {
+			balanceKobo: updatedWallet.balanceKobo,
+			heldKobo: updatedWallet.heldKobo,
+			holdReference,
+			success: true,
+		};
+	});
+}
+
+/**
+ * Debit a wallet for a completed broadcast campaign.
+ * Decrements held balance, debits actual message cost from balance, and logs transactions.
+ */
+export async function commitCampaignDeduction({
+	userId,
+	campaignId,
+	actualCostKobo,
+	description,
+}: {
+	userId: string;
+	campaignId: string;
+	actualCostKobo: number;
+	description?: string;
+}): Promise<{ balanceKobo: number; heldKobo: number; success: boolean }> {
+	return await prisma.$transaction(async (tx) => {
+		const wallet = await tx.wallet.findUnique({ where: { userId } });
+		if (!wallet) {
+			throw new Error("WALLET_NOT_FOUND");
+		}
+
+		// Row level write lock
+		await tx.$queryRaw`SELECT id FROM wallets WHERE id = ${wallet.id} FOR UPDATE`;
+
+		// Find original hold amount for this campaign
+		const holdTx = await tx.transaction.findFirst({
+			orderBy: { createdAt: "desc" },
+			where: {
+				campaignId,
+				type: "campaign_hold",
+				walletId: wallet.id,
+			},
+		});
+
+		const originalHoldKobo = holdTx?.amountKobo ?? actualCostKobo;
+		const unusedHoldKobo = Math.max(0, originalHoldKobo - actualCostKobo);
+
+		// Decrement hold by original hold amount, decrement balance by actual cost
+		const updatedWallet = await tx.wallet.update({
+			data: {
+				balanceKobo: { decrement: actualCostKobo },
+				heldKobo: { decrement: originalHoldKobo },
+			},
+			where: { id: wallet.id },
+		});
+
+		// Record the debit transaction
+		await tx.transaction.create({
+			data: {
+				amountKobo: actualCostKobo,
+				balanceAfterKobo: updatedWallet.balanceKobo,
+				campaignId,
+				description:
+					description ?? `Debit for campaign ${campaignId} broadcast`,
+				reference: `deb_${campaignId}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+				status: "completed",
+				type: "message_debit",
+				walletId: wallet.id,
+			},
+		});
+
+		// If there was an unspent hold portion, record the release
+		if (unusedHoldKobo > 0) {
+			await tx.transaction.create({
+				data: {
+					amountKobo: unusedHoldKobo,
+					balanceAfterKobo: updatedWallet.balanceKobo,
+					campaignId,
+					description: `Hold release: Unused reserve for campaign ${campaignId}`,
+					metadata: {
+						isHoldRelease: true,
+						unspentReleasedKobo: unusedHoldKobo,
+					},
+					reference: `rel_${campaignId}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+					status: "completed",
+					type: "campaign_refund",
+					walletId: wallet.id,
+				},
+			});
+		}
+
+		return {
+			balanceKobo: updatedWallet.balanceKobo,
+			heldKobo: updatedWallet.heldKobo,
+			success: true,
+		};
+	});
+}
+
+/**
+ * Release any remaining held balance for a campaign (e.g. on failure, cancellation, or partial delivery).
+ */
+export async function releaseCampaignHold({
+	userId,
+	campaignId,
+	totalDebitedKobo = 0,
+	reason,
+}: {
+	userId: string;
+	campaignId: string;
+	totalDebitedKobo?: number;
+	reason?: string;
+}): Promise<{ heldKobo: number; unspentReleasedKobo: number }> {
+	return await prisma.$transaction(async (tx) => {
+		const wallet = await tx.wallet.findUnique({ where: { userId } });
+		if (!wallet) {
+			throw new Error("WALLET_NOT_FOUND");
+		}
+
+		// Row level write lock
+		await tx.$queryRaw`SELECT id FROM wallets WHERE id = ${wallet.id} FOR UPDATE`;
+
+		// Find total held for this campaign
+		const holds = await tx.transaction.findMany({
+			where: {
+				campaignId,
+				type: "campaign_hold",
+				walletId: wallet.id,
+			},
+		});
+
+		const totalHeldKobo = holds.reduce((sum, h) => sum + h.amountKobo, 0);
+
+		// Find any already released amounts
+		const existingReleases = await tx.transaction.findMany({
+			where: {
+				campaignId,
+				type: "campaign_refund",
+				walletId: wallet.id,
+			},
+		});
+		const alreadyRefundedKobo = existingReleases.reduce(
+			(sum, r) => sum + r.amountKobo,
+			0
+		);
+
+		const remainingToClear = Math.max(
+			0,
+			totalHeldKobo - totalDebitedKobo - alreadyRefundedKobo
+		);
+		const amountToDecrementHeld = Math.min(wallet.heldKobo, remainingToClear);
+
+		const updatedWallet = await tx.wallet.update({
+			data: { heldKobo: { decrement: amountToDecrementHeld } },
+			where: { id: wallet.id },
+		});
+
+		if (remainingToClear > 0) {
+			await tx.transaction.create({
+				data: {
+					amountKobo: remainingToClear,
+					balanceAfterKobo: updatedWallet.balanceKobo,
+					campaignId,
+					description: `Hold release: ${reason ?? "Campaign completed"}`,
+					metadata: {
+						isHoldRelease: true,
+						unspentReleasedKobo: remainingToClear,
+					},
+					reference: `rel_${campaignId}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+					status: "completed",
+					type: "campaign_refund",
+					walletId: wallet.id,
+				},
+			});
+		}
+
+		return {
+			heldKobo: updatedWallet.heldKobo,
+			unspentReleasedKobo: remainingToClear,
+		};
 	});
 }
 
 /**
  * Debit a wallet for a single sent message.
- *
- * Pass messageType (not raw channel) so the correct rate is applied:
- *   whatsapp_marketing — full Meta marketing conversation rate
- *   whatsapp_utility   — cheaper Meta utility rate (pre-screen consent)
- *   whatsapp_service   — cheapest Meta service rate (reply within 24h window)
- *   sms                — flat Termii rate
- *
- * Returns { success: false } if balance is insufficient — caller should pause.
  */
 export async function debitForMessage({
 	userId,
@@ -162,15 +369,17 @@ export async function debitForMessage({
 }: {
 	userId: string;
 	messageType: MessageType;
-	campaignId: string;
+	campaignId?: string;
 	messageId: string;
-}): Promise<{ success: boolean; balanceKobo: number }> {
+}): Promise<{ balanceKobo: number; success: boolean }> {
 	const cost = PRICING.PER_MESSAGE[messageType];
 
 	try {
 		const wallet = await prisma.$transaction(async (tx) => {
-			// Lock the wallet row to prevent race conditions
 			const w = await tx.wallet.findUniqueOrThrow({ where: { userId } });
+
+			// Row level write lock
+			await tx.$queryRaw`SELECT id FROM wallets WHERE id = ${w.id} FOR UPDATE`;
 
 			if (w.balanceKobo < cost) {
 				throw new Error("INSUFFICIENT_BALANCE");
@@ -178,7 +387,7 @@ export async function debitForMessage({
 
 			const updated = await tx.wallet.update({
 				data: { balanceKobo: { decrement: cost } },
-				where: { userId },
+				where: { id: w.id },
 			});
 
 			await tx.transaction.create({
@@ -186,12 +395,11 @@ export async function debitForMessage({
 					amountKobo: cost,
 					balanceAfterKobo: updated.balanceKobo,
 					campaignId,
-					description: `${messageType.replace("_", " ")} message sent`,
-					messageId,
+					description: `Message: ${messageType.replace(/_/g, " ")} (${messageId})`,
 					reference: `msg_${messageId}`,
 					status: "completed",
 					type: "message_debit",
-					walletId: updated.id,
+					walletId: w.id,
 				},
 			});
 
@@ -199,74 +407,60 @@ export async function debitForMessage({
 		});
 
 		return { balanceKobo: wallet.balanceKobo, success: true };
-	} catch (err) {
-		if (err instanceof Error && err.message === "INSUFFICIENT_BALANCE") {
-			const w = await prisma.wallet.findUnique({ where: { userId } });
-			return { balanceKobo: w?.balanceKobo ?? 0, success: false };
-		}
-		throw err;
+	} catch {
+		return { balanceKobo: 0, success: false };
 	}
 }
 
 /**
- * Refund a wallet for a message that was debited but never successfully sent.
- *
- * Call this in every failure path that occurs AFTER a successful debitForMessage:
- *   - send-campaign worker: send fails on all retries (onFailure handler)
- *   - send-campaign worker: Meta/Termii returns result.success === false
- *   - prescreen worker: consent send fails after debit
- *   - prescreen/SMS worker: Termii fails after debit
- *   - sendPendingMessage: real send fails after debit
- *
- * Idempotent by reference — if the same ref is refunded twice the second
- * creditWallet call will still write a second Transaction row, so callers
- * must ensure they only call this once per messageId. The safest place is
- * always inside an Inngest step so it is checkpointed.
+ * Refund a failed message delivery back to the user's wallet.
  */
-export async function refundForMessage({
+export async function refundFailedMessage({
 	userId,
 	messageType,
+	campaignId,
 	messageId,
-	reason,
+	reason = "delivery_failed",
 }: {
 	userId: string;
 	messageType: MessageType;
-	campaignId: string;
+	campaignId?: string;
 	messageId: string;
-	reason: string;
+	reason?: string;
 }): Promise<void> {
 	const amountKobo = PRICING.PER_MESSAGE[messageType];
+	if (amountKobo === 0) {
+		return;
+	}
 
 	await creditWallet({
 		amountKobo,
-		description: `Refund: ${messageType.replace(/_/g, " ")} message not delivered — ${reason}`,
+		description: `Refund: ${messageType.replace(/_/g, " ")} message not delivered (${reason})`,
+		metadata: campaignId ? { campaignId, messageId } : { messageId },
 		reference: `refund_${messageId}`,
 		type: "campaign_refund",
 		userId,
 	});
 }
 
+/** Backward compatibility alias for message refund */
+export const refundForMessage = refundFailedMessage;
+
 /**
  * Pre-flight cost check before a campaign is queued.
- *
- * Each contact is costed at the rate that will actually be charged based on
- * the delivery mode — not just their stored channel value.
- *
- * Delivery mode mapping:
- *   marketing         → whatsapp_marketing (or sms for SMS contacts)
- *   utility_prescreen → whatsapp_utility for WA contacts (consent msg cost only;
- *                       the real message after YES is billed separately at send time)
- *   sms_fallback      → sms for every contact regardless of stored channel
+ * Evaluates affordability against spendable available funds (balance minus held).
  */
 export async function canAffordCampaign(
 	userId: string,
 	contacts: Array<{ channel: "whatsapp" | "sms" }>,
 	deliveryMode: "marketing" | "utility_prescreen" | "sms_fallback" = "marketing"
 ): Promise<{
+	availableKobo: number;
+	balanceKobo: number;
 	canAfford: boolean;
+	heldKobo: number;
 	shortfallKobo: number;
 	totalCostKobo: number;
-	balanceKobo: number;
 }> {
 	const totalCostKobo = contacts.reduce((sum, c) => {
 		const type = resolveMessageType(c.channel, deliveryMode);
@@ -274,28 +468,15 @@ export async function canAffordCampaign(
 	}, 0);
 
 	const wallet = await getOrCreateWallet(userId);
-	const canAfford = wallet.balanceKobo >= totalCostKobo;
+	const availableKobo = Math.max(0, wallet.balanceKobo - wallet.heldKobo);
+	const canAfford = availableKobo >= totalCostKobo;
 
 	return {
+		availableKobo,
 		balanceKobo: wallet.balanceKobo,
 		canAfford,
-		shortfallKobo: canAfford ? 0 : totalCostKobo - wallet.balanceKobo,
+		heldKobo: wallet.heldKobo,
+		shortfallKobo: canAfford ? 0 : totalCostKobo - availableKobo,
 		totalCostKobo,
 	};
-}
-
-// ─── Formatting helpers ───────────────────────────────────────────────────────
-
-/** Convert kobo integer to a formatted Naira string. e.g. 500 → "₦5.00" */
-export function formatNaira(kobo: number): string {
-	return new Intl.NumberFormat("en-NG", {
-		currency: "NGN",
-		minimumFractionDigits: 2,
-		style: "currency",
-	}).format(kobo / 100);
-}
-
-/** Convert a Naira amount string to kobo. e.g. "5000" → 500000 */
-export function nairaToKobo(naira: number): number {
-	return Math.round(naira * 100);
 }

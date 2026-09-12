@@ -34,6 +34,7 @@ import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { Skeleton } from "#/components/ui/skeleton";
 import { Textarea } from "#/components/ui/textarea";
+import { UserAvatar } from "#/features/auth/components/user-avatar";
 import { cn } from "#/lib/utils";
 import type { client } from "#/orpc/client";
 import {
@@ -151,31 +152,26 @@ function ConversationRow({
 			type="button"
 		>
 			<div className="flex items-start gap-3">
-				<div
-					className={cn(
-						"flex h-9 w-9 shrink-0 items-center justify-center rounded-full border font-bold text-xs",
-						conv.channel === "whatsapp"
-							? "border-primary/30 bg-primary/10 text-primary"
-							: "border-blue-400/30 bg-blue-400/10 text-blue-400"
-					)}
-				>
-					{conv.contactName ? (
-						conv.contactName
-							.split(" ")
-							.map((n) => n[0])
-							.join("")
-							.slice(0, 2)
-							.toUpperCase()
-					) : (
+				{conv.contactName ? (
+					<UserAvatar name={conv.contactName} size={36} />
+				) : (
+					<div
+						className={cn(
+							"flex h-9 w-9 shrink-0 items-center justify-center rounded-full border font-bold text-xs",
+							conv.channel === "whatsapp"
+								? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-[#25d366]"
+								: "border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-[#60a5fa]"
+						)}
+					>
 						<Phone className="h-3.5 w-3.5" />
-					)}
-				</div>
+					</div>
+				)}
 				<div className="min-w-0 flex-1">
 					<div className="mb-0.5 flex items-center justify-between gap-2">
 						<p className="truncate font-semibold text-foreground text-sm">
 							{conv.contactName ?? conv.phone}
 						</p>
-						<span className="shrink-0 text-[10px] text-muted-foreground">
+						<span className="shrink-0 text-muted-foreground text-xs">
 							{new Date(conv.lastMessageAt).toLocaleTimeString("en-GB", {
 								hour: "2-digit",
 								minute: "2-digit",
@@ -188,10 +184,10 @@ function ConversationRow({
 					<div className="flex items-center gap-2">
 						<Badge
 							className={cn(
-								"h-4 px-1.5 py-0 font-bold text-[9px] uppercase",
+								"h-4.5 px-2 py-0 font-bold text-xs uppercase",
 								conv.channel === "whatsapp"
-									? "border-primary/25 text-primary"
-									: "border-blue-400/25 text-blue-400"
+									? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:border-primary/25 dark:text-primary"
+									: "border-blue-500/30 bg-blue-500/10 text-blue-700 dark:border-blue-400/25 dark:text-blue-400"
 							)}
 							variant="outline"
 						>
@@ -199,23 +195,23 @@ function ConversationRow({
 						</Badge>
 						{"hasInbound" in conv &&
 							!(conv as { hasInbound: boolean }).hasInbound && (
-								<span className="rounded border border-border/40 px-1.5 py-0.5 font-semibold text-[9px] text-muted-foreground/50 uppercase tracking-wide">
+								<span className="rounded border border-border/40 px-1.5 py-0.5 font-semibold text-muted-foreground/60 text-xs uppercase tracking-wide">
 									awaiting reply
 								</span>
 							)}
 						{conv.unreadCount > 0 && (
-							<span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 font-bold text-[10px] text-primary-foreground">
+							<span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 font-bold text-primary-foreground text-xs">
 								{conv.unreadCount}
 							</span>
 						)}
 						{conv.channel === "whatsapp" && conv.windowExpiresAt && (
 							<span
 								className={cn(
-									"font-mono text-[10px] tabular-nums",
+									"font-mono text-xs tabular-nums",
 									cd.isOpen
 										? cd.isWarning
-											? "text-amber-400"
-											: "text-primary"
+											? "text-amber-500 dark:text-amber-400"
+											: "text-emerald-700 dark:text-primary"
 										: "text-destructive"
 								)}
 							>
@@ -253,7 +249,7 @@ function ThreadMessage({ item }: { item: TimelineItem }) {
 				)}
 			>
 				{isCampaignSend && (
-					<span className="mb-0.5 flex items-center gap-1 px-1 text-[10px] text-muted-foreground/60">
+					<span className="mb-0.5 flex items-center gap-1 px-1 text-muted-foreground/60 text-xs">
 						<MessageSquare className="h-2.5 w-2.5" />
 						Campaign
 					</span>
@@ -271,11 +267,11 @@ function ThreadMessage({ item }: { item: TimelineItem }) {
 					{item.body}
 				</div>
 				<div className="flex items-center gap-1.5 px-1">
-					<span className="text-[10px] text-muted-foreground">{time}</span>
+					<span className="text-muted-foreground text-xs">{time}</span>
 					{isOut && (
 						<span
 							className={cn(
-								"font-medium text-[10px]",
+								"font-medium text-xs",
 								item.status === "delivered" || item.status === "read"
 									? "text-primary"
 									: item.status === "failed"
@@ -296,7 +292,7 @@ function ThreadMessage({ item }: { item: TimelineItem }) {
 					)}
 					{!isOut && item.isKeyword && (
 						<Badge
-							className="h-3.5 border-amber-500/30 px-1 py-0 text-[9px] text-amber-400"
+							className="h-3.5 border-amber-500/30 px-1 py-0 text-amber-400 text-xs"
 							variant="outline"
 						>
 							keyword
@@ -432,7 +428,7 @@ function ThreadPane({
 			{/* AI banner */}
 			<div className="mx-3 mb-2 flex items-center gap-2 rounded-lg border border-border/50 bg-muted/20 px-3 py-2 sm:mx-4">
 				<Bot className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-				<p className="text-[11px] text-muted-foreground">
+				<p className="text-muted-foreground text-xs">
 					AI auto-reply coming soon — responds automatically within the service
 					window.
 				</p>
@@ -469,7 +465,7 @@ function ThreadPane({
 					/>
 					<div className="absolute right-2.5 bottom-2.5 flex flex-col items-end gap-1.5">
 						{smsSegments > 0 && (
-							<span className="text-[10px] text-muted-foreground">
+							<span className="text-muted-foreground text-xs">
 								{body.length} · {smsSegments}s
 							</span>
 						)}
@@ -493,7 +489,7 @@ function ThreadPane({
 						</Button>
 					</div>
 				</div>
-				<p className="mt-1.5 px-1 text-[10px] text-muted-foreground">
+				<p className="mt-1.5 px-1 text-muted-foreground text-xs">
 					{canReply
 						? channel === "whatsapp"
 							? "₦1 service rate · ⌘↵ to send"
@@ -559,7 +555,7 @@ export function MessagesView() {
 							<Inbox className="h-4 w-4 text-muted-foreground" />
 							<h2 className="font-semibold text-foreground text-sm">Inbox</h2>
 							{totalUnread > 0 && (
-								<span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 font-bold text-[10px] text-primary-foreground">
+								<span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 font-bold text-primary-foreground text-xs">
 									{totalUnread}
 								</span>
 							)}
@@ -579,7 +575,7 @@ export function MessagesView() {
 						{(["all", "unread", "keyword"] as const).map((f) => (
 							<button
 								className={cn(
-									"rounded-lg px-2.5 py-1 font-semibold text-[11px] capitalize transition-colors",
+									"rounded-lg px-2.5 py-1 font-semibold text-xs capitalize transition-colors",
 									filter === f
 										? "border border-primary/25 bg-primary/10 text-primary"
 										: "text-muted-foreground hover:bg-muted/40 hover:text-foreground"
@@ -597,7 +593,7 @@ export function MessagesView() {
 						{(["all", "whatsapp", "sms"] as const).map((c) => (
 							<button
 								className={cn(
-									"rounded-lg px-2.5 py-1 font-semibold text-[11px] capitalize transition-colors",
+									"rounded-lg px-2.5 py-1 font-semibold text-xs capitalize transition-colors",
 									channelFilter === c
 										? c === "whatsapp"
 											? "border border-primary/25 bg-primary/10 text-primary"
@@ -719,7 +715,7 @@ export function MessagesView() {
 									<span className="mt-px shrink-0 text-muted-foreground">
 										{icon}
 									</span>
-									<p className="text-[11px] text-muted-foreground leading-relaxed">
+									<p className="text-muted-foreground text-xs leading-relaxed">
 										{text}
 									</p>
 								</div>

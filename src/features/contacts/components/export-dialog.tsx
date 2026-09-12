@@ -122,7 +122,12 @@ export function ExportContactsDialog({
 				render={
 					<div>
 						{trigger ?? (
-							<Button className="gap-2" size="sm" variant="outline">
+							<Button
+								className="gap-2"
+								nativeButton={false}
+								size="sm"
+								variant="outline"
+							>
 								<Download size={14} />
 								Export
 							</Button>

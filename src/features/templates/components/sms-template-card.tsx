@@ -216,14 +216,14 @@ export function SmsTemplateCard({
 
 				{/* SMS Bubble preview */}
 				<div className="flex-1 p-4 pt-3">
-					<div className="rounded-xl border border-[#60a5fa20] bg-[#0d1a2e] px-3 py-2.5">
+					<div className="rounded-xl border border-blue-500/20 bg-blue-500/5 px-3 py-2.5 dark:border-[#60a5fa20] dark:bg-[#0d1a2e]">
 						<div className="mb-1.5 flex items-center gap-1">
-							<Phone className="h-2.5 w-2.5 text-[#60a5fa]" />
-							<span className="font-bold text-[#60a5fa] text-[9px] uppercase tracking-wider">
+							<Phone className="h-3 w-3 text-blue-600 dark:text-[#60a5fa]" />
+							<span className="font-bold text-blue-700 text-xs uppercase tracking-wider dark:text-[#60a5fa]">
 								SMS
 							</span>
 						</div>
-						<p className="line-clamp-3 whitespace-pre-wrap text-[11px] text-foreground/75 leading-relaxed">
+						<p className="line-clamp-3 whitespace-pre-wrap text-foreground/80 text-xs leading-relaxed dark:text-foreground/75">
 							{truncate(preview, 160)}
 						</p>
 					</div>
@@ -233,7 +233,7 @@ export function SmsTemplateCard({
 						<div className="mt-2 flex flex-wrap gap-1">
 							{template.smsVars.map((v) => (
 								<span
-									className="rounded-md border border-[#60a5fa25] bg-[#60a5fa08] px-1.5 py-0.5 font-mono text-[#60a5fa] text-[9px]"
+									className="rounded-md border border-blue-500/25 bg-blue-500/10 px-1.5 py-0.5 font-mono text-blue-700 text-xs dark:border-[#60a5fa25] dark:bg-[#60a5fa08] dark:text-[#60a5fa]"
 									key={v}
 								>
 									{`{{${v}}}`}

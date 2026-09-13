@@ -146,8 +146,9 @@ export function personalizeMessage(
 	contactName: string | null | undefined,
 	templateVars: Record<string, string> = {}
 ): string {
-	const firstName =
+	const extractedFirst =
 		(contactName ?? "").trim().split(firstNameRegex).filter(Boolean)[0] ?? "";
+	const firstName = extractedFirst || "Friend";
 
 	const vars: Record<string, string> = {
 		...templateVars,

@@ -1,4 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
+import { Eye, EyeOff } from "lucide-react";
 import type { JSX, SVGProps } from "react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -9,29 +10,9 @@ import { Separator } from "#/components/ui/separator";
 import { useAppForm } from "#/hooks/form-hook";
 import { authClient } from "#/lib/auth-client";
 import { loginSchema, magicLinkSchema } from "#/schema/auth";
+import { AuthBrand } from "./auth-brand";
 
-const Logo = (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
-	<svg
-		fill="currentColor"
-		height="48"
-		viewBox="0 0 40 48"
-		width="40"
-		{...props}
-	>
-		<title>Logo</title>
-		<clipPath id="a">
-			<path d="m0 0h40v48h-40z" />
-		</clipPath>
-		<g clipPath="url(#a)">
-			<path d="m25.0887 5.05386-3.933-1.05386-3.3145 12.3696-2.9923-11.16736-3.9331 1.05386 3.233 12.0655-8.05262-8.0526-2.87919 2.8792 8.83271 8.8328-10.99975-2.9474-1.05385625 3.933 12.01860625 3.2204c-.1376-.5935-.2104-1.2119-.2104-1.8473 0-4.4976 3.646-8.1436 8.1437-8.1436 4.4976 0 8.1436 3.646 8.1436 8.1436 0 .6313-.0719 1.2459-.2078 1.8359l10.9227 2.9267 1.0538-3.933-12.0664-3.2332 11.0005-2.9476-1.0539-3.933-12.0659 3.233 8.0526-8.0526-2.8792-2.87916-8.7102 8.71026z" />
-			<path d="m27.8723 26.2214c-.3372 1.4256-1.0491 2.7063-2.0259 3.7324l7.913 7.9131 2.8792-2.8792z" />
-			<path d="m25.7665 30.0366c-.9886 1.0097-2.2379 1.7632-3.6389 2.1515l2.8794 10.746 3.933-1.0539z" />
-			<path d="m21.9807 32.2274c-.65.1671-1.3313.2559-2.0334.2559-.7522 0-1.4806-.102-2.1721-.2929l-2.882 10.7558 3.933 1.0538z" />
-			<path d="m17.6361 32.1507c-1.3796-.4076-2.6067-1.1707-3.5751-2.1833l-7.9325 7.9325 2.87919 2.8792z" />
-			<path d="m13.9956 29.8973c-.9518-1.019-1.6451-2.2826-1.9751-3.6862l-10.95836 2.9363 1.05385 3.933z" />
-		</g>
-	</svg>
-);
+// ─── Google Icon ─────────────────────────────────────────────────────────────
 
 const GoogleIcon = (
 	props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>
@@ -57,6 +38,8 @@ const GoogleIcon = (
 	</svg>
 );
 
+// ─── Magic-link sign-in form ──────────────────────────────────────────────────
+
 function MagicLinkForm({ callbackURL }: { callbackURL: string }) {
 	const [sent, setSent] = useState(false);
 
@@ -68,7 +51,8 @@ function MagicLinkForm({ callbackURL }: { callbackURL: string }) {
 				email: value.email,
 			});
 			if (error) {
-				throw new Error(error.message ?? "Failed to send link");
+				toast.error(error.message ?? "Failed to send sign-in link");
+				return;
 			}
 			setSent(true);
 		},
@@ -79,9 +63,9 @@ function MagicLinkForm({ callbackURL }: { callbackURL: string }) {
 
 	if (sent) {
 		return (
-			<div className="w-full rounded-xl border border-border bg-muted/40 px-5 py-4 text-center">
+			<div className="w-full rounded-3xl border border-border bg-muted/40 px-5 py-4 text-center">
 				<p className="font-medium text-foreground text-sm">Check your inbox</p>
-				<p className="mt-1 text-muted-foreground text-xs">
+				<p className="mt-1 text-muted-foreground text-xs leading-relaxed">
 					We sent a sign-in link to{" "}
 					<span className="font-medium text-foreground">
 						{form.getFieldValue("email")}
@@ -102,51 +86,59 @@ function MagicLinkForm({ callbackURL }: { callbackURL: string }) {
 					form.handleSubmit();
 				}}
 			>
-				<form.AppField name="email">
+				<form.AppField
+					name="email"
+					validators={{
+						onBlur: ({ value }) => {
+							if (!value.trim()) {
+								return "Email is required";
+							}
+							if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+								return "Please enter a valid email address";
+							}
+						},
+					}}
+				>
 					{(field) => (
-						<field.Field id={field.name}>
+						<field.Field className="gap-1.5" id={field.name}>
+							<label
+								className="font-medium text-foreground text-xs"
+								htmlFor={field.name}
+							>
+								Email Address
+							</label>
 							<Input
 								aria-invalid={
 									field.state.meta.isTouched &&
 									field.state.meta.errors.length > 0
 								}
 								autoComplete="email"
-								className="w-full rounded-xl"
+								autoFocus
 								id={field.name}
 								name={field.name}
 								onBlur={field.handleBlur}
 								onChange={(e) => field.handleChange(e.target.value)}
-								placeholder="Your email"
+								placeholder="leader@organization.org"
 								type="email"
 								value={field.state.value}
 							/>
-							<field.Error />
+							<field.Error className="text-destructive text-xs" />
 						</field.Field>
 					)}
 				</form.AppField>
 
 				<form.Subscribe
-					selector={(s) => [s.canSubmit, s.isSubmitting, s.errors] as const}
+					selector={(s) => [s.canSubmit, s.isSubmitting] as const}
 				>
-					{([canSubmit, isSubmitting, errors]) => (
-						<div className="flex flex-col gap-2">
-							{errors.length > 0 && (
-								<p
-									className="text-center text-destructive text-xs"
-									role="alert"
-								>
-									{String(errors[0])}
-								</p>
-							)}
-							<Button
-								className="w-full rounded-xl"
-								disabled={!canSubmit || isSubmitting}
-								size="lg"
-								type="submit"
-							>
-								{isSubmitting ? "Sending…" : "Send me the magic link"}
-							</Button>
-						</div>
+					{([canSubmit, isSubmitting]) => (
+						<Button
+							className="w-full"
+							disabled={!canSubmit || isSubmitting}
+							size="lg"
+							type="submit"
+						>
+							{isSubmitting ? "Sending link…" : "Send sign-in link"}
+						</Button>
 					)}
 				</form.Subscribe>
 			</form>
@@ -158,19 +150,51 @@ function MagicLinkForm({ callbackURL }: { callbackURL: string }) {
 
 function PasswordForm({ callbackURL }: { callbackURL: string }) {
 	const navigate = useNavigate();
+	const [showPassword, setShowPassword] = useState(false);
+	const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
+	const [isResending, setIsResending] = useState(false);
+
+	const handleResendUnverified = async () => {
+		if (!unverifiedEmail) {
+			return;
+		}
+		setIsResending(true);
+		try {
+			await authClient.sendVerificationEmail({
+				callbackURL: "/onboarding",
+				email: unverifiedEmail,
+			});
+			toast.success("Verification email sent! Check your inbox.");
+		} catch {
+			toast.error("Failed to resend verification email.");
+		} finally {
+			setIsResending(false);
+		}
+	};
 
 	const form = useAppForm({
 		defaultValues: { email: "", password: "" },
 		onSubmit: async ({ value }) => {
+			const destination = callbackURL || "/dashboard";
 			const { error } = await authClient.signIn.email({
-				callbackURL: callbackURL ?? "/dashboard",
+				callbackURL: destination,
 				email: value.email,
 				password: value.password,
 			});
 			if (error) {
+				const isUnverified =
+					error.code === "EMAIL_NOT_VERIFIED" ||
+					error.status === 403 ||
+					error.message?.toLowerCase().includes("verif");
+				if (isUnverified) {
+					setUnverifiedEmail(value.email);
+					toast.error("Please verify your email before logging in.");
+					return;
+				}
 				toast.error(error.message ?? "Invalid email or password");
+				return; // Early return to prevent unauthorized redirection!
 			}
-			navigate({ to: callbackURL ?? "/dashboard" });
+			navigate({ to: destination });
 		},
 		validators: {
 			onBlur: loginSchema,
@@ -187,32 +211,65 @@ function PasswordForm({ callbackURL }: { callbackURL: string }) {
 					form.handleSubmit();
 				}}
 			>
+				{unverifiedEmail ? (
+					<div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 p-3 text-amber-700 text-xs dark:text-amber-300">
+						<p className="font-medium">Email not verified</p>
+						<p className="mt-0.5 text-muted-foreground">
+							Please verify your address before accessing the dashboard.
+						</p>
+						<button
+							className="mt-2 font-medium text-primary underline underline-offset-2 hover:text-primary/80 disabled:opacity-50"
+							disabled={isResending}
+							onClick={handleResendUnverified}
+							type="button"
+						>
+							{isResending ? "Sending…" : "Resend verification email"}
+						</button>
+					</div>
+				) : null}
+				{/* Email */}
 				<form.AppField
 					name="email"
-					validators={{ onBlur: ({ value }) => !value && "Email is required" }}
+					validators={{
+						onBlur: ({ value }) => {
+							if (!value.trim()) {
+								return "Email is required";
+							}
+							if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+								return "Please enter a valid email address";
+							}
+						},
+					}}
 				>
 					{(field) => (
-						<field.Field id={field.name}>
+						<field.Field className="gap-1.5" id={field.name}>
+							<label
+								className="font-medium text-foreground text-xs"
+								htmlFor={field.name}
+							>
+								Email Address
+							</label>
 							<Input
 								aria-invalid={
 									field.state.meta.isTouched &&
 									field.state.meta.errors.length > 0
 								}
 								autoComplete="email"
-								className="w-full rounded-xl"
+								autoFocus
 								id={field.name}
 								name={field.name}
 								onBlur={field.handleBlur}
 								onChange={(e) => field.handleChange(e.target.value)}
-								placeholder="Your email"
+								placeholder="leader@organization.org"
 								type="email"
 								value={field.state.value}
 							/>
-							<field.Error />
+							<field.Error className="text-destructive text-xs" />
 						</field.Field>
 					)}
 				</form.AppField>
 
+				{/* Password */}
 				<form.AppField
 					name="password"
 					validators={{
@@ -227,9 +284,14 @@ function PasswordForm({ callbackURL }: { callbackURL: string }) {
 					}}
 				>
 					{(field) => (
-						<field.Field id={field.name}>
+						<field.Field className="gap-1.5" id={field.name}>
 							<div className="flex items-center justify-between">
-								<span className="text-muted-foreground text-xs">Password</span>
+								<label
+									className="font-medium text-foreground text-xs"
+									htmlFor={field.name}
+								>
+									Password
+								</label>
 								<Link
 									className="text-muted-foreground text-xs hover:text-foreground hover:underline"
 									to="/forgot-password"
@@ -237,41 +299,52 @@ function PasswordForm({ callbackURL }: { callbackURL: string }) {
 									Forgot password?
 								</Link>
 							</div>
-							<Input
-								aria-invalid={
-									field.state.meta.isTouched &&
-									field.state.meta.errors.length > 0
-								}
-								autoComplete="current-password"
-								autoFocus
-								className="w-full rounded-xl"
-								id={field.name}
-								name={field.name}
-								onBlur={field.handleBlur}
-								onChange={(e) => field.handleChange(e.target.value)}
-								placeholder="Your password"
-								type="password"
-								value={field.state.value}
-							/>
-							<field.Error />
+							<div className="relative">
+								<Input
+									aria-invalid={
+										field.state.meta.isTouched &&
+										field.state.meta.errors.length > 0
+									}
+									autoComplete="current-password"
+									className="pr-10"
+									id={field.name}
+									name={field.name}
+									onBlur={field.handleBlur}
+									onChange={(e) => field.handleChange(e.target.value)}
+									placeholder="••••••••"
+									type={showPassword ? "text" : "password"}
+									value={field.state.value}
+								/>
+								<button
+									aria-label={showPassword ? "Hide password" : "Show password"}
+									className="absolute inset-y-0 right-3 flex items-center text-muted-foreground transition-colors hover:text-foreground focus:outline-none"
+									onClick={() => setShowPassword((v) => !v)}
+									type="button"
+								>
+									{showPassword ? (
+										<EyeOff className="size-4" />
+									) : (
+										<Eye className="size-4" />
+									)}
+								</button>
+							</div>
+							<field.Error className="text-destructive text-xs" />
 						</field.Field>
 					)}
 				</form.AppField>
 
 				<form.Subscribe
-					selector={(s) => [s.canSubmit, s.isSubmitting, s.errors] as const}
+					selector={(s) => [s.canSubmit, s.isSubmitting] as const}
 				>
 					{([canSubmit, isSubmitting]) => (
-						<div className="flex flex-col gap-2">
-							<Button
-								className="w-full rounded-xl"
-								disabled={!canSubmit || isSubmitting}
-								size="lg"
-								type="submit"
-							>
-								{isSubmitting ? "Signing in…" : "Sign in"}
-							</Button>
-						</div>
+						<Button
+							className="mt-2 w-full"
+							disabled={!canSubmit || isSubmitting}
+							size="lg"
+							type="submit"
+						>
+							{isSubmitting ? "Signing in…" : "Sign in"}
+						</Button>
 					)}
 				</form.Subscribe>
 			</form>
@@ -279,104 +352,94 @@ function PasswordForm({ callbackURL }: { callbackURL: string }) {
 	);
 }
 
-export default function LoginView({ callbackURL }: { callbackURL?: string }) {
-	const [usePassword, setUsePassword] = useState(false);
+// ─── View ──────────────────────────────────────────────────────────────────────
 
-	const handleSocialLogin = () => {
-		authClient.signIn
-			.social({
+export default function LoginView({ callbackURL }: { callbackURL?: string }) {
+	const [usePassword, setUsePassword] = useState(true);
+
+	const handleGoogleSignIn = async () => {
+		try {
+			await authClient.signIn.social({
 				callbackURL: callbackURL ?? "/dashboard",
-				newUserCallbackURL: "/onboarding",
 				provider: "google",
-				requestSignUp: true,
-			})
-			.then(() => {
-				toast.success("Redirecting for social login.");
 			});
+		} catch {
+			toast.error("Failed to initiate Google sign-in. Please try again.");
+		}
 	};
 
 	return (
-		<div className="flex min-h-dvh items-center justify-center">
-			<Card className="w-full max-w-sm rounded-4xl px-6 py-10 pt-14">
-				<CardContent className="">
-					<div className="flex flex-col items-center space-y-8">
-						<Logo />
+		<Card className="w-full rounded-4xl py-8 shadow-md">
+			<CardContent>
+				<div className="flex flex-col items-center space-y-6">
+					<AuthBrand />
 
-						<div className="space-y-2 text-center">
-							<h1 className="text-balance font-semibold text-3xl text-foreground">
-								Welcome back!
-							</h1>
-							<p className="text-pretty text-muted-foreground text-sm">
-								First time here?{" "}
-								<Link
-									className="text-foreground hover:underline"
-									to="/register"
-								>
-									Sign up for free
-								</Link>
-							</p>
-						</div>
-
-						<div className="w-full space-y-4">
-							<Button
-								className="w-full gap-2 rounded-xl"
-								onClick={handleSocialLogin}
-								size="lg"
-								variant="outline"
+					<div className="space-y-1.5 text-center">
+						<h1 className="font-semibold text-2xl text-foreground tracking-tight">
+							Welcome back
+						</h1>
+						<p className="text-muted-foreground text-sm">
+							Don't have an account?{" "}
+							<Link
+								className="font-medium text-foreground underline underline-offset-4 hover:text-primary"
+								to="/register"
 							>
-								<GoogleIcon />
-								Continue with Google
-							</Button>
-
-							<div className="flex items-center gap-4 py-2">
-								<Separator className="flex-1" />
-								<span className="text-muted-foreground text-sm">OR</span>
-								<Separator className="flex-1" />
-							</div>
-
-							{usePassword ? (
-								<PasswordForm callbackURL={callbackURL ?? "/dashboard"} />
-							) : (
-								<MagicLinkForm callbackURL={callbackURL ?? "/dashboard"} />
-							)}
-
-							{usePassword && (
-								<div className="text-center">
-									<Link
-										className="text-muted-foreground text-xs hover:text-foreground hover:underline"
-										to="/forgot-password"
-									>
-										Forgot your password?
-									</Link>
-								</div>
-							)}
-
-							<Button
-								className="w-full text-muted-foreground text-sm"
-								onClick={() => setUsePassword((v) => !v)}
-								type="button"
-								variant="link"
-							>
-								{usePassword
-									? "Sign in using magic link"
-									: "Sign in using password"}
-							</Button>
-						</div>
-
-						<p className="w-11/12 text-pretty text-center text-muted-foreground text-xs">
-							You acknowledge that you read, and agree, to our{" "}
-							<Link className="underline hover:text-foreground" to="/">
-								Terms of Service
-							</Link>{" "}
-							and our{" "}
-							<Link className="underline hover:text-foreground" to="/">
-								Privacy Policy
+								Sign up
 							</Link>
-							.
 						</p>
 					</div>
-				</CardContent>
-			</Card>
-		</div>
+
+					<div className="w-full space-y-4">
+						<Button
+							className="w-full gap-2.5"
+							onClick={handleGoogleSignIn}
+							size="lg"
+							type="button"
+							variant="outline"
+						>
+							<GoogleIcon />
+							Continue with Google
+						</Button>
+
+						<div className="flex items-center gap-4 py-1">
+							<Separator className="flex-1" />
+							<span className="font-mono text-muted-foreground text-xs uppercase tracking-wider">
+								OR
+							</span>
+							<Separator className="flex-1" />
+						</div>
+
+						{usePassword ? (
+							<PasswordForm callbackURL={callbackURL ?? "/dashboard"} />
+						) : (
+							<MagicLinkForm callbackURL={callbackURL ?? "/dashboard"} />
+						)}
+
+						<Button
+							className="w-full text-muted-foreground text-xs hover:text-foreground"
+							onClick={() => setUsePassword((v) => !v)}
+							type="button"
+							variant="ghost"
+						>
+							{usePassword
+								? "Prefer passwordless? Sign in with magic link"
+								: "Sign in using password instead"}
+						</Button>
+					</div>
+
+					<p className="w-11/12 text-balance text-center text-muted-foreground text-xs leading-relaxed">
+						By continuing, you agree to Velocast's{" "}
+						<Link className="underline hover:text-foreground" to="/">
+							Terms of Service
+						</Link>{" "}
+						and{" "}
+						<Link className="underline hover:text-foreground" to="/">
+							Privacy Policy
+						</Link>
+						.
+					</p>
+				</div>
+			</CardContent>
+		</Card>
 	);
 }

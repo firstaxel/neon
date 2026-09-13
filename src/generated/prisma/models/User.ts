@@ -202,15 +202,20 @@ export type UserWhereInput = {
 	name?: Prisma.StringNullableFilter<"User"> | string | null;
 	emailVerified?: Prisma.BoolFilter<"User"> | boolean;
 	image?: Prisma.StringNullableFilter<"User"> | string | null;
+	wallet?: Prisma.XOR<
+		Prisma.WalletNullableScalarRelationFilter,
+		Prisma.WalletWhereInput
+	> | null;
+	userProfile?: Prisma.XOR<
+		Prisma.UserProfileNullableScalarRelationFilter,
+		Prisma.UserProfileWhereInput
+	> | null;
 	sessions?: Prisma.SessionListRelationFilter;
 	accounts?: Prisma.AccountListRelationFilter;
 	contacts?: Prisma.ContactListRelationFilter;
+	contactImports?: Prisma.ContactImportListRelationFilter;
 	campaigns?: Prisma.CampaignListRelationFilter;
-	messages?: Prisma.MessageListRelationFilter;
 	parseJobs?: Prisma.ParseJobListRelationFilter;
-	subscriptions?: Prisma.SubscriptionListRelationFilter;
-	wallets?: Prisma.WalletListRelationFilter;
-	userProfiles?: Prisma.UserProfileListRelationFilter;
 	messageTemplates?: Prisma.MessageTemplateListRelationFilter;
 	senderNumbers?: Prisma.SenderNumberListRelationFilter;
 	inboundMessages?: Prisma.InboundMessageListRelationFilter;
@@ -229,15 +234,14 @@ export type UserOrderByWithRelationInput = {
 	name?: Prisma.SortOrderInput | Prisma.SortOrder;
 	emailVerified?: Prisma.SortOrder;
 	image?: Prisma.SortOrderInput | Prisma.SortOrder;
+	wallet?: Prisma.WalletOrderByWithRelationInput;
+	userProfile?: Prisma.UserProfileOrderByWithRelationInput;
 	sessions?: Prisma.SessionOrderByRelationAggregateInput;
 	accounts?: Prisma.AccountOrderByRelationAggregateInput;
 	contacts?: Prisma.ContactOrderByRelationAggregateInput;
+	contactImports?: Prisma.ContactImportOrderByRelationAggregateInput;
 	campaigns?: Prisma.CampaignOrderByRelationAggregateInput;
-	messages?: Prisma.MessageOrderByRelationAggregateInput;
 	parseJobs?: Prisma.ParseJobOrderByRelationAggregateInput;
-	subscriptions?: Prisma.SubscriptionOrderByRelationAggregateInput;
-	wallets?: Prisma.WalletOrderByRelationAggregateInput;
-	userProfiles?: Prisma.UserProfileOrderByRelationAggregateInput;
 	messageTemplates?: Prisma.MessageTemplateOrderByRelationAggregateInput;
 	senderNumbers?: Prisma.SenderNumberOrderByRelationAggregateInput;
 	inboundMessages?: Prisma.InboundMessageOrderByRelationAggregateInput;
@@ -260,15 +264,20 @@ export type UserWhereUniqueInput = Prisma.AtLeast<
 		name?: Prisma.StringNullableFilter<"User"> | string | null;
 		emailVerified?: Prisma.BoolFilter<"User"> | boolean;
 		image?: Prisma.StringNullableFilter<"User"> | string | null;
+		wallet?: Prisma.XOR<
+			Prisma.WalletNullableScalarRelationFilter,
+			Prisma.WalletWhereInput
+		> | null;
+		userProfile?: Prisma.XOR<
+			Prisma.UserProfileNullableScalarRelationFilter,
+			Prisma.UserProfileWhereInput
+		> | null;
 		sessions?: Prisma.SessionListRelationFilter;
 		accounts?: Prisma.AccountListRelationFilter;
 		contacts?: Prisma.ContactListRelationFilter;
+		contactImports?: Prisma.ContactImportListRelationFilter;
 		campaigns?: Prisma.CampaignListRelationFilter;
-		messages?: Prisma.MessageListRelationFilter;
 		parseJobs?: Prisma.ParseJobListRelationFilter;
-		subscriptions?: Prisma.SubscriptionListRelationFilter;
-		wallets?: Prisma.WalletListRelationFilter;
-		userProfiles?: Prisma.UserProfileListRelationFilter;
 		messageTemplates?: Prisma.MessageTemplateListRelationFilter;
 		senderNumbers?: Prisma.SenderNumberListRelationFilter;
 		inboundMessages?: Prisma.InboundMessageListRelationFilter;
@@ -319,15 +328,14 @@ export type UserCreateInput = {
 	name?: string | null;
 	emailVerified?: boolean;
 	image?: string | null;
+	wallet?: Prisma.WalletCreateNestedOneWithoutUserInput;
+	userProfile?: Prisma.UserProfileCreateNestedOneWithoutUserInput;
 	sessions?: Prisma.SessionCreateNestedManyWithoutUserInput;
 	accounts?: Prisma.AccountCreateNestedManyWithoutUserInput;
 	contacts?: Prisma.ContactCreateNestedManyWithoutUserInput;
+	contactImports?: Prisma.ContactImportCreateNestedManyWithoutUserInput;
 	campaigns?: Prisma.CampaignCreateNestedManyWithoutUserInput;
-	messages?: Prisma.MessageCreateNestedManyWithoutUsersInput;
 	parseJobs?: Prisma.ParseJobCreateNestedManyWithoutUserInput;
-	subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutUserInput;
-	wallets?: Prisma.WalletCreateNestedManyWithoutUserInput;
-	userProfiles?: Prisma.UserProfileCreateNestedManyWithoutUserInput;
 	messageTemplates?: Prisma.MessageTemplateCreateNestedManyWithoutUserInput;
 	senderNumbers?: Prisma.SenderNumberCreateNestedManyWithoutUserInput;
 	inboundMessages?: Prisma.InboundMessageCreateNestedManyWithoutUserInput;
@@ -346,15 +354,14 @@ export type UserUncheckedCreateInput = {
 	name?: string | null;
 	emailVerified?: boolean;
 	image?: string | null;
+	wallet?: Prisma.WalletUncheckedCreateNestedOneWithoutUserInput;
+	userProfile?: Prisma.UserProfileUncheckedCreateNestedOneWithoutUserInput;
 	sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput;
 	accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput;
 	contacts?: Prisma.ContactUncheckedCreateNestedManyWithoutUserInput;
+	contactImports?: Prisma.ContactImportUncheckedCreateNestedManyWithoutUserInput;
 	campaigns?: Prisma.CampaignUncheckedCreateNestedManyWithoutUserInput;
-	messages?: Prisma.MessageUncheckedCreateNestedManyWithoutUsersInput;
 	parseJobs?: Prisma.ParseJobUncheckedCreateNestedManyWithoutUserInput;
-	subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutUserInput;
-	wallets?: Prisma.WalletUncheckedCreateNestedManyWithoutUserInput;
-	userProfiles?: Prisma.UserProfileUncheckedCreateNestedManyWithoutUserInput;
 	messageTemplates?: Prisma.MessageTemplateUncheckedCreateNestedManyWithoutUserInput;
 	senderNumbers?: Prisma.SenderNumberUncheckedCreateNestedManyWithoutUserInput;
 	inboundMessages?: Prisma.InboundMessageUncheckedCreateNestedManyWithoutUserInput;
@@ -373,15 +380,14 @@ export type UserUpdateInput = {
 	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	wallet?: Prisma.WalletUpdateOneWithoutUserNestedInput;
+	userProfile?: Prisma.UserProfileUpdateOneWithoutUserNestedInput;
 	sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput;
 	accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput;
 	contacts?: Prisma.ContactUpdateManyWithoutUserNestedInput;
+	contactImports?: Prisma.ContactImportUpdateManyWithoutUserNestedInput;
 	campaigns?: Prisma.CampaignUpdateManyWithoutUserNestedInput;
-	messages?: Prisma.MessageUpdateManyWithoutUsersNestedInput;
 	parseJobs?: Prisma.ParseJobUpdateManyWithoutUserNestedInput;
-	subscriptions?: Prisma.SubscriptionUpdateManyWithoutUserNestedInput;
-	wallets?: Prisma.WalletUpdateManyWithoutUserNestedInput;
-	userProfiles?: Prisma.UserProfileUpdateManyWithoutUserNestedInput;
 	messageTemplates?: Prisma.MessageTemplateUpdateManyWithoutUserNestedInput;
 	senderNumbers?: Prisma.SenderNumberUpdateManyWithoutUserNestedInput;
 	inboundMessages?: Prisma.InboundMessageUpdateManyWithoutUserNestedInput;
@@ -400,15 +406,14 @@ export type UserUncheckedUpdateInput = {
 	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	wallet?: Prisma.WalletUncheckedUpdateOneWithoutUserNestedInput;
+	userProfile?: Prisma.UserProfileUncheckedUpdateOneWithoutUserNestedInput;
 	sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput;
 	accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput;
 	contacts?: Prisma.ContactUncheckedUpdateManyWithoutUserNestedInput;
+	contactImports?: Prisma.ContactImportUncheckedUpdateManyWithoutUserNestedInput;
 	campaigns?: Prisma.CampaignUncheckedUpdateManyWithoutUserNestedInput;
-	messages?: Prisma.MessageUncheckedUpdateManyWithoutUsersNestedInput;
 	parseJobs?: Prisma.ParseJobUncheckedUpdateManyWithoutUserNestedInput;
-	subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutUserNestedInput;
-	wallets?: Prisma.WalletUncheckedUpdateManyWithoutUserNestedInput;
-	userProfiles?: Prisma.UserProfileUncheckedUpdateManyWithoutUserNestedInput;
 	messageTemplates?: Prisma.MessageTemplateUncheckedUpdateManyWithoutUserNestedInput;
 	senderNumbers?: Prisma.SenderNumberUncheckedUpdateManyWithoutUserNestedInput;
 	inboundMessages?: Prisma.InboundMessageUncheckedUpdateManyWithoutUserNestedInput;
@@ -484,16 +489,6 @@ export type UserScalarRelationFilter = {
 	isNot?: Prisma.UserWhereInput;
 };
 
-export type UserListRelationFilter = {
-	every?: Prisma.UserWhereInput;
-	some?: Prisma.UserWhereInput;
-	none?: Prisma.UserWhereInput;
-};
-
-export type UserOrderByRelationAggregateInput = {
-	_count?: Prisma.SortOrder;
-};
-
 export type StringFieldUpdateOperationsInput = {
 	set?: string;
 };
@@ -562,6 +557,58 @@ export type UserUpdateOneRequiredWithoutAccountsNestedInput = {
 	>;
 };
 
+export type UserCreateNestedOneWithoutUserProfileInput = {
+	create?: Prisma.XOR<
+		Prisma.UserCreateWithoutUserProfileInput,
+		Prisma.UserUncheckedCreateWithoutUserProfileInput
+	>;
+	connectOrCreate?: Prisma.UserCreateOrConnectWithoutUserProfileInput;
+	connect?: Prisma.UserWhereUniqueInput;
+};
+
+export type UserUpdateOneRequiredWithoutUserProfileNestedInput = {
+	create?: Prisma.XOR<
+		Prisma.UserCreateWithoutUserProfileInput,
+		Prisma.UserUncheckedCreateWithoutUserProfileInput
+	>;
+	connectOrCreate?: Prisma.UserCreateOrConnectWithoutUserProfileInput;
+	upsert?: Prisma.UserUpsertWithoutUserProfileInput;
+	connect?: Prisma.UserWhereUniqueInput;
+	update?: Prisma.XOR<
+		Prisma.XOR<
+			Prisma.UserUpdateToOneWithWhereWithoutUserProfileInput,
+			Prisma.UserUpdateWithoutUserProfileInput
+		>,
+		Prisma.UserUncheckedUpdateWithoutUserProfileInput
+	>;
+};
+
+export type UserCreateNestedOneWithoutWalletInput = {
+	create?: Prisma.XOR<
+		Prisma.UserCreateWithoutWalletInput,
+		Prisma.UserUncheckedCreateWithoutWalletInput
+	>;
+	connectOrCreate?: Prisma.UserCreateOrConnectWithoutWalletInput;
+	connect?: Prisma.UserWhereUniqueInput;
+};
+
+export type UserUpdateOneRequiredWithoutWalletNestedInput = {
+	create?: Prisma.XOR<
+		Prisma.UserCreateWithoutWalletInput,
+		Prisma.UserUncheckedCreateWithoutWalletInput
+	>;
+	connectOrCreate?: Prisma.UserCreateOrConnectWithoutWalletInput;
+	upsert?: Prisma.UserUpsertWithoutWalletInput;
+	connect?: Prisma.UserWhereUniqueInput;
+	update?: Prisma.XOR<
+		Prisma.XOR<
+			Prisma.UserUpdateToOneWithWhereWithoutWalletInput,
+			Prisma.UserUpdateWithoutWalletInput
+		>,
+		Prisma.UserUncheckedUpdateWithoutWalletInput
+	>;
+};
+
 export type UserCreateNestedOneWithoutParseJobsInput = {
 	create?: Prisma.XOR<
 		Prisma.UserCreateWithoutParseJobsInput,
@@ -585,6 +632,32 @@ export type UserUpdateOneRequiredWithoutParseJobsNestedInput = {
 			Prisma.UserUpdateWithoutParseJobsInput
 		>,
 		Prisma.UserUncheckedUpdateWithoutParseJobsInput
+	>;
+};
+
+export type UserCreateNestedOneWithoutContactImportsInput = {
+	create?: Prisma.XOR<
+		Prisma.UserCreateWithoutContactImportsInput,
+		Prisma.UserUncheckedCreateWithoutContactImportsInput
+	>;
+	connectOrCreate?: Prisma.UserCreateOrConnectWithoutContactImportsInput;
+	connect?: Prisma.UserWhereUniqueInput;
+};
+
+export type UserUpdateOneRequiredWithoutContactImportsNestedInput = {
+	create?: Prisma.XOR<
+		Prisma.UserCreateWithoutContactImportsInput,
+		Prisma.UserUncheckedCreateWithoutContactImportsInput
+	>;
+	connectOrCreate?: Prisma.UserCreateOrConnectWithoutContactImportsInput;
+	upsert?: Prisma.UserUpsertWithoutContactImportsInput;
+	connect?: Prisma.UserWhereUniqueInput;
+	update?: Prisma.XOR<
+		Prisma.XOR<
+			Prisma.UserUpdateToOneWithWhereWithoutContactImportsInput,
+			Prisma.UserUpdateWithoutContactImportsInput
+		>,
+		Prisma.UserUncheckedUpdateWithoutContactImportsInput
 	>;
 };
 
@@ -640,163 +713,29 @@ export type UserUpdateOneRequiredWithoutCampaignsNestedInput = {
 	>;
 };
 
-export type UserCreateNestedManyWithoutMessagesInput = {
-	create?:
-		| Prisma.XOR<
-				Prisma.UserCreateWithoutMessagesInput,
-				Prisma.UserUncheckedCreateWithoutMessagesInput
-		  >
-		| Prisma.UserCreateWithoutMessagesInput[]
-		| Prisma.UserUncheckedCreateWithoutMessagesInput[];
-	connectOrCreate?:
-		| Prisma.UserCreateOrConnectWithoutMessagesInput
-		| Prisma.UserCreateOrConnectWithoutMessagesInput[];
-	connect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[];
-};
-
-export type UserUncheckedCreateNestedManyWithoutMessagesInput = {
-	create?:
-		| Prisma.XOR<
-				Prisma.UserCreateWithoutMessagesInput,
-				Prisma.UserUncheckedCreateWithoutMessagesInput
-		  >
-		| Prisma.UserCreateWithoutMessagesInput[]
-		| Prisma.UserUncheckedCreateWithoutMessagesInput[];
-	connectOrCreate?:
-		| Prisma.UserCreateOrConnectWithoutMessagesInput
-		| Prisma.UserCreateOrConnectWithoutMessagesInput[];
-	connect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[];
-};
-
-export type UserUpdateManyWithoutMessagesNestedInput = {
-	create?:
-		| Prisma.XOR<
-				Prisma.UserCreateWithoutMessagesInput,
-				Prisma.UserUncheckedCreateWithoutMessagesInput
-		  >
-		| Prisma.UserCreateWithoutMessagesInput[]
-		| Prisma.UserUncheckedCreateWithoutMessagesInput[];
-	connectOrCreate?:
-		| Prisma.UserCreateOrConnectWithoutMessagesInput
-		| Prisma.UserCreateOrConnectWithoutMessagesInput[];
-	upsert?:
-		| Prisma.UserUpsertWithWhereUniqueWithoutMessagesInput
-		| Prisma.UserUpsertWithWhereUniqueWithoutMessagesInput[];
-	set?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[];
-	disconnect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[];
-	delete?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[];
-	connect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[];
-	update?:
-		| Prisma.UserUpdateWithWhereUniqueWithoutMessagesInput
-		| Prisma.UserUpdateWithWhereUniqueWithoutMessagesInput[];
-	updateMany?:
-		| Prisma.UserUpdateManyWithWhereWithoutMessagesInput
-		| Prisma.UserUpdateManyWithWhereWithoutMessagesInput[];
-	deleteMany?: Prisma.UserScalarWhereInput | Prisma.UserScalarWhereInput[];
-};
-
-export type UserUncheckedUpdateManyWithoutMessagesNestedInput = {
-	create?:
-		| Prisma.XOR<
-				Prisma.UserCreateWithoutMessagesInput,
-				Prisma.UserUncheckedCreateWithoutMessagesInput
-		  >
-		| Prisma.UserCreateWithoutMessagesInput[]
-		| Prisma.UserUncheckedCreateWithoutMessagesInput[];
-	connectOrCreate?:
-		| Prisma.UserCreateOrConnectWithoutMessagesInput
-		| Prisma.UserCreateOrConnectWithoutMessagesInput[];
-	upsert?:
-		| Prisma.UserUpsertWithWhereUniqueWithoutMessagesInput
-		| Prisma.UserUpsertWithWhereUniqueWithoutMessagesInput[];
-	set?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[];
-	disconnect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[];
-	delete?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[];
-	connect?: Prisma.UserWhereUniqueInput | Prisma.UserWhereUniqueInput[];
-	update?:
-		| Prisma.UserUpdateWithWhereUniqueWithoutMessagesInput
-		| Prisma.UserUpdateWithWhereUniqueWithoutMessagesInput[];
-	updateMany?:
-		| Prisma.UserUpdateManyWithWhereWithoutMessagesInput
-		| Prisma.UserUpdateManyWithWhereWithoutMessagesInput[];
-	deleteMany?: Prisma.UserScalarWhereInput | Prisma.UserScalarWhereInput[];
-};
-
-export type UserCreateNestedOneWithoutWalletsInput = {
+export type UserCreateNestedOneWithoutInboundMessagesInput = {
 	create?: Prisma.XOR<
-		Prisma.UserCreateWithoutWalletsInput,
-		Prisma.UserUncheckedCreateWithoutWalletsInput
+		Prisma.UserCreateWithoutInboundMessagesInput,
+		Prisma.UserUncheckedCreateWithoutInboundMessagesInput
 	>;
-	connectOrCreate?: Prisma.UserCreateOrConnectWithoutWalletsInput;
+	connectOrCreate?: Prisma.UserCreateOrConnectWithoutInboundMessagesInput;
 	connect?: Prisma.UserWhereUniqueInput;
 };
 
-export type UserUpdateOneRequiredWithoutWalletsNestedInput = {
+export type UserUpdateOneRequiredWithoutInboundMessagesNestedInput = {
 	create?: Prisma.XOR<
-		Prisma.UserCreateWithoutWalletsInput,
-		Prisma.UserUncheckedCreateWithoutWalletsInput
+		Prisma.UserCreateWithoutInboundMessagesInput,
+		Prisma.UserUncheckedCreateWithoutInboundMessagesInput
 	>;
-	connectOrCreate?: Prisma.UserCreateOrConnectWithoutWalletsInput;
-	upsert?: Prisma.UserUpsertWithoutWalletsInput;
+	connectOrCreate?: Prisma.UserCreateOrConnectWithoutInboundMessagesInput;
+	upsert?: Prisma.UserUpsertWithoutInboundMessagesInput;
 	connect?: Prisma.UserWhereUniqueInput;
 	update?: Prisma.XOR<
 		Prisma.XOR<
-			Prisma.UserUpdateToOneWithWhereWithoutWalletsInput,
-			Prisma.UserUpdateWithoutWalletsInput
+			Prisma.UserUpdateToOneWithWhereWithoutInboundMessagesInput,
+			Prisma.UserUpdateWithoutInboundMessagesInput
 		>,
-		Prisma.UserUncheckedUpdateWithoutWalletsInput
-	>;
-};
-
-export type UserCreateNestedOneWithoutSubscriptionsInput = {
-	create?: Prisma.XOR<
-		Prisma.UserCreateWithoutSubscriptionsInput,
-		Prisma.UserUncheckedCreateWithoutSubscriptionsInput
-	>;
-	connectOrCreate?: Prisma.UserCreateOrConnectWithoutSubscriptionsInput;
-	connect?: Prisma.UserWhereUniqueInput;
-};
-
-export type UserUpdateOneRequiredWithoutSubscriptionsNestedInput = {
-	create?: Prisma.XOR<
-		Prisma.UserCreateWithoutSubscriptionsInput,
-		Prisma.UserUncheckedCreateWithoutSubscriptionsInput
-	>;
-	connectOrCreate?: Prisma.UserCreateOrConnectWithoutSubscriptionsInput;
-	upsert?: Prisma.UserUpsertWithoutSubscriptionsInput;
-	connect?: Prisma.UserWhereUniqueInput;
-	update?: Prisma.XOR<
-		Prisma.XOR<
-			Prisma.UserUpdateToOneWithWhereWithoutSubscriptionsInput,
-			Prisma.UserUpdateWithoutSubscriptionsInput
-		>,
-		Prisma.UserUncheckedUpdateWithoutSubscriptionsInput
-	>;
-};
-
-export type UserCreateNestedOneWithoutUserProfilesInput = {
-	create?: Prisma.XOR<
-		Prisma.UserCreateWithoutUserProfilesInput,
-		Prisma.UserUncheckedCreateWithoutUserProfilesInput
-	>;
-	connectOrCreate?: Prisma.UserCreateOrConnectWithoutUserProfilesInput;
-	connect?: Prisma.UserWhereUniqueInput;
-};
-
-export type UserUpdateOneRequiredWithoutUserProfilesNestedInput = {
-	create?: Prisma.XOR<
-		Prisma.UserCreateWithoutUserProfilesInput,
-		Prisma.UserUncheckedCreateWithoutUserProfilesInput
-	>;
-	connectOrCreate?: Prisma.UserCreateOrConnectWithoutUserProfilesInput;
-	upsert?: Prisma.UserUpsertWithoutUserProfilesInput;
-	connect?: Prisma.UserWhereUniqueInput;
-	update?: Prisma.XOR<
-		Prisma.XOR<
-			Prisma.UserUpdateToOneWithWhereWithoutUserProfilesInput,
-			Prisma.UserUpdateWithoutUserProfilesInput
-		>,
-		Prisma.UserUncheckedUpdateWithoutUserProfilesInput
+		Prisma.UserUncheckedUpdateWithoutInboundMessagesInput
 	>;
 };
 
@@ -849,32 +788,6 @@ export type UserUpdateOneRequiredWithoutSenderNumbersNestedInput = {
 			Prisma.UserUpdateWithoutSenderNumbersInput
 		>,
 		Prisma.UserUncheckedUpdateWithoutSenderNumbersInput
-	>;
-};
-
-export type UserCreateNestedOneWithoutInboundMessagesInput = {
-	create?: Prisma.XOR<
-		Prisma.UserCreateWithoutInboundMessagesInput,
-		Prisma.UserUncheckedCreateWithoutInboundMessagesInput
-	>;
-	connectOrCreate?: Prisma.UserCreateOrConnectWithoutInboundMessagesInput;
-	connect?: Prisma.UserWhereUniqueInput;
-};
-
-export type UserUpdateOneRequiredWithoutInboundMessagesNestedInput = {
-	create?: Prisma.XOR<
-		Prisma.UserCreateWithoutInboundMessagesInput,
-		Prisma.UserUncheckedCreateWithoutInboundMessagesInput
-	>;
-	connectOrCreate?: Prisma.UserCreateOrConnectWithoutInboundMessagesInput;
-	upsert?: Prisma.UserUpsertWithoutInboundMessagesInput;
-	connect?: Prisma.UserWhereUniqueInput;
-	update?: Prisma.XOR<
-		Prisma.XOR<
-			Prisma.UserUpdateToOneWithWhereWithoutInboundMessagesInput,
-			Prisma.UserUpdateWithoutInboundMessagesInput
-		>,
-		Prisma.UserUncheckedUpdateWithoutInboundMessagesInput
 	>;
 };
 
@@ -1016,14 +929,13 @@ export type UserCreateWithoutSessionsInput = {
 	name?: string | null;
 	emailVerified?: boolean;
 	image?: string | null;
+	wallet?: Prisma.WalletCreateNestedOneWithoutUserInput;
+	userProfile?: Prisma.UserProfileCreateNestedOneWithoutUserInput;
 	accounts?: Prisma.AccountCreateNestedManyWithoutUserInput;
 	contacts?: Prisma.ContactCreateNestedManyWithoutUserInput;
+	contactImports?: Prisma.ContactImportCreateNestedManyWithoutUserInput;
 	campaigns?: Prisma.CampaignCreateNestedManyWithoutUserInput;
-	messages?: Prisma.MessageCreateNestedManyWithoutUsersInput;
 	parseJobs?: Prisma.ParseJobCreateNestedManyWithoutUserInput;
-	subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutUserInput;
-	wallets?: Prisma.WalletCreateNestedManyWithoutUserInput;
-	userProfiles?: Prisma.UserProfileCreateNestedManyWithoutUserInput;
 	messageTemplates?: Prisma.MessageTemplateCreateNestedManyWithoutUserInput;
 	senderNumbers?: Prisma.SenderNumberCreateNestedManyWithoutUserInput;
 	inboundMessages?: Prisma.InboundMessageCreateNestedManyWithoutUserInput;
@@ -1042,14 +954,13 @@ export type UserUncheckedCreateWithoutSessionsInput = {
 	name?: string | null;
 	emailVerified?: boolean;
 	image?: string | null;
+	wallet?: Prisma.WalletUncheckedCreateNestedOneWithoutUserInput;
+	userProfile?: Prisma.UserProfileUncheckedCreateNestedOneWithoutUserInput;
 	accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput;
 	contacts?: Prisma.ContactUncheckedCreateNestedManyWithoutUserInput;
+	contactImports?: Prisma.ContactImportUncheckedCreateNestedManyWithoutUserInput;
 	campaigns?: Prisma.CampaignUncheckedCreateNestedManyWithoutUserInput;
-	messages?: Prisma.MessageUncheckedCreateNestedManyWithoutUsersInput;
 	parseJobs?: Prisma.ParseJobUncheckedCreateNestedManyWithoutUserInput;
-	subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutUserInput;
-	wallets?: Prisma.WalletUncheckedCreateNestedManyWithoutUserInput;
-	userProfiles?: Prisma.UserProfileUncheckedCreateNestedManyWithoutUserInput;
 	messageTemplates?: Prisma.MessageTemplateUncheckedCreateNestedManyWithoutUserInput;
 	senderNumbers?: Prisma.SenderNumberUncheckedCreateNestedManyWithoutUserInput;
 	inboundMessages?: Prisma.InboundMessageUncheckedCreateNestedManyWithoutUserInput;
@@ -1096,14 +1007,13 @@ export type UserUpdateWithoutSessionsInput = {
 	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	wallet?: Prisma.WalletUpdateOneWithoutUserNestedInput;
+	userProfile?: Prisma.UserProfileUpdateOneWithoutUserNestedInput;
 	accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput;
 	contacts?: Prisma.ContactUpdateManyWithoutUserNestedInput;
+	contactImports?: Prisma.ContactImportUpdateManyWithoutUserNestedInput;
 	campaigns?: Prisma.CampaignUpdateManyWithoutUserNestedInput;
-	messages?: Prisma.MessageUpdateManyWithoutUsersNestedInput;
 	parseJobs?: Prisma.ParseJobUpdateManyWithoutUserNestedInput;
-	subscriptions?: Prisma.SubscriptionUpdateManyWithoutUserNestedInput;
-	wallets?: Prisma.WalletUpdateManyWithoutUserNestedInput;
-	userProfiles?: Prisma.UserProfileUpdateManyWithoutUserNestedInput;
 	messageTemplates?: Prisma.MessageTemplateUpdateManyWithoutUserNestedInput;
 	senderNumbers?: Prisma.SenderNumberUpdateManyWithoutUserNestedInput;
 	inboundMessages?: Prisma.InboundMessageUpdateManyWithoutUserNestedInput;
@@ -1122,14 +1032,13 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
 	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	wallet?: Prisma.WalletUncheckedUpdateOneWithoutUserNestedInput;
+	userProfile?: Prisma.UserProfileUncheckedUpdateOneWithoutUserNestedInput;
 	accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput;
 	contacts?: Prisma.ContactUncheckedUpdateManyWithoutUserNestedInput;
+	contactImports?: Prisma.ContactImportUncheckedUpdateManyWithoutUserNestedInput;
 	campaigns?: Prisma.CampaignUncheckedUpdateManyWithoutUserNestedInput;
-	messages?: Prisma.MessageUncheckedUpdateManyWithoutUsersNestedInput;
 	parseJobs?: Prisma.ParseJobUncheckedUpdateManyWithoutUserNestedInput;
-	subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutUserNestedInput;
-	wallets?: Prisma.WalletUncheckedUpdateManyWithoutUserNestedInput;
-	userProfiles?: Prisma.UserProfileUncheckedUpdateManyWithoutUserNestedInput;
 	messageTemplates?: Prisma.MessageTemplateUncheckedUpdateManyWithoutUserNestedInput;
 	senderNumbers?: Prisma.SenderNumberUncheckedUpdateManyWithoutUserNestedInput;
 	inboundMessages?: Prisma.InboundMessageUncheckedUpdateManyWithoutUserNestedInput;
@@ -1148,14 +1057,13 @@ export type UserCreateWithoutAccountsInput = {
 	name?: string | null;
 	emailVerified?: boolean;
 	image?: string | null;
+	wallet?: Prisma.WalletCreateNestedOneWithoutUserInput;
+	userProfile?: Prisma.UserProfileCreateNestedOneWithoutUserInput;
 	sessions?: Prisma.SessionCreateNestedManyWithoutUserInput;
 	contacts?: Prisma.ContactCreateNestedManyWithoutUserInput;
+	contactImports?: Prisma.ContactImportCreateNestedManyWithoutUserInput;
 	campaigns?: Prisma.CampaignCreateNestedManyWithoutUserInput;
-	messages?: Prisma.MessageCreateNestedManyWithoutUsersInput;
 	parseJobs?: Prisma.ParseJobCreateNestedManyWithoutUserInput;
-	subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutUserInput;
-	wallets?: Prisma.WalletCreateNestedManyWithoutUserInput;
-	userProfiles?: Prisma.UserProfileCreateNestedManyWithoutUserInput;
 	messageTemplates?: Prisma.MessageTemplateCreateNestedManyWithoutUserInput;
 	senderNumbers?: Prisma.SenderNumberCreateNestedManyWithoutUserInput;
 	inboundMessages?: Prisma.InboundMessageCreateNestedManyWithoutUserInput;
@@ -1174,14 +1082,13 @@ export type UserUncheckedCreateWithoutAccountsInput = {
 	name?: string | null;
 	emailVerified?: boolean;
 	image?: string | null;
+	wallet?: Prisma.WalletUncheckedCreateNestedOneWithoutUserInput;
+	userProfile?: Prisma.UserProfileUncheckedCreateNestedOneWithoutUserInput;
 	sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput;
 	contacts?: Prisma.ContactUncheckedCreateNestedManyWithoutUserInput;
+	contactImports?: Prisma.ContactImportUncheckedCreateNestedManyWithoutUserInput;
 	campaigns?: Prisma.CampaignUncheckedCreateNestedManyWithoutUserInput;
-	messages?: Prisma.MessageUncheckedCreateNestedManyWithoutUsersInput;
 	parseJobs?: Prisma.ParseJobUncheckedCreateNestedManyWithoutUserInput;
-	subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutUserInput;
-	wallets?: Prisma.WalletUncheckedCreateNestedManyWithoutUserInput;
-	userProfiles?: Prisma.UserProfileUncheckedCreateNestedManyWithoutUserInput;
 	messageTemplates?: Prisma.MessageTemplateUncheckedCreateNestedManyWithoutUserInput;
 	senderNumbers?: Prisma.SenderNumberUncheckedCreateNestedManyWithoutUserInput;
 	inboundMessages?: Prisma.InboundMessageUncheckedCreateNestedManyWithoutUserInput;
@@ -1228,14 +1135,13 @@ export type UserUpdateWithoutAccountsInput = {
 	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	wallet?: Prisma.WalletUpdateOneWithoutUserNestedInput;
+	userProfile?: Prisma.UserProfileUpdateOneWithoutUserNestedInput;
 	sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput;
 	contacts?: Prisma.ContactUpdateManyWithoutUserNestedInput;
+	contactImports?: Prisma.ContactImportUpdateManyWithoutUserNestedInput;
 	campaigns?: Prisma.CampaignUpdateManyWithoutUserNestedInput;
-	messages?: Prisma.MessageUpdateManyWithoutUsersNestedInput;
 	parseJobs?: Prisma.ParseJobUpdateManyWithoutUserNestedInput;
-	subscriptions?: Prisma.SubscriptionUpdateManyWithoutUserNestedInput;
-	wallets?: Prisma.WalletUpdateManyWithoutUserNestedInput;
-	userProfiles?: Prisma.UserProfileUpdateManyWithoutUserNestedInput;
 	messageTemplates?: Prisma.MessageTemplateUpdateManyWithoutUserNestedInput;
 	senderNumbers?: Prisma.SenderNumberUpdateManyWithoutUserNestedInput;
 	inboundMessages?: Prisma.InboundMessageUpdateManyWithoutUserNestedInput;
@@ -1254,14 +1160,269 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
 	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	wallet?: Prisma.WalletUncheckedUpdateOneWithoutUserNestedInput;
+	userProfile?: Prisma.UserProfileUncheckedUpdateOneWithoutUserNestedInput;
 	sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput;
 	contacts?: Prisma.ContactUncheckedUpdateManyWithoutUserNestedInput;
+	contactImports?: Prisma.ContactImportUncheckedUpdateManyWithoutUserNestedInput;
 	campaigns?: Prisma.CampaignUncheckedUpdateManyWithoutUserNestedInput;
-	messages?: Prisma.MessageUncheckedUpdateManyWithoutUsersNestedInput;
 	parseJobs?: Prisma.ParseJobUncheckedUpdateManyWithoutUserNestedInput;
-	subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutUserNestedInput;
-	wallets?: Prisma.WalletUncheckedUpdateManyWithoutUserNestedInput;
-	userProfiles?: Prisma.UserProfileUncheckedUpdateManyWithoutUserNestedInput;
+	messageTemplates?: Prisma.MessageTemplateUncheckedUpdateManyWithoutUserNestedInput;
+	senderNumbers?: Prisma.SenderNumberUncheckedUpdateManyWithoutUserNestedInput;
+	inboundMessages?: Prisma.InboundMessageUncheckedUpdateManyWithoutUserNestedInput;
+	orgInvitesSent?: Prisma.OrgInviteUncheckedUpdateManyWithoutOwnerNestedInput;
+	orgMembersOwned?: Prisma.OrgMemberUncheckedUpdateManyWithoutOwnerNestedInput;
+	orgMemberships?: Prisma.OrgMemberUncheckedUpdateManyWithoutUserNestedInput;
+	joinRequestsOwned?: Prisma.OrgJoinRequestUncheckedUpdateManyWithoutOwnerNestedInput;
+	joinRequestsSent?: Prisma.OrgJoinRequestUncheckedUpdateManyWithoutUserNestedInput;
+};
+
+export type UserCreateWithoutUserProfileInput = {
+	id?: string;
+	createdAt?: Date | string;
+	updatedAt?: Date | string;
+	email: string;
+	name?: string | null;
+	emailVerified?: boolean;
+	image?: string | null;
+	wallet?: Prisma.WalletCreateNestedOneWithoutUserInput;
+	sessions?: Prisma.SessionCreateNestedManyWithoutUserInput;
+	accounts?: Prisma.AccountCreateNestedManyWithoutUserInput;
+	contacts?: Prisma.ContactCreateNestedManyWithoutUserInput;
+	contactImports?: Prisma.ContactImportCreateNestedManyWithoutUserInput;
+	campaigns?: Prisma.CampaignCreateNestedManyWithoutUserInput;
+	parseJobs?: Prisma.ParseJobCreateNestedManyWithoutUserInput;
+	messageTemplates?: Prisma.MessageTemplateCreateNestedManyWithoutUserInput;
+	senderNumbers?: Prisma.SenderNumberCreateNestedManyWithoutUserInput;
+	inboundMessages?: Prisma.InboundMessageCreateNestedManyWithoutUserInput;
+	orgInvitesSent?: Prisma.OrgInviteCreateNestedManyWithoutOwnerInput;
+	orgMembersOwned?: Prisma.OrgMemberCreateNestedManyWithoutOwnerInput;
+	orgMemberships?: Prisma.OrgMemberCreateNestedManyWithoutUserInput;
+	joinRequestsOwned?: Prisma.OrgJoinRequestCreateNestedManyWithoutOwnerInput;
+	joinRequestsSent?: Prisma.OrgJoinRequestCreateNestedManyWithoutUserInput;
+};
+
+export type UserUncheckedCreateWithoutUserProfileInput = {
+	id?: string;
+	createdAt?: Date | string;
+	updatedAt?: Date | string;
+	email: string;
+	name?: string | null;
+	emailVerified?: boolean;
+	image?: string | null;
+	wallet?: Prisma.WalletUncheckedCreateNestedOneWithoutUserInput;
+	sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput;
+	accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput;
+	contacts?: Prisma.ContactUncheckedCreateNestedManyWithoutUserInput;
+	contactImports?: Prisma.ContactImportUncheckedCreateNestedManyWithoutUserInput;
+	campaigns?: Prisma.CampaignUncheckedCreateNestedManyWithoutUserInput;
+	parseJobs?: Prisma.ParseJobUncheckedCreateNestedManyWithoutUserInput;
+	messageTemplates?: Prisma.MessageTemplateUncheckedCreateNestedManyWithoutUserInput;
+	senderNumbers?: Prisma.SenderNumberUncheckedCreateNestedManyWithoutUserInput;
+	inboundMessages?: Prisma.InboundMessageUncheckedCreateNestedManyWithoutUserInput;
+	orgInvitesSent?: Prisma.OrgInviteUncheckedCreateNestedManyWithoutOwnerInput;
+	orgMembersOwned?: Prisma.OrgMemberUncheckedCreateNestedManyWithoutOwnerInput;
+	orgMemberships?: Prisma.OrgMemberUncheckedCreateNestedManyWithoutUserInput;
+	joinRequestsOwned?: Prisma.OrgJoinRequestUncheckedCreateNestedManyWithoutOwnerInput;
+	joinRequestsSent?: Prisma.OrgJoinRequestUncheckedCreateNestedManyWithoutUserInput;
+};
+
+export type UserCreateOrConnectWithoutUserProfileInput = {
+	where: Prisma.UserWhereUniqueInput;
+	create: Prisma.XOR<
+		Prisma.UserCreateWithoutUserProfileInput,
+		Prisma.UserUncheckedCreateWithoutUserProfileInput
+	>;
+};
+
+export type UserUpsertWithoutUserProfileInput = {
+	update: Prisma.XOR<
+		Prisma.UserUpdateWithoutUserProfileInput,
+		Prisma.UserUncheckedUpdateWithoutUserProfileInput
+	>;
+	create: Prisma.XOR<
+		Prisma.UserCreateWithoutUserProfileInput,
+		Prisma.UserUncheckedCreateWithoutUserProfileInput
+	>;
+	where?: Prisma.UserWhereInput;
+};
+
+export type UserUpdateToOneWithWhereWithoutUserProfileInput = {
+	where?: Prisma.UserWhereInput;
+	data: Prisma.XOR<
+		Prisma.UserUpdateWithoutUserProfileInput,
+		Prisma.UserUncheckedUpdateWithoutUserProfileInput
+	>;
+};
+
+export type UserUpdateWithoutUserProfileInput = {
+	id?: Prisma.StringFieldUpdateOperationsInput | string;
+	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+	updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+	email?: Prisma.StringFieldUpdateOperationsInput | string;
+	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	wallet?: Prisma.WalletUpdateOneWithoutUserNestedInput;
+	sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput;
+	accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput;
+	contacts?: Prisma.ContactUpdateManyWithoutUserNestedInput;
+	contactImports?: Prisma.ContactImportUpdateManyWithoutUserNestedInput;
+	campaigns?: Prisma.CampaignUpdateManyWithoutUserNestedInput;
+	parseJobs?: Prisma.ParseJobUpdateManyWithoutUserNestedInput;
+	messageTemplates?: Prisma.MessageTemplateUpdateManyWithoutUserNestedInput;
+	senderNumbers?: Prisma.SenderNumberUpdateManyWithoutUserNestedInput;
+	inboundMessages?: Prisma.InboundMessageUpdateManyWithoutUserNestedInput;
+	orgInvitesSent?: Prisma.OrgInviteUpdateManyWithoutOwnerNestedInput;
+	orgMembersOwned?: Prisma.OrgMemberUpdateManyWithoutOwnerNestedInput;
+	orgMemberships?: Prisma.OrgMemberUpdateManyWithoutUserNestedInput;
+	joinRequestsOwned?: Prisma.OrgJoinRequestUpdateManyWithoutOwnerNestedInput;
+	joinRequestsSent?: Prisma.OrgJoinRequestUpdateManyWithoutUserNestedInput;
+};
+
+export type UserUncheckedUpdateWithoutUserProfileInput = {
+	id?: Prisma.StringFieldUpdateOperationsInput | string;
+	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+	updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+	email?: Prisma.StringFieldUpdateOperationsInput | string;
+	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	wallet?: Prisma.WalletUncheckedUpdateOneWithoutUserNestedInput;
+	sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput;
+	accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput;
+	contacts?: Prisma.ContactUncheckedUpdateManyWithoutUserNestedInput;
+	contactImports?: Prisma.ContactImportUncheckedUpdateManyWithoutUserNestedInput;
+	campaigns?: Prisma.CampaignUncheckedUpdateManyWithoutUserNestedInput;
+	parseJobs?: Prisma.ParseJobUncheckedUpdateManyWithoutUserNestedInput;
+	messageTemplates?: Prisma.MessageTemplateUncheckedUpdateManyWithoutUserNestedInput;
+	senderNumbers?: Prisma.SenderNumberUncheckedUpdateManyWithoutUserNestedInput;
+	inboundMessages?: Prisma.InboundMessageUncheckedUpdateManyWithoutUserNestedInput;
+	orgInvitesSent?: Prisma.OrgInviteUncheckedUpdateManyWithoutOwnerNestedInput;
+	orgMembersOwned?: Prisma.OrgMemberUncheckedUpdateManyWithoutOwnerNestedInput;
+	orgMemberships?: Prisma.OrgMemberUncheckedUpdateManyWithoutUserNestedInput;
+	joinRequestsOwned?: Prisma.OrgJoinRequestUncheckedUpdateManyWithoutOwnerNestedInput;
+	joinRequestsSent?: Prisma.OrgJoinRequestUncheckedUpdateManyWithoutUserNestedInput;
+};
+
+export type UserCreateWithoutWalletInput = {
+	id?: string;
+	createdAt?: Date | string;
+	updatedAt?: Date | string;
+	email: string;
+	name?: string | null;
+	emailVerified?: boolean;
+	image?: string | null;
+	userProfile?: Prisma.UserProfileCreateNestedOneWithoutUserInput;
+	sessions?: Prisma.SessionCreateNestedManyWithoutUserInput;
+	accounts?: Prisma.AccountCreateNestedManyWithoutUserInput;
+	contacts?: Prisma.ContactCreateNestedManyWithoutUserInput;
+	contactImports?: Prisma.ContactImportCreateNestedManyWithoutUserInput;
+	campaigns?: Prisma.CampaignCreateNestedManyWithoutUserInput;
+	parseJobs?: Prisma.ParseJobCreateNestedManyWithoutUserInput;
+	messageTemplates?: Prisma.MessageTemplateCreateNestedManyWithoutUserInput;
+	senderNumbers?: Prisma.SenderNumberCreateNestedManyWithoutUserInput;
+	inboundMessages?: Prisma.InboundMessageCreateNestedManyWithoutUserInput;
+	orgInvitesSent?: Prisma.OrgInviteCreateNestedManyWithoutOwnerInput;
+	orgMembersOwned?: Prisma.OrgMemberCreateNestedManyWithoutOwnerInput;
+	orgMemberships?: Prisma.OrgMemberCreateNestedManyWithoutUserInput;
+	joinRequestsOwned?: Prisma.OrgJoinRequestCreateNestedManyWithoutOwnerInput;
+	joinRequestsSent?: Prisma.OrgJoinRequestCreateNestedManyWithoutUserInput;
+};
+
+export type UserUncheckedCreateWithoutWalletInput = {
+	id?: string;
+	createdAt?: Date | string;
+	updatedAt?: Date | string;
+	email: string;
+	name?: string | null;
+	emailVerified?: boolean;
+	image?: string | null;
+	userProfile?: Prisma.UserProfileUncheckedCreateNestedOneWithoutUserInput;
+	sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput;
+	accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput;
+	contacts?: Prisma.ContactUncheckedCreateNestedManyWithoutUserInput;
+	contactImports?: Prisma.ContactImportUncheckedCreateNestedManyWithoutUserInput;
+	campaigns?: Prisma.CampaignUncheckedCreateNestedManyWithoutUserInput;
+	parseJobs?: Prisma.ParseJobUncheckedCreateNestedManyWithoutUserInput;
+	messageTemplates?: Prisma.MessageTemplateUncheckedCreateNestedManyWithoutUserInput;
+	senderNumbers?: Prisma.SenderNumberUncheckedCreateNestedManyWithoutUserInput;
+	inboundMessages?: Prisma.InboundMessageUncheckedCreateNestedManyWithoutUserInput;
+	orgInvitesSent?: Prisma.OrgInviteUncheckedCreateNestedManyWithoutOwnerInput;
+	orgMembersOwned?: Prisma.OrgMemberUncheckedCreateNestedManyWithoutOwnerInput;
+	orgMemberships?: Prisma.OrgMemberUncheckedCreateNestedManyWithoutUserInput;
+	joinRequestsOwned?: Prisma.OrgJoinRequestUncheckedCreateNestedManyWithoutOwnerInput;
+	joinRequestsSent?: Prisma.OrgJoinRequestUncheckedCreateNestedManyWithoutUserInput;
+};
+
+export type UserCreateOrConnectWithoutWalletInput = {
+	where: Prisma.UserWhereUniqueInput;
+	create: Prisma.XOR<
+		Prisma.UserCreateWithoutWalletInput,
+		Prisma.UserUncheckedCreateWithoutWalletInput
+	>;
+};
+
+export type UserUpsertWithoutWalletInput = {
+	update: Prisma.XOR<
+		Prisma.UserUpdateWithoutWalletInput,
+		Prisma.UserUncheckedUpdateWithoutWalletInput
+	>;
+	create: Prisma.XOR<
+		Prisma.UserCreateWithoutWalletInput,
+		Prisma.UserUncheckedCreateWithoutWalletInput
+	>;
+	where?: Prisma.UserWhereInput;
+};
+
+export type UserUpdateToOneWithWhereWithoutWalletInput = {
+	where?: Prisma.UserWhereInput;
+	data: Prisma.XOR<
+		Prisma.UserUpdateWithoutWalletInput,
+		Prisma.UserUncheckedUpdateWithoutWalletInput
+	>;
+};
+
+export type UserUpdateWithoutWalletInput = {
+	id?: Prisma.StringFieldUpdateOperationsInput | string;
+	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+	updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+	email?: Prisma.StringFieldUpdateOperationsInput | string;
+	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	userProfile?: Prisma.UserProfileUpdateOneWithoutUserNestedInput;
+	sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput;
+	accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput;
+	contacts?: Prisma.ContactUpdateManyWithoutUserNestedInput;
+	contactImports?: Prisma.ContactImportUpdateManyWithoutUserNestedInput;
+	campaigns?: Prisma.CampaignUpdateManyWithoutUserNestedInput;
+	parseJobs?: Prisma.ParseJobUpdateManyWithoutUserNestedInput;
+	messageTemplates?: Prisma.MessageTemplateUpdateManyWithoutUserNestedInput;
+	senderNumbers?: Prisma.SenderNumberUpdateManyWithoutUserNestedInput;
+	inboundMessages?: Prisma.InboundMessageUpdateManyWithoutUserNestedInput;
+	orgInvitesSent?: Prisma.OrgInviteUpdateManyWithoutOwnerNestedInput;
+	orgMembersOwned?: Prisma.OrgMemberUpdateManyWithoutOwnerNestedInput;
+	orgMemberships?: Prisma.OrgMemberUpdateManyWithoutUserNestedInput;
+	joinRequestsOwned?: Prisma.OrgJoinRequestUpdateManyWithoutOwnerNestedInput;
+	joinRequestsSent?: Prisma.OrgJoinRequestUpdateManyWithoutUserNestedInput;
+};
+
+export type UserUncheckedUpdateWithoutWalletInput = {
+	id?: Prisma.StringFieldUpdateOperationsInput | string;
+	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+	updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+	email?: Prisma.StringFieldUpdateOperationsInput | string;
+	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	userProfile?: Prisma.UserProfileUncheckedUpdateOneWithoutUserNestedInput;
+	sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput;
+	accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput;
+	contacts?: Prisma.ContactUncheckedUpdateManyWithoutUserNestedInput;
+	contactImports?: Prisma.ContactImportUncheckedUpdateManyWithoutUserNestedInput;
+	campaigns?: Prisma.CampaignUncheckedUpdateManyWithoutUserNestedInput;
+	parseJobs?: Prisma.ParseJobUncheckedUpdateManyWithoutUserNestedInput;
 	messageTemplates?: Prisma.MessageTemplateUncheckedUpdateManyWithoutUserNestedInput;
 	senderNumbers?: Prisma.SenderNumberUncheckedUpdateManyWithoutUserNestedInput;
 	inboundMessages?: Prisma.InboundMessageUncheckedUpdateManyWithoutUserNestedInput;
@@ -1280,14 +1441,13 @@ export type UserCreateWithoutParseJobsInput = {
 	name?: string | null;
 	emailVerified?: boolean;
 	image?: string | null;
+	wallet?: Prisma.WalletCreateNestedOneWithoutUserInput;
+	userProfile?: Prisma.UserProfileCreateNestedOneWithoutUserInput;
 	sessions?: Prisma.SessionCreateNestedManyWithoutUserInput;
 	accounts?: Prisma.AccountCreateNestedManyWithoutUserInput;
 	contacts?: Prisma.ContactCreateNestedManyWithoutUserInput;
+	contactImports?: Prisma.ContactImportCreateNestedManyWithoutUserInput;
 	campaigns?: Prisma.CampaignCreateNestedManyWithoutUserInput;
-	messages?: Prisma.MessageCreateNestedManyWithoutUsersInput;
-	subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutUserInput;
-	wallets?: Prisma.WalletCreateNestedManyWithoutUserInput;
-	userProfiles?: Prisma.UserProfileCreateNestedManyWithoutUserInput;
 	messageTemplates?: Prisma.MessageTemplateCreateNestedManyWithoutUserInput;
 	senderNumbers?: Prisma.SenderNumberCreateNestedManyWithoutUserInput;
 	inboundMessages?: Prisma.InboundMessageCreateNestedManyWithoutUserInput;
@@ -1306,14 +1466,13 @@ export type UserUncheckedCreateWithoutParseJobsInput = {
 	name?: string | null;
 	emailVerified?: boolean;
 	image?: string | null;
+	wallet?: Prisma.WalletUncheckedCreateNestedOneWithoutUserInput;
+	userProfile?: Prisma.UserProfileUncheckedCreateNestedOneWithoutUserInput;
 	sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput;
 	accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput;
 	contacts?: Prisma.ContactUncheckedCreateNestedManyWithoutUserInput;
+	contactImports?: Prisma.ContactImportUncheckedCreateNestedManyWithoutUserInput;
 	campaigns?: Prisma.CampaignUncheckedCreateNestedManyWithoutUserInput;
-	messages?: Prisma.MessageUncheckedCreateNestedManyWithoutUsersInput;
-	subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutUserInput;
-	wallets?: Prisma.WalletUncheckedCreateNestedManyWithoutUserInput;
-	userProfiles?: Prisma.UserProfileUncheckedCreateNestedManyWithoutUserInput;
 	messageTemplates?: Prisma.MessageTemplateUncheckedCreateNestedManyWithoutUserInput;
 	senderNumbers?: Prisma.SenderNumberUncheckedCreateNestedManyWithoutUserInput;
 	inboundMessages?: Prisma.InboundMessageUncheckedCreateNestedManyWithoutUserInput;
@@ -1360,14 +1519,13 @@ export type UserUpdateWithoutParseJobsInput = {
 	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	wallet?: Prisma.WalletUpdateOneWithoutUserNestedInput;
+	userProfile?: Prisma.UserProfileUpdateOneWithoutUserNestedInput;
 	sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput;
 	accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput;
 	contacts?: Prisma.ContactUpdateManyWithoutUserNestedInput;
+	contactImports?: Prisma.ContactImportUpdateManyWithoutUserNestedInput;
 	campaigns?: Prisma.CampaignUpdateManyWithoutUserNestedInput;
-	messages?: Prisma.MessageUpdateManyWithoutUsersNestedInput;
-	subscriptions?: Prisma.SubscriptionUpdateManyWithoutUserNestedInput;
-	wallets?: Prisma.WalletUpdateManyWithoutUserNestedInput;
-	userProfiles?: Prisma.UserProfileUpdateManyWithoutUserNestedInput;
 	messageTemplates?: Prisma.MessageTemplateUpdateManyWithoutUserNestedInput;
 	senderNumbers?: Prisma.SenderNumberUpdateManyWithoutUserNestedInput;
 	inboundMessages?: Prisma.InboundMessageUpdateManyWithoutUserNestedInput;
@@ -1386,14 +1544,141 @@ export type UserUncheckedUpdateWithoutParseJobsInput = {
 	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	wallet?: Prisma.WalletUncheckedUpdateOneWithoutUserNestedInput;
+	userProfile?: Prisma.UserProfileUncheckedUpdateOneWithoutUserNestedInput;
+	sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput;
+	accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput;
+	contacts?: Prisma.ContactUncheckedUpdateManyWithoutUserNestedInput;
+	contactImports?: Prisma.ContactImportUncheckedUpdateManyWithoutUserNestedInput;
+	campaigns?: Prisma.CampaignUncheckedUpdateManyWithoutUserNestedInput;
+	messageTemplates?: Prisma.MessageTemplateUncheckedUpdateManyWithoutUserNestedInput;
+	senderNumbers?: Prisma.SenderNumberUncheckedUpdateManyWithoutUserNestedInput;
+	inboundMessages?: Prisma.InboundMessageUncheckedUpdateManyWithoutUserNestedInput;
+	orgInvitesSent?: Prisma.OrgInviteUncheckedUpdateManyWithoutOwnerNestedInput;
+	orgMembersOwned?: Prisma.OrgMemberUncheckedUpdateManyWithoutOwnerNestedInput;
+	orgMemberships?: Prisma.OrgMemberUncheckedUpdateManyWithoutUserNestedInput;
+	joinRequestsOwned?: Prisma.OrgJoinRequestUncheckedUpdateManyWithoutOwnerNestedInput;
+	joinRequestsSent?: Prisma.OrgJoinRequestUncheckedUpdateManyWithoutUserNestedInput;
+};
+
+export type UserCreateWithoutContactImportsInput = {
+	id?: string;
+	createdAt?: Date | string;
+	updatedAt?: Date | string;
+	email: string;
+	name?: string | null;
+	emailVerified?: boolean;
+	image?: string | null;
+	wallet?: Prisma.WalletCreateNestedOneWithoutUserInput;
+	userProfile?: Prisma.UserProfileCreateNestedOneWithoutUserInput;
+	sessions?: Prisma.SessionCreateNestedManyWithoutUserInput;
+	accounts?: Prisma.AccountCreateNestedManyWithoutUserInput;
+	contacts?: Prisma.ContactCreateNestedManyWithoutUserInput;
+	campaigns?: Prisma.CampaignCreateNestedManyWithoutUserInput;
+	parseJobs?: Prisma.ParseJobCreateNestedManyWithoutUserInput;
+	messageTemplates?: Prisma.MessageTemplateCreateNestedManyWithoutUserInput;
+	senderNumbers?: Prisma.SenderNumberCreateNestedManyWithoutUserInput;
+	inboundMessages?: Prisma.InboundMessageCreateNestedManyWithoutUserInput;
+	orgInvitesSent?: Prisma.OrgInviteCreateNestedManyWithoutOwnerInput;
+	orgMembersOwned?: Prisma.OrgMemberCreateNestedManyWithoutOwnerInput;
+	orgMemberships?: Prisma.OrgMemberCreateNestedManyWithoutUserInput;
+	joinRequestsOwned?: Prisma.OrgJoinRequestCreateNestedManyWithoutOwnerInput;
+	joinRequestsSent?: Prisma.OrgJoinRequestCreateNestedManyWithoutUserInput;
+};
+
+export type UserUncheckedCreateWithoutContactImportsInput = {
+	id?: string;
+	createdAt?: Date | string;
+	updatedAt?: Date | string;
+	email: string;
+	name?: string | null;
+	emailVerified?: boolean;
+	image?: string | null;
+	wallet?: Prisma.WalletUncheckedCreateNestedOneWithoutUserInput;
+	userProfile?: Prisma.UserProfileUncheckedCreateNestedOneWithoutUserInput;
+	sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput;
+	accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput;
+	contacts?: Prisma.ContactUncheckedCreateNestedManyWithoutUserInput;
+	campaigns?: Prisma.CampaignUncheckedCreateNestedManyWithoutUserInput;
+	parseJobs?: Prisma.ParseJobUncheckedCreateNestedManyWithoutUserInput;
+	messageTemplates?: Prisma.MessageTemplateUncheckedCreateNestedManyWithoutUserInput;
+	senderNumbers?: Prisma.SenderNumberUncheckedCreateNestedManyWithoutUserInput;
+	inboundMessages?: Prisma.InboundMessageUncheckedCreateNestedManyWithoutUserInput;
+	orgInvitesSent?: Prisma.OrgInviteUncheckedCreateNestedManyWithoutOwnerInput;
+	orgMembersOwned?: Prisma.OrgMemberUncheckedCreateNestedManyWithoutOwnerInput;
+	orgMemberships?: Prisma.OrgMemberUncheckedCreateNestedManyWithoutUserInput;
+	joinRequestsOwned?: Prisma.OrgJoinRequestUncheckedCreateNestedManyWithoutOwnerInput;
+	joinRequestsSent?: Prisma.OrgJoinRequestUncheckedCreateNestedManyWithoutUserInput;
+};
+
+export type UserCreateOrConnectWithoutContactImportsInput = {
+	where: Prisma.UserWhereUniqueInput;
+	create: Prisma.XOR<
+		Prisma.UserCreateWithoutContactImportsInput,
+		Prisma.UserUncheckedCreateWithoutContactImportsInput
+	>;
+};
+
+export type UserUpsertWithoutContactImportsInput = {
+	update: Prisma.XOR<
+		Prisma.UserUpdateWithoutContactImportsInput,
+		Prisma.UserUncheckedUpdateWithoutContactImportsInput
+	>;
+	create: Prisma.XOR<
+		Prisma.UserCreateWithoutContactImportsInput,
+		Prisma.UserUncheckedCreateWithoutContactImportsInput
+	>;
+	where?: Prisma.UserWhereInput;
+};
+
+export type UserUpdateToOneWithWhereWithoutContactImportsInput = {
+	where?: Prisma.UserWhereInput;
+	data: Prisma.XOR<
+		Prisma.UserUpdateWithoutContactImportsInput,
+		Prisma.UserUncheckedUpdateWithoutContactImportsInput
+	>;
+};
+
+export type UserUpdateWithoutContactImportsInput = {
+	id?: Prisma.StringFieldUpdateOperationsInput | string;
+	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+	updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+	email?: Prisma.StringFieldUpdateOperationsInput | string;
+	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	wallet?: Prisma.WalletUpdateOneWithoutUserNestedInput;
+	userProfile?: Prisma.UserProfileUpdateOneWithoutUserNestedInput;
+	sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput;
+	accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput;
+	contacts?: Prisma.ContactUpdateManyWithoutUserNestedInput;
+	campaigns?: Prisma.CampaignUpdateManyWithoutUserNestedInput;
+	parseJobs?: Prisma.ParseJobUpdateManyWithoutUserNestedInput;
+	messageTemplates?: Prisma.MessageTemplateUpdateManyWithoutUserNestedInput;
+	senderNumbers?: Prisma.SenderNumberUpdateManyWithoutUserNestedInput;
+	inboundMessages?: Prisma.InboundMessageUpdateManyWithoutUserNestedInput;
+	orgInvitesSent?: Prisma.OrgInviteUpdateManyWithoutOwnerNestedInput;
+	orgMembersOwned?: Prisma.OrgMemberUpdateManyWithoutOwnerNestedInput;
+	orgMemberships?: Prisma.OrgMemberUpdateManyWithoutUserNestedInput;
+	joinRequestsOwned?: Prisma.OrgJoinRequestUpdateManyWithoutOwnerNestedInput;
+	joinRequestsSent?: Prisma.OrgJoinRequestUpdateManyWithoutUserNestedInput;
+};
+
+export type UserUncheckedUpdateWithoutContactImportsInput = {
+	id?: Prisma.StringFieldUpdateOperationsInput | string;
+	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+	updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+	email?: Prisma.StringFieldUpdateOperationsInput | string;
+	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	wallet?: Prisma.WalletUncheckedUpdateOneWithoutUserNestedInput;
+	userProfile?: Prisma.UserProfileUncheckedUpdateOneWithoutUserNestedInput;
 	sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput;
 	accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput;
 	contacts?: Prisma.ContactUncheckedUpdateManyWithoutUserNestedInput;
 	campaigns?: Prisma.CampaignUncheckedUpdateManyWithoutUserNestedInput;
-	messages?: Prisma.MessageUncheckedUpdateManyWithoutUsersNestedInput;
-	subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutUserNestedInput;
-	wallets?: Prisma.WalletUncheckedUpdateManyWithoutUserNestedInput;
-	userProfiles?: Prisma.UserProfileUncheckedUpdateManyWithoutUserNestedInput;
+	parseJobs?: Prisma.ParseJobUncheckedUpdateManyWithoutUserNestedInput;
 	messageTemplates?: Prisma.MessageTemplateUncheckedUpdateManyWithoutUserNestedInput;
 	senderNumbers?: Prisma.SenderNumberUncheckedUpdateManyWithoutUserNestedInput;
 	inboundMessages?: Prisma.InboundMessageUncheckedUpdateManyWithoutUserNestedInput;
@@ -1412,14 +1697,13 @@ export type UserCreateWithoutContactsInput = {
 	name?: string | null;
 	emailVerified?: boolean;
 	image?: string | null;
+	wallet?: Prisma.WalletCreateNestedOneWithoutUserInput;
+	userProfile?: Prisma.UserProfileCreateNestedOneWithoutUserInput;
 	sessions?: Prisma.SessionCreateNestedManyWithoutUserInput;
 	accounts?: Prisma.AccountCreateNestedManyWithoutUserInput;
+	contactImports?: Prisma.ContactImportCreateNestedManyWithoutUserInput;
 	campaigns?: Prisma.CampaignCreateNestedManyWithoutUserInput;
-	messages?: Prisma.MessageCreateNestedManyWithoutUsersInput;
 	parseJobs?: Prisma.ParseJobCreateNestedManyWithoutUserInput;
-	subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutUserInput;
-	wallets?: Prisma.WalletCreateNestedManyWithoutUserInput;
-	userProfiles?: Prisma.UserProfileCreateNestedManyWithoutUserInput;
 	messageTemplates?: Prisma.MessageTemplateCreateNestedManyWithoutUserInput;
 	senderNumbers?: Prisma.SenderNumberCreateNestedManyWithoutUserInput;
 	inboundMessages?: Prisma.InboundMessageCreateNestedManyWithoutUserInput;
@@ -1438,14 +1722,13 @@ export type UserUncheckedCreateWithoutContactsInput = {
 	name?: string | null;
 	emailVerified?: boolean;
 	image?: string | null;
+	wallet?: Prisma.WalletUncheckedCreateNestedOneWithoutUserInput;
+	userProfile?: Prisma.UserProfileUncheckedCreateNestedOneWithoutUserInput;
 	sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput;
 	accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput;
+	contactImports?: Prisma.ContactImportUncheckedCreateNestedManyWithoutUserInput;
 	campaigns?: Prisma.CampaignUncheckedCreateNestedManyWithoutUserInput;
-	messages?: Prisma.MessageUncheckedCreateNestedManyWithoutUsersInput;
 	parseJobs?: Prisma.ParseJobUncheckedCreateNestedManyWithoutUserInput;
-	subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutUserInput;
-	wallets?: Prisma.WalletUncheckedCreateNestedManyWithoutUserInput;
-	userProfiles?: Prisma.UserProfileUncheckedCreateNestedManyWithoutUserInput;
 	messageTemplates?: Prisma.MessageTemplateUncheckedCreateNestedManyWithoutUserInput;
 	senderNumbers?: Prisma.SenderNumberUncheckedCreateNestedManyWithoutUserInput;
 	inboundMessages?: Prisma.InboundMessageUncheckedCreateNestedManyWithoutUserInput;
@@ -1492,14 +1775,13 @@ export type UserUpdateWithoutContactsInput = {
 	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	wallet?: Prisma.WalletUpdateOneWithoutUserNestedInput;
+	userProfile?: Prisma.UserProfileUpdateOneWithoutUserNestedInput;
 	sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput;
 	accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput;
+	contactImports?: Prisma.ContactImportUpdateManyWithoutUserNestedInput;
 	campaigns?: Prisma.CampaignUpdateManyWithoutUserNestedInput;
-	messages?: Prisma.MessageUpdateManyWithoutUsersNestedInput;
 	parseJobs?: Prisma.ParseJobUpdateManyWithoutUserNestedInput;
-	subscriptions?: Prisma.SubscriptionUpdateManyWithoutUserNestedInput;
-	wallets?: Prisma.WalletUpdateManyWithoutUserNestedInput;
-	userProfiles?: Prisma.UserProfileUpdateManyWithoutUserNestedInput;
 	messageTemplates?: Prisma.MessageTemplateUpdateManyWithoutUserNestedInput;
 	senderNumbers?: Prisma.SenderNumberUpdateManyWithoutUserNestedInput;
 	inboundMessages?: Prisma.InboundMessageUpdateManyWithoutUserNestedInput;
@@ -1518,14 +1800,13 @@ export type UserUncheckedUpdateWithoutContactsInput = {
 	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	wallet?: Prisma.WalletUncheckedUpdateOneWithoutUserNestedInput;
+	userProfile?: Prisma.UserProfileUncheckedUpdateOneWithoutUserNestedInput;
 	sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput;
 	accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput;
+	contactImports?: Prisma.ContactImportUncheckedUpdateManyWithoutUserNestedInput;
 	campaigns?: Prisma.CampaignUncheckedUpdateManyWithoutUserNestedInput;
-	messages?: Prisma.MessageUncheckedUpdateManyWithoutUsersNestedInput;
 	parseJobs?: Prisma.ParseJobUncheckedUpdateManyWithoutUserNestedInput;
-	subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutUserNestedInput;
-	wallets?: Prisma.WalletUncheckedUpdateManyWithoutUserNestedInput;
-	userProfiles?: Prisma.UserProfileUncheckedUpdateManyWithoutUserNestedInput;
 	messageTemplates?: Prisma.MessageTemplateUncheckedUpdateManyWithoutUserNestedInput;
 	senderNumbers?: Prisma.SenderNumberUncheckedUpdateManyWithoutUserNestedInput;
 	inboundMessages?: Prisma.InboundMessageUncheckedUpdateManyWithoutUserNestedInput;
@@ -1544,14 +1825,13 @@ export type UserCreateWithoutCampaignsInput = {
 	name?: string | null;
 	emailVerified?: boolean;
 	image?: string | null;
+	wallet?: Prisma.WalletCreateNestedOneWithoutUserInput;
+	userProfile?: Prisma.UserProfileCreateNestedOneWithoutUserInput;
 	sessions?: Prisma.SessionCreateNestedManyWithoutUserInput;
 	accounts?: Prisma.AccountCreateNestedManyWithoutUserInput;
 	contacts?: Prisma.ContactCreateNestedManyWithoutUserInput;
-	messages?: Prisma.MessageCreateNestedManyWithoutUsersInput;
+	contactImports?: Prisma.ContactImportCreateNestedManyWithoutUserInput;
 	parseJobs?: Prisma.ParseJobCreateNestedManyWithoutUserInput;
-	subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutUserInput;
-	wallets?: Prisma.WalletCreateNestedManyWithoutUserInput;
-	userProfiles?: Prisma.UserProfileCreateNestedManyWithoutUserInput;
 	messageTemplates?: Prisma.MessageTemplateCreateNestedManyWithoutUserInput;
 	senderNumbers?: Prisma.SenderNumberCreateNestedManyWithoutUserInput;
 	inboundMessages?: Prisma.InboundMessageCreateNestedManyWithoutUserInput;
@@ -1570,14 +1850,13 @@ export type UserUncheckedCreateWithoutCampaignsInput = {
 	name?: string | null;
 	emailVerified?: boolean;
 	image?: string | null;
+	wallet?: Prisma.WalletUncheckedCreateNestedOneWithoutUserInput;
+	userProfile?: Prisma.UserProfileUncheckedCreateNestedOneWithoutUserInput;
 	sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput;
 	accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput;
 	contacts?: Prisma.ContactUncheckedCreateNestedManyWithoutUserInput;
-	messages?: Prisma.MessageUncheckedCreateNestedManyWithoutUsersInput;
+	contactImports?: Prisma.ContactImportUncheckedCreateNestedManyWithoutUserInput;
 	parseJobs?: Prisma.ParseJobUncheckedCreateNestedManyWithoutUserInput;
-	subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutUserInput;
-	wallets?: Prisma.WalletUncheckedCreateNestedManyWithoutUserInput;
-	userProfiles?: Prisma.UserProfileUncheckedCreateNestedManyWithoutUserInput;
 	messageTemplates?: Prisma.MessageTemplateUncheckedCreateNestedManyWithoutUserInput;
 	senderNumbers?: Prisma.SenderNumberUncheckedCreateNestedManyWithoutUserInput;
 	inboundMessages?: Prisma.InboundMessageUncheckedCreateNestedManyWithoutUserInput;
@@ -1624,14 +1903,13 @@ export type UserUpdateWithoutCampaignsInput = {
 	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	wallet?: Prisma.WalletUpdateOneWithoutUserNestedInput;
+	userProfile?: Prisma.UserProfileUpdateOneWithoutUserNestedInput;
 	sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput;
 	accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput;
 	contacts?: Prisma.ContactUpdateManyWithoutUserNestedInput;
-	messages?: Prisma.MessageUpdateManyWithoutUsersNestedInput;
+	contactImports?: Prisma.ContactImportUpdateManyWithoutUserNestedInput;
 	parseJobs?: Prisma.ParseJobUpdateManyWithoutUserNestedInput;
-	subscriptions?: Prisma.SubscriptionUpdateManyWithoutUserNestedInput;
-	wallets?: Prisma.WalletUpdateManyWithoutUserNestedInput;
-	userProfiles?: Prisma.UserProfileUpdateManyWithoutUserNestedInput;
 	messageTemplates?: Prisma.MessageTemplateUpdateManyWithoutUserNestedInput;
 	senderNumbers?: Prisma.SenderNumberUpdateManyWithoutUserNestedInput;
 	inboundMessages?: Prisma.InboundMessageUpdateManyWithoutUserNestedInput;
@@ -1650,777 +1928,15 @@ export type UserUncheckedUpdateWithoutCampaignsInput = {
 	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	wallet?: Prisma.WalletUncheckedUpdateOneWithoutUserNestedInput;
+	userProfile?: Prisma.UserProfileUncheckedUpdateOneWithoutUserNestedInput;
 	sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput;
 	accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput;
 	contacts?: Prisma.ContactUncheckedUpdateManyWithoutUserNestedInput;
-	messages?: Prisma.MessageUncheckedUpdateManyWithoutUsersNestedInput;
+	contactImports?: Prisma.ContactImportUncheckedUpdateManyWithoutUserNestedInput;
 	parseJobs?: Prisma.ParseJobUncheckedUpdateManyWithoutUserNestedInput;
-	subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutUserNestedInput;
-	wallets?: Prisma.WalletUncheckedUpdateManyWithoutUserNestedInput;
-	userProfiles?: Prisma.UserProfileUncheckedUpdateManyWithoutUserNestedInput;
 	messageTemplates?: Prisma.MessageTemplateUncheckedUpdateManyWithoutUserNestedInput;
 	senderNumbers?: Prisma.SenderNumberUncheckedUpdateManyWithoutUserNestedInput;
-	inboundMessages?: Prisma.InboundMessageUncheckedUpdateManyWithoutUserNestedInput;
-	orgInvitesSent?: Prisma.OrgInviteUncheckedUpdateManyWithoutOwnerNestedInput;
-	orgMembersOwned?: Prisma.OrgMemberUncheckedUpdateManyWithoutOwnerNestedInput;
-	orgMemberships?: Prisma.OrgMemberUncheckedUpdateManyWithoutUserNestedInput;
-	joinRequestsOwned?: Prisma.OrgJoinRequestUncheckedUpdateManyWithoutOwnerNestedInput;
-	joinRequestsSent?: Prisma.OrgJoinRequestUncheckedUpdateManyWithoutUserNestedInput;
-};
-
-export type UserCreateWithoutMessagesInput = {
-	id?: string;
-	createdAt?: Date | string;
-	updatedAt?: Date | string;
-	email: string;
-	name?: string | null;
-	emailVerified?: boolean;
-	image?: string | null;
-	sessions?: Prisma.SessionCreateNestedManyWithoutUserInput;
-	accounts?: Prisma.AccountCreateNestedManyWithoutUserInput;
-	contacts?: Prisma.ContactCreateNestedManyWithoutUserInput;
-	campaigns?: Prisma.CampaignCreateNestedManyWithoutUserInput;
-	parseJobs?: Prisma.ParseJobCreateNestedManyWithoutUserInput;
-	subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutUserInput;
-	wallets?: Prisma.WalletCreateNestedManyWithoutUserInput;
-	userProfiles?: Prisma.UserProfileCreateNestedManyWithoutUserInput;
-	messageTemplates?: Prisma.MessageTemplateCreateNestedManyWithoutUserInput;
-	senderNumbers?: Prisma.SenderNumberCreateNestedManyWithoutUserInput;
-	inboundMessages?: Prisma.InboundMessageCreateNestedManyWithoutUserInput;
-	orgInvitesSent?: Prisma.OrgInviteCreateNestedManyWithoutOwnerInput;
-	orgMembersOwned?: Prisma.OrgMemberCreateNestedManyWithoutOwnerInput;
-	orgMemberships?: Prisma.OrgMemberCreateNestedManyWithoutUserInput;
-	joinRequestsOwned?: Prisma.OrgJoinRequestCreateNestedManyWithoutOwnerInput;
-	joinRequestsSent?: Prisma.OrgJoinRequestCreateNestedManyWithoutUserInput;
-};
-
-export type UserUncheckedCreateWithoutMessagesInput = {
-	id?: string;
-	createdAt?: Date | string;
-	updatedAt?: Date | string;
-	email: string;
-	name?: string | null;
-	emailVerified?: boolean;
-	image?: string | null;
-	sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput;
-	accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput;
-	contacts?: Prisma.ContactUncheckedCreateNestedManyWithoutUserInput;
-	campaigns?: Prisma.CampaignUncheckedCreateNestedManyWithoutUserInput;
-	parseJobs?: Prisma.ParseJobUncheckedCreateNestedManyWithoutUserInput;
-	subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutUserInput;
-	wallets?: Prisma.WalletUncheckedCreateNestedManyWithoutUserInput;
-	userProfiles?: Prisma.UserProfileUncheckedCreateNestedManyWithoutUserInput;
-	messageTemplates?: Prisma.MessageTemplateUncheckedCreateNestedManyWithoutUserInput;
-	senderNumbers?: Prisma.SenderNumberUncheckedCreateNestedManyWithoutUserInput;
-	inboundMessages?: Prisma.InboundMessageUncheckedCreateNestedManyWithoutUserInput;
-	orgInvitesSent?: Prisma.OrgInviteUncheckedCreateNestedManyWithoutOwnerInput;
-	orgMembersOwned?: Prisma.OrgMemberUncheckedCreateNestedManyWithoutOwnerInput;
-	orgMemberships?: Prisma.OrgMemberUncheckedCreateNestedManyWithoutUserInput;
-	joinRequestsOwned?: Prisma.OrgJoinRequestUncheckedCreateNestedManyWithoutOwnerInput;
-	joinRequestsSent?: Prisma.OrgJoinRequestUncheckedCreateNestedManyWithoutUserInput;
-};
-
-export type UserCreateOrConnectWithoutMessagesInput = {
-	where: Prisma.UserWhereUniqueInput;
-	create: Prisma.XOR<
-		Prisma.UserCreateWithoutMessagesInput,
-		Prisma.UserUncheckedCreateWithoutMessagesInput
-	>;
-};
-
-export type UserUpsertWithWhereUniqueWithoutMessagesInput = {
-	where: Prisma.UserWhereUniqueInput;
-	update: Prisma.XOR<
-		Prisma.UserUpdateWithoutMessagesInput,
-		Prisma.UserUncheckedUpdateWithoutMessagesInput
-	>;
-	create: Prisma.XOR<
-		Prisma.UserCreateWithoutMessagesInput,
-		Prisma.UserUncheckedCreateWithoutMessagesInput
-	>;
-};
-
-export type UserUpdateWithWhereUniqueWithoutMessagesInput = {
-	where: Prisma.UserWhereUniqueInput;
-	data: Prisma.XOR<
-		Prisma.UserUpdateWithoutMessagesInput,
-		Prisma.UserUncheckedUpdateWithoutMessagesInput
-	>;
-};
-
-export type UserUpdateManyWithWhereWithoutMessagesInput = {
-	where: Prisma.UserScalarWhereInput;
-	data: Prisma.XOR<
-		Prisma.UserUpdateManyMutationInput,
-		Prisma.UserUncheckedUpdateManyWithoutMessagesInput
-	>;
-};
-
-export type UserScalarWhereInput = {
-	AND?: Prisma.UserScalarWhereInput | Prisma.UserScalarWhereInput[];
-	OR?: Prisma.UserScalarWhereInput[];
-	NOT?: Prisma.UserScalarWhereInput | Prisma.UserScalarWhereInput[];
-	id?: Prisma.StringFilter<"User"> | string;
-	createdAt?: Prisma.DateTimeFilter<"User"> | Date | string;
-	updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string;
-	email?: Prisma.StringFilter<"User"> | string;
-	name?: Prisma.StringNullableFilter<"User"> | string | null;
-	emailVerified?: Prisma.BoolFilter<"User"> | boolean;
-	image?: Prisma.StringNullableFilter<"User"> | string | null;
-};
-
-export type UserCreateWithoutWalletsInput = {
-	id?: string;
-	createdAt?: Date | string;
-	updatedAt?: Date | string;
-	email: string;
-	name?: string | null;
-	emailVerified?: boolean;
-	image?: string | null;
-	sessions?: Prisma.SessionCreateNestedManyWithoutUserInput;
-	accounts?: Prisma.AccountCreateNestedManyWithoutUserInput;
-	contacts?: Prisma.ContactCreateNestedManyWithoutUserInput;
-	campaigns?: Prisma.CampaignCreateNestedManyWithoutUserInput;
-	messages?: Prisma.MessageCreateNestedManyWithoutUsersInput;
-	parseJobs?: Prisma.ParseJobCreateNestedManyWithoutUserInput;
-	subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutUserInput;
-	userProfiles?: Prisma.UserProfileCreateNestedManyWithoutUserInput;
-	messageTemplates?: Prisma.MessageTemplateCreateNestedManyWithoutUserInput;
-	senderNumbers?: Prisma.SenderNumberCreateNestedManyWithoutUserInput;
-	inboundMessages?: Prisma.InboundMessageCreateNestedManyWithoutUserInput;
-	orgInvitesSent?: Prisma.OrgInviteCreateNestedManyWithoutOwnerInput;
-	orgMembersOwned?: Prisma.OrgMemberCreateNestedManyWithoutOwnerInput;
-	orgMemberships?: Prisma.OrgMemberCreateNestedManyWithoutUserInput;
-	joinRequestsOwned?: Prisma.OrgJoinRequestCreateNestedManyWithoutOwnerInput;
-	joinRequestsSent?: Prisma.OrgJoinRequestCreateNestedManyWithoutUserInput;
-};
-
-export type UserUncheckedCreateWithoutWalletsInput = {
-	id?: string;
-	createdAt?: Date | string;
-	updatedAt?: Date | string;
-	email: string;
-	name?: string | null;
-	emailVerified?: boolean;
-	image?: string | null;
-	sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput;
-	accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput;
-	contacts?: Prisma.ContactUncheckedCreateNestedManyWithoutUserInput;
-	campaigns?: Prisma.CampaignUncheckedCreateNestedManyWithoutUserInput;
-	messages?: Prisma.MessageUncheckedCreateNestedManyWithoutUsersInput;
-	parseJobs?: Prisma.ParseJobUncheckedCreateNestedManyWithoutUserInput;
-	subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutUserInput;
-	userProfiles?: Prisma.UserProfileUncheckedCreateNestedManyWithoutUserInput;
-	messageTemplates?: Prisma.MessageTemplateUncheckedCreateNestedManyWithoutUserInput;
-	senderNumbers?: Prisma.SenderNumberUncheckedCreateNestedManyWithoutUserInput;
-	inboundMessages?: Prisma.InboundMessageUncheckedCreateNestedManyWithoutUserInput;
-	orgInvitesSent?: Prisma.OrgInviteUncheckedCreateNestedManyWithoutOwnerInput;
-	orgMembersOwned?: Prisma.OrgMemberUncheckedCreateNestedManyWithoutOwnerInput;
-	orgMemberships?: Prisma.OrgMemberUncheckedCreateNestedManyWithoutUserInput;
-	joinRequestsOwned?: Prisma.OrgJoinRequestUncheckedCreateNestedManyWithoutOwnerInput;
-	joinRequestsSent?: Prisma.OrgJoinRequestUncheckedCreateNestedManyWithoutUserInput;
-};
-
-export type UserCreateOrConnectWithoutWalletsInput = {
-	where: Prisma.UserWhereUniqueInput;
-	create: Prisma.XOR<
-		Prisma.UserCreateWithoutWalletsInput,
-		Prisma.UserUncheckedCreateWithoutWalletsInput
-	>;
-};
-
-export type UserUpsertWithoutWalletsInput = {
-	update: Prisma.XOR<
-		Prisma.UserUpdateWithoutWalletsInput,
-		Prisma.UserUncheckedUpdateWithoutWalletsInput
-	>;
-	create: Prisma.XOR<
-		Prisma.UserCreateWithoutWalletsInput,
-		Prisma.UserUncheckedCreateWithoutWalletsInput
-	>;
-	where?: Prisma.UserWhereInput;
-};
-
-export type UserUpdateToOneWithWhereWithoutWalletsInput = {
-	where?: Prisma.UserWhereInput;
-	data: Prisma.XOR<
-		Prisma.UserUpdateWithoutWalletsInput,
-		Prisma.UserUncheckedUpdateWithoutWalletsInput
-	>;
-};
-
-export type UserUpdateWithoutWalletsInput = {
-	id?: Prisma.StringFieldUpdateOperationsInput | string;
-	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-	updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-	email?: Prisma.StringFieldUpdateOperationsInput | string;
-	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-	image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput;
-	accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput;
-	contacts?: Prisma.ContactUpdateManyWithoutUserNestedInput;
-	campaigns?: Prisma.CampaignUpdateManyWithoutUserNestedInput;
-	messages?: Prisma.MessageUpdateManyWithoutUsersNestedInput;
-	parseJobs?: Prisma.ParseJobUpdateManyWithoutUserNestedInput;
-	subscriptions?: Prisma.SubscriptionUpdateManyWithoutUserNestedInput;
-	userProfiles?: Prisma.UserProfileUpdateManyWithoutUserNestedInput;
-	messageTemplates?: Prisma.MessageTemplateUpdateManyWithoutUserNestedInput;
-	senderNumbers?: Prisma.SenderNumberUpdateManyWithoutUserNestedInput;
-	inboundMessages?: Prisma.InboundMessageUpdateManyWithoutUserNestedInput;
-	orgInvitesSent?: Prisma.OrgInviteUpdateManyWithoutOwnerNestedInput;
-	orgMembersOwned?: Prisma.OrgMemberUpdateManyWithoutOwnerNestedInput;
-	orgMemberships?: Prisma.OrgMemberUpdateManyWithoutUserNestedInput;
-	joinRequestsOwned?: Prisma.OrgJoinRequestUpdateManyWithoutOwnerNestedInput;
-	joinRequestsSent?: Prisma.OrgJoinRequestUpdateManyWithoutUserNestedInput;
-};
-
-export type UserUncheckedUpdateWithoutWalletsInput = {
-	id?: Prisma.StringFieldUpdateOperationsInput | string;
-	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-	updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-	email?: Prisma.StringFieldUpdateOperationsInput | string;
-	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-	image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput;
-	accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput;
-	contacts?: Prisma.ContactUncheckedUpdateManyWithoutUserNestedInput;
-	campaigns?: Prisma.CampaignUncheckedUpdateManyWithoutUserNestedInput;
-	messages?: Prisma.MessageUncheckedUpdateManyWithoutUsersNestedInput;
-	parseJobs?: Prisma.ParseJobUncheckedUpdateManyWithoutUserNestedInput;
-	subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutUserNestedInput;
-	userProfiles?: Prisma.UserProfileUncheckedUpdateManyWithoutUserNestedInput;
-	messageTemplates?: Prisma.MessageTemplateUncheckedUpdateManyWithoutUserNestedInput;
-	senderNumbers?: Prisma.SenderNumberUncheckedUpdateManyWithoutUserNestedInput;
-	inboundMessages?: Prisma.InboundMessageUncheckedUpdateManyWithoutUserNestedInput;
-	orgInvitesSent?: Prisma.OrgInviteUncheckedUpdateManyWithoutOwnerNestedInput;
-	orgMembersOwned?: Prisma.OrgMemberUncheckedUpdateManyWithoutOwnerNestedInput;
-	orgMemberships?: Prisma.OrgMemberUncheckedUpdateManyWithoutUserNestedInput;
-	joinRequestsOwned?: Prisma.OrgJoinRequestUncheckedUpdateManyWithoutOwnerNestedInput;
-	joinRequestsSent?: Prisma.OrgJoinRequestUncheckedUpdateManyWithoutUserNestedInput;
-};
-
-export type UserCreateWithoutSubscriptionsInput = {
-	id?: string;
-	createdAt?: Date | string;
-	updatedAt?: Date | string;
-	email: string;
-	name?: string | null;
-	emailVerified?: boolean;
-	image?: string | null;
-	sessions?: Prisma.SessionCreateNestedManyWithoutUserInput;
-	accounts?: Prisma.AccountCreateNestedManyWithoutUserInput;
-	contacts?: Prisma.ContactCreateNestedManyWithoutUserInput;
-	campaigns?: Prisma.CampaignCreateNestedManyWithoutUserInput;
-	messages?: Prisma.MessageCreateNestedManyWithoutUsersInput;
-	parseJobs?: Prisma.ParseJobCreateNestedManyWithoutUserInput;
-	wallets?: Prisma.WalletCreateNestedManyWithoutUserInput;
-	userProfiles?: Prisma.UserProfileCreateNestedManyWithoutUserInput;
-	messageTemplates?: Prisma.MessageTemplateCreateNestedManyWithoutUserInput;
-	senderNumbers?: Prisma.SenderNumberCreateNestedManyWithoutUserInput;
-	inboundMessages?: Prisma.InboundMessageCreateNestedManyWithoutUserInput;
-	orgInvitesSent?: Prisma.OrgInviteCreateNestedManyWithoutOwnerInput;
-	orgMembersOwned?: Prisma.OrgMemberCreateNestedManyWithoutOwnerInput;
-	orgMemberships?: Prisma.OrgMemberCreateNestedManyWithoutUserInput;
-	joinRequestsOwned?: Prisma.OrgJoinRequestCreateNestedManyWithoutOwnerInput;
-	joinRequestsSent?: Prisma.OrgJoinRequestCreateNestedManyWithoutUserInput;
-};
-
-export type UserUncheckedCreateWithoutSubscriptionsInput = {
-	id?: string;
-	createdAt?: Date | string;
-	updatedAt?: Date | string;
-	email: string;
-	name?: string | null;
-	emailVerified?: boolean;
-	image?: string | null;
-	sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput;
-	accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput;
-	contacts?: Prisma.ContactUncheckedCreateNestedManyWithoutUserInput;
-	campaigns?: Prisma.CampaignUncheckedCreateNestedManyWithoutUserInput;
-	messages?: Prisma.MessageUncheckedCreateNestedManyWithoutUsersInput;
-	parseJobs?: Prisma.ParseJobUncheckedCreateNestedManyWithoutUserInput;
-	wallets?: Prisma.WalletUncheckedCreateNestedManyWithoutUserInput;
-	userProfiles?: Prisma.UserProfileUncheckedCreateNestedManyWithoutUserInput;
-	messageTemplates?: Prisma.MessageTemplateUncheckedCreateNestedManyWithoutUserInput;
-	senderNumbers?: Prisma.SenderNumberUncheckedCreateNestedManyWithoutUserInput;
-	inboundMessages?: Prisma.InboundMessageUncheckedCreateNestedManyWithoutUserInput;
-	orgInvitesSent?: Prisma.OrgInviteUncheckedCreateNestedManyWithoutOwnerInput;
-	orgMembersOwned?: Prisma.OrgMemberUncheckedCreateNestedManyWithoutOwnerInput;
-	orgMemberships?: Prisma.OrgMemberUncheckedCreateNestedManyWithoutUserInput;
-	joinRequestsOwned?: Prisma.OrgJoinRequestUncheckedCreateNestedManyWithoutOwnerInput;
-	joinRequestsSent?: Prisma.OrgJoinRequestUncheckedCreateNestedManyWithoutUserInput;
-};
-
-export type UserCreateOrConnectWithoutSubscriptionsInput = {
-	where: Prisma.UserWhereUniqueInput;
-	create: Prisma.XOR<
-		Prisma.UserCreateWithoutSubscriptionsInput,
-		Prisma.UserUncheckedCreateWithoutSubscriptionsInput
-	>;
-};
-
-export type UserUpsertWithoutSubscriptionsInput = {
-	update: Prisma.XOR<
-		Prisma.UserUpdateWithoutSubscriptionsInput,
-		Prisma.UserUncheckedUpdateWithoutSubscriptionsInput
-	>;
-	create: Prisma.XOR<
-		Prisma.UserCreateWithoutSubscriptionsInput,
-		Prisma.UserUncheckedCreateWithoutSubscriptionsInput
-	>;
-	where?: Prisma.UserWhereInput;
-};
-
-export type UserUpdateToOneWithWhereWithoutSubscriptionsInput = {
-	where?: Prisma.UserWhereInput;
-	data: Prisma.XOR<
-		Prisma.UserUpdateWithoutSubscriptionsInput,
-		Prisma.UserUncheckedUpdateWithoutSubscriptionsInput
-	>;
-};
-
-export type UserUpdateWithoutSubscriptionsInput = {
-	id?: Prisma.StringFieldUpdateOperationsInput | string;
-	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-	updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-	email?: Prisma.StringFieldUpdateOperationsInput | string;
-	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-	image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput;
-	accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput;
-	contacts?: Prisma.ContactUpdateManyWithoutUserNestedInput;
-	campaigns?: Prisma.CampaignUpdateManyWithoutUserNestedInput;
-	messages?: Prisma.MessageUpdateManyWithoutUsersNestedInput;
-	parseJobs?: Prisma.ParseJobUpdateManyWithoutUserNestedInput;
-	wallets?: Prisma.WalletUpdateManyWithoutUserNestedInput;
-	userProfiles?: Prisma.UserProfileUpdateManyWithoutUserNestedInput;
-	messageTemplates?: Prisma.MessageTemplateUpdateManyWithoutUserNestedInput;
-	senderNumbers?: Prisma.SenderNumberUpdateManyWithoutUserNestedInput;
-	inboundMessages?: Prisma.InboundMessageUpdateManyWithoutUserNestedInput;
-	orgInvitesSent?: Prisma.OrgInviteUpdateManyWithoutOwnerNestedInput;
-	orgMembersOwned?: Prisma.OrgMemberUpdateManyWithoutOwnerNestedInput;
-	orgMemberships?: Prisma.OrgMemberUpdateManyWithoutUserNestedInput;
-	joinRequestsOwned?: Prisma.OrgJoinRequestUpdateManyWithoutOwnerNestedInput;
-	joinRequestsSent?: Prisma.OrgJoinRequestUpdateManyWithoutUserNestedInput;
-};
-
-export type UserUncheckedUpdateWithoutSubscriptionsInput = {
-	id?: Prisma.StringFieldUpdateOperationsInput | string;
-	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-	updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-	email?: Prisma.StringFieldUpdateOperationsInput | string;
-	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-	image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput;
-	accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput;
-	contacts?: Prisma.ContactUncheckedUpdateManyWithoutUserNestedInput;
-	campaigns?: Prisma.CampaignUncheckedUpdateManyWithoutUserNestedInput;
-	messages?: Prisma.MessageUncheckedUpdateManyWithoutUsersNestedInput;
-	parseJobs?: Prisma.ParseJobUncheckedUpdateManyWithoutUserNestedInput;
-	wallets?: Prisma.WalletUncheckedUpdateManyWithoutUserNestedInput;
-	userProfiles?: Prisma.UserProfileUncheckedUpdateManyWithoutUserNestedInput;
-	messageTemplates?: Prisma.MessageTemplateUncheckedUpdateManyWithoutUserNestedInput;
-	senderNumbers?: Prisma.SenderNumberUncheckedUpdateManyWithoutUserNestedInput;
-	inboundMessages?: Prisma.InboundMessageUncheckedUpdateManyWithoutUserNestedInput;
-	orgInvitesSent?: Prisma.OrgInviteUncheckedUpdateManyWithoutOwnerNestedInput;
-	orgMembersOwned?: Prisma.OrgMemberUncheckedUpdateManyWithoutOwnerNestedInput;
-	orgMemberships?: Prisma.OrgMemberUncheckedUpdateManyWithoutUserNestedInput;
-	joinRequestsOwned?: Prisma.OrgJoinRequestUncheckedUpdateManyWithoutOwnerNestedInput;
-	joinRequestsSent?: Prisma.OrgJoinRequestUncheckedUpdateManyWithoutUserNestedInput;
-};
-
-export type UserCreateWithoutUserProfilesInput = {
-	id?: string;
-	createdAt?: Date | string;
-	updatedAt?: Date | string;
-	email: string;
-	name?: string | null;
-	emailVerified?: boolean;
-	image?: string | null;
-	sessions?: Prisma.SessionCreateNestedManyWithoutUserInput;
-	accounts?: Prisma.AccountCreateNestedManyWithoutUserInput;
-	contacts?: Prisma.ContactCreateNestedManyWithoutUserInput;
-	campaigns?: Prisma.CampaignCreateNestedManyWithoutUserInput;
-	messages?: Prisma.MessageCreateNestedManyWithoutUsersInput;
-	parseJobs?: Prisma.ParseJobCreateNestedManyWithoutUserInput;
-	subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutUserInput;
-	wallets?: Prisma.WalletCreateNestedManyWithoutUserInput;
-	messageTemplates?: Prisma.MessageTemplateCreateNestedManyWithoutUserInput;
-	senderNumbers?: Prisma.SenderNumberCreateNestedManyWithoutUserInput;
-	inboundMessages?: Prisma.InboundMessageCreateNestedManyWithoutUserInput;
-	orgInvitesSent?: Prisma.OrgInviteCreateNestedManyWithoutOwnerInput;
-	orgMembersOwned?: Prisma.OrgMemberCreateNestedManyWithoutOwnerInput;
-	orgMemberships?: Prisma.OrgMemberCreateNestedManyWithoutUserInput;
-	joinRequestsOwned?: Prisma.OrgJoinRequestCreateNestedManyWithoutOwnerInput;
-	joinRequestsSent?: Prisma.OrgJoinRequestCreateNestedManyWithoutUserInput;
-};
-
-export type UserUncheckedCreateWithoutUserProfilesInput = {
-	id?: string;
-	createdAt?: Date | string;
-	updatedAt?: Date | string;
-	email: string;
-	name?: string | null;
-	emailVerified?: boolean;
-	image?: string | null;
-	sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput;
-	accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput;
-	contacts?: Prisma.ContactUncheckedCreateNestedManyWithoutUserInput;
-	campaigns?: Prisma.CampaignUncheckedCreateNestedManyWithoutUserInput;
-	messages?: Prisma.MessageUncheckedCreateNestedManyWithoutUsersInput;
-	parseJobs?: Prisma.ParseJobUncheckedCreateNestedManyWithoutUserInput;
-	subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutUserInput;
-	wallets?: Prisma.WalletUncheckedCreateNestedManyWithoutUserInput;
-	messageTemplates?: Prisma.MessageTemplateUncheckedCreateNestedManyWithoutUserInput;
-	senderNumbers?: Prisma.SenderNumberUncheckedCreateNestedManyWithoutUserInput;
-	inboundMessages?: Prisma.InboundMessageUncheckedCreateNestedManyWithoutUserInput;
-	orgInvitesSent?: Prisma.OrgInviteUncheckedCreateNestedManyWithoutOwnerInput;
-	orgMembersOwned?: Prisma.OrgMemberUncheckedCreateNestedManyWithoutOwnerInput;
-	orgMemberships?: Prisma.OrgMemberUncheckedCreateNestedManyWithoutUserInput;
-	joinRequestsOwned?: Prisma.OrgJoinRequestUncheckedCreateNestedManyWithoutOwnerInput;
-	joinRequestsSent?: Prisma.OrgJoinRequestUncheckedCreateNestedManyWithoutUserInput;
-};
-
-export type UserCreateOrConnectWithoutUserProfilesInput = {
-	where: Prisma.UserWhereUniqueInput;
-	create: Prisma.XOR<
-		Prisma.UserCreateWithoutUserProfilesInput,
-		Prisma.UserUncheckedCreateWithoutUserProfilesInput
-	>;
-};
-
-export type UserUpsertWithoutUserProfilesInput = {
-	update: Prisma.XOR<
-		Prisma.UserUpdateWithoutUserProfilesInput,
-		Prisma.UserUncheckedUpdateWithoutUserProfilesInput
-	>;
-	create: Prisma.XOR<
-		Prisma.UserCreateWithoutUserProfilesInput,
-		Prisma.UserUncheckedCreateWithoutUserProfilesInput
-	>;
-	where?: Prisma.UserWhereInput;
-};
-
-export type UserUpdateToOneWithWhereWithoutUserProfilesInput = {
-	where?: Prisma.UserWhereInput;
-	data: Prisma.XOR<
-		Prisma.UserUpdateWithoutUserProfilesInput,
-		Prisma.UserUncheckedUpdateWithoutUserProfilesInput
-	>;
-};
-
-export type UserUpdateWithoutUserProfilesInput = {
-	id?: Prisma.StringFieldUpdateOperationsInput | string;
-	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-	updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-	email?: Prisma.StringFieldUpdateOperationsInput | string;
-	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-	image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput;
-	accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput;
-	contacts?: Prisma.ContactUpdateManyWithoutUserNestedInput;
-	campaigns?: Prisma.CampaignUpdateManyWithoutUserNestedInput;
-	messages?: Prisma.MessageUpdateManyWithoutUsersNestedInput;
-	parseJobs?: Prisma.ParseJobUpdateManyWithoutUserNestedInput;
-	subscriptions?: Prisma.SubscriptionUpdateManyWithoutUserNestedInput;
-	wallets?: Prisma.WalletUpdateManyWithoutUserNestedInput;
-	messageTemplates?: Prisma.MessageTemplateUpdateManyWithoutUserNestedInput;
-	senderNumbers?: Prisma.SenderNumberUpdateManyWithoutUserNestedInput;
-	inboundMessages?: Prisma.InboundMessageUpdateManyWithoutUserNestedInput;
-	orgInvitesSent?: Prisma.OrgInviteUpdateManyWithoutOwnerNestedInput;
-	orgMembersOwned?: Prisma.OrgMemberUpdateManyWithoutOwnerNestedInput;
-	orgMemberships?: Prisma.OrgMemberUpdateManyWithoutUserNestedInput;
-	joinRequestsOwned?: Prisma.OrgJoinRequestUpdateManyWithoutOwnerNestedInput;
-	joinRequestsSent?: Prisma.OrgJoinRequestUpdateManyWithoutUserNestedInput;
-};
-
-export type UserUncheckedUpdateWithoutUserProfilesInput = {
-	id?: Prisma.StringFieldUpdateOperationsInput | string;
-	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-	updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-	email?: Prisma.StringFieldUpdateOperationsInput | string;
-	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-	image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput;
-	accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput;
-	contacts?: Prisma.ContactUncheckedUpdateManyWithoutUserNestedInput;
-	campaigns?: Prisma.CampaignUncheckedUpdateManyWithoutUserNestedInput;
-	messages?: Prisma.MessageUncheckedUpdateManyWithoutUsersNestedInput;
-	parseJobs?: Prisma.ParseJobUncheckedUpdateManyWithoutUserNestedInput;
-	subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutUserNestedInput;
-	wallets?: Prisma.WalletUncheckedUpdateManyWithoutUserNestedInput;
-	messageTemplates?: Prisma.MessageTemplateUncheckedUpdateManyWithoutUserNestedInput;
-	senderNumbers?: Prisma.SenderNumberUncheckedUpdateManyWithoutUserNestedInput;
-	inboundMessages?: Prisma.InboundMessageUncheckedUpdateManyWithoutUserNestedInput;
-	orgInvitesSent?: Prisma.OrgInviteUncheckedUpdateManyWithoutOwnerNestedInput;
-	orgMembersOwned?: Prisma.OrgMemberUncheckedUpdateManyWithoutOwnerNestedInput;
-	orgMemberships?: Prisma.OrgMemberUncheckedUpdateManyWithoutUserNestedInput;
-	joinRequestsOwned?: Prisma.OrgJoinRequestUncheckedUpdateManyWithoutOwnerNestedInput;
-	joinRequestsSent?: Prisma.OrgJoinRequestUncheckedUpdateManyWithoutUserNestedInput;
-};
-
-export type UserCreateWithoutMessageTemplatesInput = {
-	id?: string;
-	createdAt?: Date | string;
-	updatedAt?: Date | string;
-	email: string;
-	name?: string | null;
-	emailVerified?: boolean;
-	image?: string | null;
-	sessions?: Prisma.SessionCreateNestedManyWithoutUserInput;
-	accounts?: Prisma.AccountCreateNestedManyWithoutUserInput;
-	contacts?: Prisma.ContactCreateNestedManyWithoutUserInput;
-	campaigns?: Prisma.CampaignCreateNestedManyWithoutUserInput;
-	messages?: Prisma.MessageCreateNestedManyWithoutUsersInput;
-	parseJobs?: Prisma.ParseJobCreateNestedManyWithoutUserInput;
-	subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutUserInput;
-	wallets?: Prisma.WalletCreateNestedManyWithoutUserInput;
-	userProfiles?: Prisma.UserProfileCreateNestedManyWithoutUserInput;
-	senderNumbers?: Prisma.SenderNumberCreateNestedManyWithoutUserInput;
-	inboundMessages?: Prisma.InboundMessageCreateNestedManyWithoutUserInput;
-	orgInvitesSent?: Prisma.OrgInviteCreateNestedManyWithoutOwnerInput;
-	orgMembersOwned?: Prisma.OrgMemberCreateNestedManyWithoutOwnerInput;
-	orgMemberships?: Prisma.OrgMemberCreateNestedManyWithoutUserInput;
-	joinRequestsOwned?: Prisma.OrgJoinRequestCreateNestedManyWithoutOwnerInput;
-	joinRequestsSent?: Prisma.OrgJoinRequestCreateNestedManyWithoutUserInput;
-};
-
-export type UserUncheckedCreateWithoutMessageTemplatesInput = {
-	id?: string;
-	createdAt?: Date | string;
-	updatedAt?: Date | string;
-	email: string;
-	name?: string | null;
-	emailVerified?: boolean;
-	image?: string | null;
-	sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput;
-	accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput;
-	contacts?: Prisma.ContactUncheckedCreateNestedManyWithoutUserInput;
-	campaigns?: Prisma.CampaignUncheckedCreateNestedManyWithoutUserInput;
-	messages?: Prisma.MessageUncheckedCreateNestedManyWithoutUsersInput;
-	parseJobs?: Prisma.ParseJobUncheckedCreateNestedManyWithoutUserInput;
-	subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutUserInput;
-	wallets?: Prisma.WalletUncheckedCreateNestedManyWithoutUserInput;
-	userProfiles?: Prisma.UserProfileUncheckedCreateNestedManyWithoutUserInput;
-	senderNumbers?: Prisma.SenderNumberUncheckedCreateNestedManyWithoutUserInput;
-	inboundMessages?: Prisma.InboundMessageUncheckedCreateNestedManyWithoutUserInput;
-	orgInvitesSent?: Prisma.OrgInviteUncheckedCreateNestedManyWithoutOwnerInput;
-	orgMembersOwned?: Prisma.OrgMemberUncheckedCreateNestedManyWithoutOwnerInput;
-	orgMemberships?: Prisma.OrgMemberUncheckedCreateNestedManyWithoutUserInput;
-	joinRequestsOwned?: Prisma.OrgJoinRequestUncheckedCreateNestedManyWithoutOwnerInput;
-	joinRequestsSent?: Prisma.OrgJoinRequestUncheckedCreateNestedManyWithoutUserInput;
-};
-
-export type UserCreateOrConnectWithoutMessageTemplatesInput = {
-	where: Prisma.UserWhereUniqueInput;
-	create: Prisma.XOR<
-		Prisma.UserCreateWithoutMessageTemplatesInput,
-		Prisma.UserUncheckedCreateWithoutMessageTemplatesInput
-	>;
-};
-
-export type UserUpsertWithoutMessageTemplatesInput = {
-	update: Prisma.XOR<
-		Prisma.UserUpdateWithoutMessageTemplatesInput,
-		Prisma.UserUncheckedUpdateWithoutMessageTemplatesInput
-	>;
-	create: Prisma.XOR<
-		Prisma.UserCreateWithoutMessageTemplatesInput,
-		Prisma.UserUncheckedCreateWithoutMessageTemplatesInput
-	>;
-	where?: Prisma.UserWhereInput;
-};
-
-export type UserUpdateToOneWithWhereWithoutMessageTemplatesInput = {
-	where?: Prisma.UserWhereInput;
-	data: Prisma.XOR<
-		Prisma.UserUpdateWithoutMessageTemplatesInput,
-		Prisma.UserUncheckedUpdateWithoutMessageTemplatesInput
-	>;
-};
-
-export type UserUpdateWithoutMessageTemplatesInput = {
-	id?: Prisma.StringFieldUpdateOperationsInput | string;
-	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-	updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-	email?: Prisma.StringFieldUpdateOperationsInput | string;
-	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-	image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput;
-	accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput;
-	contacts?: Prisma.ContactUpdateManyWithoutUserNestedInput;
-	campaigns?: Prisma.CampaignUpdateManyWithoutUserNestedInput;
-	messages?: Prisma.MessageUpdateManyWithoutUsersNestedInput;
-	parseJobs?: Prisma.ParseJobUpdateManyWithoutUserNestedInput;
-	subscriptions?: Prisma.SubscriptionUpdateManyWithoutUserNestedInput;
-	wallets?: Prisma.WalletUpdateManyWithoutUserNestedInput;
-	userProfiles?: Prisma.UserProfileUpdateManyWithoutUserNestedInput;
-	senderNumbers?: Prisma.SenderNumberUpdateManyWithoutUserNestedInput;
-	inboundMessages?: Prisma.InboundMessageUpdateManyWithoutUserNestedInput;
-	orgInvitesSent?: Prisma.OrgInviteUpdateManyWithoutOwnerNestedInput;
-	orgMembersOwned?: Prisma.OrgMemberUpdateManyWithoutOwnerNestedInput;
-	orgMemberships?: Prisma.OrgMemberUpdateManyWithoutUserNestedInput;
-	joinRequestsOwned?: Prisma.OrgJoinRequestUpdateManyWithoutOwnerNestedInput;
-	joinRequestsSent?: Prisma.OrgJoinRequestUpdateManyWithoutUserNestedInput;
-};
-
-export type UserUncheckedUpdateWithoutMessageTemplatesInput = {
-	id?: Prisma.StringFieldUpdateOperationsInput | string;
-	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-	updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-	email?: Prisma.StringFieldUpdateOperationsInput | string;
-	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-	image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput;
-	accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput;
-	contacts?: Prisma.ContactUncheckedUpdateManyWithoutUserNestedInput;
-	campaigns?: Prisma.CampaignUncheckedUpdateManyWithoutUserNestedInput;
-	messages?: Prisma.MessageUncheckedUpdateManyWithoutUsersNestedInput;
-	parseJobs?: Prisma.ParseJobUncheckedUpdateManyWithoutUserNestedInput;
-	subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutUserNestedInput;
-	wallets?: Prisma.WalletUncheckedUpdateManyWithoutUserNestedInput;
-	userProfiles?: Prisma.UserProfileUncheckedUpdateManyWithoutUserNestedInput;
-	senderNumbers?: Prisma.SenderNumberUncheckedUpdateManyWithoutUserNestedInput;
-	inboundMessages?: Prisma.InboundMessageUncheckedUpdateManyWithoutUserNestedInput;
-	orgInvitesSent?: Prisma.OrgInviteUncheckedUpdateManyWithoutOwnerNestedInput;
-	orgMembersOwned?: Prisma.OrgMemberUncheckedUpdateManyWithoutOwnerNestedInput;
-	orgMemberships?: Prisma.OrgMemberUncheckedUpdateManyWithoutUserNestedInput;
-	joinRequestsOwned?: Prisma.OrgJoinRequestUncheckedUpdateManyWithoutOwnerNestedInput;
-	joinRequestsSent?: Prisma.OrgJoinRequestUncheckedUpdateManyWithoutUserNestedInput;
-};
-
-export type UserCreateWithoutSenderNumbersInput = {
-	id?: string;
-	createdAt?: Date | string;
-	updatedAt?: Date | string;
-	email: string;
-	name?: string | null;
-	emailVerified?: boolean;
-	image?: string | null;
-	sessions?: Prisma.SessionCreateNestedManyWithoutUserInput;
-	accounts?: Prisma.AccountCreateNestedManyWithoutUserInput;
-	contacts?: Prisma.ContactCreateNestedManyWithoutUserInput;
-	campaigns?: Prisma.CampaignCreateNestedManyWithoutUserInput;
-	messages?: Prisma.MessageCreateNestedManyWithoutUsersInput;
-	parseJobs?: Prisma.ParseJobCreateNestedManyWithoutUserInput;
-	subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutUserInput;
-	wallets?: Prisma.WalletCreateNestedManyWithoutUserInput;
-	userProfiles?: Prisma.UserProfileCreateNestedManyWithoutUserInput;
-	messageTemplates?: Prisma.MessageTemplateCreateNestedManyWithoutUserInput;
-	inboundMessages?: Prisma.InboundMessageCreateNestedManyWithoutUserInput;
-	orgInvitesSent?: Prisma.OrgInviteCreateNestedManyWithoutOwnerInput;
-	orgMembersOwned?: Prisma.OrgMemberCreateNestedManyWithoutOwnerInput;
-	orgMemberships?: Prisma.OrgMemberCreateNestedManyWithoutUserInput;
-	joinRequestsOwned?: Prisma.OrgJoinRequestCreateNestedManyWithoutOwnerInput;
-	joinRequestsSent?: Prisma.OrgJoinRequestCreateNestedManyWithoutUserInput;
-};
-
-export type UserUncheckedCreateWithoutSenderNumbersInput = {
-	id?: string;
-	createdAt?: Date | string;
-	updatedAt?: Date | string;
-	email: string;
-	name?: string | null;
-	emailVerified?: boolean;
-	image?: string | null;
-	sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput;
-	accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput;
-	contacts?: Prisma.ContactUncheckedCreateNestedManyWithoutUserInput;
-	campaigns?: Prisma.CampaignUncheckedCreateNestedManyWithoutUserInput;
-	messages?: Prisma.MessageUncheckedCreateNestedManyWithoutUsersInput;
-	parseJobs?: Prisma.ParseJobUncheckedCreateNestedManyWithoutUserInput;
-	subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutUserInput;
-	wallets?: Prisma.WalletUncheckedCreateNestedManyWithoutUserInput;
-	userProfiles?: Prisma.UserProfileUncheckedCreateNestedManyWithoutUserInput;
-	messageTemplates?: Prisma.MessageTemplateUncheckedCreateNestedManyWithoutUserInput;
-	inboundMessages?: Prisma.InboundMessageUncheckedCreateNestedManyWithoutUserInput;
-	orgInvitesSent?: Prisma.OrgInviteUncheckedCreateNestedManyWithoutOwnerInput;
-	orgMembersOwned?: Prisma.OrgMemberUncheckedCreateNestedManyWithoutOwnerInput;
-	orgMemberships?: Prisma.OrgMemberUncheckedCreateNestedManyWithoutUserInput;
-	joinRequestsOwned?: Prisma.OrgJoinRequestUncheckedCreateNestedManyWithoutOwnerInput;
-	joinRequestsSent?: Prisma.OrgJoinRequestUncheckedCreateNestedManyWithoutUserInput;
-};
-
-export type UserCreateOrConnectWithoutSenderNumbersInput = {
-	where: Prisma.UserWhereUniqueInput;
-	create: Prisma.XOR<
-		Prisma.UserCreateWithoutSenderNumbersInput,
-		Prisma.UserUncheckedCreateWithoutSenderNumbersInput
-	>;
-};
-
-export type UserUpsertWithoutSenderNumbersInput = {
-	update: Prisma.XOR<
-		Prisma.UserUpdateWithoutSenderNumbersInput,
-		Prisma.UserUncheckedUpdateWithoutSenderNumbersInput
-	>;
-	create: Prisma.XOR<
-		Prisma.UserCreateWithoutSenderNumbersInput,
-		Prisma.UserUncheckedCreateWithoutSenderNumbersInput
-	>;
-	where?: Prisma.UserWhereInput;
-};
-
-export type UserUpdateToOneWithWhereWithoutSenderNumbersInput = {
-	where?: Prisma.UserWhereInput;
-	data: Prisma.XOR<
-		Prisma.UserUpdateWithoutSenderNumbersInput,
-		Prisma.UserUncheckedUpdateWithoutSenderNumbersInput
-	>;
-};
-
-export type UserUpdateWithoutSenderNumbersInput = {
-	id?: Prisma.StringFieldUpdateOperationsInput | string;
-	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-	updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-	email?: Prisma.StringFieldUpdateOperationsInput | string;
-	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-	image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput;
-	accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput;
-	contacts?: Prisma.ContactUpdateManyWithoutUserNestedInput;
-	campaigns?: Prisma.CampaignUpdateManyWithoutUserNestedInput;
-	messages?: Prisma.MessageUpdateManyWithoutUsersNestedInput;
-	parseJobs?: Prisma.ParseJobUpdateManyWithoutUserNestedInput;
-	subscriptions?: Prisma.SubscriptionUpdateManyWithoutUserNestedInput;
-	wallets?: Prisma.WalletUpdateManyWithoutUserNestedInput;
-	userProfiles?: Prisma.UserProfileUpdateManyWithoutUserNestedInput;
-	messageTemplates?: Prisma.MessageTemplateUpdateManyWithoutUserNestedInput;
-	inboundMessages?: Prisma.InboundMessageUpdateManyWithoutUserNestedInput;
-	orgInvitesSent?: Prisma.OrgInviteUpdateManyWithoutOwnerNestedInput;
-	orgMembersOwned?: Prisma.OrgMemberUpdateManyWithoutOwnerNestedInput;
-	orgMemberships?: Prisma.OrgMemberUpdateManyWithoutUserNestedInput;
-	joinRequestsOwned?: Prisma.OrgJoinRequestUpdateManyWithoutOwnerNestedInput;
-	joinRequestsSent?: Prisma.OrgJoinRequestUpdateManyWithoutUserNestedInput;
-};
-
-export type UserUncheckedUpdateWithoutSenderNumbersInput = {
-	id?: Prisma.StringFieldUpdateOperationsInput | string;
-	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-	updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-	email?: Prisma.StringFieldUpdateOperationsInput | string;
-	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-	image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput;
-	accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput;
-	contacts?: Prisma.ContactUncheckedUpdateManyWithoutUserNestedInput;
-	campaigns?: Prisma.CampaignUncheckedUpdateManyWithoutUserNestedInput;
-	messages?: Prisma.MessageUncheckedUpdateManyWithoutUsersNestedInput;
-	parseJobs?: Prisma.ParseJobUncheckedUpdateManyWithoutUserNestedInput;
-	subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutUserNestedInput;
-	wallets?: Prisma.WalletUncheckedUpdateManyWithoutUserNestedInput;
-	userProfiles?: Prisma.UserProfileUncheckedUpdateManyWithoutUserNestedInput;
-	messageTemplates?: Prisma.MessageTemplateUncheckedUpdateManyWithoutUserNestedInput;
 	inboundMessages?: Prisma.InboundMessageUncheckedUpdateManyWithoutUserNestedInput;
 	orgInvitesSent?: Prisma.OrgInviteUncheckedUpdateManyWithoutOwnerNestedInput;
 	orgMembersOwned?: Prisma.OrgMemberUncheckedUpdateManyWithoutOwnerNestedInput;
@@ -2437,15 +1953,14 @@ export type UserCreateWithoutInboundMessagesInput = {
 	name?: string | null;
 	emailVerified?: boolean;
 	image?: string | null;
+	wallet?: Prisma.WalletCreateNestedOneWithoutUserInput;
+	userProfile?: Prisma.UserProfileCreateNestedOneWithoutUserInput;
 	sessions?: Prisma.SessionCreateNestedManyWithoutUserInput;
 	accounts?: Prisma.AccountCreateNestedManyWithoutUserInput;
 	contacts?: Prisma.ContactCreateNestedManyWithoutUserInput;
+	contactImports?: Prisma.ContactImportCreateNestedManyWithoutUserInput;
 	campaigns?: Prisma.CampaignCreateNestedManyWithoutUserInput;
-	messages?: Prisma.MessageCreateNestedManyWithoutUsersInput;
 	parseJobs?: Prisma.ParseJobCreateNestedManyWithoutUserInput;
-	subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutUserInput;
-	wallets?: Prisma.WalletCreateNestedManyWithoutUserInput;
-	userProfiles?: Prisma.UserProfileCreateNestedManyWithoutUserInput;
 	messageTemplates?: Prisma.MessageTemplateCreateNestedManyWithoutUserInput;
 	senderNumbers?: Prisma.SenderNumberCreateNestedManyWithoutUserInput;
 	orgInvitesSent?: Prisma.OrgInviteCreateNestedManyWithoutOwnerInput;
@@ -2463,15 +1978,14 @@ export type UserUncheckedCreateWithoutInboundMessagesInput = {
 	name?: string | null;
 	emailVerified?: boolean;
 	image?: string | null;
+	wallet?: Prisma.WalletUncheckedCreateNestedOneWithoutUserInput;
+	userProfile?: Prisma.UserProfileUncheckedCreateNestedOneWithoutUserInput;
 	sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput;
 	accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput;
 	contacts?: Prisma.ContactUncheckedCreateNestedManyWithoutUserInput;
+	contactImports?: Prisma.ContactImportUncheckedCreateNestedManyWithoutUserInput;
 	campaigns?: Prisma.CampaignUncheckedCreateNestedManyWithoutUserInput;
-	messages?: Prisma.MessageUncheckedCreateNestedManyWithoutUsersInput;
 	parseJobs?: Prisma.ParseJobUncheckedCreateNestedManyWithoutUserInput;
-	subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutUserInput;
-	wallets?: Prisma.WalletUncheckedCreateNestedManyWithoutUserInput;
-	userProfiles?: Prisma.UserProfileUncheckedCreateNestedManyWithoutUserInput;
 	messageTemplates?: Prisma.MessageTemplateUncheckedCreateNestedManyWithoutUserInput;
 	senderNumbers?: Prisma.SenderNumberUncheckedCreateNestedManyWithoutUserInput;
 	orgInvitesSent?: Prisma.OrgInviteUncheckedCreateNestedManyWithoutOwnerInput;
@@ -2517,15 +2031,14 @@ export type UserUpdateWithoutInboundMessagesInput = {
 	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	wallet?: Prisma.WalletUpdateOneWithoutUserNestedInput;
+	userProfile?: Prisma.UserProfileUpdateOneWithoutUserNestedInput;
 	sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput;
 	accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput;
 	contacts?: Prisma.ContactUpdateManyWithoutUserNestedInput;
+	contactImports?: Prisma.ContactImportUpdateManyWithoutUserNestedInput;
 	campaigns?: Prisma.CampaignUpdateManyWithoutUserNestedInput;
-	messages?: Prisma.MessageUpdateManyWithoutUsersNestedInput;
 	parseJobs?: Prisma.ParseJobUpdateManyWithoutUserNestedInput;
-	subscriptions?: Prisma.SubscriptionUpdateManyWithoutUserNestedInput;
-	wallets?: Prisma.WalletUpdateManyWithoutUserNestedInput;
-	userProfiles?: Prisma.UserProfileUpdateManyWithoutUserNestedInput;
 	messageTemplates?: Prisma.MessageTemplateUpdateManyWithoutUserNestedInput;
 	senderNumbers?: Prisma.SenderNumberUpdateManyWithoutUserNestedInput;
 	orgInvitesSent?: Prisma.OrgInviteUpdateManyWithoutOwnerNestedInput;
@@ -2543,17 +2056,272 @@ export type UserUncheckedUpdateWithoutInboundMessagesInput = {
 	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	wallet?: Prisma.WalletUncheckedUpdateOneWithoutUserNestedInput;
+	userProfile?: Prisma.UserProfileUncheckedUpdateOneWithoutUserNestedInput;
 	sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput;
 	accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput;
 	contacts?: Prisma.ContactUncheckedUpdateManyWithoutUserNestedInput;
+	contactImports?: Prisma.ContactImportUncheckedUpdateManyWithoutUserNestedInput;
 	campaigns?: Prisma.CampaignUncheckedUpdateManyWithoutUserNestedInput;
-	messages?: Prisma.MessageUncheckedUpdateManyWithoutUsersNestedInput;
 	parseJobs?: Prisma.ParseJobUncheckedUpdateManyWithoutUserNestedInput;
-	subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutUserNestedInput;
-	wallets?: Prisma.WalletUncheckedUpdateManyWithoutUserNestedInput;
-	userProfiles?: Prisma.UserProfileUncheckedUpdateManyWithoutUserNestedInput;
 	messageTemplates?: Prisma.MessageTemplateUncheckedUpdateManyWithoutUserNestedInput;
 	senderNumbers?: Prisma.SenderNumberUncheckedUpdateManyWithoutUserNestedInput;
+	orgInvitesSent?: Prisma.OrgInviteUncheckedUpdateManyWithoutOwnerNestedInput;
+	orgMembersOwned?: Prisma.OrgMemberUncheckedUpdateManyWithoutOwnerNestedInput;
+	orgMemberships?: Prisma.OrgMemberUncheckedUpdateManyWithoutUserNestedInput;
+	joinRequestsOwned?: Prisma.OrgJoinRequestUncheckedUpdateManyWithoutOwnerNestedInput;
+	joinRequestsSent?: Prisma.OrgJoinRequestUncheckedUpdateManyWithoutUserNestedInput;
+};
+
+export type UserCreateWithoutMessageTemplatesInput = {
+	id?: string;
+	createdAt?: Date | string;
+	updatedAt?: Date | string;
+	email: string;
+	name?: string | null;
+	emailVerified?: boolean;
+	image?: string | null;
+	wallet?: Prisma.WalletCreateNestedOneWithoutUserInput;
+	userProfile?: Prisma.UserProfileCreateNestedOneWithoutUserInput;
+	sessions?: Prisma.SessionCreateNestedManyWithoutUserInput;
+	accounts?: Prisma.AccountCreateNestedManyWithoutUserInput;
+	contacts?: Prisma.ContactCreateNestedManyWithoutUserInput;
+	contactImports?: Prisma.ContactImportCreateNestedManyWithoutUserInput;
+	campaigns?: Prisma.CampaignCreateNestedManyWithoutUserInput;
+	parseJobs?: Prisma.ParseJobCreateNestedManyWithoutUserInput;
+	senderNumbers?: Prisma.SenderNumberCreateNestedManyWithoutUserInput;
+	inboundMessages?: Prisma.InboundMessageCreateNestedManyWithoutUserInput;
+	orgInvitesSent?: Prisma.OrgInviteCreateNestedManyWithoutOwnerInput;
+	orgMembersOwned?: Prisma.OrgMemberCreateNestedManyWithoutOwnerInput;
+	orgMemberships?: Prisma.OrgMemberCreateNestedManyWithoutUserInput;
+	joinRequestsOwned?: Prisma.OrgJoinRequestCreateNestedManyWithoutOwnerInput;
+	joinRequestsSent?: Prisma.OrgJoinRequestCreateNestedManyWithoutUserInput;
+};
+
+export type UserUncheckedCreateWithoutMessageTemplatesInput = {
+	id?: string;
+	createdAt?: Date | string;
+	updatedAt?: Date | string;
+	email: string;
+	name?: string | null;
+	emailVerified?: boolean;
+	image?: string | null;
+	wallet?: Prisma.WalletUncheckedCreateNestedOneWithoutUserInput;
+	userProfile?: Prisma.UserProfileUncheckedCreateNestedOneWithoutUserInput;
+	sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput;
+	accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput;
+	contacts?: Prisma.ContactUncheckedCreateNestedManyWithoutUserInput;
+	contactImports?: Prisma.ContactImportUncheckedCreateNestedManyWithoutUserInput;
+	campaigns?: Prisma.CampaignUncheckedCreateNestedManyWithoutUserInput;
+	parseJobs?: Prisma.ParseJobUncheckedCreateNestedManyWithoutUserInput;
+	senderNumbers?: Prisma.SenderNumberUncheckedCreateNestedManyWithoutUserInput;
+	inboundMessages?: Prisma.InboundMessageUncheckedCreateNestedManyWithoutUserInput;
+	orgInvitesSent?: Prisma.OrgInviteUncheckedCreateNestedManyWithoutOwnerInput;
+	orgMembersOwned?: Prisma.OrgMemberUncheckedCreateNestedManyWithoutOwnerInput;
+	orgMemberships?: Prisma.OrgMemberUncheckedCreateNestedManyWithoutUserInput;
+	joinRequestsOwned?: Prisma.OrgJoinRequestUncheckedCreateNestedManyWithoutOwnerInput;
+	joinRequestsSent?: Prisma.OrgJoinRequestUncheckedCreateNestedManyWithoutUserInput;
+};
+
+export type UserCreateOrConnectWithoutMessageTemplatesInput = {
+	where: Prisma.UserWhereUniqueInput;
+	create: Prisma.XOR<
+		Prisma.UserCreateWithoutMessageTemplatesInput,
+		Prisma.UserUncheckedCreateWithoutMessageTemplatesInput
+	>;
+};
+
+export type UserUpsertWithoutMessageTemplatesInput = {
+	update: Prisma.XOR<
+		Prisma.UserUpdateWithoutMessageTemplatesInput,
+		Prisma.UserUncheckedUpdateWithoutMessageTemplatesInput
+	>;
+	create: Prisma.XOR<
+		Prisma.UserCreateWithoutMessageTemplatesInput,
+		Prisma.UserUncheckedCreateWithoutMessageTemplatesInput
+	>;
+	where?: Prisma.UserWhereInput;
+};
+
+export type UserUpdateToOneWithWhereWithoutMessageTemplatesInput = {
+	where?: Prisma.UserWhereInput;
+	data: Prisma.XOR<
+		Prisma.UserUpdateWithoutMessageTemplatesInput,
+		Prisma.UserUncheckedUpdateWithoutMessageTemplatesInput
+	>;
+};
+
+export type UserUpdateWithoutMessageTemplatesInput = {
+	id?: Prisma.StringFieldUpdateOperationsInput | string;
+	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+	updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+	email?: Prisma.StringFieldUpdateOperationsInput | string;
+	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	wallet?: Prisma.WalletUpdateOneWithoutUserNestedInput;
+	userProfile?: Prisma.UserProfileUpdateOneWithoutUserNestedInput;
+	sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput;
+	accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput;
+	contacts?: Prisma.ContactUpdateManyWithoutUserNestedInput;
+	contactImports?: Prisma.ContactImportUpdateManyWithoutUserNestedInput;
+	campaigns?: Prisma.CampaignUpdateManyWithoutUserNestedInput;
+	parseJobs?: Prisma.ParseJobUpdateManyWithoutUserNestedInput;
+	senderNumbers?: Prisma.SenderNumberUpdateManyWithoutUserNestedInput;
+	inboundMessages?: Prisma.InboundMessageUpdateManyWithoutUserNestedInput;
+	orgInvitesSent?: Prisma.OrgInviteUpdateManyWithoutOwnerNestedInput;
+	orgMembersOwned?: Prisma.OrgMemberUpdateManyWithoutOwnerNestedInput;
+	orgMemberships?: Prisma.OrgMemberUpdateManyWithoutUserNestedInput;
+	joinRequestsOwned?: Prisma.OrgJoinRequestUpdateManyWithoutOwnerNestedInput;
+	joinRequestsSent?: Prisma.OrgJoinRequestUpdateManyWithoutUserNestedInput;
+};
+
+export type UserUncheckedUpdateWithoutMessageTemplatesInput = {
+	id?: Prisma.StringFieldUpdateOperationsInput | string;
+	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+	updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+	email?: Prisma.StringFieldUpdateOperationsInput | string;
+	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	wallet?: Prisma.WalletUncheckedUpdateOneWithoutUserNestedInput;
+	userProfile?: Prisma.UserProfileUncheckedUpdateOneWithoutUserNestedInput;
+	sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput;
+	accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput;
+	contacts?: Prisma.ContactUncheckedUpdateManyWithoutUserNestedInput;
+	contactImports?: Prisma.ContactImportUncheckedUpdateManyWithoutUserNestedInput;
+	campaigns?: Prisma.CampaignUncheckedUpdateManyWithoutUserNestedInput;
+	parseJobs?: Prisma.ParseJobUncheckedUpdateManyWithoutUserNestedInput;
+	senderNumbers?: Prisma.SenderNumberUncheckedUpdateManyWithoutUserNestedInput;
+	inboundMessages?: Prisma.InboundMessageUncheckedUpdateManyWithoutUserNestedInput;
+	orgInvitesSent?: Prisma.OrgInviteUncheckedUpdateManyWithoutOwnerNestedInput;
+	orgMembersOwned?: Prisma.OrgMemberUncheckedUpdateManyWithoutOwnerNestedInput;
+	orgMemberships?: Prisma.OrgMemberUncheckedUpdateManyWithoutUserNestedInput;
+	joinRequestsOwned?: Prisma.OrgJoinRequestUncheckedUpdateManyWithoutOwnerNestedInput;
+	joinRequestsSent?: Prisma.OrgJoinRequestUncheckedUpdateManyWithoutUserNestedInput;
+};
+
+export type UserCreateWithoutSenderNumbersInput = {
+	id?: string;
+	createdAt?: Date | string;
+	updatedAt?: Date | string;
+	email: string;
+	name?: string | null;
+	emailVerified?: boolean;
+	image?: string | null;
+	wallet?: Prisma.WalletCreateNestedOneWithoutUserInput;
+	userProfile?: Prisma.UserProfileCreateNestedOneWithoutUserInput;
+	sessions?: Prisma.SessionCreateNestedManyWithoutUserInput;
+	accounts?: Prisma.AccountCreateNestedManyWithoutUserInput;
+	contacts?: Prisma.ContactCreateNestedManyWithoutUserInput;
+	contactImports?: Prisma.ContactImportCreateNestedManyWithoutUserInput;
+	campaigns?: Prisma.CampaignCreateNestedManyWithoutUserInput;
+	parseJobs?: Prisma.ParseJobCreateNestedManyWithoutUserInput;
+	messageTemplates?: Prisma.MessageTemplateCreateNestedManyWithoutUserInput;
+	inboundMessages?: Prisma.InboundMessageCreateNestedManyWithoutUserInput;
+	orgInvitesSent?: Prisma.OrgInviteCreateNestedManyWithoutOwnerInput;
+	orgMembersOwned?: Prisma.OrgMemberCreateNestedManyWithoutOwnerInput;
+	orgMemberships?: Prisma.OrgMemberCreateNestedManyWithoutUserInput;
+	joinRequestsOwned?: Prisma.OrgJoinRequestCreateNestedManyWithoutOwnerInput;
+	joinRequestsSent?: Prisma.OrgJoinRequestCreateNestedManyWithoutUserInput;
+};
+
+export type UserUncheckedCreateWithoutSenderNumbersInput = {
+	id?: string;
+	createdAt?: Date | string;
+	updatedAt?: Date | string;
+	email: string;
+	name?: string | null;
+	emailVerified?: boolean;
+	image?: string | null;
+	wallet?: Prisma.WalletUncheckedCreateNestedOneWithoutUserInput;
+	userProfile?: Prisma.UserProfileUncheckedCreateNestedOneWithoutUserInput;
+	sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput;
+	accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput;
+	contacts?: Prisma.ContactUncheckedCreateNestedManyWithoutUserInput;
+	contactImports?: Prisma.ContactImportUncheckedCreateNestedManyWithoutUserInput;
+	campaigns?: Prisma.CampaignUncheckedCreateNestedManyWithoutUserInput;
+	parseJobs?: Prisma.ParseJobUncheckedCreateNestedManyWithoutUserInput;
+	messageTemplates?: Prisma.MessageTemplateUncheckedCreateNestedManyWithoutUserInput;
+	inboundMessages?: Prisma.InboundMessageUncheckedCreateNestedManyWithoutUserInput;
+	orgInvitesSent?: Prisma.OrgInviteUncheckedCreateNestedManyWithoutOwnerInput;
+	orgMembersOwned?: Prisma.OrgMemberUncheckedCreateNestedManyWithoutOwnerInput;
+	orgMemberships?: Prisma.OrgMemberUncheckedCreateNestedManyWithoutUserInput;
+	joinRequestsOwned?: Prisma.OrgJoinRequestUncheckedCreateNestedManyWithoutOwnerInput;
+	joinRequestsSent?: Prisma.OrgJoinRequestUncheckedCreateNestedManyWithoutUserInput;
+};
+
+export type UserCreateOrConnectWithoutSenderNumbersInput = {
+	where: Prisma.UserWhereUniqueInput;
+	create: Prisma.XOR<
+		Prisma.UserCreateWithoutSenderNumbersInput,
+		Prisma.UserUncheckedCreateWithoutSenderNumbersInput
+	>;
+};
+
+export type UserUpsertWithoutSenderNumbersInput = {
+	update: Prisma.XOR<
+		Prisma.UserUpdateWithoutSenderNumbersInput,
+		Prisma.UserUncheckedUpdateWithoutSenderNumbersInput
+	>;
+	create: Prisma.XOR<
+		Prisma.UserCreateWithoutSenderNumbersInput,
+		Prisma.UserUncheckedCreateWithoutSenderNumbersInput
+	>;
+	where?: Prisma.UserWhereInput;
+};
+
+export type UserUpdateToOneWithWhereWithoutSenderNumbersInput = {
+	where?: Prisma.UserWhereInput;
+	data: Prisma.XOR<
+		Prisma.UserUpdateWithoutSenderNumbersInput,
+		Prisma.UserUncheckedUpdateWithoutSenderNumbersInput
+	>;
+};
+
+export type UserUpdateWithoutSenderNumbersInput = {
+	id?: Prisma.StringFieldUpdateOperationsInput | string;
+	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+	updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+	email?: Prisma.StringFieldUpdateOperationsInput | string;
+	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	wallet?: Prisma.WalletUpdateOneWithoutUserNestedInput;
+	userProfile?: Prisma.UserProfileUpdateOneWithoutUserNestedInput;
+	sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput;
+	accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput;
+	contacts?: Prisma.ContactUpdateManyWithoutUserNestedInput;
+	contactImports?: Prisma.ContactImportUpdateManyWithoutUserNestedInput;
+	campaigns?: Prisma.CampaignUpdateManyWithoutUserNestedInput;
+	parseJobs?: Prisma.ParseJobUpdateManyWithoutUserNestedInput;
+	messageTemplates?: Prisma.MessageTemplateUpdateManyWithoutUserNestedInput;
+	inboundMessages?: Prisma.InboundMessageUpdateManyWithoutUserNestedInput;
+	orgInvitesSent?: Prisma.OrgInviteUpdateManyWithoutOwnerNestedInput;
+	orgMembersOwned?: Prisma.OrgMemberUpdateManyWithoutOwnerNestedInput;
+	orgMemberships?: Prisma.OrgMemberUpdateManyWithoutUserNestedInput;
+	joinRequestsOwned?: Prisma.OrgJoinRequestUpdateManyWithoutOwnerNestedInput;
+	joinRequestsSent?: Prisma.OrgJoinRequestUpdateManyWithoutUserNestedInput;
+};
+
+export type UserUncheckedUpdateWithoutSenderNumbersInput = {
+	id?: Prisma.StringFieldUpdateOperationsInput | string;
+	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+	updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+	email?: Prisma.StringFieldUpdateOperationsInput | string;
+	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	wallet?: Prisma.WalletUncheckedUpdateOneWithoutUserNestedInput;
+	userProfile?: Prisma.UserProfileUncheckedUpdateOneWithoutUserNestedInput;
+	sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput;
+	accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput;
+	contacts?: Prisma.ContactUncheckedUpdateManyWithoutUserNestedInput;
+	contactImports?: Prisma.ContactImportUncheckedUpdateManyWithoutUserNestedInput;
+	campaigns?: Prisma.CampaignUncheckedUpdateManyWithoutUserNestedInput;
+	parseJobs?: Prisma.ParseJobUncheckedUpdateManyWithoutUserNestedInput;
+	messageTemplates?: Prisma.MessageTemplateUncheckedUpdateManyWithoutUserNestedInput;
+	inboundMessages?: Prisma.InboundMessageUncheckedUpdateManyWithoutUserNestedInput;
 	orgInvitesSent?: Prisma.OrgInviteUncheckedUpdateManyWithoutOwnerNestedInput;
 	orgMembersOwned?: Prisma.OrgMemberUncheckedUpdateManyWithoutOwnerNestedInput;
 	orgMemberships?: Prisma.OrgMemberUncheckedUpdateManyWithoutUserNestedInput;
@@ -2569,15 +2337,14 @@ export type UserCreateWithoutOrgInvitesSentInput = {
 	name?: string | null;
 	emailVerified?: boolean;
 	image?: string | null;
+	wallet?: Prisma.WalletCreateNestedOneWithoutUserInput;
+	userProfile?: Prisma.UserProfileCreateNestedOneWithoutUserInput;
 	sessions?: Prisma.SessionCreateNestedManyWithoutUserInput;
 	accounts?: Prisma.AccountCreateNestedManyWithoutUserInput;
 	contacts?: Prisma.ContactCreateNestedManyWithoutUserInput;
+	contactImports?: Prisma.ContactImportCreateNestedManyWithoutUserInput;
 	campaigns?: Prisma.CampaignCreateNestedManyWithoutUserInput;
-	messages?: Prisma.MessageCreateNestedManyWithoutUsersInput;
 	parseJobs?: Prisma.ParseJobCreateNestedManyWithoutUserInput;
-	subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutUserInput;
-	wallets?: Prisma.WalletCreateNestedManyWithoutUserInput;
-	userProfiles?: Prisma.UserProfileCreateNestedManyWithoutUserInput;
 	messageTemplates?: Prisma.MessageTemplateCreateNestedManyWithoutUserInput;
 	senderNumbers?: Prisma.SenderNumberCreateNestedManyWithoutUserInput;
 	inboundMessages?: Prisma.InboundMessageCreateNestedManyWithoutUserInput;
@@ -2595,15 +2362,14 @@ export type UserUncheckedCreateWithoutOrgInvitesSentInput = {
 	name?: string | null;
 	emailVerified?: boolean;
 	image?: string | null;
+	wallet?: Prisma.WalletUncheckedCreateNestedOneWithoutUserInput;
+	userProfile?: Prisma.UserProfileUncheckedCreateNestedOneWithoutUserInput;
 	sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput;
 	accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput;
 	contacts?: Prisma.ContactUncheckedCreateNestedManyWithoutUserInput;
+	contactImports?: Prisma.ContactImportUncheckedCreateNestedManyWithoutUserInput;
 	campaigns?: Prisma.CampaignUncheckedCreateNestedManyWithoutUserInput;
-	messages?: Prisma.MessageUncheckedCreateNestedManyWithoutUsersInput;
 	parseJobs?: Prisma.ParseJobUncheckedCreateNestedManyWithoutUserInput;
-	subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutUserInput;
-	wallets?: Prisma.WalletUncheckedCreateNestedManyWithoutUserInput;
-	userProfiles?: Prisma.UserProfileUncheckedCreateNestedManyWithoutUserInput;
 	messageTemplates?: Prisma.MessageTemplateUncheckedCreateNestedManyWithoutUserInput;
 	senderNumbers?: Prisma.SenderNumberUncheckedCreateNestedManyWithoutUserInput;
 	inboundMessages?: Prisma.InboundMessageUncheckedCreateNestedManyWithoutUserInput;
@@ -2649,15 +2415,14 @@ export type UserUpdateWithoutOrgInvitesSentInput = {
 	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	wallet?: Prisma.WalletUpdateOneWithoutUserNestedInput;
+	userProfile?: Prisma.UserProfileUpdateOneWithoutUserNestedInput;
 	sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput;
 	accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput;
 	contacts?: Prisma.ContactUpdateManyWithoutUserNestedInput;
+	contactImports?: Prisma.ContactImportUpdateManyWithoutUserNestedInput;
 	campaigns?: Prisma.CampaignUpdateManyWithoutUserNestedInput;
-	messages?: Prisma.MessageUpdateManyWithoutUsersNestedInput;
 	parseJobs?: Prisma.ParseJobUpdateManyWithoutUserNestedInput;
-	subscriptions?: Prisma.SubscriptionUpdateManyWithoutUserNestedInput;
-	wallets?: Prisma.WalletUpdateManyWithoutUserNestedInput;
-	userProfiles?: Prisma.UserProfileUpdateManyWithoutUserNestedInput;
 	messageTemplates?: Prisma.MessageTemplateUpdateManyWithoutUserNestedInput;
 	senderNumbers?: Prisma.SenderNumberUpdateManyWithoutUserNestedInput;
 	inboundMessages?: Prisma.InboundMessageUpdateManyWithoutUserNestedInput;
@@ -2675,15 +2440,14 @@ export type UserUncheckedUpdateWithoutOrgInvitesSentInput = {
 	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	wallet?: Prisma.WalletUncheckedUpdateOneWithoutUserNestedInput;
+	userProfile?: Prisma.UserProfileUncheckedUpdateOneWithoutUserNestedInput;
 	sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput;
 	accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput;
 	contacts?: Prisma.ContactUncheckedUpdateManyWithoutUserNestedInput;
+	contactImports?: Prisma.ContactImportUncheckedUpdateManyWithoutUserNestedInput;
 	campaigns?: Prisma.CampaignUncheckedUpdateManyWithoutUserNestedInput;
-	messages?: Prisma.MessageUncheckedUpdateManyWithoutUsersNestedInput;
 	parseJobs?: Prisma.ParseJobUncheckedUpdateManyWithoutUserNestedInput;
-	subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutUserNestedInput;
-	wallets?: Prisma.WalletUncheckedUpdateManyWithoutUserNestedInput;
-	userProfiles?: Prisma.UserProfileUncheckedUpdateManyWithoutUserNestedInput;
 	messageTemplates?: Prisma.MessageTemplateUncheckedUpdateManyWithoutUserNestedInput;
 	senderNumbers?: Prisma.SenderNumberUncheckedUpdateManyWithoutUserNestedInput;
 	inboundMessages?: Prisma.InboundMessageUncheckedUpdateManyWithoutUserNestedInput;
@@ -2701,15 +2465,14 @@ export type UserCreateWithoutOrgMembersOwnedInput = {
 	name?: string | null;
 	emailVerified?: boolean;
 	image?: string | null;
+	wallet?: Prisma.WalletCreateNestedOneWithoutUserInput;
+	userProfile?: Prisma.UserProfileCreateNestedOneWithoutUserInput;
 	sessions?: Prisma.SessionCreateNestedManyWithoutUserInput;
 	accounts?: Prisma.AccountCreateNestedManyWithoutUserInput;
 	contacts?: Prisma.ContactCreateNestedManyWithoutUserInput;
+	contactImports?: Prisma.ContactImportCreateNestedManyWithoutUserInput;
 	campaigns?: Prisma.CampaignCreateNestedManyWithoutUserInput;
-	messages?: Prisma.MessageCreateNestedManyWithoutUsersInput;
 	parseJobs?: Prisma.ParseJobCreateNestedManyWithoutUserInput;
-	subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutUserInput;
-	wallets?: Prisma.WalletCreateNestedManyWithoutUserInput;
-	userProfiles?: Prisma.UserProfileCreateNestedManyWithoutUserInput;
 	messageTemplates?: Prisma.MessageTemplateCreateNestedManyWithoutUserInput;
 	senderNumbers?: Prisma.SenderNumberCreateNestedManyWithoutUserInput;
 	inboundMessages?: Prisma.InboundMessageCreateNestedManyWithoutUserInput;
@@ -2727,15 +2490,14 @@ export type UserUncheckedCreateWithoutOrgMembersOwnedInput = {
 	name?: string | null;
 	emailVerified?: boolean;
 	image?: string | null;
+	wallet?: Prisma.WalletUncheckedCreateNestedOneWithoutUserInput;
+	userProfile?: Prisma.UserProfileUncheckedCreateNestedOneWithoutUserInput;
 	sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput;
 	accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput;
 	contacts?: Prisma.ContactUncheckedCreateNestedManyWithoutUserInput;
+	contactImports?: Prisma.ContactImportUncheckedCreateNestedManyWithoutUserInput;
 	campaigns?: Prisma.CampaignUncheckedCreateNestedManyWithoutUserInput;
-	messages?: Prisma.MessageUncheckedCreateNestedManyWithoutUsersInput;
 	parseJobs?: Prisma.ParseJobUncheckedCreateNestedManyWithoutUserInput;
-	subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutUserInput;
-	wallets?: Prisma.WalletUncheckedCreateNestedManyWithoutUserInput;
-	userProfiles?: Prisma.UserProfileUncheckedCreateNestedManyWithoutUserInput;
 	messageTemplates?: Prisma.MessageTemplateUncheckedCreateNestedManyWithoutUserInput;
 	senderNumbers?: Prisma.SenderNumberUncheckedCreateNestedManyWithoutUserInput;
 	inboundMessages?: Prisma.InboundMessageUncheckedCreateNestedManyWithoutUserInput;
@@ -2761,15 +2523,14 @@ export type UserCreateWithoutOrgMembershipsInput = {
 	name?: string | null;
 	emailVerified?: boolean;
 	image?: string | null;
+	wallet?: Prisma.WalletCreateNestedOneWithoutUserInput;
+	userProfile?: Prisma.UserProfileCreateNestedOneWithoutUserInput;
 	sessions?: Prisma.SessionCreateNestedManyWithoutUserInput;
 	accounts?: Prisma.AccountCreateNestedManyWithoutUserInput;
 	contacts?: Prisma.ContactCreateNestedManyWithoutUserInput;
+	contactImports?: Prisma.ContactImportCreateNestedManyWithoutUserInput;
 	campaigns?: Prisma.CampaignCreateNestedManyWithoutUserInput;
-	messages?: Prisma.MessageCreateNestedManyWithoutUsersInput;
 	parseJobs?: Prisma.ParseJobCreateNestedManyWithoutUserInput;
-	subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutUserInput;
-	wallets?: Prisma.WalletCreateNestedManyWithoutUserInput;
-	userProfiles?: Prisma.UserProfileCreateNestedManyWithoutUserInput;
 	messageTemplates?: Prisma.MessageTemplateCreateNestedManyWithoutUserInput;
 	senderNumbers?: Prisma.SenderNumberCreateNestedManyWithoutUserInput;
 	inboundMessages?: Prisma.InboundMessageCreateNestedManyWithoutUserInput;
@@ -2787,15 +2548,14 @@ export type UserUncheckedCreateWithoutOrgMembershipsInput = {
 	name?: string | null;
 	emailVerified?: boolean;
 	image?: string | null;
+	wallet?: Prisma.WalletUncheckedCreateNestedOneWithoutUserInput;
+	userProfile?: Prisma.UserProfileUncheckedCreateNestedOneWithoutUserInput;
 	sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput;
 	accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput;
 	contacts?: Prisma.ContactUncheckedCreateNestedManyWithoutUserInput;
+	contactImports?: Prisma.ContactImportUncheckedCreateNestedManyWithoutUserInput;
 	campaigns?: Prisma.CampaignUncheckedCreateNestedManyWithoutUserInput;
-	messages?: Prisma.MessageUncheckedCreateNestedManyWithoutUsersInput;
 	parseJobs?: Prisma.ParseJobUncheckedCreateNestedManyWithoutUserInput;
-	subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutUserInput;
-	wallets?: Prisma.WalletUncheckedCreateNestedManyWithoutUserInput;
-	userProfiles?: Prisma.UserProfileUncheckedCreateNestedManyWithoutUserInput;
 	messageTemplates?: Prisma.MessageTemplateUncheckedCreateNestedManyWithoutUserInput;
 	senderNumbers?: Prisma.SenderNumberUncheckedCreateNestedManyWithoutUserInput;
 	inboundMessages?: Prisma.InboundMessageUncheckedCreateNestedManyWithoutUserInput;
@@ -2841,15 +2601,14 @@ export type UserUpdateWithoutOrgMembersOwnedInput = {
 	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	wallet?: Prisma.WalletUpdateOneWithoutUserNestedInput;
+	userProfile?: Prisma.UserProfileUpdateOneWithoutUserNestedInput;
 	sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput;
 	accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput;
 	contacts?: Prisma.ContactUpdateManyWithoutUserNestedInput;
+	contactImports?: Prisma.ContactImportUpdateManyWithoutUserNestedInput;
 	campaigns?: Prisma.CampaignUpdateManyWithoutUserNestedInput;
-	messages?: Prisma.MessageUpdateManyWithoutUsersNestedInput;
 	parseJobs?: Prisma.ParseJobUpdateManyWithoutUserNestedInput;
-	subscriptions?: Prisma.SubscriptionUpdateManyWithoutUserNestedInput;
-	wallets?: Prisma.WalletUpdateManyWithoutUserNestedInput;
-	userProfiles?: Prisma.UserProfileUpdateManyWithoutUserNestedInput;
 	messageTemplates?: Prisma.MessageTemplateUpdateManyWithoutUserNestedInput;
 	senderNumbers?: Prisma.SenderNumberUpdateManyWithoutUserNestedInput;
 	inboundMessages?: Prisma.InboundMessageUpdateManyWithoutUserNestedInput;
@@ -2867,15 +2626,14 @@ export type UserUncheckedUpdateWithoutOrgMembersOwnedInput = {
 	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	wallet?: Prisma.WalletUncheckedUpdateOneWithoutUserNestedInput;
+	userProfile?: Prisma.UserProfileUncheckedUpdateOneWithoutUserNestedInput;
 	sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput;
 	accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput;
 	contacts?: Prisma.ContactUncheckedUpdateManyWithoutUserNestedInput;
+	contactImports?: Prisma.ContactImportUncheckedUpdateManyWithoutUserNestedInput;
 	campaigns?: Prisma.CampaignUncheckedUpdateManyWithoutUserNestedInput;
-	messages?: Prisma.MessageUncheckedUpdateManyWithoutUsersNestedInput;
 	parseJobs?: Prisma.ParseJobUncheckedUpdateManyWithoutUserNestedInput;
-	subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutUserNestedInput;
-	wallets?: Prisma.WalletUncheckedUpdateManyWithoutUserNestedInput;
-	userProfiles?: Prisma.UserProfileUncheckedUpdateManyWithoutUserNestedInput;
 	messageTemplates?: Prisma.MessageTemplateUncheckedUpdateManyWithoutUserNestedInput;
 	senderNumbers?: Prisma.SenderNumberUncheckedUpdateManyWithoutUserNestedInput;
 	inboundMessages?: Prisma.InboundMessageUncheckedUpdateManyWithoutUserNestedInput;
@@ -2913,15 +2671,14 @@ export type UserUpdateWithoutOrgMembershipsInput = {
 	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	wallet?: Prisma.WalletUpdateOneWithoutUserNestedInput;
+	userProfile?: Prisma.UserProfileUpdateOneWithoutUserNestedInput;
 	sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput;
 	accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput;
 	contacts?: Prisma.ContactUpdateManyWithoutUserNestedInput;
+	contactImports?: Prisma.ContactImportUpdateManyWithoutUserNestedInput;
 	campaigns?: Prisma.CampaignUpdateManyWithoutUserNestedInput;
-	messages?: Prisma.MessageUpdateManyWithoutUsersNestedInput;
 	parseJobs?: Prisma.ParseJobUpdateManyWithoutUserNestedInput;
-	subscriptions?: Prisma.SubscriptionUpdateManyWithoutUserNestedInput;
-	wallets?: Prisma.WalletUpdateManyWithoutUserNestedInput;
-	userProfiles?: Prisma.UserProfileUpdateManyWithoutUserNestedInput;
 	messageTemplates?: Prisma.MessageTemplateUpdateManyWithoutUserNestedInput;
 	senderNumbers?: Prisma.SenderNumberUpdateManyWithoutUserNestedInput;
 	inboundMessages?: Prisma.InboundMessageUpdateManyWithoutUserNestedInput;
@@ -2939,15 +2696,14 @@ export type UserUncheckedUpdateWithoutOrgMembershipsInput = {
 	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	wallet?: Prisma.WalletUncheckedUpdateOneWithoutUserNestedInput;
+	userProfile?: Prisma.UserProfileUncheckedUpdateOneWithoutUserNestedInput;
 	sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput;
 	accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput;
 	contacts?: Prisma.ContactUncheckedUpdateManyWithoutUserNestedInput;
+	contactImports?: Prisma.ContactImportUncheckedUpdateManyWithoutUserNestedInput;
 	campaigns?: Prisma.CampaignUncheckedUpdateManyWithoutUserNestedInput;
-	messages?: Prisma.MessageUncheckedUpdateManyWithoutUsersNestedInput;
 	parseJobs?: Prisma.ParseJobUncheckedUpdateManyWithoutUserNestedInput;
-	subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutUserNestedInput;
-	wallets?: Prisma.WalletUncheckedUpdateManyWithoutUserNestedInput;
-	userProfiles?: Prisma.UserProfileUncheckedUpdateManyWithoutUserNestedInput;
 	messageTemplates?: Prisma.MessageTemplateUncheckedUpdateManyWithoutUserNestedInput;
 	senderNumbers?: Prisma.SenderNumberUncheckedUpdateManyWithoutUserNestedInput;
 	inboundMessages?: Prisma.InboundMessageUncheckedUpdateManyWithoutUserNestedInput;
@@ -2965,15 +2721,14 @@ export type UserCreateWithoutJoinRequestsOwnedInput = {
 	name?: string | null;
 	emailVerified?: boolean;
 	image?: string | null;
+	wallet?: Prisma.WalletCreateNestedOneWithoutUserInput;
+	userProfile?: Prisma.UserProfileCreateNestedOneWithoutUserInput;
 	sessions?: Prisma.SessionCreateNestedManyWithoutUserInput;
 	accounts?: Prisma.AccountCreateNestedManyWithoutUserInput;
 	contacts?: Prisma.ContactCreateNestedManyWithoutUserInput;
+	contactImports?: Prisma.ContactImportCreateNestedManyWithoutUserInput;
 	campaigns?: Prisma.CampaignCreateNestedManyWithoutUserInput;
-	messages?: Prisma.MessageCreateNestedManyWithoutUsersInput;
 	parseJobs?: Prisma.ParseJobCreateNestedManyWithoutUserInput;
-	subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutUserInput;
-	wallets?: Prisma.WalletCreateNestedManyWithoutUserInput;
-	userProfiles?: Prisma.UserProfileCreateNestedManyWithoutUserInput;
 	messageTemplates?: Prisma.MessageTemplateCreateNestedManyWithoutUserInput;
 	senderNumbers?: Prisma.SenderNumberCreateNestedManyWithoutUserInput;
 	inboundMessages?: Prisma.InboundMessageCreateNestedManyWithoutUserInput;
@@ -2991,15 +2746,14 @@ export type UserUncheckedCreateWithoutJoinRequestsOwnedInput = {
 	name?: string | null;
 	emailVerified?: boolean;
 	image?: string | null;
+	wallet?: Prisma.WalletUncheckedCreateNestedOneWithoutUserInput;
+	userProfile?: Prisma.UserProfileUncheckedCreateNestedOneWithoutUserInput;
 	sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput;
 	accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput;
 	contacts?: Prisma.ContactUncheckedCreateNestedManyWithoutUserInput;
+	contactImports?: Prisma.ContactImportUncheckedCreateNestedManyWithoutUserInput;
 	campaigns?: Prisma.CampaignUncheckedCreateNestedManyWithoutUserInput;
-	messages?: Prisma.MessageUncheckedCreateNestedManyWithoutUsersInput;
 	parseJobs?: Prisma.ParseJobUncheckedCreateNestedManyWithoutUserInput;
-	subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutUserInput;
-	wallets?: Prisma.WalletUncheckedCreateNestedManyWithoutUserInput;
-	userProfiles?: Prisma.UserProfileUncheckedCreateNestedManyWithoutUserInput;
 	messageTemplates?: Prisma.MessageTemplateUncheckedCreateNestedManyWithoutUserInput;
 	senderNumbers?: Prisma.SenderNumberUncheckedCreateNestedManyWithoutUserInput;
 	inboundMessages?: Prisma.InboundMessageUncheckedCreateNestedManyWithoutUserInput;
@@ -3025,15 +2779,14 @@ export type UserCreateWithoutJoinRequestsSentInput = {
 	name?: string | null;
 	emailVerified?: boolean;
 	image?: string | null;
+	wallet?: Prisma.WalletCreateNestedOneWithoutUserInput;
+	userProfile?: Prisma.UserProfileCreateNestedOneWithoutUserInput;
 	sessions?: Prisma.SessionCreateNestedManyWithoutUserInput;
 	accounts?: Prisma.AccountCreateNestedManyWithoutUserInput;
 	contacts?: Prisma.ContactCreateNestedManyWithoutUserInput;
+	contactImports?: Prisma.ContactImportCreateNestedManyWithoutUserInput;
 	campaigns?: Prisma.CampaignCreateNestedManyWithoutUserInput;
-	messages?: Prisma.MessageCreateNestedManyWithoutUsersInput;
 	parseJobs?: Prisma.ParseJobCreateNestedManyWithoutUserInput;
-	subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutUserInput;
-	wallets?: Prisma.WalletCreateNestedManyWithoutUserInput;
-	userProfiles?: Prisma.UserProfileCreateNestedManyWithoutUserInput;
 	messageTemplates?: Prisma.MessageTemplateCreateNestedManyWithoutUserInput;
 	senderNumbers?: Prisma.SenderNumberCreateNestedManyWithoutUserInput;
 	inboundMessages?: Prisma.InboundMessageCreateNestedManyWithoutUserInput;
@@ -3051,15 +2804,14 @@ export type UserUncheckedCreateWithoutJoinRequestsSentInput = {
 	name?: string | null;
 	emailVerified?: boolean;
 	image?: string | null;
+	wallet?: Prisma.WalletUncheckedCreateNestedOneWithoutUserInput;
+	userProfile?: Prisma.UserProfileUncheckedCreateNestedOneWithoutUserInput;
 	sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput;
 	accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput;
 	contacts?: Prisma.ContactUncheckedCreateNestedManyWithoutUserInput;
+	contactImports?: Prisma.ContactImportUncheckedCreateNestedManyWithoutUserInput;
 	campaigns?: Prisma.CampaignUncheckedCreateNestedManyWithoutUserInput;
-	messages?: Prisma.MessageUncheckedCreateNestedManyWithoutUsersInput;
 	parseJobs?: Prisma.ParseJobUncheckedCreateNestedManyWithoutUserInput;
-	subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutUserInput;
-	wallets?: Prisma.WalletUncheckedCreateNestedManyWithoutUserInput;
-	userProfiles?: Prisma.UserProfileUncheckedCreateNestedManyWithoutUserInput;
 	messageTemplates?: Prisma.MessageTemplateUncheckedCreateNestedManyWithoutUserInput;
 	senderNumbers?: Prisma.SenderNumberUncheckedCreateNestedManyWithoutUserInput;
 	inboundMessages?: Prisma.InboundMessageUncheckedCreateNestedManyWithoutUserInput;
@@ -3105,15 +2857,14 @@ export type UserUpdateWithoutJoinRequestsOwnedInput = {
 	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	wallet?: Prisma.WalletUpdateOneWithoutUserNestedInput;
+	userProfile?: Prisma.UserProfileUpdateOneWithoutUserNestedInput;
 	sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput;
 	accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput;
 	contacts?: Prisma.ContactUpdateManyWithoutUserNestedInput;
+	contactImports?: Prisma.ContactImportUpdateManyWithoutUserNestedInput;
 	campaigns?: Prisma.CampaignUpdateManyWithoutUserNestedInput;
-	messages?: Prisma.MessageUpdateManyWithoutUsersNestedInput;
 	parseJobs?: Prisma.ParseJobUpdateManyWithoutUserNestedInput;
-	subscriptions?: Prisma.SubscriptionUpdateManyWithoutUserNestedInput;
-	wallets?: Prisma.WalletUpdateManyWithoutUserNestedInput;
-	userProfiles?: Prisma.UserProfileUpdateManyWithoutUserNestedInput;
 	messageTemplates?: Prisma.MessageTemplateUpdateManyWithoutUserNestedInput;
 	senderNumbers?: Prisma.SenderNumberUpdateManyWithoutUserNestedInput;
 	inboundMessages?: Prisma.InboundMessageUpdateManyWithoutUserNestedInput;
@@ -3131,15 +2882,14 @@ export type UserUncheckedUpdateWithoutJoinRequestsOwnedInput = {
 	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	wallet?: Prisma.WalletUncheckedUpdateOneWithoutUserNestedInput;
+	userProfile?: Prisma.UserProfileUncheckedUpdateOneWithoutUserNestedInput;
 	sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput;
 	accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput;
 	contacts?: Prisma.ContactUncheckedUpdateManyWithoutUserNestedInput;
+	contactImports?: Prisma.ContactImportUncheckedUpdateManyWithoutUserNestedInput;
 	campaigns?: Prisma.CampaignUncheckedUpdateManyWithoutUserNestedInput;
-	messages?: Prisma.MessageUncheckedUpdateManyWithoutUsersNestedInput;
 	parseJobs?: Prisma.ParseJobUncheckedUpdateManyWithoutUserNestedInput;
-	subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutUserNestedInput;
-	wallets?: Prisma.WalletUncheckedUpdateManyWithoutUserNestedInput;
-	userProfiles?: Prisma.UserProfileUncheckedUpdateManyWithoutUserNestedInput;
 	messageTemplates?: Prisma.MessageTemplateUncheckedUpdateManyWithoutUserNestedInput;
 	senderNumbers?: Prisma.SenderNumberUncheckedUpdateManyWithoutUserNestedInput;
 	inboundMessages?: Prisma.InboundMessageUncheckedUpdateManyWithoutUserNestedInput;
@@ -3177,15 +2927,14 @@ export type UserUpdateWithoutJoinRequestsSentInput = {
 	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	wallet?: Prisma.WalletUpdateOneWithoutUserNestedInput;
+	userProfile?: Prisma.UserProfileUpdateOneWithoutUserNestedInput;
 	sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput;
 	accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput;
 	contacts?: Prisma.ContactUpdateManyWithoutUserNestedInput;
+	contactImports?: Prisma.ContactImportUpdateManyWithoutUserNestedInput;
 	campaigns?: Prisma.CampaignUpdateManyWithoutUserNestedInput;
-	messages?: Prisma.MessageUpdateManyWithoutUsersNestedInput;
 	parseJobs?: Prisma.ParseJobUpdateManyWithoutUserNestedInput;
-	subscriptions?: Prisma.SubscriptionUpdateManyWithoutUserNestedInput;
-	wallets?: Prisma.WalletUpdateManyWithoutUserNestedInput;
-	userProfiles?: Prisma.UserProfileUpdateManyWithoutUserNestedInput;
 	messageTemplates?: Prisma.MessageTemplateUpdateManyWithoutUserNestedInput;
 	senderNumbers?: Prisma.SenderNumberUpdateManyWithoutUserNestedInput;
 	inboundMessages?: Prisma.InboundMessageUpdateManyWithoutUserNestedInput;
@@ -3203,15 +2952,14 @@ export type UserUncheckedUpdateWithoutJoinRequestsSentInput = {
 	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	wallet?: Prisma.WalletUncheckedUpdateOneWithoutUserNestedInput;
+	userProfile?: Prisma.UserProfileUncheckedUpdateOneWithoutUserNestedInput;
 	sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput;
 	accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput;
 	contacts?: Prisma.ContactUncheckedUpdateManyWithoutUserNestedInput;
+	contactImports?: Prisma.ContactImportUncheckedUpdateManyWithoutUserNestedInput;
 	campaigns?: Prisma.CampaignUncheckedUpdateManyWithoutUserNestedInput;
-	messages?: Prisma.MessageUncheckedUpdateManyWithoutUsersNestedInput;
 	parseJobs?: Prisma.ParseJobUncheckedUpdateManyWithoutUserNestedInput;
-	subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutUserNestedInput;
-	wallets?: Prisma.WalletUncheckedUpdateManyWithoutUserNestedInput;
-	userProfiles?: Prisma.UserProfileUncheckedUpdateManyWithoutUserNestedInput;
 	messageTemplates?: Prisma.MessageTemplateUncheckedUpdateManyWithoutUserNestedInput;
 	senderNumbers?: Prisma.SenderNumberUncheckedUpdateManyWithoutUserNestedInput;
 	inboundMessages?: Prisma.InboundMessageUncheckedUpdateManyWithoutUserNestedInput;
@@ -3219,68 +2967,6 @@ export type UserUncheckedUpdateWithoutJoinRequestsSentInput = {
 	orgMembersOwned?: Prisma.OrgMemberUncheckedUpdateManyWithoutOwnerNestedInput;
 	orgMemberships?: Prisma.OrgMemberUncheckedUpdateManyWithoutUserNestedInput;
 	joinRequestsOwned?: Prisma.OrgJoinRequestUncheckedUpdateManyWithoutOwnerNestedInput;
-};
-
-export type UserUpdateWithoutMessagesInput = {
-	id?: Prisma.StringFieldUpdateOperationsInput | string;
-	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-	updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-	email?: Prisma.StringFieldUpdateOperationsInput | string;
-	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-	image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput;
-	accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput;
-	contacts?: Prisma.ContactUpdateManyWithoutUserNestedInput;
-	campaigns?: Prisma.CampaignUpdateManyWithoutUserNestedInput;
-	parseJobs?: Prisma.ParseJobUpdateManyWithoutUserNestedInput;
-	subscriptions?: Prisma.SubscriptionUpdateManyWithoutUserNestedInput;
-	wallets?: Prisma.WalletUpdateManyWithoutUserNestedInput;
-	userProfiles?: Prisma.UserProfileUpdateManyWithoutUserNestedInput;
-	messageTemplates?: Prisma.MessageTemplateUpdateManyWithoutUserNestedInput;
-	senderNumbers?: Prisma.SenderNumberUpdateManyWithoutUserNestedInput;
-	inboundMessages?: Prisma.InboundMessageUpdateManyWithoutUserNestedInput;
-	orgInvitesSent?: Prisma.OrgInviteUpdateManyWithoutOwnerNestedInput;
-	orgMembersOwned?: Prisma.OrgMemberUpdateManyWithoutOwnerNestedInput;
-	orgMemberships?: Prisma.OrgMemberUpdateManyWithoutUserNestedInput;
-	joinRequestsOwned?: Prisma.OrgJoinRequestUpdateManyWithoutOwnerNestedInput;
-	joinRequestsSent?: Prisma.OrgJoinRequestUpdateManyWithoutUserNestedInput;
-};
-
-export type UserUncheckedUpdateWithoutMessagesInput = {
-	id?: Prisma.StringFieldUpdateOperationsInput | string;
-	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-	updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-	email?: Prisma.StringFieldUpdateOperationsInput | string;
-	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-	image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput;
-	accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput;
-	contacts?: Prisma.ContactUncheckedUpdateManyWithoutUserNestedInput;
-	campaigns?: Prisma.CampaignUncheckedUpdateManyWithoutUserNestedInput;
-	parseJobs?: Prisma.ParseJobUncheckedUpdateManyWithoutUserNestedInput;
-	subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutUserNestedInput;
-	wallets?: Prisma.WalletUncheckedUpdateManyWithoutUserNestedInput;
-	userProfiles?: Prisma.UserProfileUncheckedUpdateManyWithoutUserNestedInput;
-	messageTemplates?: Prisma.MessageTemplateUncheckedUpdateManyWithoutUserNestedInput;
-	senderNumbers?: Prisma.SenderNumberUncheckedUpdateManyWithoutUserNestedInput;
-	inboundMessages?: Prisma.InboundMessageUncheckedUpdateManyWithoutUserNestedInput;
-	orgInvitesSent?: Prisma.OrgInviteUncheckedUpdateManyWithoutOwnerNestedInput;
-	orgMembersOwned?: Prisma.OrgMemberUncheckedUpdateManyWithoutOwnerNestedInput;
-	orgMemberships?: Prisma.OrgMemberUncheckedUpdateManyWithoutUserNestedInput;
-	joinRequestsOwned?: Prisma.OrgJoinRequestUncheckedUpdateManyWithoutOwnerNestedInput;
-	joinRequestsSent?: Prisma.OrgJoinRequestUncheckedUpdateManyWithoutUserNestedInput;
-};
-
-export type UserUncheckedUpdateManyWithoutMessagesInput = {
-	id?: Prisma.StringFieldUpdateOperationsInput | string;
-	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-	updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-	email?: Prisma.StringFieldUpdateOperationsInput | string;
-	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-	image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 };
 
 /**
@@ -3291,12 +2977,9 @@ export type UserCountOutputType = {
 	sessions: number;
 	accounts: number;
 	contacts: number;
+	contactImports: number;
 	campaigns: number;
-	messages: number;
 	parseJobs: number;
-	subscriptions: number;
-	wallets: number;
-	userProfiles: number;
 	messageTemplates: number;
 	senderNumbers: number;
 	inboundMessages: number;
@@ -3314,12 +2997,9 @@ export type UserCountOutputTypeSelect<
 	sessions?: boolean | UserCountOutputTypeCountSessionsArgs;
 	accounts?: boolean | UserCountOutputTypeCountAccountsArgs;
 	contacts?: boolean | UserCountOutputTypeCountContactsArgs;
+	contactImports?: boolean | UserCountOutputTypeCountContactImportsArgs;
 	campaigns?: boolean | UserCountOutputTypeCountCampaignsArgs;
-	messages?: boolean | UserCountOutputTypeCountMessagesArgs;
 	parseJobs?: boolean | UserCountOutputTypeCountParseJobsArgs;
-	subscriptions?: boolean | UserCountOutputTypeCountSubscriptionsArgs;
-	wallets?: boolean | UserCountOutputTypeCountWalletsArgs;
-	userProfiles?: boolean | UserCountOutputTypeCountUserProfilesArgs;
 	messageTemplates?: boolean | UserCountOutputTypeCountMessageTemplatesArgs;
 	senderNumbers?: boolean | UserCountOutputTypeCountSenderNumbersArgs;
 	inboundMessages?: boolean | UserCountOutputTypeCountInboundMessagesArgs;
@@ -3376,6 +3056,16 @@ export type UserCountOutputTypeCountContactsArgs<
 /**
  * UserCountOutputType without action
  */
+export type UserCountOutputTypeCountContactImportsArgs<
+	ExtArgs extends
+		runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+	where?: Prisma.ContactImportWhereInput;
+};
+
+/**
+ * UserCountOutputType without action
+ */
 export type UserCountOutputTypeCountCampaignsArgs<
 	ExtArgs extends
 		runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
@@ -3386,51 +3076,11 @@ export type UserCountOutputTypeCountCampaignsArgs<
 /**
  * UserCountOutputType without action
  */
-export type UserCountOutputTypeCountMessagesArgs<
-	ExtArgs extends
-		runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
-> = {
-	where?: Prisma.MessageWhereInput;
-};
-
-/**
- * UserCountOutputType without action
- */
 export type UserCountOutputTypeCountParseJobsArgs<
 	ExtArgs extends
 		runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
 	where?: Prisma.ParseJobWhereInput;
-};
-
-/**
- * UserCountOutputType without action
- */
-export type UserCountOutputTypeCountSubscriptionsArgs<
-	ExtArgs extends
-		runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
-> = {
-	where?: Prisma.SubscriptionWhereInput;
-};
-
-/**
- * UserCountOutputType without action
- */
-export type UserCountOutputTypeCountWalletsArgs<
-	ExtArgs extends
-		runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
-> = {
-	where?: Prisma.WalletWhereInput;
-};
-
-/**
- * UserCountOutputType without action
- */
-export type UserCountOutputTypeCountUserProfilesArgs<
-	ExtArgs extends
-		runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
-> = {
-	where?: Prisma.UserProfileWhereInput;
 };
 
 /**
@@ -3525,15 +3175,14 @@ export type UserSelect<
 		name?: boolean;
 		emailVerified?: boolean;
 		image?: boolean;
+		wallet?: boolean | Prisma.User$walletArgs<ExtArgs>;
+		userProfile?: boolean | Prisma.User$userProfileArgs<ExtArgs>;
 		sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>;
 		accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>;
 		contacts?: boolean | Prisma.User$contactsArgs<ExtArgs>;
+		contactImports?: boolean | Prisma.User$contactImportsArgs<ExtArgs>;
 		campaigns?: boolean | Prisma.User$campaignsArgs<ExtArgs>;
-		messages?: boolean | Prisma.User$messagesArgs<ExtArgs>;
 		parseJobs?: boolean | Prisma.User$parseJobsArgs<ExtArgs>;
-		subscriptions?: boolean | Prisma.User$subscriptionsArgs<ExtArgs>;
-		wallets?: boolean | Prisma.User$walletsArgs<ExtArgs>;
-		userProfiles?: boolean | Prisma.User$userProfilesArgs<ExtArgs>;
 		messageTemplates?: boolean | Prisma.User$messageTemplatesArgs<ExtArgs>;
 		senderNumbers?: boolean | Prisma.User$senderNumbersArgs<ExtArgs>;
 		inboundMessages?: boolean | Prisma.User$inboundMessagesArgs<ExtArgs>;
@@ -3606,15 +3255,14 @@ export type UserInclude<
 	ExtArgs extends
 		runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
+	wallet?: boolean | Prisma.User$walletArgs<ExtArgs>;
+	userProfile?: boolean | Prisma.User$userProfileArgs<ExtArgs>;
 	sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>;
 	accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>;
 	contacts?: boolean | Prisma.User$contactsArgs<ExtArgs>;
+	contactImports?: boolean | Prisma.User$contactImportsArgs<ExtArgs>;
 	campaigns?: boolean | Prisma.User$campaignsArgs<ExtArgs>;
-	messages?: boolean | Prisma.User$messagesArgs<ExtArgs>;
 	parseJobs?: boolean | Prisma.User$parseJobsArgs<ExtArgs>;
-	subscriptions?: boolean | Prisma.User$subscriptionsArgs<ExtArgs>;
-	wallets?: boolean | Prisma.User$walletsArgs<ExtArgs>;
-	userProfiles?: boolean | Prisma.User$userProfilesArgs<ExtArgs>;
 	messageTemplates?: boolean | Prisma.User$messageTemplatesArgs<ExtArgs>;
 	senderNumbers?: boolean | Prisma.User$senderNumbersArgs<ExtArgs>;
 	inboundMessages?: boolean | Prisma.User$inboundMessagesArgs<ExtArgs>;
@@ -3640,15 +3288,14 @@ export type $UserPayload<
 > = {
 	name: "User";
 	objects: {
+		wallet: Prisma.$WalletPayload<ExtArgs> | null;
+		userProfile: Prisma.$UserProfilePayload<ExtArgs> | null;
 		sessions: Prisma.$SessionPayload<ExtArgs>[];
 		accounts: Prisma.$AccountPayload<ExtArgs>[];
 		contacts: Prisma.$ContactPayload<ExtArgs>[];
+		contactImports: Prisma.$ContactImportPayload<ExtArgs>[];
 		campaigns: Prisma.$CampaignPayload<ExtArgs>[];
-		messages: Prisma.$MessagePayload<ExtArgs>[];
 		parseJobs: Prisma.$ParseJobPayload<ExtArgs>[];
-		subscriptions: Prisma.$SubscriptionPayload<ExtArgs>[];
-		wallets: Prisma.$WalletPayload<ExtArgs>[];
-		userProfiles: Prisma.$UserProfilePayload<ExtArgs>[];
 		messageTemplates: Prisma.$MessageTemplatePayload<ExtArgs>[];
 		senderNumbers: Prisma.$SenderNumberPayload<ExtArgs>[];
 		inboundMessages: Prisma.$InboundMessagePayload<ExtArgs>[];
@@ -4248,6 +3895,17 @@ export interface Prisma__UserClient<
 			| undefined
 			| null
 	): runtime.Types.Utils.JsPromise<T | TResult>;
+	contactImports<T extends Prisma.User$contactImportsArgs<ExtArgs> = {}>(
+		args?: Prisma.Subset<T, Prisma.User$contactImportsArgs<ExtArgs>>
+	): Prisma.PrismaPromise<
+		| runtime.Types.Result.GetResult<
+				Prisma.$ContactImportPayload<ExtArgs>,
+				T,
+				"findMany",
+				GlobalOmitOptions
+		  >
+		| Null
+	>;
 	contacts<T extends Prisma.User$contactsArgs<ExtArgs> = {}>(
 		args?: Prisma.Subset<T, Prisma.User$contactsArgs<ExtArgs>>
 	): Prisma.PrismaPromise<
@@ -4295,17 +3953,6 @@ export interface Prisma__UserClient<
 	): Prisma.PrismaPromise<
 		| runtime.Types.Result.GetResult<
 				Prisma.$OrgJoinRequestPayload<ExtArgs>,
-				T,
-				"findMany",
-				GlobalOmitOptions
-		  >
-		| Null
-	>;
-	messages<T extends Prisma.User$messagesArgs<ExtArgs> = {}>(
-		args?: Prisma.Subset<T, Prisma.User$messagesArgs<ExtArgs>>
-	): Prisma.PrismaPromise<
-		| runtime.Types.Result.GetResult<
-				Prisma.$MessagePayload<ExtArgs>,
 				T,
 				"findMany",
 				GlobalOmitOptions
@@ -4389,17 +4036,6 @@ export interface Prisma__UserClient<
 		  >
 		| Null
 	>;
-	subscriptions<T extends Prisma.User$subscriptionsArgs<ExtArgs> = {}>(
-		args?: Prisma.Subset<T, Prisma.User$subscriptionsArgs<ExtArgs>>
-	): Prisma.PrismaPromise<
-		| runtime.Types.Result.GetResult<
-				Prisma.$SubscriptionPayload<ExtArgs>,
-				T,
-				"findMany",
-				GlobalOmitOptions
-		  >
-		| Null
-	>;
 	/**
 	 * Attaches callbacks for the resolution and/or rejection of the Promise.
 	 * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4416,27 +4052,31 @@ export interface Prisma__UserClient<
 			| undefined
 			| null
 	): runtime.Types.Utils.JsPromise<TResult1 | TResult2>;
-	userProfiles<T extends Prisma.User$userProfilesArgs<ExtArgs> = {}>(
-		args?: Prisma.Subset<T, Prisma.User$userProfilesArgs<ExtArgs>>
-	): Prisma.PrismaPromise<
-		| runtime.Types.Result.GetResult<
-				Prisma.$UserProfilePayload<ExtArgs>,
-				T,
-				"findMany",
-				GlobalOmitOptions
-		  >
-		| Null
+	userProfile<T extends Prisma.User$userProfileArgs<ExtArgs> = {}>(
+		args?: Prisma.Subset<T, Prisma.User$userProfileArgs<ExtArgs>>
+	): Prisma.Prisma__UserProfileClient<
+		runtime.Types.Result.GetResult<
+			Prisma.$UserProfilePayload<ExtArgs>,
+			T,
+			"findUniqueOrThrow",
+			GlobalOmitOptions
+		> | null,
+		null,
+		ExtArgs,
+		GlobalOmitOptions
 	>;
-	wallets<T extends Prisma.User$walletsArgs<ExtArgs> = {}>(
-		args?: Prisma.Subset<T, Prisma.User$walletsArgs<ExtArgs>>
-	): Prisma.PrismaPromise<
-		| runtime.Types.Result.GetResult<
-				Prisma.$WalletPayload<ExtArgs>,
-				T,
-				"findMany",
-				GlobalOmitOptions
-		  >
-		| Null
+	wallet<T extends Prisma.User$walletArgs<ExtArgs> = {}>(
+		args?: Prisma.Subset<T, Prisma.User$walletArgs<ExtArgs>>
+	): Prisma.Prisma__WalletClient<
+		runtime.Types.Result.GetResult<
+			Prisma.$WalletPayload<ExtArgs>,
+			T,
+			"findUniqueOrThrow",
+			GlobalOmitOptions
+		> | null,
+		null,
+		ExtArgs,
+		GlobalOmitOptions
 	>;
 	readonly [Symbol.toStringTag]: "PrismaPromise";
 }
@@ -4898,6 +4538,50 @@ export type UserDeleteManyArgs<
 };
 
 /**
+ * User.wallet
+ */
+export type User$walletArgs<
+	ExtArgs extends
+		runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+	/**
+	 * Select specific fields to fetch from the Wallet
+	 */
+	select?: Prisma.WalletSelect<ExtArgs> | null;
+	/**
+	 * Omit specific fields from the Wallet
+	 */
+	omit?: Prisma.WalletOmit<ExtArgs> | null;
+	/**
+	 * Choose, which related nodes to fetch as well
+	 */
+	include?: Prisma.WalletInclude<ExtArgs> | null;
+	where?: Prisma.WalletWhereInput;
+};
+
+/**
+ * User.userProfile
+ */
+export type User$userProfileArgs<
+	ExtArgs extends
+		runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+	/**
+	 * Select specific fields to fetch from the UserProfile
+	 */
+	select?: Prisma.UserProfileSelect<ExtArgs> | null;
+	/**
+	 * Omit specific fields from the UserProfile
+	 */
+	omit?: Prisma.UserProfileOmit<ExtArgs> | null;
+	/**
+	 * Choose, which related nodes to fetch as well
+	 */
+	include?: Prisma.UserProfileInclude<ExtArgs> | null;
+	where?: Prisma.UserProfileWhereInput;
+};
+
+/**
  * User.sessions
  */
 export type User$sessionsArgs<
@@ -4985,6 +4669,37 @@ export type User$contactsArgs<
 };
 
 /**
+ * User.contactImports
+ */
+export type User$contactImportsArgs<
+	ExtArgs extends
+		runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+	/**
+	 * Select specific fields to fetch from the ContactImport
+	 */
+	select?: Prisma.ContactImportSelect<ExtArgs> | null;
+	/**
+	 * Omit specific fields from the ContactImport
+	 */
+	omit?: Prisma.ContactImportOmit<ExtArgs> | null;
+	/**
+	 * Choose, which related nodes to fetch as well
+	 */
+	include?: Prisma.ContactImportInclude<ExtArgs> | null;
+	where?: Prisma.ContactImportWhereInput;
+	orderBy?:
+		| Prisma.ContactImportOrderByWithRelationInput
+		| Prisma.ContactImportOrderByWithRelationInput[];
+	cursor?: Prisma.ContactImportWhereUniqueInput;
+	take?: number;
+	skip?: number;
+	distinct?:
+		| Prisma.ContactImportScalarFieldEnum
+		| Prisma.ContactImportScalarFieldEnum[];
+};
+
+/**
  * User.campaigns
  */
 export type User$campaignsArgs<
@@ -5014,35 +4729,6 @@ export type User$campaignsArgs<
 };
 
 /**
- * User.messages
- */
-export type User$messagesArgs<
-	ExtArgs extends
-		runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
-> = {
-	/**
-	 * Select specific fields to fetch from the Message
-	 */
-	select?: Prisma.MessageSelect<ExtArgs> | null;
-	/**
-	 * Omit specific fields from the Message
-	 */
-	omit?: Prisma.MessageOmit<ExtArgs> | null;
-	/**
-	 * Choose, which related nodes to fetch as well
-	 */
-	include?: Prisma.MessageInclude<ExtArgs> | null;
-	where?: Prisma.MessageWhereInput;
-	orderBy?:
-		| Prisma.MessageOrderByWithRelationInput
-		| Prisma.MessageOrderByWithRelationInput[];
-	cursor?: Prisma.MessageWhereUniqueInput;
-	take?: number;
-	skip?: number;
-	distinct?: Prisma.MessageScalarFieldEnum | Prisma.MessageScalarFieldEnum[];
-};
-
-/**
  * User.parseJobs
  */
 export type User$parseJobsArgs<
@@ -5069,97 +4755,6 @@ export type User$parseJobsArgs<
 	take?: number;
 	skip?: number;
 	distinct?: Prisma.ParseJobScalarFieldEnum | Prisma.ParseJobScalarFieldEnum[];
-};
-
-/**
- * User.subscriptions
- */
-export type User$subscriptionsArgs<
-	ExtArgs extends
-		runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
-> = {
-	/**
-	 * Select specific fields to fetch from the Subscription
-	 */
-	select?: Prisma.SubscriptionSelect<ExtArgs> | null;
-	/**
-	 * Omit specific fields from the Subscription
-	 */
-	omit?: Prisma.SubscriptionOmit<ExtArgs> | null;
-	/**
-	 * Choose, which related nodes to fetch as well
-	 */
-	include?: Prisma.SubscriptionInclude<ExtArgs> | null;
-	where?: Prisma.SubscriptionWhereInput;
-	orderBy?:
-		| Prisma.SubscriptionOrderByWithRelationInput
-		| Prisma.SubscriptionOrderByWithRelationInput[];
-	cursor?: Prisma.SubscriptionWhereUniqueInput;
-	take?: number;
-	skip?: number;
-	distinct?:
-		| Prisma.SubscriptionScalarFieldEnum
-		| Prisma.SubscriptionScalarFieldEnum[];
-};
-
-/**
- * User.wallets
- */
-export type User$walletsArgs<
-	ExtArgs extends
-		runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
-> = {
-	/**
-	 * Select specific fields to fetch from the Wallet
-	 */
-	select?: Prisma.WalletSelect<ExtArgs> | null;
-	/**
-	 * Omit specific fields from the Wallet
-	 */
-	omit?: Prisma.WalletOmit<ExtArgs> | null;
-	/**
-	 * Choose, which related nodes to fetch as well
-	 */
-	include?: Prisma.WalletInclude<ExtArgs> | null;
-	where?: Prisma.WalletWhereInput;
-	orderBy?:
-		| Prisma.WalletOrderByWithRelationInput
-		| Prisma.WalletOrderByWithRelationInput[];
-	cursor?: Prisma.WalletWhereUniqueInput;
-	take?: number;
-	skip?: number;
-	distinct?: Prisma.WalletScalarFieldEnum | Prisma.WalletScalarFieldEnum[];
-};
-
-/**
- * User.userProfiles
- */
-export type User$userProfilesArgs<
-	ExtArgs extends
-		runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
-> = {
-	/**
-	 * Select specific fields to fetch from the UserProfile
-	 */
-	select?: Prisma.UserProfileSelect<ExtArgs> | null;
-	/**
-	 * Omit specific fields from the UserProfile
-	 */
-	omit?: Prisma.UserProfileOmit<ExtArgs> | null;
-	/**
-	 * Choose, which related nodes to fetch as well
-	 */
-	include?: Prisma.UserProfileInclude<ExtArgs> | null;
-	where?: Prisma.UserProfileWhereInput;
-	orderBy?:
-		| Prisma.UserProfileOrderByWithRelationInput
-		| Prisma.UserProfileOrderByWithRelationInput[];
-	cursor?: Prisma.UserProfileWhereUniqueInput;
-	take?: number;
-	skip?: number;
-	distinct?:
-		| Prisma.UserProfileScalarFieldEnum
-		| Prisma.UserProfileScalarFieldEnum[];
 };
 
 /**

@@ -14,13 +14,13 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | A | Stack and runtime foundation | Foundation | existing |
 | B | Procedure API router | Foundation | existing |
 | C | Durable background queues | Foundation | existing |
-| 1 | Design system and UI foundation | Foundation | in-progress |
-| 2 | Data model consolidation | Foundation | in-progress |
+| 1 | Design system and UI foundation | Foundation | done |
+| 2 | Data model consolidation | Foundation | done |
 | 3 | Landing page and brand identity | Foundation | in-progress |
-| 4 | Auth and onboarding flow | Slice 1 | planned |
-| 5 | Prepaid wallet and Paystack deposit | Slice 1 | planned |
-| 6 | Contact management and CSV import | Slice 1 | planned |
-| 7 | SMS campaign wizard and Termii dispatch | Slice 1 | planned |
+| 4 | Auth and onboarding flow | Slice 1 | in-progress |
+| 5 | Prepaid wallet and Paystack deposit | Slice 1 | in-progress |
+| 6 | Contact management and CSV import | Slice 1 | in-progress |
+| 7 | SMS campaign wizard and Termii dispatch | Slice 1 | done |
 | 8 | Gemini AI contact sheet image parsing | Slice 2 | planned |
 | 9 | WhatsApp outreach and template manager | Slice 2 | planned |
 | 10 | Delivery analytics and campaign reports | Slice 2 | planned |
@@ -39,7 +39,7 @@ Inngest client and edge serve endpoint for event driven background job execution
 
 ## Foundations
 
-### 1. Design system and UI foundation · in-progress
+### 1. Design system and UI foundation · done
 Unified design tokens, Tailwind CSS v4 variables, Radix UI primitives, responsive layout shell, and theme switching. Established product truth in `PRODUCT.md` and design system tokens in `DESIGN.md`.
 **Done when:** reusable layout primitives, navigation sidebar, theme toggle, and base accessible inputs render consistently.
 - [x] Design it (spec): [docs/specs/0001-design-system-and-ui-foundation/index.md](docs/specs/0001-design-system-and-ui-foundation/index.md)
@@ -53,11 +53,18 @@ Unified design tokens, Tailwind CSS v4 variables, Radix UI primitives, responsiv
 - [x] Test it: `/test design system and UI foundation`
 spec [docs/specs/0001-design-system-and-ui-foundation/index.md](docs/specs/0001-design-system-and-ui-foundation/index.md) · code in `src/styles.css`, `src/components/ui/`, `src/features/dashboard/components/`, `src/providers/theme.tsx`
 
-### 2. Data model consolidation · in-progress · needs a decision
+### 2. Data model consolidation · done
 Refactor Prisma schema to remove deprecated fields, enforce phone number uniqueness, index critical relations, and establish clean migrations.
 **Done when:** consolidated PostgreSQL schema passes validation and supports wallet balances, contacts, campaigns, and delivery logs cleanly.
-- [ ] Design it (spec): `/architect data model consolidation`
-code in `prisma/`
+- [x] Design it (spec): [docs/specs/0002-data-model-consolidation.md](docs/specs/0002-data-model-consolidation.md)
+- [x] Build it: `/develop data model consolidation`
+  - [x] Consolidate schema models, optional parseJob, tags, and composite indexes (AC-1, AC-2, AC-3, AC-5, AC-7, AC-8)
+  - [x] Execute incremental migration with automated deduplication and check constraints (AC-4, AC-9)
+  - [x] Prune subscription billing procedures and update router contact creation (AC-3, AC-6)
+  - [x] Regenerate Prisma Client types and verify schema validation (AC-1, AC-9)
+- [x] Verify it: `/check verify data model consolidation`
+- [x] Test it: `/test data model consolidation`
+spec [docs/specs/0002-data-model-consolidation.md](docs/specs/0002-data-model-consolidation.md) · code in `prisma/`, `src/db.ts`, `src/features/billing/`, `src/features/contacts/`
 
 ### 3. Landing page and brand identity · in-progress
 Modern, responsive public landing page with clear Velocast brand identity, tactile console showcase (Gemini AI roster scanning to WhatsApp dispatch), authentic Nigerian infrastructure proof, and transparent Paystack prepaid kobo wallet pricing.
@@ -69,25 +76,60 @@ code in `src/routes/index.tsx`
 
 ## Slice 1: Core broadcast loop
 
-### 4. Auth and onboarding flow · needs a decision
+### 4. Auth and onboarding flow · in-progress
 Streamlined authentication via Better Auth with email verification, secure session middleware, and organization profile setup.
 **Done when:** a user can register, verify email, log in, configure sender identity, and reach the dashboard protected by server middleware.
-- [ ] Design it (spec): `/architect auth and onboarding flow`
+- [x] Design it (spec): [docs/specs/0003-auth-and-onboarding-flow.md](docs/specs/0003-auth-and-onboarding-flow.md)
+- [x] Build it: `/develop auth and onboarding flow`
+  - [x] Core authentication loop, email verification, and password reset (AC-1, AC-2, AC-5)
+  - [x] Edge session verification in authMiddleware and route redirection (AC-6, AC-7)
+  - [x] Social sign in via Google OAuth and passwordless magic links (AC-3, AC-4)
+  - [x] Multi step onboarding wizard and resilient sender ID registration (AC-8, AC-9)
+  - [x] Atomic onboarding completion, wallet record, and template seeding (AC-10, AC-11)
+- [x] Verify it: `/check verify auth and onboarding flow`
+- [x] Test it: `/test auth and onboarding flow`
+spec [docs/specs/0003-auth-and-onboarding-flow.md](docs/specs/0003-auth-and-onboarding-flow.md) · code in `src/lib/auth.ts`, `src/middleware/auth.ts`, `src/features/auth/`, `src/features/profile/`
 
-### 5. Prepaid wallet and Paystack deposit · needs a decision
+### 5. Prepaid wallet and Paystack deposit · in-progress
 Wallet balance management with instant Paystack checkout, webhook verification, and balance deduction protection.
 **Done when:** a user can initiate a deposit in naira, complete Paystack payment, receive credited kobo balance via verified webhook, and inspect transactions.
-- [ ] Design it (spec): `/architect prepaid wallet and Paystack deposit`
+- [x] Design it (spec): [docs/specs/0004-prepaid-wallet-and-paystack-deposit.md](docs/specs/0004-prepaid-wallet-and-paystack-deposit.md)
+- [x] Build it: `/develop prepaid wallet and Paystack deposit`
+  - [x] Data model check constraints, unique paystackRef, and fee calculation utilities (AC-1, AC-5, AC-10)
+  - [x] Atomic wallet crediting, row level locking, and two phase campaign hold helpers (AC-4, AC-5, AC-8)
+  - [x] Procedure router endpoints for wallet, deposit, verification, and transactions (AC-1, AC-2, AC-6)
+  - [x] Timing safe webhook route, gross amount validation, and stale hold recovery cron (AC-3, AC-4, AC-10, AC-11)
+  - [x] Verification view and rebuilt prepaid dashboard without legacy subscriptions (AC-2, AC-7, AC-9)
+- [x] Verify it: `/check verify prepaid wallet and Paystack deposit`
+- [x] Test it: `/test prepaid wallet and Paystack deposit`
+spec [docs/specs/0004-prepaid-wallet-and-paystack-deposit.md](docs/specs/0004-prepaid-wallet-and-paystack-deposit.md) · code in `src/features/billing/`, `src/features/payment/paystack/`, `src/routes/api/webhooks/paystack.ts`
 
-### 6. Contact management and CSV import · needs a decision
+### 6. Contact management and CSV import · done
 Full contact address book with tag support, search, duplicate detection, and batch CSV file upload with validation.
 **Done when:** a user can view paginated contacts, add a contact with valid phone number, import contacts from CSV, and resolve duplicate numbers.
-- [ ] Design it (spec): `/architect contact management and CSV import`
+- [x] Design it (spec): [docs/specs/0005-contact-management-and-csv-import/index.md](docs/specs/0005-contact-management-and-csv-import/index.md)
+- [x] Build it: `/develop contact management and CSV import`
+  - [x] Schema migration for ContactImport audit model and contact metadata (AC-5)
+  - [x] Phone normalization utility with E.164 and Nigerian prefix defaults (AC-2)
+  - [x] Batch import and tag management oRPC procedures with duplicate resolution (AC-3, AC-4, AC-6, AC-7, AC-9)
+  - [x] Client CSV upload dialog with PapaParse preview and chunked progress bar (AC-1, AC-3, AC-9)
+  - [x] Enhanced directory table with tag filtering, bulk operations, and import history (AC-6, AC-7, AC-8)
+- [x] Verify it: `/check verify contact management and CSV import`
+- [x] Test it: `/test contact management and CSV import`
+spec [docs/specs/0005-contact-management-and-csv-import/index.md](docs/specs/0005-contact-management-and-csv-import/index.md) · code in `src/features/contacts/`
 
-### 7. SMS campaign wizard and Termii dispatch · needs a decision
+### 7. SMS campaign wizard and Termii dispatch · done
 Campaign creation flow with audience selection, dynamic name placeholders, GSM segment calculation, wallet deduction, and Inngest fan out dispatch via Termii.
 **Done when:** a user can launch an SMS campaign to selected contacts, wallet balance is reserved, messages are dispatched through Termii, and delivery status updates.
-- [ ] Design it (spec): `/architect SMS campaign wizard and Termii dispatch`
+- [x] Design it (spec): [docs/specs/0006-sms-campaign-wizard-and-termii-dispatch.md](docs/specs/0006-sms-campaign-wizard-and-termii-dispatch.md)
+- [x] Build it: `/develop SMS campaign wizard and Termii dispatch`
+  - [x] GSM character analyzer utility and database schema migration (AC-1, AC-4, AC-6, AC-7, AC-10)
+  - [x] Estimation, atomic wallet hold, and cancellation oRPC procedures (AC-1, AC-3, AC-5, AC-6, AC-7, AC-10)
+  - [x] Two tier Inngest broadcast orchestrator and throttled Termii message worker (AC-6, AC-7, AC-8, AC-9, AC-10)
+  - [x] Multi step campaign wizard UI with segment calculations, variable inputs, and scheduling (AC-1, AC-2, AC-3, AC-4, AC-5, AC-6, AC-7)
+- [x] Verify it: `/check verify SMS campaign wizard and Termii dispatch`
+- [x] Test it: `/test SMS campaign wizard and Termii dispatch`
+spec [docs/specs/0006-sms-campaign-wizard-and-termii-dispatch.md](docs/specs/0006-sms-campaign-wizard-and-termii-dispatch.md) · code in `src/features/campaigns/`, `src/features/jobs/functions/send-campaign.ts`, `src/lib/sms.ts`, `src/lib/termii.ts`
 
 ## Slice 2: Channel expansion and insights
 

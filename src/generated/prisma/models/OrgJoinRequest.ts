@@ -13,9 +13,7 @@ import type * as Prisma from "../internal/prismaNamespace.ts";
 
 /**
  * Model OrgJoinRequest
- * A request from a user (or unauthenticated visitor) to join an org.
- * Owners see these in their team settings and can approve or decline.
- * On approval an OrgMember row is created and the requester is notified.
+ *
  */
 export type OrgJoinRequestModel =
 	runtime.Types.Result.DefaultSelection<Prisma.$OrgJoinRequestPayload>;
@@ -1023,17 +1021,8 @@ export type $OrgJoinRequestPayload<
 	scalars: runtime.Types.Extensions.GetPayloadResult<
 		{
 			id: string;
-			/**
-			 * The org being requested to join (identified by the owner's userId)
-			 */
 			ownerId: string;
-			/**
-			 * The requester — always a registered user (must sign up first)
-			 */
 			userId: string;
-			/**
-			 * Optional message the requester can include
-			 */
 			message: string | null;
 			status: $Enums.JoinRequestStatus;
 			decidedAt: Date | null;

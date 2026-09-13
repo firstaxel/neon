@@ -13,10 +13,7 @@ import type * as Prisma from "../internal/prismaNamespace.ts";
 
 /**
  * Model InboundMessage
- * Every inbound reply received via WhatsApp or SMS webhook.
- * Used to power the Inbox tab — shows all conversations a user can reply to.
- * The service window (24h from receivedAt for WhatsApp) determines whether
- * a free-form reply can be sent or if a template is needed (and billed higher).
+ *
  */
 export type InboundMessageModel =
 	runtime.Types.Result.DefaultSelection<Prisma.$InboundMessagePayload>;
@@ -1312,42 +1309,17 @@ export type $InboundMessagePayload<
 	scalars: runtime.Types.Extensions.GetPayloadResult<
 		{
 			id: string;
-			/**
-			 * The platform user who owns the phone number this came in on
-			 */
 			userId: string;
-			/**
-			 * Sender info (the contact who replied)
-			 */
 			phone: string;
 			contactName: string | null;
 			contactId: string | null;
 			channel: $Enums.MessageChannel;
-			/**
-			 * The message body we received
-			 */
 			body: string;
-			/**
-			 * The campaign + outbound message this was a reply to (optional — contacts
-			 * can message in unprompted if they have your WA number)
-			 */
 			campaignId: string | null;
-			/**
-			 * External message ID from Meta / Termii (for dedup)
-			 */
 			externalId: string | null;
-			/**
-			 * When the message was received (used for 24h service window countdown)
-			 */
 			receivedAt: Date;
-			/**
-			 * Whether a reply has been sent from the dashboard for this inbound message
-			 */
 			replied: boolean;
 			repliedAt: Date | null;
-			/**
-			 * Whether this was a keyword reply (YES / STOP / START) — handled automatically
-			 */
 			isKeyword: boolean;
 			createdAt: Date;
 		},

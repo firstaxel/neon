@@ -26,7 +26,9 @@ export type AggregateContact = {
 
 export type ContactMinAggregateOutputType = {
 	id: string | null;
+	uploadedBy: string | null;
 	parseJobId: string | null;
+	importBatchId: string | null;
 	name: string | null;
 	phone: string | null;
 	channel: $Enums.MessageChannel | null;
@@ -34,7 +36,6 @@ export type ContactMinAggregateOutputType = {
 	email: string | null;
 	notes: string | null;
 	rawRow: string | null;
-	uploadedBy: string | null;
 	optedOut: boolean | null;
 	optedOutAt: Date | null;
 	lastInboundAt: Date | null;
@@ -43,7 +44,9 @@ export type ContactMinAggregateOutputType = {
 
 export type ContactMaxAggregateOutputType = {
 	id: string | null;
+	uploadedBy: string | null;
 	parseJobId: string | null;
+	importBatchId: string | null;
 	name: string | null;
 	phone: string | null;
 	channel: $Enums.MessageChannel | null;
@@ -51,7 +54,6 @@ export type ContactMaxAggregateOutputType = {
 	email: string | null;
 	notes: string | null;
 	rawRow: string | null;
-	uploadedBy: string | null;
 	optedOut: boolean | null;
 	optedOutAt: Date | null;
 	lastInboundAt: Date | null;
@@ -60,15 +62,18 @@ export type ContactMaxAggregateOutputType = {
 
 export type ContactCountAggregateOutputType = {
 	id: number;
+	uploadedBy: number;
 	parseJobId: number;
+	importBatchId: number;
 	name: number;
 	phone: number;
 	channel: number;
 	type: number;
+	tags: number;
 	email: number;
 	notes: number;
+	metadata: number;
 	rawRow: number;
-	uploadedBy: number;
 	optedOut: number;
 	optedOutAt: number;
 	lastInboundAt: number;
@@ -78,7 +83,9 @@ export type ContactCountAggregateOutputType = {
 
 export type ContactMinAggregateInputType = {
 	id?: true;
+	uploadedBy?: true;
 	parseJobId?: true;
+	importBatchId?: true;
 	name?: true;
 	phone?: true;
 	channel?: true;
@@ -86,7 +93,6 @@ export type ContactMinAggregateInputType = {
 	email?: true;
 	notes?: true;
 	rawRow?: true;
-	uploadedBy?: true;
 	optedOut?: true;
 	optedOutAt?: true;
 	lastInboundAt?: true;
@@ -95,7 +101,9 @@ export type ContactMinAggregateInputType = {
 
 export type ContactMaxAggregateInputType = {
 	id?: true;
+	uploadedBy?: true;
 	parseJobId?: true;
+	importBatchId?: true;
 	name?: true;
 	phone?: true;
 	channel?: true;
@@ -103,7 +111,6 @@ export type ContactMaxAggregateInputType = {
 	email?: true;
 	notes?: true;
 	rawRow?: true;
-	uploadedBy?: true;
 	optedOut?: true;
 	optedOutAt?: true;
 	lastInboundAt?: true;
@@ -112,15 +119,18 @@ export type ContactMaxAggregateInputType = {
 
 export type ContactCountAggregateInputType = {
 	id?: true;
+	uploadedBy?: true;
 	parseJobId?: true;
+	importBatchId?: true;
 	name?: true;
 	phone?: true;
 	channel?: true;
 	type?: true;
+	tags?: true;
 	email?: true;
 	notes?: true;
+	metadata?: true;
 	rawRow?: true;
-	uploadedBy?: true;
 	optedOut?: true;
 	optedOutAt?: true;
 	lastInboundAt?: true;
@@ -209,15 +219,18 @@ export type ContactGroupByArgs<
 
 export type ContactGroupByOutputType = {
 	id: string;
-	parseJobId: string;
+	uploadedBy: string;
+	parseJobId: string | null;
+	importBatchId: string | null;
 	name: string;
 	phone: string;
 	channel: $Enums.MessageChannel;
 	type: $Enums.ContactType;
+	tags: string[];
 	email: string | null;
 	notes: string | null;
+	metadata: runtime.JsonValue | null;
 	rawRow: string | null;
-	uploadedBy: string;
 	optedOut: boolean;
 	optedOutAt: Date | null;
 	lastInboundAt: Date | null;
@@ -245,15 +258,18 @@ export type ContactWhereInput = {
 	OR?: Prisma.ContactWhereInput[];
 	NOT?: Prisma.ContactWhereInput | Prisma.ContactWhereInput[];
 	id?: Prisma.StringFilter<"Contact"> | string;
-	parseJobId?: Prisma.StringFilter<"Contact"> | string;
+	uploadedBy?: Prisma.StringFilter<"Contact"> | string;
+	parseJobId?: Prisma.StringNullableFilter<"Contact"> | string | null;
+	importBatchId?: Prisma.StringNullableFilter<"Contact"> | string | null;
 	name?: Prisma.StringFilter<"Contact"> | string;
 	phone?: Prisma.StringFilter<"Contact"> | string;
 	channel?: Prisma.EnumMessageChannelFilter<"Contact"> | $Enums.MessageChannel;
 	type?: Prisma.EnumContactTypeFilter<"Contact"> | $Enums.ContactType;
+	tags?: Prisma.StringNullableListFilter<"Contact">;
 	email?: Prisma.StringNullableFilter<"Contact"> | string | null;
 	notes?: Prisma.StringNullableFilter<"Contact"> | string | null;
+	metadata?: Prisma.JsonNullableFilter<"Contact">;
 	rawRow?: Prisma.StringNullableFilter<"Contact"> | string | null;
-	uploadedBy?: Prisma.StringFilter<"Contact"> | string;
 	optedOut?: Prisma.BoolFilter<"Contact"> | boolean;
 	optedOutAt?: Prisma.DateTimeNullableFilter<"Contact"> | Date | string | null;
 	lastInboundAt?:
@@ -262,30 +278,38 @@ export type ContactWhereInput = {
 		| string
 		| null;
 	createdAt?: Prisma.DateTimeFilter<"Contact"> | Date | string;
-	parseJob?: Prisma.XOR<
-		Prisma.ParseJobScalarRelationFilter,
-		Prisma.ParseJobWhereInput
-	>;
 	user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>;
+	parseJob?: Prisma.XOR<
+		Prisma.ParseJobNullableScalarRelationFilter,
+		Prisma.ParseJobWhereInput
+	> | null;
+	importBatch?: Prisma.XOR<
+		Prisma.ContactImportNullableScalarRelationFilter,
+		Prisma.ContactImportWhereInput
+	> | null;
 };
 
 export type ContactOrderByWithRelationInput = {
 	id?: Prisma.SortOrder;
-	parseJobId?: Prisma.SortOrder;
+	uploadedBy?: Prisma.SortOrder;
+	parseJobId?: Prisma.SortOrderInput | Prisma.SortOrder;
+	importBatchId?: Prisma.SortOrderInput | Prisma.SortOrder;
 	name?: Prisma.SortOrder;
 	phone?: Prisma.SortOrder;
 	channel?: Prisma.SortOrder;
 	type?: Prisma.SortOrder;
+	tags?: Prisma.SortOrder;
 	email?: Prisma.SortOrderInput | Prisma.SortOrder;
 	notes?: Prisma.SortOrderInput | Prisma.SortOrder;
+	metadata?: Prisma.SortOrderInput | Prisma.SortOrder;
 	rawRow?: Prisma.SortOrderInput | Prisma.SortOrder;
-	uploadedBy?: Prisma.SortOrder;
 	optedOut?: Prisma.SortOrder;
 	optedOutAt?: Prisma.SortOrderInput | Prisma.SortOrder;
 	lastInboundAt?: Prisma.SortOrderInput | Prisma.SortOrder;
 	createdAt?: Prisma.SortOrder;
-	parseJob?: Prisma.ParseJobOrderByWithRelationInput;
 	user?: Prisma.UserOrderByWithRelationInput;
+	parseJob?: Prisma.ParseJobOrderByWithRelationInput;
+	importBatch?: Prisma.ContactImportOrderByWithRelationInput;
 };
 
 export type ContactWhereUniqueInput = Prisma.AtLeast<
@@ -295,17 +319,20 @@ export type ContactWhereUniqueInput = Prisma.AtLeast<
 		AND?: Prisma.ContactWhereInput | Prisma.ContactWhereInput[];
 		OR?: Prisma.ContactWhereInput[];
 		NOT?: Prisma.ContactWhereInput | Prisma.ContactWhereInput[];
-		parseJobId?: Prisma.StringFilter<"Contact"> | string;
+		uploadedBy?: Prisma.StringFilter<"Contact"> | string;
+		parseJobId?: Prisma.StringNullableFilter<"Contact"> | string | null;
+		importBatchId?: Prisma.StringNullableFilter<"Contact"> | string | null;
 		name?: Prisma.StringFilter<"Contact"> | string;
 		phone?: Prisma.StringFilter<"Contact"> | string;
 		channel?:
 			| Prisma.EnumMessageChannelFilter<"Contact">
 			| $Enums.MessageChannel;
 		type?: Prisma.EnumContactTypeFilter<"Contact"> | $Enums.ContactType;
+		tags?: Prisma.StringNullableListFilter<"Contact">;
 		email?: Prisma.StringNullableFilter<"Contact"> | string | null;
 		notes?: Prisma.StringNullableFilter<"Contact"> | string | null;
+		metadata?: Prisma.JsonNullableFilter<"Contact">;
 		rawRow?: Prisma.StringNullableFilter<"Contact"> | string | null;
-		uploadedBy?: Prisma.StringFilter<"Contact"> | string;
 		optedOut?: Prisma.BoolFilter<"Contact"> | boolean;
 		optedOutAt?:
 			| Prisma.DateTimeNullableFilter<"Contact">
@@ -318,26 +345,33 @@ export type ContactWhereUniqueInput = Prisma.AtLeast<
 			| string
 			| null;
 		createdAt?: Prisma.DateTimeFilter<"Contact"> | Date | string;
-		parseJob?: Prisma.XOR<
-			Prisma.ParseJobScalarRelationFilter,
-			Prisma.ParseJobWhereInput
-		>;
 		user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>;
+		parseJob?: Prisma.XOR<
+			Prisma.ParseJobNullableScalarRelationFilter,
+			Prisma.ParseJobWhereInput
+		> | null;
+		importBatch?: Prisma.XOR<
+			Prisma.ContactImportNullableScalarRelationFilter,
+			Prisma.ContactImportWhereInput
+		> | null;
 	},
 	"id" | "uploadedBy_phone"
 >;
 
 export type ContactOrderByWithAggregationInput = {
 	id?: Prisma.SortOrder;
-	parseJobId?: Prisma.SortOrder;
+	uploadedBy?: Prisma.SortOrder;
+	parseJobId?: Prisma.SortOrderInput | Prisma.SortOrder;
+	importBatchId?: Prisma.SortOrderInput | Prisma.SortOrder;
 	name?: Prisma.SortOrder;
 	phone?: Prisma.SortOrder;
 	channel?: Prisma.SortOrder;
 	type?: Prisma.SortOrder;
+	tags?: Prisma.SortOrder;
 	email?: Prisma.SortOrderInput | Prisma.SortOrder;
 	notes?: Prisma.SortOrderInput | Prisma.SortOrder;
+	metadata?: Prisma.SortOrderInput | Prisma.SortOrder;
 	rawRow?: Prisma.SortOrderInput | Prisma.SortOrder;
-	uploadedBy?: Prisma.SortOrder;
 	optedOut?: Prisma.SortOrder;
 	optedOutAt?: Prisma.SortOrderInput | Prisma.SortOrder;
 	lastInboundAt?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -356,7 +390,15 @@ export type ContactScalarWhereWithAggregatesInput = {
 		| Prisma.ContactScalarWhereWithAggregatesInput
 		| Prisma.ContactScalarWhereWithAggregatesInput[];
 	id?: Prisma.StringWithAggregatesFilter<"Contact"> | string;
-	parseJobId?: Prisma.StringWithAggregatesFilter<"Contact"> | string;
+	uploadedBy?: Prisma.StringWithAggregatesFilter<"Contact"> | string;
+	parseJobId?:
+		| Prisma.StringNullableWithAggregatesFilter<"Contact">
+		| string
+		| null;
+	importBatchId?:
+		| Prisma.StringNullableWithAggregatesFilter<"Contact">
+		| string
+		| null;
 	name?: Prisma.StringWithAggregatesFilter<"Contact"> | string;
 	phone?: Prisma.StringWithAggregatesFilter<"Contact"> | string;
 	channel?:
@@ -365,10 +407,11 @@ export type ContactScalarWhereWithAggregatesInput = {
 	type?:
 		| Prisma.EnumContactTypeWithAggregatesFilter<"Contact">
 		| $Enums.ContactType;
+	tags?: Prisma.StringNullableListFilter<"Contact">;
 	email?: Prisma.StringNullableWithAggregatesFilter<"Contact"> | string | null;
 	notes?: Prisma.StringNullableWithAggregatesFilter<"Contact"> | string | null;
+	metadata?: Prisma.JsonNullableWithAggregatesFilter<"Contact">;
 	rawRow?: Prisma.StringNullableWithAggregatesFilter<"Contact"> | string | null;
-	uploadedBy?: Prisma.StringWithAggregatesFilter<"Contact"> | string;
 	optedOut?: Prisma.BoolWithAggregatesFilter<"Contact"> | boolean;
 	optedOutAt?:
 		| Prisma.DateTimeNullableWithAggregatesFilter<"Contact">
@@ -389,28 +432,34 @@ export type ContactCreateInput = {
 	phone: string;
 	channel: $Enums.MessageChannel;
 	type?: $Enums.ContactType;
+	tags?: Prisma.ContactCreatetagsInput | string[];
 	email?: string | null;
 	notes?: string | null;
+	metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
 	rawRow?: string | null;
 	optedOut?: boolean;
 	optedOutAt?: Date | string | null;
 	lastInboundAt?: Date | string | null;
 	createdAt?: Date | string;
-	parseJob: Prisma.ParseJobCreateNestedOneWithoutContactsInput;
 	user: Prisma.UserCreateNestedOneWithoutContactsInput;
+	parseJob?: Prisma.ParseJobCreateNestedOneWithoutContactsInput;
+	importBatch?: Prisma.ContactImportCreateNestedOneWithoutContactsInput;
 };
 
 export type ContactUncheckedCreateInput = {
 	id?: string;
-	parseJobId: string;
+	uploadedBy: string;
+	parseJobId?: string | null;
+	importBatchId?: string | null;
 	name: string;
 	phone: string;
 	channel: $Enums.MessageChannel;
 	type?: $Enums.ContactType;
+	tags?: Prisma.ContactCreatetagsInput | string[];
 	email?: string | null;
 	notes?: string | null;
+	metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
 	rawRow?: string | null;
-	uploadedBy: string;
 	optedOut?: boolean;
 	optedOutAt?: Date | string | null;
 	lastInboundAt?: Date | string | null;
@@ -425,8 +474,10 @@ export type ContactUpdateInput = {
 		| Prisma.EnumMessageChannelFieldUpdateOperationsInput
 		| $Enums.MessageChannel;
 	type?: Prisma.EnumContactTypeFieldUpdateOperationsInput | $Enums.ContactType;
+	tags?: Prisma.ContactUpdatetagsInput | string[];
 	email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
 	rawRow?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	optedOut?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	optedOutAt?:
@@ -440,23 +491,30 @@ export type ContactUpdateInput = {
 		| string
 		| null;
 	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-	parseJob?: Prisma.ParseJobUpdateOneRequiredWithoutContactsNestedInput;
 	user?: Prisma.UserUpdateOneRequiredWithoutContactsNestedInput;
+	parseJob?: Prisma.ParseJobUpdateOneWithoutContactsNestedInput;
+	importBatch?: Prisma.ContactImportUpdateOneWithoutContactsNestedInput;
 };
 
 export type ContactUncheckedUpdateInput = {
 	id?: Prisma.StringFieldUpdateOperationsInput | string;
-	parseJobId?: Prisma.StringFieldUpdateOperationsInput | string;
+	uploadedBy?: Prisma.StringFieldUpdateOperationsInput | string;
+	parseJobId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	importBatchId?:
+		| Prisma.NullableStringFieldUpdateOperationsInput
+		| string
+		| null;
 	name?: Prisma.StringFieldUpdateOperationsInput | string;
 	phone?: Prisma.StringFieldUpdateOperationsInput | string;
 	channel?:
 		| Prisma.EnumMessageChannelFieldUpdateOperationsInput
 		| $Enums.MessageChannel;
 	type?: Prisma.EnumContactTypeFieldUpdateOperationsInput | $Enums.ContactType;
+	tags?: Prisma.ContactUpdatetagsInput | string[];
 	email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
 	rawRow?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	uploadedBy?: Prisma.StringFieldUpdateOperationsInput | string;
 	optedOut?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	optedOutAt?:
 		| Prisma.NullableDateTimeFieldUpdateOperationsInput
@@ -473,15 +531,18 @@ export type ContactUncheckedUpdateInput = {
 
 export type ContactCreateManyInput = {
 	id?: string;
-	parseJobId: string;
+	uploadedBy: string;
+	parseJobId?: string | null;
+	importBatchId?: string | null;
 	name: string;
 	phone: string;
 	channel: $Enums.MessageChannel;
 	type?: $Enums.ContactType;
+	tags?: Prisma.ContactCreatetagsInput | string[];
 	email?: string | null;
 	notes?: string | null;
+	metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
 	rawRow?: string | null;
-	uploadedBy: string;
 	optedOut?: boolean;
 	optedOutAt?: Date | string | null;
 	lastInboundAt?: Date | string | null;
@@ -496,8 +557,10 @@ export type ContactUpdateManyMutationInput = {
 		| Prisma.EnumMessageChannelFieldUpdateOperationsInput
 		| $Enums.MessageChannel;
 	type?: Prisma.EnumContactTypeFieldUpdateOperationsInput | $Enums.ContactType;
+	tags?: Prisma.ContactUpdatetagsInput | string[];
 	email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
 	rawRow?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	optedOut?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	optedOutAt?:
@@ -515,17 +578,23 @@ export type ContactUpdateManyMutationInput = {
 
 export type ContactUncheckedUpdateManyInput = {
 	id?: Prisma.StringFieldUpdateOperationsInput | string;
-	parseJobId?: Prisma.StringFieldUpdateOperationsInput | string;
+	uploadedBy?: Prisma.StringFieldUpdateOperationsInput | string;
+	parseJobId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	importBatchId?:
+		| Prisma.NullableStringFieldUpdateOperationsInput
+		| string
+		| null;
 	name?: Prisma.StringFieldUpdateOperationsInput | string;
 	phone?: Prisma.StringFieldUpdateOperationsInput | string;
 	channel?:
 		| Prisma.EnumMessageChannelFieldUpdateOperationsInput
 		| $Enums.MessageChannel;
 	type?: Prisma.EnumContactTypeFieldUpdateOperationsInput | $Enums.ContactType;
+	tags?: Prisma.ContactUpdatetagsInput | string[];
 	email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
 	rawRow?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	uploadedBy?: Prisma.StringFieldUpdateOperationsInput | string;
 	optedOut?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	optedOutAt?:
 		| Prisma.NullableDateTimeFieldUpdateOperationsInput
@@ -557,15 +626,18 @@ export type ContactUploadedByPhoneCompoundUniqueInput = {
 
 export type ContactCountOrderByAggregateInput = {
 	id?: Prisma.SortOrder;
+	uploadedBy?: Prisma.SortOrder;
 	parseJobId?: Prisma.SortOrder;
+	importBatchId?: Prisma.SortOrder;
 	name?: Prisma.SortOrder;
 	phone?: Prisma.SortOrder;
 	channel?: Prisma.SortOrder;
 	type?: Prisma.SortOrder;
+	tags?: Prisma.SortOrder;
 	email?: Prisma.SortOrder;
 	notes?: Prisma.SortOrder;
+	metadata?: Prisma.SortOrder;
 	rawRow?: Prisma.SortOrder;
-	uploadedBy?: Prisma.SortOrder;
 	optedOut?: Prisma.SortOrder;
 	optedOutAt?: Prisma.SortOrder;
 	lastInboundAt?: Prisma.SortOrder;
@@ -574,7 +646,9 @@ export type ContactCountOrderByAggregateInput = {
 
 export type ContactMaxOrderByAggregateInput = {
 	id?: Prisma.SortOrder;
+	uploadedBy?: Prisma.SortOrder;
 	parseJobId?: Prisma.SortOrder;
+	importBatchId?: Prisma.SortOrder;
 	name?: Prisma.SortOrder;
 	phone?: Prisma.SortOrder;
 	channel?: Prisma.SortOrder;
@@ -582,7 +656,6 @@ export type ContactMaxOrderByAggregateInput = {
 	email?: Prisma.SortOrder;
 	notes?: Prisma.SortOrder;
 	rawRow?: Prisma.SortOrder;
-	uploadedBy?: Prisma.SortOrder;
 	optedOut?: Prisma.SortOrder;
 	optedOutAt?: Prisma.SortOrder;
 	lastInboundAt?: Prisma.SortOrder;
@@ -591,7 +664,9 @@ export type ContactMaxOrderByAggregateInput = {
 
 export type ContactMinOrderByAggregateInput = {
 	id?: Prisma.SortOrder;
+	uploadedBy?: Prisma.SortOrder;
 	parseJobId?: Prisma.SortOrder;
+	importBatchId?: Prisma.SortOrder;
 	name?: Prisma.SortOrder;
 	phone?: Prisma.SortOrder;
 	channel?: Prisma.SortOrder;
@@ -599,7 +674,6 @@ export type ContactMinOrderByAggregateInput = {
 	email?: Prisma.SortOrder;
 	notes?: Prisma.SortOrder;
 	rawRow?: Prisma.SortOrder;
-	uploadedBy?: Prisma.SortOrder;
 	optedOut?: Prisma.SortOrder;
 	optedOutAt?: Prisma.SortOrder;
 	lastInboundAt?: Prisma.SortOrder;
@@ -794,6 +868,104 @@ export type ContactUncheckedUpdateManyWithoutParseJobNestedInput = {
 		| Prisma.ContactScalarWhereInput[];
 };
 
+export type ContactCreateNestedManyWithoutImportBatchInput = {
+	create?:
+		| Prisma.XOR<
+				Prisma.ContactCreateWithoutImportBatchInput,
+				Prisma.ContactUncheckedCreateWithoutImportBatchInput
+		  >
+		| Prisma.ContactCreateWithoutImportBatchInput[]
+		| Prisma.ContactUncheckedCreateWithoutImportBatchInput[];
+	connectOrCreate?:
+		| Prisma.ContactCreateOrConnectWithoutImportBatchInput
+		| Prisma.ContactCreateOrConnectWithoutImportBatchInput[];
+	createMany?: Prisma.ContactCreateManyImportBatchInputEnvelope;
+	connect?: Prisma.ContactWhereUniqueInput | Prisma.ContactWhereUniqueInput[];
+};
+
+export type ContactUncheckedCreateNestedManyWithoutImportBatchInput = {
+	create?:
+		| Prisma.XOR<
+				Prisma.ContactCreateWithoutImportBatchInput,
+				Prisma.ContactUncheckedCreateWithoutImportBatchInput
+		  >
+		| Prisma.ContactCreateWithoutImportBatchInput[]
+		| Prisma.ContactUncheckedCreateWithoutImportBatchInput[];
+	connectOrCreate?:
+		| Prisma.ContactCreateOrConnectWithoutImportBatchInput
+		| Prisma.ContactCreateOrConnectWithoutImportBatchInput[];
+	createMany?: Prisma.ContactCreateManyImportBatchInputEnvelope;
+	connect?: Prisma.ContactWhereUniqueInput | Prisma.ContactWhereUniqueInput[];
+};
+
+export type ContactUpdateManyWithoutImportBatchNestedInput = {
+	create?:
+		| Prisma.XOR<
+				Prisma.ContactCreateWithoutImportBatchInput,
+				Prisma.ContactUncheckedCreateWithoutImportBatchInput
+		  >
+		| Prisma.ContactCreateWithoutImportBatchInput[]
+		| Prisma.ContactUncheckedCreateWithoutImportBatchInput[];
+	connectOrCreate?:
+		| Prisma.ContactCreateOrConnectWithoutImportBatchInput
+		| Prisma.ContactCreateOrConnectWithoutImportBatchInput[];
+	upsert?:
+		| Prisma.ContactUpsertWithWhereUniqueWithoutImportBatchInput
+		| Prisma.ContactUpsertWithWhereUniqueWithoutImportBatchInput[];
+	createMany?: Prisma.ContactCreateManyImportBatchInputEnvelope;
+	set?: Prisma.ContactWhereUniqueInput | Prisma.ContactWhereUniqueInput[];
+	disconnect?:
+		| Prisma.ContactWhereUniqueInput
+		| Prisma.ContactWhereUniqueInput[];
+	delete?: Prisma.ContactWhereUniqueInput | Prisma.ContactWhereUniqueInput[];
+	connect?: Prisma.ContactWhereUniqueInput | Prisma.ContactWhereUniqueInput[];
+	update?:
+		| Prisma.ContactUpdateWithWhereUniqueWithoutImportBatchInput
+		| Prisma.ContactUpdateWithWhereUniqueWithoutImportBatchInput[];
+	updateMany?:
+		| Prisma.ContactUpdateManyWithWhereWithoutImportBatchInput
+		| Prisma.ContactUpdateManyWithWhereWithoutImportBatchInput[];
+	deleteMany?:
+		| Prisma.ContactScalarWhereInput
+		| Prisma.ContactScalarWhereInput[];
+};
+
+export type ContactUncheckedUpdateManyWithoutImportBatchNestedInput = {
+	create?:
+		| Prisma.XOR<
+				Prisma.ContactCreateWithoutImportBatchInput,
+				Prisma.ContactUncheckedCreateWithoutImportBatchInput
+		  >
+		| Prisma.ContactCreateWithoutImportBatchInput[]
+		| Prisma.ContactUncheckedCreateWithoutImportBatchInput[];
+	connectOrCreate?:
+		| Prisma.ContactCreateOrConnectWithoutImportBatchInput
+		| Prisma.ContactCreateOrConnectWithoutImportBatchInput[];
+	upsert?:
+		| Prisma.ContactUpsertWithWhereUniqueWithoutImportBatchInput
+		| Prisma.ContactUpsertWithWhereUniqueWithoutImportBatchInput[];
+	createMany?: Prisma.ContactCreateManyImportBatchInputEnvelope;
+	set?: Prisma.ContactWhereUniqueInput | Prisma.ContactWhereUniqueInput[];
+	disconnect?:
+		| Prisma.ContactWhereUniqueInput
+		| Prisma.ContactWhereUniqueInput[];
+	delete?: Prisma.ContactWhereUniqueInput | Prisma.ContactWhereUniqueInput[];
+	connect?: Prisma.ContactWhereUniqueInput | Prisma.ContactWhereUniqueInput[];
+	update?:
+		| Prisma.ContactUpdateWithWhereUniqueWithoutImportBatchInput
+		| Prisma.ContactUpdateWithWhereUniqueWithoutImportBatchInput[];
+	updateMany?:
+		| Prisma.ContactUpdateManyWithWhereWithoutImportBatchInput
+		| Prisma.ContactUpdateManyWithWhereWithoutImportBatchInput[];
+	deleteMany?:
+		| Prisma.ContactScalarWhereInput
+		| Prisma.ContactScalarWhereInput[];
+};
+
+export type ContactCreatetagsInput = {
+	set: string[];
+};
+
 export type EnumMessageChannelFieldUpdateOperationsInput = {
 	set?: $Enums.MessageChannel;
 };
@@ -802,31 +974,42 @@ export type EnumContactTypeFieldUpdateOperationsInput = {
 	set?: $Enums.ContactType;
 };
 
+export type ContactUpdatetagsInput = {
+	set?: string[];
+	push?: string | string[];
+};
+
 export type ContactCreateWithoutUserInput = {
 	id?: string;
 	name: string;
 	phone: string;
 	channel: $Enums.MessageChannel;
 	type?: $Enums.ContactType;
+	tags?: Prisma.ContactCreatetagsInput | string[];
 	email?: string | null;
 	notes?: string | null;
+	metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
 	rawRow?: string | null;
 	optedOut?: boolean;
 	optedOutAt?: Date | string | null;
 	lastInboundAt?: Date | string | null;
 	createdAt?: Date | string;
-	parseJob: Prisma.ParseJobCreateNestedOneWithoutContactsInput;
+	parseJob?: Prisma.ParseJobCreateNestedOneWithoutContactsInput;
+	importBatch?: Prisma.ContactImportCreateNestedOneWithoutContactsInput;
 };
 
 export type ContactUncheckedCreateWithoutUserInput = {
 	id?: string;
-	parseJobId: string;
+	parseJobId?: string | null;
+	importBatchId?: string | null;
 	name: string;
 	phone: string;
 	channel: $Enums.MessageChannel;
 	type?: $Enums.ContactType;
+	tags?: Prisma.ContactCreatetagsInput | string[];
 	email?: string | null;
 	notes?: string | null;
+	metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
 	rawRow?: string | null;
 	optedOut?: boolean;
 	optedOutAt?: Date | string | null;
@@ -880,15 +1063,18 @@ export type ContactScalarWhereInput = {
 	OR?: Prisma.ContactScalarWhereInput[];
 	NOT?: Prisma.ContactScalarWhereInput | Prisma.ContactScalarWhereInput[];
 	id?: Prisma.StringFilter<"Contact"> | string;
-	parseJobId?: Prisma.StringFilter<"Contact"> | string;
+	uploadedBy?: Prisma.StringFilter<"Contact"> | string;
+	parseJobId?: Prisma.StringNullableFilter<"Contact"> | string | null;
+	importBatchId?: Prisma.StringNullableFilter<"Contact"> | string | null;
 	name?: Prisma.StringFilter<"Contact"> | string;
 	phone?: Prisma.StringFilter<"Contact"> | string;
 	channel?: Prisma.EnumMessageChannelFilter<"Contact"> | $Enums.MessageChannel;
 	type?: Prisma.EnumContactTypeFilter<"Contact"> | $Enums.ContactType;
+	tags?: Prisma.StringNullableListFilter<"Contact">;
 	email?: Prisma.StringNullableFilter<"Contact"> | string | null;
 	notes?: Prisma.StringNullableFilter<"Contact"> | string | null;
+	metadata?: Prisma.JsonNullableFilter<"Contact">;
 	rawRow?: Prisma.StringNullableFilter<"Contact"> | string | null;
-	uploadedBy?: Prisma.StringFilter<"Contact"> | string;
 	optedOut?: Prisma.BoolFilter<"Contact"> | boolean;
 	optedOutAt?: Prisma.DateTimeNullableFilter<"Contact"> | Date | string | null;
 	lastInboundAt?:
@@ -905,26 +1091,32 @@ export type ContactCreateWithoutParseJobInput = {
 	phone: string;
 	channel: $Enums.MessageChannel;
 	type?: $Enums.ContactType;
+	tags?: Prisma.ContactCreatetagsInput | string[];
 	email?: string | null;
 	notes?: string | null;
+	metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
 	rawRow?: string | null;
 	optedOut?: boolean;
 	optedOutAt?: Date | string | null;
 	lastInboundAt?: Date | string | null;
 	createdAt?: Date | string;
 	user: Prisma.UserCreateNestedOneWithoutContactsInput;
+	importBatch?: Prisma.ContactImportCreateNestedOneWithoutContactsInput;
 };
 
 export type ContactUncheckedCreateWithoutParseJobInput = {
 	id?: string;
+	uploadedBy: string;
+	importBatchId?: string | null;
 	name: string;
 	phone: string;
 	channel: $Enums.MessageChannel;
 	type?: $Enums.ContactType;
+	tags?: Prisma.ContactCreatetagsInput | string[];
 	email?: string | null;
 	notes?: string | null;
+	metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
 	rawRow?: string | null;
-	uploadedBy: string;
 	optedOut?: boolean;
 	optedOutAt?: Date | string | null;
 	lastInboundAt?: Date | string | null;
@@ -974,15 +1166,99 @@ export type ContactUpdateManyWithWhereWithoutParseJobInput = {
 	>;
 };
 
-export type ContactCreateManyUserInput = {
+export type ContactCreateWithoutImportBatchInput = {
 	id?: string;
-	parseJobId: string;
 	name: string;
 	phone: string;
 	channel: $Enums.MessageChannel;
 	type?: $Enums.ContactType;
+	tags?: Prisma.ContactCreatetagsInput | string[];
 	email?: string | null;
 	notes?: string | null;
+	metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+	rawRow?: string | null;
+	optedOut?: boolean;
+	optedOutAt?: Date | string | null;
+	lastInboundAt?: Date | string | null;
+	createdAt?: Date | string;
+	user: Prisma.UserCreateNestedOneWithoutContactsInput;
+	parseJob?: Prisma.ParseJobCreateNestedOneWithoutContactsInput;
+};
+
+export type ContactUncheckedCreateWithoutImportBatchInput = {
+	id?: string;
+	uploadedBy: string;
+	parseJobId?: string | null;
+	name: string;
+	phone: string;
+	channel: $Enums.MessageChannel;
+	type?: $Enums.ContactType;
+	tags?: Prisma.ContactCreatetagsInput | string[];
+	email?: string | null;
+	notes?: string | null;
+	metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+	rawRow?: string | null;
+	optedOut?: boolean;
+	optedOutAt?: Date | string | null;
+	lastInboundAt?: Date | string | null;
+	createdAt?: Date | string;
+};
+
+export type ContactCreateOrConnectWithoutImportBatchInput = {
+	where: Prisma.ContactWhereUniqueInput;
+	create: Prisma.XOR<
+		Prisma.ContactCreateWithoutImportBatchInput,
+		Prisma.ContactUncheckedCreateWithoutImportBatchInput
+	>;
+};
+
+export type ContactCreateManyImportBatchInputEnvelope = {
+	data:
+		| Prisma.ContactCreateManyImportBatchInput
+		| Prisma.ContactCreateManyImportBatchInput[];
+	skipDuplicates?: boolean;
+};
+
+export type ContactUpsertWithWhereUniqueWithoutImportBatchInput = {
+	where: Prisma.ContactWhereUniqueInput;
+	update: Prisma.XOR<
+		Prisma.ContactUpdateWithoutImportBatchInput,
+		Prisma.ContactUncheckedUpdateWithoutImportBatchInput
+	>;
+	create: Prisma.XOR<
+		Prisma.ContactCreateWithoutImportBatchInput,
+		Prisma.ContactUncheckedCreateWithoutImportBatchInput
+	>;
+};
+
+export type ContactUpdateWithWhereUniqueWithoutImportBatchInput = {
+	where: Prisma.ContactWhereUniqueInput;
+	data: Prisma.XOR<
+		Prisma.ContactUpdateWithoutImportBatchInput,
+		Prisma.ContactUncheckedUpdateWithoutImportBatchInput
+	>;
+};
+
+export type ContactUpdateManyWithWhereWithoutImportBatchInput = {
+	where: Prisma.ContactScalarWhereInput;
+	data: Prisma.XOR<
+		Prisma.ContactUpdateManyMutationInput,
+		Prisma.ContactUncheckedUpdateManyWithoutImportBatchInput
+	>;
+};
+
+export type ContactCreateManyUserInput = {
+	id?: string;
+	parseJobId?: string | null;
+	importBatchId?: string | null;
+	name: string;
+	phone: string;
+	channel: $Enums.MessageChannel;
+	type?: $Enums.ContactType;
+	tags?: Prisma.ContactCreatetagsInput | string[];
+	email?: string | null;
+	notes?: string | null;
+	metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
 	rawRow?: string | null;
 	optedOut?: boolean;
 	optedOutAt?: Date | string | null;
@@ -998,8 +1274,10 @@ export type ContactUpdateWithoutUserInput = {
 		| Prisma.EnumMessageChannelFieldUpdateOperationsInput
 		| $Enums.MessageChannel;
 	type?: Prisma.EnumContactTypeFieldUpdateOperationsInput | $Enums.ContactType;
+	tags?: Prisma.ContactUpdatetagsInput | string[];
 	email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
 	rawRow?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	optedOut?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	optedOutAt?:
@@ -1013,20 +1291,27 @@ export type ContactUpdateWithoutUserInput = {
 		| string
 		| null;
 	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-	parseJob?: Prisma.ParseJobUpdateOneRequiredWithoutContactsNestedInput;
+	parseJob?: Prisma.ParseJobUpdateOneWithoutContactsNestedInput;
+	importBatch?: Prisma.ContactImportUpdateOneWithoutContactsNestedInput;
 };
 
 export type ContactUncheckedUpdateWithoutUserInput = {
 	id?: Prisma.StringFieldUpdateOperationsInput | string;
-	parseJobId?: Prisma.StringFieldUpdateOperationsInput | string;
+	parseJobId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	importBatchId?:
+		| Prisma.NullableStringFieldUpdateOperationsInput
+		| string
+		| null;
 	name?: Prisma.StringFieldUpdateOperationsInput | string;
 	phone?: Prisma.StringFieldUpdateOperationsInput | string;
 	channel?:
 		| Prisma.EnumMessageChannelFieldUpdateOperationsInput
 		| $Enums.MessageChannel;
 	type?: Prisma.EnumContactTypeFieldUpdateOperationsInput | $Enums.ContactType;
+	tags?: Prisma.ContactUpdatetagsInput | string[];
 	email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
 	rawRow?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	optedOut?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	optedOutAt?:
@@ -1044,15 +1329,21 @@ export type ContactUncheckedUpdateWithoutUserInput = {
 
 export type ContactUncheckedUpdateManyWithoutUserInput = {
 	id?: Prisma.StringFieldUpdateOperationsInput | string;
-	parseJobId?: Prisma.StringFieldUpdateOperationsInput | string;
+	parseJobId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	importBatchId?:
+		| Prisma.NullableStringFieldUpdateOperationsInput
+		| string
+		| null;
 	name?: Prisma.StringFieldUpdateOperationsInput | string;
 	phone?: Prisma.StringFieldUpdateOperationsInput | string;
 	channel?:
 		| Prisma.EnumMessageChannelFieldUpdateOperationsInput
 		| $Enums.MessageChannel;
 	type?: Prisma.EnumContactTypeFieldUpdateOperationsInput | $Enums.ContactType;
+	tags?: Prisma.ContactUpdatetagsInput | string[];
 	email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
 	rawRow?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	optedOut?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	optedOutAt?:
@@ -1070,14 +1361,17 @@ export type ContactUncheckedUpdateManyWithoutUserInput = {
 
 export type ContactCreateManyParseJobInput = {
 	id?: string;
+	uploadedBy: string;
+	importBatchId?: string | null;
 	name: string;
 	phone: string;
 	channel: $Enums.MessageChannel;
 	type?: $Enums.ContactType;
+	tags?: Prisma.ContactCreatetagsInput | string[];
 	email?: string | null;
 	notes?: string | null;
+	metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
 	rawRow?: string | null;
-	uploadedBy: string;
 	optedOut?: boolean;
 	optedOutAt?: Date | string | null;
 	lastInboundAt?: Date | string | null;
@@ -1092,8 +1386,10 @@ export type ContactUpdateWithoutParseJobInput = {
 		| Prisma.EnumMessageChannelFieldUpdateOperationsInput
 		| $Enums.MessageChannel;
 	type?: Prisma.EnumContactTypeFieldUpdateOperationsInput | $Enums.ContactType;
+	tags?: Prisma.ContactUpdatetagsInput | string[];
 	email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
 	rawRow?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	optedOut?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	optedOutAt?:
@@ -1108,20 +1404,27 @@ export type ContactUpdateWithoutParseJobInput = {
 		| null;
 	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 	user?: Prisma.UserUpdateOneRequiredWithoutContactsNestedInput;
+	importBatch?: Prisma.ContactImportUpdateOneWithoutContactsNestedInput;
 };
 
 export type ContactUncheckedUpdateWithoutParseJobInput = {
 	id?: Prisma.StringFieldUpdateOperationsInput | string;
+	uploadedBy?: Prisma.StringFieldUpdateOperationsInput | string;
+	importBatchId?:
+		| Prisma.NullableStringFieldUpdateOperationsInput
+		| string
+		| null;
 	name?: Prisma.StringFieldUpdateOperationsInput | string;
 	phone?: Prisma.StringFieldUpdateOperationsInput | string;
 	channel?:
 		| Prisma.EnumMessageChannelFieldUpdateOperationsInput
 		| $Enums.MessageChannel;
 	type?: Prisma.EnumContactTypeFieldUpdateOperationsInput | $Enums.ContactType;
+	tags?: Prisma.ContactUpdatetagsInput | string[];
 	email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
 	rawRow?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	uploadedBy?: Prisma.StringFieldUpdateOperationsInput | string;
 	optedOut?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	optedOutAt?:
 		| Prisma.NullableDateTimeFieldUpdateOperationsInput
@@ -1138,16 +1441,128 @@ export type ContactUncheckedUpdateWithoutParseJobInput = {
 
 export type ContactUncheckedUpdateManyWithoutParseJobInput = {
 	id?: Prisma.StringFieldUpdateOperationsInput | string;
+	uploadedBy?: Prisma.StringFieldUpdateOperationsInput | string;
+	importBatchId?:
+		| Prisma.NullableStringFieldUpdateOperationsInput
+		| string
+		| null;
 	name?: Prisma.StringFieldUpdateOperationsInput | string;
 	phone?: Prisma.StringFieldUpdateOperationsInput | string;
 	channel?:
 		| Prisma.EnumMessageChannelFieldUpdateOperationsInput
 		| $Enums.MessageChannel;
 	type?: Prisma.EnumContactTypeFieldUpdateOperationsInput | $Enums.ContactType;
+	tags?: Prisma.ContactUpdatetagsInput | string[];
 	email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
 	rawRow?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	optedOut?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	optedOutAt?:
+		| Prisma.NullableDateTimeFieldUpdateOperationsInput
+		| Date
+		| string
+		| null;
+	lastInboundAt?:
+		| Prisma.NullableDateTimeFieldUpdateOperationsInput
+		| Date
+		| string
+		| null;
+	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type ContactCreateManyImportBatchInput = {
+	id?: string;
+	uploadedBy: string;
+	parseJobId?: string | null;
+	name: string;
+	phone: string;
+	channel: $Enums.MessageChannel;
+	type?: $Enums.ContactType;
+	tags?: Prisma.ContactCreatetagsInput | string[];
+	email?: string | null;
+	notes?: string | null;
+	metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+	rawRow?: string | null;
+	optedOut?: boolean;
+	optedOutAt?: Date | string | null;
+	lastInboundAt?: Date | string | null;
+	createdAt?: Date | string;
+};
+
+export type ContactUpdateWithoutImportBatchInput = {
+	id?: Prisma.StringFieldUpdateOperationsInput | string;
+	name?: Prisma.StringFieldUpdateOperationsInput | string;
+	phone?: Prisma.StringFieldUpdateOperationsInput | string;
+	channel?:
+		| Prisma.EnumMessageChannelFieldUpdateOperationsInput
+		| $Enums.MessageChannel;
+	type?: Prisma.EnumContactTypeFieldUpdateOperationsInput | $Enums.ContactType;
+	tags?: Prisma.ContactUpdatetagsInput | string[];
+	email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+	rawRow?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	optedOut?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	optedOutAt?:
+		| Prisma.NullableDateTimeFieldUpdateOperationsInput
+		| Date
+		| string
+		| null;
+	lastInboundAt?:
+		| Prisma.NullableDateTimeFieldUpdateOperationsInput
+		| Date
+		| string
+		| null;
+	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+	user?: Prisma.UserUpdateOneRequiredWithoutContactsNestedInput;
+	parseJob?: Prisma.ParseJobUpdateOneWithoutContactsNestedInput;
+};
+
+export type ContactUncheckedUpdateWithoutImportBatchInput = {
+	id?: Prisma.StringFieldUpdateOperationsInput | string;
 	uploadedBy?: Prisma.StringFieldUpdateOperationsInput | string;
+	parseJobId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	name?: Prisma.StringFieldUpdateOperationsInput | string;
+	phone?: Prisma.StringFieldUpdateOperationsInput | string;
+	channel?:
+		| Prisma.EnumMessageChannelFieldUpdateOperationsInput
+		| $Enums.MessageChannel;
+	type?: Prisma.EnumContactTypeFieldUpdateOperationsInput | $Enums.ContactType;
+	tags?: Prisma.ContactUpdatetagsInput | string[];
+	email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+	rawRow?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	optedOut?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	optedOutAt?:
+		| Prisma.NullableDateTimeFieldUpdateOperationsInput
+		| Date
+		| string
+		| null;
+	lastInboundAt?:
+		| Prisma.NullableDateTimeFieldUpdateOperationsInput
+		| Date
+		| string
+		| null;
+	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type ContactUncheckedUpdateManyWithoutImportBatchInput = {
+	id?: Prisma.StringFieldUpdateOperationsInput | string;
+	uploadedBy?: Prisma.StringFieldUpdateOperationsInput | string;
+	parseJobId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	name?: Prisma.StringFieldUpdateOperationsInput | string;
+	phone?: Prisma.StringFieldUpdateOperationsInput | string;
+	channel?:
+		| Prisma.EnumMessageChannelFieldUpdateOperationsInput
+		| $Enums.MessageChannel;
+	type?: Prisma.EnumContactTypeFieldUpdateOperationsInput | $Enums.ContactType;
+	tags?: Prisma.ContactUpdatetagsInput | string[];
+	email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+	rawRow?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	optedOut?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	optedOutAt?:
 		| Prisma.NullableDateTimeFieldUpdateOperationsInput
@@ -1168,21 +1583,25 @@ export type ContactSelect<
 > = runtime.Types.Extensions.GetSelect<
 	{
 		id?: boolean;
+		uploadedBy?: boolean;
 		parseJobId?: boolean;
+		importBatchId?: boolean;
 		name?: boolean;
 		phone?: boolean;
 		channel?: boolean;
 		type?: boolean;
+		tags?: boolean;
 		email?: boolean;
 		notes?: boolean;
+		metadata?: boolean;
 		rawRow?: boolean;
-		uploadedBy?: boolean;
 		optedOut?: boolean;
 		optedOutAt?: boolean;
 		lastInboundAt?: boolean;
 		createdAt?: boolean;
-		parseJob?: boolean | Prisma.ParseJobDefaultArgs<ExtArgs>;
 		user?: boolean | Prisma.UserDefaultArgs<ExtArgs>;
+		parseJob?: boolean | Prisma.Contact$parseJobArgs<ExtArgs>;
+		importBatch?: boolean | Prisma.Contact$importBatchArgs<ExtArgs>;
 	},
 	ExtArgs["result"]["contact"]
 >;
@@ -1193,21 +1612,25 @@ export type ContactSelectCreateManyAndReturn<
 > = runtime.Types.Extensions.GetSelect<
 	{
 		id?: boolean;
+		uploadedBy?: boolean;
 		parseJobId?: boolean;
+		importBatchId?: boolean;
 		name?: boolean;
 		phone?: boolean;
 		channel?: boolean;
 		type?: boolean;
+		tags?: boolean;
 		email?: boolean;
 		notes?: boolean;
+		metadata?: boolean;
 		rawRow?: boolean;
-		uploadedBy?: boolean;
 		optedOut?: boolean;
 		optedOutAt?: boolean;
 		lastInboundAt?: boolean;
 		createdAt?: boolean;
-		parseJob?: boolean | Prisma.ParseJobDefaultArgs<ExtArgs>;
 		user?: boolean | Prisma.UserDefaultArgs<ExtArgs>;
+		parseJob?: boolean | Prisma.Contact$parseJobArgs<ExtArgs>;
+		importBatch?: boolean | Prisma.Contact$importBatchArgs<ExtArgs>;
 	},
 	ExtArgs["result"]["contact"]
 >;
@@ -1218,36 +1641,43 @@ export type ContactSelectUpdateManyAndReturn<
 > = runtime.Types.Extensions.GetSelect<
 	{
 		id?: boolean;
+		uploadedBy?: boolean;
 		parseJobId?: boolean;
+		importBatchId?: boolean;
 		name?: boolean;
 		phone?: boolean;
 		channel?: boolean;
 		type?: boolean;
+		tags?: boolean;
 		email?: boolean;
 		notes?: boolean;
+		metadata?: boolean;
 		rawRow?: boolean;
-		uploadedBy?: boolean;
 		optedOut?: boolean;
 		optedOutAt?: boolean;
 		lastInboundAt?: boolean;
 		createdAt?: boolean;
-		parseJob?: boolean | Prisma.ParseJobDefaultArgs<ExtArgs>;
 		user?: boolean | Prisma.UserDefaultArgs<ExtArgs>;
+		parseJob?: boolean | Prisma.Contact$parseJobArgs<ExtArgs>;
+		importBatch?: boolean | Prisma.Contact$importBatchArgs<ExtArgs>;
 	},
 	ExtArgs["result"]["contact"]
 >;
 
 export type ContactSelectScalar = {
 	id?: boolean;
+	uploadedBy?: boolean;
 	parseJobId?: boolean;
+	importBatchId?: boolean;
 	name?: boolean;
 	phone?: boolean;
 	channel?: boolean;
 	type?: boolean;
+	tags?: boolean;
 	email?: boolean;
 	notes?: boolean;
+	metadata?: boolean;
 	rawRow?: boolean;
-	uploadedBy?: boolean;
 	optedOut?: boolean;
 	optedOutAt?: boolean;
 	lastInboundAt?: boolean;
@@ -1259,15 +1689,18 @@ export type ContactOmit<
 		runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = runtime.Types.Extensions.GetOmit<
 	| "id"
+	| "uploadedBy"
 	| "parseJobId"
+	| "importBatchId"
 	| "name"
 	| "phone"
 	| "channel"
 	| "type"
+	| "tags"
 	| "email"
 	| "notes"
+	| "metadata"
 	| "rawRow"
-	| "uploadedBy"
 	| "optedOut"
 	| "optedOutAt"
 	| "lastInboundAt"
@@ -1278,22 +1711,25 @@ export type ContactInclude<
 	ExtArgs extends
 		runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
-	parseJob?: boolean | Prisma.ParseJobDefaultArgs<ExtArgs>;
 	user?: boolean | Prisma.UserDefaultArgs<ExtArgs>;
+	parseJob?: boolean | Prisma.Contact$parseJobArgs<ExtArgs>;
+	importBatch?: boolean | Prisma.Contact$importBatchArgs<ExtArgs>;
 };
 export type ContactIncludeCreateManyAndReturn<
 	ExtArgs extends
 		runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
-	parseJob?: boolean | Prisma.ParseJobDefaultArgs<ExtArgs>;
 	user?: boolean | Prisma.UserDefaultArgs<ExtArgs>;
+	parseJob?: boolean | Prisma.Contact$parseJobArgs<ExtArgs>;
+	importBatch?: boolean | Prisma.Contact$importBatchArgs<ExtArgs>;
 };
 export type ContactIncludeUpdateManyAndReturn<
 	ExtArgs extends
 		runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
-	parseJob?: boolean | Prisma.ParseJobDefaultArgs<ExtArgs>;
 	user?: boolean | Prisma.UserDefaultArgs<ExtArgs>;
+	parseJob?: boolean | Prisma.Contact$parseJobArgs<ExtArgs>;
+	importBatch?: boolean | Prisma.Contact$importBatchArgs<ExtArgs>;
 };
 
 export type $ContactPayload<
@@ -1302,21 +1738,25 @@ export type $ContactPayload<
 > = {
 	name: "Contact";
 	objects: {
-		parseJob: Prisma.$ParseJobPayload<ExtArgs>;
 		user: Prisma.$UserPayload<ExtArgs>;
+		parseJob: Prisma.$ParseJobPayload<ExtArgs> | null;
+		importBatch: Prisma.$ContactImportPayload<ExtArgs> | null;
 	};
 	scalars: runtime.Types.Extensions.GetPayloadResult<
 		{
 			id: string;
-			parseJobId: string;
+			uploadedBy: string;
+			parseJobId: string | null;
+			importBatchId: string | null;
 			name: string;
 			phone: string;
 			channel: $Enums.MessageChannel;
 			type: $Enums.ContactType;
+			tags: string[];
 			email: string | null;
 			notes: string | null;
+			metadata: runtime.JsonValue | null;
 			rawRow: string | null;
-			uploadedBy: string;
 			optedOut: boolean;
 			optedOutAt: Date | null;
 			lastInboundAt: Date | null;
@@ -1889,17 +2329,29 @@ export interface Prisma__ContactClient<
 	finally(
 		onfinally?: (() => void) | undefined | null
 	): runtime.Types.Utils.JsPromise<T>;
-	parseJob<T extends Prisma.ParseJobDefaultArgs<ExtArgs> = {}>(
-		args?: Prisma.Subset<T, Prisma.ParseJobDefaultArgs<ExtArgs>>
+	importBatch<T extends Prisma.Contact$importBatchArgs<ExtArgs> = {}>(
+		args?: Prisma.Subset<T, Prisma.Contact$importBatchArgs<ExtArgs>>
+	): Prisma.Prisma__ContactImportClient<
+		runtime.Types.Result.GetResult<
+			Prisma.$ContactImportPayload<ExtArgs>,
+			T,
+			"findUniqueOrThrow",
+			GlobalOmitOptions
+		> | null,
+		null,
+		ExtArgs,
+		GlobalOmitOptions
+	>;
+	parseJob<T extends Prisma.Contact$parseJobArgs<ExtArgs> = {}>(
+		args?: Prisma.Subset<T, Prisma.Contact$parseJobArgs<ExtArgs>>
 	): Prisma.Prisma__ParseJobClient<
-		| runtime.Types.Result.GetResult<
-				Prisma.$ParseJobPayload<ExtArgs>,
-				T,
-				"findUniqueOrThrow",
-				GlobalOmitOptions
-		  >
-		| Null,
-		Null,
+		runtime.Types.Result.GetResult<
+			Prisma.$ParseJobPayload<ExtArgs>,
+			T,
+			"findUniqueOrThrow",
+			GlobalOmitOptions
+		> | null,
+		null,
 		ExtArgs,
 		GlobalOmitOptions
 	>;
@@ -1944,7 +2396,9 @@ export interface ContactFieldRefs {
 	readonly createdAt: Prisma.FieldRef<"Contact", "DateTime">;
 	readonly email: Prisma.FieldRef<"Contact", "String">;
 	readonly id: Prisma.FieldRef<"Contact", "String">;
+	readonly importBatchId: Prisma.FieldRef<"Contact", "String">;
 	readonly lastInboundAt: Prisma.FieldRef<"Contact", "DateTime">;
+	readonly metadata: Prisma.FieldRef<"Contact", "Json">;
 	readonly name: Prisma.FieldRef<"Contact", "String">;
 	readonly notes: Prisma.FieldRef<"Contact", "String">;
 	readonly optedOut: Prisma.FieldRef<"Contact", "Boolean">;
@@ -1952,6 +2406,7 @@ export interface ContactFieldRefs {
 	readonly parseJobId: Prisma.FieldRef<"Contact", "String">;
 	readonly phone: Prisma.FieldRef<"Contact", "String">;
 	readonly rawRow: Prisma.FieldRef<"Contact", "String">;
+	readonly tags: Prisma.FieldRef<"Contact", "String[]">;
 	readonly type: Prisma.FieldRef<"Contact", "ContactType">;
 	readonly uploadedBy: Prisma.FieldRef<"Contact", "String">;
 }
@@ -2417,6 +2872,50 @@ export type ContactDeleteManyArgs<
 	 * Limit how many Contacts to delete.
 	 */
 	limit?: number;
+};
+
+/**
+ * Contact.parseJob
+ */
+export type Contact$parseJobArgs<
+	ExtArgs extends
+		runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+	/**
+	 * Select specific fields to fetch from the ParseJob
+	 */
+	select?: Prisma.ParseJobSelect<ExtArgs> | null;
+	/**
+	 * Omit specific fields from the ParseJob
+	 */
+	omit?: Prisma.ParseJobOmit<ExtArgs> | null;
+	/**
+	 * Choose, which related nodes to fetch as well
+	 */
+	include?: Prisma.ParseJobInclude<ExtArgs> | null;
+	where?: Prisma.ParseJobWhereInput;
+};
+
+/**
+ * Contact.importBatch
+ */
+export type Contact$importBatchArgs<
+	ExtArgs extends
+		runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+	/**
+	 * Select specific fields to fetch from the ContactImport
+	 */
+	select?: Prisma.ContactImportSelect<ExtArgs> | null;
+	/**
+	 * Omit specific fields from the ContactImport
+	 */
+	omit?: Prisma.ContactImportOmit<ExtArgs> | null;
+	/**
+	 * Choose, which related nodes to fetch as well
+	 */
+	include?: Prisma.ContactImportInclude<ExtArgs> | null;
+	where?: Prisma.ContactImportWhereInput;
 };
 
 /**

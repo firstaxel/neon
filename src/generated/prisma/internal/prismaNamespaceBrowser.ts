@@ -57,6 +57,7 @@ export const ModelName = {
 	Account: "Account",
 	Campaign: "Campaign",
 	Contact: "Contact",
+	ContactImport: "ContactImport",
 	InboundMessage: "InboundMessage",
 	Message: "Message",
 	MessageTemplate: "MessageTemplate",
@@ -67,7 +68,6 @@ export const ModelName = {
 	PendingDelivery: "PendingDelivery",
 	SenderNumber: "SenderNumber",
 	Session: "Session",
-	Subscription: "Subscription",
 	Transaction: "Transaction",
 	User: "User",
 	UserProfile: "UserProfile",
@@ -149,6 +149,57 @@ export const VerificationScalarFieldEnum = {
 export type VerificationScalarFieldEnum =
 	(typeof VerificationScalarFieldEnum)[keyof typeof VerificationScalarFieldEnum];
 
+export const UserProfileScalarFieldEnum = {
+	createdAt: "createdAt",
+	id: "id",
+	onboardingComplete: "onboardingComplete",
+	onboardingStep: "onboardingStep",
+	orgName: "orgName",
+	orgSize: "orgSize",
+	orgType: "orgType",
+	phone: "phone",
+	role: "role",
+	senderId: "senderId",
+	timezone: "timezone",
+	updatedAt: "updatedAt",
+	usePlatformSender: "usePlatformSender",
+	userId: "userId",
+} as const;
+
+export type UserProfileScalarFieldEnum =
+	(typeof UserProfileScalarFieldEnum)[keyof typeof UserProfileScalarFieldEnum];
+
+export const WalletScalarFieldEnum = {
+	balanceKobo: "balanceKobo",
+	createdAt: "createdAt",
+	heldKobo: "heldKobo",
+	id: "id",
+	updatedAt: "updatedAt",
+	userId: "userId",
+} as const;
+
+export type WalletScalarFieldEnum =
+	(typeof WalletScalarFieldEnum)[keyof typeof WalletScalarFieldEnum];
+
+export const TransactionScalarFieldEnum = {
+	amountKobo: "amountKobo",
+	balanceAfterKobo: "balanceAfterKobo",
+	campaignId: "campaignId",
+	createdAt: "createdAt",
+	description: "description",
+	id: "id",
+	messageId: "messageId",
+	metadata: "metadata",
+	paystackRef: "paystackRef",
+	reference: "reference",
+	status: "status",
+	type: "type",
+	walletId: "walletId",
+} as const;
+
+export type TransactionScalarFieldEnum =
+	(typeof TransactionScalarFieldEnum)[keyof typeof TransactionScalarFieldEnum];
+
 export const ParseJobScalarFieldEnum = {
 	completedAt: "completedAt",
 	confidence: "confidence",
@@ -171,12 +222,34 @@ export const ParseJobScalarFieldEnum = {
 export type ParseJobScalarFieldEnum =
 	(typeof ParseJobScalarFieldEnum)[keyof typeof ParseJobScalarFieldEnum];
 
+export const ContactImportScalarFieldEnum = {
+	createdAt: "createdAt",
+	createdCount: "createdCount",
+	errorCount: "errorCount",
+	errors: "errors",
+	filename: "filename",
+	id: "id",
+	ownerId: "ownerId",
+	skippedCount: "skippedCount",
+	status: "status",
+	strategy: "strategy",
+	tagsApplied: "tagsApplied",
+	totalRows: "totalRows",
+	updatedCount: "updatedCount",
+	uploadedBy: "uploadedBy",
+} as const;
+
+export type ContactImportScalarFieldEnum =
+	(typeof ContactImportScalarFieldEnum)[keyof typeof ContactImportScalarFieldEnum];
+
 export const ContactScalarFieldEnum = {
 	channel: "channel",
 	createdAt: "createdAt",
 	email: "email",
 	id: "id",
+	importBatchId: "importBatchId",
 	lastInboundAt: "lastInboundAt",
+	metadata: "metadata",
 	name: "name",
 	notes: "notes",
 	optedOut: "optedOut",
@@ -184,6 +257,7 @@ export const ContactScalarFieldEnum = {
 	parseJobId: "parseJobId",
 	phone: "phone",
 	rawRow: "rawRow",
+	tags: "tags",
 	type: "type",
 	uploadedBy: "uploadedBy",
 } as const;
@@ -195,10 +269,14 @@ export const CampaignScalarFieldEnum = {
 	completedAt: "completedAt",
 	createdAt: "createdAt",
 	deliveryMode: "deliveryMode",
+	estimatedCostKobo: "estimatedCostKobo",
 	failedMessages: "failedMessages",
 	id: "id",
 	inngestEventId: "inngestEventId",
+	name: "name",
 	scenario: "scenario",
+	scheduledAt: "scheduledAt",
+	senderId: "senderId",
 	sentMessages: "sentMessages",
 	smsTemplate: "smsTemplate",
 	startedAt: "startedAt",
@@ -217,6 +295,7 @@ export const MessageScalarFieldEnum = {
 	channel: "channel",
 	contactId: "contactId",
 	contactName: "contactName",
+	costKobo: "costKobo",
 	createdAt: "createdAt",
 	deliveredAt: "deliveredAt",
 	errorMessage: "errorMessage",
@@ -226,83 +305,51 @@ export const MessageScalarFieldEnum = {
 	metaMessageId: "metaMessageId",
 	phone: "phone",
 	retryCount: "retryCount",
+	segments: "segments",
 	sentAt: "sentAt",
 	status: "status",
-	twilioSid: "twilioSid",
+	termiiMessageId: "termiiMessageId",
 } as const;
 
 export type MessageScalarFieldEnum =
 	(typeof MessageScalarFieldEnum)[keyof typeof MessageScalarFieldEnum];
 
-export const WalletScalarFieldEnum = {
-	balanceKobo: "balanceKobo",
-	createdAt: "createdAt",
-	heldKobo: "heldKobo",
-	id: "id",
-	updatedAt: "updatedAt",
-	userId: "userId",
-} as const;
-
-export type WalletScalarFieldEnum =
-	(typeof WalletScalarFieldEnum)[keyof typeof WalletScalarFieldEnum];
-
-export const TransactionScalarFieldEnum = {
-	amountKobo: "amountKobo",
-	balanceAfterKobo: "balanceAfterKobo",
+export const PendingDeliveryScalarFieldEnum = {
 	campaignId: "campaignId",
+	contactId: "contactId",
+	contactName: "contactName",
 	createdAt: "createdAt",
-	description: "description",
+	expiresAt: "expiresAt",
 	id: "id",
-	messageId: "messageId",
-	paystackRef: "paystackRef",
-	reference: "reference",
-	status: "status",
-	type: "type",
-	walletId: "walletId",
-} as const;
-
-export type TransactionScalarFieldEnum =
-	(typeof TransactionScalarFieldEnum)[keyof typeof TransactionScalarFieldEnum];
-
-export const SubscriptionScalarFieldEnum = {
-	cancelledAt: "cancelledAt",
-	createdAt: "createdAt",
-	currentPeriodEnd: "currentPeriodEnd",
-	currentPeriodStart: "currentPeriodStart",
-	id: "id",
-	messagesUsedThisCycle: "messagesUsedThisCycle",
-	monthlyMessageLimit: "monthlyMessageLimit",
-	paystackCustomerCode: "paystackCustomerCode",
-	paystackPlanCode: "paystackPlanCode",
-	paystackSubCode: "paystackSubCode",
-	plan: "plan",
-	status: "status",
-	updatedAt: "updatedAt",
-	userId: "userId",
-} as const;
-
-export type SubscriptionScalarFieldEnum =
-	(typeof SubscriptionScalarFieldEnum)[keyof typeof SubscriptionScalarFieldEnum];
-
-export const UserProfileScalarFieldEnum = {
-	createdAt: "createdAt",
-	id: "id",
-	onboardingComplete: "onboardingComplete",
-	onboardingStep: "onboardingStep",
-	orgName: "orgName",
-	orgSize: "orgSize",
-	orgType: "orgType",
 	phone: "phone",
-	role: "role",
-	senderId: "senderId",
-	timezone: "timezone",
-	updatedAt: "updatedAt",
-	usePlatformSender: "usePlatformSender",
+	prescreenMsgId: "prescreenMsgId",
+	realMessage: "realMessage",
+	replied: "replied",
+	repliedAt: "repliedAt",
+} as const;
+
+export type PendingDeliveryScalarFieldEnum =
+	(typeof PendingDeliveryScalarFieldEnum)[keyof typeof PendingDeliveryScalarFieldEnum];
+
+export const InboundMessageScalarFieldEnum = {
+	body: "body",
+	campaignId: "campaignId",
+	channel: "channel",
+	contactId: "contactId",
+	contactName: "contactName",
+	createdAt: "createdAt",
+	externalId: "externalId",
+	id: "id",
+	isKeyword: "isKeyword",
+	phone: "phone",
+	receivedAt: "receivedAt",
+	replied: "replied",
+	repliedAt: "repliedAt",
 	userId: "userId",
 } as const;
 
-export type UserProfileScalarFieldEnum =
-	(typeof UserProfileScalarFieldEnum)[keyof typeof UserProfileScalarFieldEnum];
+export type InboundMessageScalarFieldEnum =
+	(typeof InboundMessageScalarFieldEnum)[keyof typeof InboundMessageScalarFieldEnum];
 
 export const MessageTemplateScalarFieldEnum = {
 	approvedAt: "approvedAt",
@@ -355,43 +402,6 @@ export const SenderNumberScalarFieldEnum = {
 export type SenderNumberScalarFieldEnum =
 	(typeof SenderNumberScalarFieldEnum)[keyof typeof SenderNumberScalarFieldEnum];
 
-export const PendingDeliveryScalarFieldEnum = {
-	campaignId: "campaignId",
-	contactId: "contactId",
-	contactName: "contactName",
-	createdAt: "createdAt",
-	expiresAt: "expiresAt",
-	id: "id",
-	phone: "phone",
-	prescreenMsgId: "prescreenMsgId",
-	realMessage: "realMessage",
-	replied: "replied",
-	repliedAt: "repliedAt",
-} as const;
-
-export type PendingDeliveryScalarFieldEnum =
-	(typeof PendingDeliveryScalarFieldEnum)[keyof typeof PendingDeliveryScalarFieldEnum];
-
-export const InboundMessageScalarFieldEnum = {
-	body: "body",
-	campaignId: "campaignId",
-	channel: "channel",
-	contactId: "contactId",
-	contactName: "contactName",
-	createdAt: "createdAt",
-	externalId: "externalId",
-	id: "id",
-	isKeyword: "isKeyword",
-	phone: "phone",
-	receivedAt: "receivedAt",
-	replied: "replied",
-	repliedAt: "repliedAt",
-	userId: "userId",
-} as const;
-
-export type InboundMessageScalarFieldEnum =
-	(typeof InboundMessageScalarFieldEnum)[keyof typeof InboundMessageScalarFieldEnum];
-
 export const OrgInviteScalarFieldEnum = {
 	accepted: "accepted",
 	createdAt: "createdAt",
@@ -436,6 +446,14 @@ export const SortOrder = {
 } as const;
 
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder];
+
+export const NullableJsonNullValueInput = {
+	DbNull: DbNull,
+	JsonNull: JsonNull,
+} as const;
+
+export type NullableJsonNullValueInput =
+	(typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput];
 
 export const JsonNullValueInput = {
 	JsonNull: JsonNull,

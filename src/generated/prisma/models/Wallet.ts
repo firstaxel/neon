@@ -13,8 +13,7 @@ import type * as Prisma from "../internal/prismaNamespace.ts";
 
 /**
  * Model Wallet
- * One wallet per user. All amounts stored in kobo (₦1 = 100 kobo).
- * Never use floats for money — always integer kobo.
+ *
  */
 export type WalletModel =
 	runtime.Types.Result.DefaultSelection<Prisma.$WalletPayload>;
@@ -301,7 +300,7 @@ export type WalletCreateInput = {
 	heldKobo?: number;
 	createdAt?: Date | string;
 	updatedAt?: Date | string;
-	user: Prisma.UserCreateNestedOneWithoutWalletsInput;
+	user: Prisma.UserCreateNestedOneWithoutWalletInput;
 	transactions?: Prisma.TransactionCreateNestedManyWithoutWalletInput;
 };
 
@@ -321,7 +320,7 @@ export type WalletUpdateInput = {
 	heldKobo?: Prisma.IntFieldUpdateOperationsInput | number;
 	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 	updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-	user?: Prisma.UserUpdateOneRequiredWithoutWalletsNestedInput;
+	user?: Prisma.UserUpdateOneRequiredWithoutWalletNestedInput;
 	transactions?: Prisma.TransactionUpdateManyWithoutWalletNestedInput;
 };
 
@@ -361,14 +360,9 @@ export type WalletUncheckedUpdateManyInput = {
 	updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
-export type WalletListRelationFilter = {
-	every?: Prisma.WalletWhereInput;
-	some?: Prisma.WalletWhereInput;
-	none?: Prisma.WalletWhereInput;
-};
-
-export type WalletOrderByRelationAggregateInput = {
-	_count?: Prisma.SortOrder;
+export type WalletNullableScalarRelationFilter = {
+	is?: Prisma.WalletWhereInput | null;
+	isNot?: Prisma.WalletWhereInput | null;
 };
 
 export type WalletCountOrderByAggregateInput = {
@@ -413,90 +407,60 @@ export type WalletScalarRelationFilter = {
 	isNot?: Prisma.WalletWhereInput;
 };
 
-export type WalletCreateNestedManyWithoutUserInput = {
-	create?:
-		| Prisma.XOR<
-				Prisma.WalletCreateWithoutUserInput,
-				Prisma.WalletUncheckedCreateWithoutUserInput
-		  >
-		| Prisma.WalletCreateWithoutUserInput[]
-		| Prisma.WalletUncheckedCreateWithoutUserInput[];
-	connectOrCreate?:
-		| Prisma.WalletCreateOrConnectWithoutUserInput
-		| Prisma.WalletCreateOrConnectWithoutUserInput[];
-	createMany?: Prisma.WalletCreateManyUserInputEnvelope;
-	connect?: Prisma.WalletWhereUniqueInput | Prisma.WalletWhereUniqueInput[];
+export type WalletCreateNestedOneWithoutUserInput = {
+	create?: Prisma.XOR<
+		Prisma.WalletCreateWithoutUserInput,
+		Prisma.WalletUncheckedCreateWithoutUserInput
+	>;
+	connectOrCreate?: Prisma.WalletCreateOrConnectWithoutUserInput;
+	connect?: Prisma.WalletWhereUniqueInput;
 };
 
-export type WalletUncheckedCreateNestedManyWithoutUserInput = {
-	create?:
-		| Prisma.XOR<
-				Prisma.WalletCreateWithoutUserInput,
-				Prisma.WalletUncheckedCreateWithoutUserInput
-		  >
-		| Prisma.WalletCreateWithoutUserInput[]
-		| Prisma.WalletUncheckedCreateWithoutUserInput[];
-	connectOrCreate?:
-		| Prisma.WalletCreateOrConnectWithoutUserInput
-		| Prisma.WalletCreateOrConnectWithoutUserInput[];
-	createMany?: Prisma.WalletCreateManyUserInputEnvelope;
-	connect?: Prisma.WalletWhereUniqueInput | Prisma.WalletWhereUniqueInput[];
+export type WalletUncheckedCreateNestedOneWithoutUserInput = {
+	create?: Prisma.XOR<
+		Prisma.WalletCreateWithoutUserInput,
+		Prisma.WalletUncheckedCreateWithoutUserInput
+	>;
+	connectOrCreate?: Prisma.WalletCreateOrConnectWithoutUserInput;
+	connect?: Prisma.WalletWhereUniqueInput;
 };
 
-export type WalletUpdateManyWithoutUserNestedInput = {
-	create?:
-		| Prisma.XOR<
-				Prisma.WalletCreateWithoutUserInput,
-				Prisma.WalletUncheckedCreateWithoutUserInput
-		  >
-		| Prisma.WalletCreateWithoutUserInput[]
-		| Prisma.WalletUncheckedCreateWithoutUserInput[];
-	connectOrCreate?:
-		| Prisma.WalletCreateOrConnectWithoutUserInput
-		| Prisma.WalletCreateOrConnectWithoutUserInput[];
-	upsert?:
-		| Prisma.WalletUpsertWithWhereUniqueWithoutUserInput
-		| Prisma.WalletUpsertWithWhereUniqueWithoutUserInput[];
-	createMany?: Prisma.WalletCreateManyUserInputEnvelope;
-	set?: Prisma.WalletWhereUniqueInput | Prisma.WalletWhereUniqueInput[];
-	disconnect?: Prisma.WalletWhereUniqueInput | Prisma.WalletWhereUniqueInput[];
-	delete?: Prisma.WalletWhereUniqueInput | Prisma.WalletWhereUniqueInput[];
-	connect?: Prisma.WalletWhereUniqueInput | Prisma.WalletWhereUniqueInput[];
-	update?:
-		| Prisma.WalletUpdateWithWhereUniqueWithoutUserInput
-		| Prisma.WalletUpdateWithWhereUniqueWithoutUserInput[];
-	updateMany?:
-		| Prisma.WalletUpdateManyWithWhereWithoutUserInput
-		| Prisma.WalletUpdateManyWithWhereWithoutUserInput[];
-	deleteMany?: Prisma.WalletScalarWhereInput | Prisma.WalletScalarWhereInput[];
+export type WalletUpdateOneWithoutUserNestedInput = {
+	create?: Prisma.XOR<
+		Prisma.WalletCreateWithoutUserInput,
+		Prisma.WalletUncheckedCreateWithoutUserInput
+	>;
+	connectOrCreate?: Prisma.WalletCreateOrConnectWithoutUserInput;
+	upsert?: Prisma.WalletUpsertWithoutUserInput;
+	disconnect?: Prisma.WalletWhereInput | boolean;
+	delete?: Prisma.WalletWhereInput | boolean;
+	connect?: Prisma.WalletWhereUniqueInput;
+	update?: Prisma.XOR<
+		Prisma.XOR<
+			Prisma.WalletUpdateToOneWithWhereWithoutUserInput,
+			Prisma.WalletUpdateWithoutUserInput
+		>,
+		Prisma.WalletUncheckedUpdateWithoutUserInput
+	>;
 };
 
-export type WalletUncheckedUpdateManyWithoutUserNestedInput = {
-	create?:
-		| Prisma.XOR<
-				Prisma.WalletCreateWithoutUserInput,
-				Prisma.WalletUncheckedCreateWithoutUserInput
-		  >
-		| Prisma.WalletCreateWithoutUserInput[]
-		| Prisma.WalletUncheckedCreateWithoutUserInput[];
-	connectOrCreate?:
-		| Prisma.WalletCreateOrConnectWithoutUserInput
-		| Prisma.WalletCreateOrConnectWithoutUserInput[];
-	upsert?:
-		| Prisma.WalletUpsertWithWhereUniqueWithoutUserInput
-		| Prisma.WalletUpsertWithWhereUniqueWithoutUserInput[];
-	createMany?: Prisma.WalletCreateManyUserInputEnvelope;
-	set?: Prisma.WalletWhereUniqueInput | Prisma.WalletWhereUniqueInput[];
-	disconnect?: Prisma.WalletWhereUniqueInput | Prisma.WalletWhereUniqueInput[];
-	delete?: Prisma.WalletWhereUniqueInput | Prisma.WalletWhereUniqueInput[];
-	connect?: Prisma.WalletWhereUniqueInput | Prisma.WalletWhereUniqueInput[];
-	update?:
-		| Prisma.WalletUpdateWithWhereUniqueWithoutUserInput
-		| Prisma.WalletUpdateWithWhereUniqueWithoutUserInput[];
-	updateMany?:
-		| Prisma.WalletUpdateManyWithWhereWithoutUserInput
-		| Prisma.WalletUpdateManyWithWhereWithoutUserInput[];
-	deleteMany?: Prisma.WalletScalarWhereInput | Prisma.WalletScalarWhereInput[];
+export type WalletUncheckedUpdateOneWithoutUserNestedInput = {
+	create?: Prisma.XOR<
+		Prisma.WalletCreateWithoutUserInput,
+		Prisma.WalletUncheckedCreateWithoutUserInput
+	>;
+	connectOrCreate?: Prisma.WalletCreateOrConnectWithoutUserInput;
+	upsert?: Prisma.WalletUpsertWithoutUserInput;
+	disconnect?: Prisma.WalletWhereInput | boolean;
+	delete?: Prisma.WalletWhereInput | boolean;
+	connect?: Prisma.WalletWhereUniqueInput;
+	update?: Prisma.XOR<
+		Prisma.XOR<
+			Prisma.WalletUpdateToOneWithWhereWithoutUserInput,
+			Prisma.WalletUpdateWithoutUserInput
+		>,
+		Prisma.WalletUncheckedUpdateWithoutUserInput
+	>;
 };
 
 export type WalletCreateNestedOneWithoutTransactionsInput = {
@@ -551,13 +515,7 @@ export type WalletCreateOrConnectWithoutUserInput = {
 	>;
 };
 
-export type WalletCreateManyUserInputEnvelope = {
-	data: Prisma.WalletCreateManyUserInput | Prisma.WalletCreateManyUserInput[];
-	skipDuplicates?: boolean;
-};
-
-export type WalletUpsertWithWhereUniqueWithoutUserInput = {
-	where: Prisma.WalletWhereUniqueInput;
+export type WalletUpsertWithoutUserInput = {
 	update: Prisma.XOR<
 		Prisma.WalletUpdateWithoutUserInput,
 		Prisma.WalletUncheckedUpdateWithoutUserInput
@@ -566,34 +524,33 @@ export type WalletUpsertWithWhereUniqueWithoutUserInput = {
 		Prisma.WalletCreateWithoutUserInput,
 		Prisma.WalletUncheckedCreateWithoutUserInput
 	>;
+	where?: Prisma.WalletWhereInput;
 };
 
-export type WalletUpdateWithWhereUniqueWithoutUserInput = {
-	where: Prisma.WalletWhereUniqueInput;
+export type WalletUpdateToOneWithWhereWithoutUserInput = {
+	where?: Prisma.WalletWhereInput;
 	data: Prisma.XOR<
 		Prisma.WalletUpdateWithoutUserInput,
 		Prisma.WalletUncheckedUpdateWithoutUserInput
 	>;
 };
 
-export type WalletUpdateManyWithWhereWithoutUserInput = {
-	where: Prisma.WalletScalarWhereInput;
-	data: Prisma.XOR<
-		Prisma.WalletUpdateManyMutationInput,
-		Prisma.WalletUncheckedUpdateManyWithoutUserInput
-	>;
+export type WalletUpdateWithoutUserInput = {
+	id?: Prisma.StringFieldUpdateOperationsInput | string;
+	balanceKobo?: Prisma.IntFieldUpdateOperationsInput | number;
+	heldKobo?: Prisma.IntFieldUpdateOperationsInput | number;
+	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+	updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+	transactions?: Prisma.TransactionUpdateManyWithoutWalletNestedInput;
 };
 
-export type WalletScalarWhereInput = {
-	AND?: Prisma.WalletScalarWhereInput | Prisma.WalletScalarWhereInput[];
-	OR?: Prisma.WalletScalarWhereInput[];
-	NOT?: Prisma.WalletScalarWhereInput | Prisma.WalletScalarWhereInput[];
-	id?: Prisma.StringFilter<"Wallet"> | string;
-	userId?: Prisma.StringFilter<"Wallet"> | string;
-	balanceKobo?: Prisma.IntFilter<"Wallet"> | number;
-	heldKobo?: Prisma.IntFilter<"Wallet"> | number;
-	createdAt?: Prisma.DateTimeFilter<"Wallet"> | Date | string;
-	updatedAt?: Prisma.DateTimeFilter<"Wallet"> | Date | string;
+export type WalletUncheckedUpdateWithoutUserInput = {
+	id?: Prisma.StringFieldUpdateOperationsInput | string;
+	balanceKobo?: Prisma.IntFieldUpdateOperationsInput | number;
+	heldKobo?: Prisma.IntFieldUpdateOperationsInput | number;
+	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+	updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+	transactions?: Prisma.TransactionUncheckedUpdateManyWithoutWalletNestedInput;
 };
 
 export type WalletCreateWithoutTransactionsInput = {
@@ -602,7 +559,7 @@ export type WalletCreateWithoutTransactionsInput = {
 	heldKobo?: number;
 	createdAt?: Date | string;
 	updatedAt?: Date | string;
-	user: Prisma.UserCreateNestedOneWithoutWalletsInput;
+	user: Prisma.UserCreateNestedOneWithoutWalletInput;
 };
 
 export type WalletUncheckedCreateWithoutTransactionsInput = {
@@ -648,46 +605,12 @@ export type WalletUpdateWithoutTransactionsInput = {
 	heldKobo?: Prisma.IntFieldUpdateOperationsInput | number;
 	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 	updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-	user?: Prisma.UserUpdateOneRequiredWithoutWalletsNestedInput;
+	user?: Prisma.UserUpdateOneRequiredWithoutWalletNestedInput;
 };
 
 export type WalletUncheckedUpdateWithoutTransactionsInput = {
 	id?: Prisma.StringFieldUpdateOperationsInput | string;
 	userId?: Prisma.StringFieldUpdateOperationsInput | string;
-	balanceKobo?: Prisma.IntFieldUpdateOperationsInput | number;
-	heldKobo?: Prisma.IntFieldUpdateOperationsInput | number;
-	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-	updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-};
-
-export type WalletCreateManyUserInput = {
-	id?: string;
-	balanceKobo?: number;
-	heldKobo?: number;
-	createdAt?: Date | string;
-	updatedAt?: Date | string;
-};
-
-export type WalletUpdateWithoutUserInput = {
-	id?: Prisma.StringFieldUpdateOperationsInput | string;
-	balanceKobo?: Prisma.IntFieldUpdateOperationsInput | number;
-	heldKobo?: Prisma.IntFieldUpdateOperationsInput | number;
-	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-	updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-	transactions?: Prisma.TransactionUpdateManyWithoutWalletNestedInput;
-};
-
-export type WalletUncheckedUpdateWithoutUserInput = {
-	id?: Prisma.StringFieldUpdateOperationsInput | string;
-	balanceKobo?: Prisma.IntFieldUpdateOperationsInput | number;
-	heldKobo?: Prisma.IntFieldUpdateOperationsInput | number;
-	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-	updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-	transactions?: Prisma.TransactionUncheckedUpdateManyWithoutWalletNestedInput;
-};
-
-export type WalletUncheckedUpdateManyWithoutUserInput = {
-	id?: Prisma.StringFieldUpdateOperationsInput | string;
 	balanceKobo?: Prisma.IntFieldUpdateOperationsInput | number;
 	heldKobo?: Prisma.IntFieldUpdateOperationsInput | number;
 	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;

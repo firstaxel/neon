@@ -1,8 +1,16 @@
+import { ORPCError } from "@orpc/server";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
+import {
+	holdCampaignFunds,
+	releaseCampaignHold,
+} from "#/features/billing/utils";
+import { normalizePhoneNumber } from "#/features/contacts/utils/phone";
 import { SCENARIO_SEED_TEMPLATES } from "#/features/miscellaneous/scenario";
+import type { PrismaClient } from "#/generated/prisma/client";
 import { invalidate, withCache } from "#/lib/cache";
 import { inngest } from "#/lib/inngest/client";
+import { calculateMaxSegmentsForAudience } from "#/lib/sms";
 import { protectedProcedure } from "#/orpc";
 
 const ContactSchema = z.object({
@@ -21,13 +29,336 @@ const ScenarioSchema = z.enum([
 	"general",
 ]);
 
+/**
+ * Resolves audience contacts for a campaign or estimate.
+ * Automatically deduplicates recipients by normalized Nigerian E.164 phone numbers
+ * and filters out contacts who have opted out.
+ */
+async function resolveAudienceContacts(
+	db: PrismaClient,
+	userId: string,
+	contactIds?: string[],
+	audienceFilter?: { tagIds?: string[]; all?: boolean }
+): Promise<Array<{ id: string; name: string; phone: string }>> {
+	let rows: Array<{
+		id: string;
+		name: string;
+		optedOut: boolean;
+		phone: string;
+	}> = [];
+
+	if (contactIds && contactIds.length > 0) {
+		rows = await db.contact.findMany({
+			select: { id: true, name: true, optedOut: true, phone: true },
+			where: {
+				id: { in: contactIds },
+				uploadedBy: userId,
+			},
+		});
+	} else if (audienceFilter?.tagIds && audienceFilter.tagIds.length > 0) {
+		rows = await db.contact.findMany({
+			select: { id: true, name: true, optedOut: true, phone: true },
+			where: {
+				tags: { hasSome: audienceFilter.tagIds },
+				uploadedBy: userId,
+			},
+		});
+	} else if (audienceFilter?.all) {
+		rows = await db.contact.findMany({
+			select: { id: true, name: true, optedOut: true, phone: true },
+			where: {
+				uploadedBy: userId,
+			},
+		});
+	}
+
+	const active = rows.filter((c) => !c.optedOut);
+
+	const seenPhones = new Set<string>();
+	const deduplicated: Array<{ id: string; name: string; phone: string }> = [];
+
+	for (const contact of active) {
+		const norm = normalizePhoneNumber(contact.phone);
+		const canonicalPhone =
+			norm.success && norm.phone
+				? norm.phone
+				: contact.phone.replace(/\D/g, "");
+		if (!seenPhones.has(canonicalPhone)) {
+			seenPhones.add(canonicalPhone);
+			deduplicated.push(contact);
+		}
+	}
+
+	return deduplicated;
+}
+
+export const estimateCost = protectedProcedure
+	.input(
+		z.object({
+			audienceFilter: z
+				.object({
+					all: z.boolean().optional(),
+					tagIds: z.array(z.string()).optional(),
+				})
+				.optional(),
+			contactIds: z.array(z.string()).optional(),
+			messageText: z.string().min(1),
+			templateVars: z.record(z.string(), z.string()).default({}),
+		})
+	)
+	.handler(async ({ input, context }) => {
+		const userId = context.session.user.id;
+		const contacts = await resolveAudienceContacts(
+			context.db,
+			userId,
+			input.contactIds,
+			input.audienceFilter
+		);
+
+		const profile = await context.db.userProfile.findUnique({
+			select: { orgName: true },
+			where: { userId },
+		});
+		const orgName = profile?.orgName ?? "Velocast";
+		const resolvedTemplateVars: Record<string, string> = {
+			...input.templateVars,
+			org: orgName,
+			org_name: orgName,
+			orgName,
+		};
+
+		const audienceCalc = calculateMaxSegmentsForAudience({
+			contacts,
+			template: input.messageText,
+			templateVars: resolvedTemplateVars,
+		});
+
+		const wallet = await context.db.wallet.findUnique({
+			select: { balanceKobo: true, heldKobo: true },
+			where: { userId },
+		});
+
+		const availableBalanceKobo =
+			(wallet?.balanceKobo ?? 0) - (wallet?.heldKobo ?? 0);
+		const { totalEstimatedCostKobo } = audienceCalc;
+		const sufficientBalance = availableBalanceKobo >= totalEstimatedCostKobo;
+
+		return {
+			availableBalanceKobo,
+			baseSegments: audienceCalc.baseCalculation.segments,
+			characterCount: audienceCalc.baseCalculation.totalCharacterCount,
+			costPerSegmentKobo: audienceCalc.baseCalculation.costPerSegmentKobo,
+			encoding: audienceCalc.baseCalculation.encoding,
+			maxSegments: audienceCalc.maxSegments,
+			sufficientBalance,
+			totalContacts: contacts.length,
+			totalEstimatedCostKobo,
+		};
+	});
+
+export const createSmsCampaign = protectedProcedure
+	.input(
+		z.object({
+			audienceFilter: z
+				.object({
+					all: z.boolean().optional(),
+					tagIds: z.array(z.string()).optional(),
+				})
+				.optional(),
+			contactIds: z.array(z.string()).optional(),
+			messageText: z.string().min(1),
+			name: z.string().optional(),
+			scenario: ScenarioSchema,
+			scheduledAt: z.string().datetime().optional().nullable(),
+			senderId: z.string().optional(),
+			templateVars: z.record(z.string(), z.string()).default({}),
+		})
+	)
+	.handler(async ({ input, context }) => {
+		const userId = context.session.user.id;
+
+		const contacts = await resolveAudienceContacts(
+			context.db,
+			userId,
+			input.contactIds,
+			input.audienceFilter
+		);
+
+		if (contacts.length === 0) {
+			throw new ORPCError("BAD_REQUEST", {
+				message: "No eligible recipients found for campaign.",
+			});
+		}
+
+		const profile = await context.db.userProfile.findUnique({
+			select: { orgName: true, senderId: true },
+			where: { userId },
+		});
+		const orgName = profile?.orgName ?? "Velocast";
+		const resolvedTemplateVars: Record<string, string> = {
+			...input.templateVars,
+			org: orgName,
+			org_name: orgName,
+			orgName,
+		};
+
+		const audienceCalc = calculateMaxSegmentsForAudience({
+			contacts,
+			template: input.messageText,
+			templateVars: resolvedTemplateVars,
+		});
+
+		const { totalEstimatedCostKobo } = audienceCalc;
+
+		const wallet = await context.db.wallet.findUnique({
+			select: { balanceKobo: true, heldKobo: true },
+			where: { userId },
+		});
+		const availableBalanceKobo =
+			(wallet?.balanceKobo ?? 0) - (wallet?.heldKobo ?? 0);
+
+		if (availableBalanceKobo < totalEstimatedCostKobo) {
+			throw new ORPCError("BAD_REQUEST", {
+				message: `Insufficient wallet balance. Estimated cost is ${totalEstimatedCostKobo} kobo, but available balance is ${availableBalanceKobo} kobo.`,
+			});
+		}
+
+		const campaignId = uuidv4();
+		const effectiveSenderId =
+			input.senderId?.trim() || profile?.senderId || undefined;
+
+		await context.db.campaign.create({
+			data: {
+				deliveryMode: "marketing",
+				estimatedCostKobo: totalEstimatedCostKobo,
+				id: campaignId,
+				name: input.name?.trim() || null,
+				scenario: input.scenario,
+				scheduledAt: input.scheduledAt ? new Date(input.scheduledAt) : null,
+				senderId: effectiveSenderId ?? null,
+				smsTemplate: input.messageText,
+				status: "pending",
+				totalMessages: contacts.length,
+				useCustomTemplate: true,
+				userId,
+				whatsappTemplate: "",
+			},
+		});
+
+		try {
+			await holdCampaignFunds({
+				amountKobo: totalEstimatedCostKobo,
+				campaignId,
+				description: input.name
+					? `Campaign hold: ${input.name}`
+					: `Campaign hold for ${campaignId}`,
+				userId,
+			});
+		} catch (error) {
+			await context.db.campaign
+				.delete({ where: { id: campaignId } })
+				.catch(() => {
+					// Ignore deletion error during cleanup
+				});
+			throw error;
+		}
+
+		try {
+			await inngest.send({
+				data: {
+					campaignId,
+					contactIds: contacts.map((c) => c.id),
+					forceSmsChannel: true,
+					scenario: input.scenario,
+					scheduledAt: input.scheduledAt ?? undefined,
+					smsTemplate: input.messageText,
+					templateVars: resolvedTemplateVars,
+					userId,
+					whatsappTemplate: "",
+				},
+				name: "Velocast/campaign.send",
+			});
+		} catch (inngestError) {
+			try {
+				await releaseCampaignHold({
+					campaignId,
+					reason: "Failed to dispatch campaign send event",
+					userId,
+				});
+			} catch {
+				// Ignore release error during cleanup
+			}
+			try {
+				await context.db.campaign.updateMany({
+					data: { completedAt: new Date(), status: "failed" },
+					where: { id: campaignId },
+				});
+			} catch {
+				// Ignore update error during cleanup
+			}
+			throw inngestError;
+		}
+
+		invalidate(userId, "campaign.list");
+
+		return {
+			campaignId,
+			heldKobo: totalEstimatedCostKobo,
+			scheduledAt: input.scheduledAt ?? null,
+			status: "pending",
+			totalMessages: contacts.length,
+		};
+	});
+
+export const cancelScheduledCampaign = protectedProcedure
+	.input(z.object({ campaignId: z.string().uuid() }))
+	.handler(async ({ input, context }) => {
+		const userId = context.session.user.id;
+
+		const campaign = await context.db.campaign.findUnique({
+			select: { id: true, scheduledAt: true, status: true, userId: true },
+			where: { id: input.campaignId },
+		});
+
+		if (!campaign || campaign.userId !== userId) {
+			throw new ORPCError("NOT_FOUND", { message: "Campaign not found" });
+		}
+
+		if (campaign.status !== "pending") {
+			throw new ORPCError("BAD_REQUEST", {
+				message: `Campaign cannot be cancelled in '${campaign.status}' status`,
+			});
+		}
+
+		const updated = await context.db.campaign.updateMany({
+			data: { completedAt: new Date(), status: "cancelled" },
+			where: { id: input.campaignId, status: "pending", userId },
+		});
+
+		if (updated.count === 0) {
+			throw new ORPCError("BAD_REQUEST", {
+				message: "Campaign is no longer in pending status",
+			});
+		}
+
+		const releaseResult = await releaseCampaignHold({
+			campaignId: input.campaignId,
+			reason: "Scheduled campaign cancelled by user",
+			userId,
+		});
+
+		invalidate(userId, "campaign.list");
+
+		return {
+			campaignId: input.campaignId,
+			releasedKobo: releaseResult.unspentReleasedKobo,
+			status: "cancelled",
+		};
+	});
+
 export const sendCampaign = protectedProcedure
 	.input(
 		z.object({
-			// We accept full contact objects from the wizard (for UI validation/preview)
-			// but we only forward contact IDs to Inngest to stay well under the 256KB event limit.
-			// At ~200 bytes per contact object, 1000 contacts = ~200KB — dangerously close.
-			// At ~40 bytes per UUID, 1000 IDs = ~40KB — safe even at 10k contacts.
 			contacts: z.array(ContactSchema).min(1),
 			customTemplate: z
 				.object({ sms: z.string(), whatsapp: z.string() })
@@ -36,21 +367,17 @@ export const sendCampaign = protectedProcedure
 				.enum(["marketing", "utility_prescreen", "sms_fallback"])
 				.default("marketing"),
 			scenario: ScenarioSchema,
-			/** User-supplied values for template variables that can't be auto-resolved (e.g. date, event, org). */
 			templateVars: z.record(z.string(), z.string()).default({}),
 			useCustom: z.boolean().default(false),
 		})
 	)
 	.handler(async ({ input, context }) => {
 		const userId = context.session.user.id;
-		// Resolve template: DB default first, then seed fallback.
-		// Users own their templates post-onboarding and can edit them freely.
 		let template: { whatsapp: string; sms: string };
 
 		if (input.useCustom && input.customTemplate) {
 			template = input.customTemplate;
 		} else {
-			// Look up the user's saved default for this scenario
 			const [waRow, smsRow] = await Promise.all([
 				context.db.messageTemplate.findFirst({
 					select: { bodyText: true, smsBody: true },
@@ -79,15 +406,12 @@ export const sendCampaign = protectedProcedure
 			};
 		}
 
-		// Fetch profile for org name — used in consent messages and as auto-resolved {{org}} var
 		const profile = await context.db.userProfile.findUnique({
 			select: { orgName: true },
 			where: { userId },
 		});
 		const orgName = profile?.orgName ?? "Velocast";
 
-		// Merge auto-resolved server vars with user-supplied vars.
-		// Server-side values win over anything the user typed for org/orgName.
 		const resolvedTemplateVars: Record<string, string> = {
 			...input.templateVars,
 			org: orgName,
@@ -111,11 +435,8 @@ export const sendCampaign = protectedProcedure
 			},
 		});
 
-		// Extract only IDs — Inngest functions fetch full contact data from DB.
-		// This keeps event payloads tiny regardless of how many contacts are selected.
 		const contactIds = input.contacts.map((c) => c.id);
 
-		// ── Branch by delivery mode ───────────────────────────────────────────────
 		if (input.deliveryMode === "utility_prescreen") {
 			await inngest.send({
 				data: {
@@ -135,7 +456,6 @@ export const sendCampaign = protectedProcedure
 				data: {
 					campaignId,
 					contactIds,
-					// For sms_fallback we tell Inngest to force SMS channel when fetching
 					forceSmsChannel: input.deliveryMode === "sms_fallback",
 					scenario: input.scenario,
 					smsTemplate: template.sms,
@@ -168,38 +488,48 @@ export const getCampaignStatus = protectedProcedure
 			select: {
 				completedAt: true,
 				createdAt: true,
+				deliveryMode: true,
+				estimatedCostKobo: true,
 				failedMessages: true,
 				id: true,
+				name: true,
 				scenario: true,
+				scheduledAt: true,
+				senderId: true,
 				sentMessages: true,
+				smsTemplate: true,
+				startedAt: true,
 				status: true,
 				totalMessages: true,
 				userId: true,
+				whatsappTemplate: true,
 			},
 			where: { id: input.campaignId },
 		});
 		if (!campaign) {
-			throw new Error(`Campaign ${input.campaignId} not found`);
+			throw new ORPCError("NOT_FOUND", { message: "Campaign not found" });
 		}
 		if (campaign.userId !== context.session.user.id) {
-			throw new Error("Not found");
+			throw new ORPCError("FORBIDDEN", { message: "Access denied" });
 		}
 
-		// Paginate messages — never load all rows unbounded (a 10k campaign = 10k rows in RAM)
 		const [messages, totalMessages] = await Promise.all([
 			context.db.message.findMany({
 				orderBy: { createdAt: "asc" },
 				select: {
 					channel: true,
 					contactName: true,
+					costKobo: true,
 					deliveredAt: true,
 					errorMessage: true,
 					id: true,
 					message: true,
 					metaMessageId: true,
 					phone: true,
+					segments: true,
 					sentAt: true,
 					status: true,
+					termiiMessageId: true,
 				},
 				skip: (input.messagesPage - 1) * input.messagesPageSize,
 				take: input.messagesPageSize,
@@ -212,16 +542,20 @@ export const getCampaignStatus = protectedProcedure
 			campaignId: campaign.id,
 			completedAt: campaign.completedAt,
 			createdAt: campaign.createdAt,
+			deliveryMode: campaign.deliveryMode,
+			estimatedCostKobo: campaign.estimatedCostKobo,
 			failed: campaign.failedMessages,
 			messages: messages.map((m) => ({
 				channel: m.channel,
 				contactName: m.contactName,
+				costKobo: m.costKobo,
 				deliveredAt: m.deliveredAt,
 				errorMessage: m.errorMessage,
-				externalId: m.metaMessageId,
+				externalId: m.termiiMessageId ?? m.metaMessageId,
 				id: m.id,
 				message: m.message,
 				phone: m.phone,
+				segments: m.segments,
 				sentAt: m.sentAt,
 				status: m.status,
 			})),
@@ -231,12 +565,20 @@ export const getCampaignStatus = protectedProcedure
 				total: totalMessages,
 				totalPages: Math.ceil(totalMessages / input.messagesPageSize),
 			},
+			name: campaign.name,
 			scenario: campaign.scenario,
+			scheduledAt: campaign.scheduledAt,
+			senderId: campaign.senderId,
 			sent: campaign.sentMessages,
+			smsTemplate: campaign.smsTemplate,
+			startedAt: campaign.startedAt,
 			status: campaign.status,
 			total: campaign.totalMessages,
+			whatsappTemplate: campaign.whatsappTemplate,
 		};
 	});
+
+export const getCampaignDetail = getCampaignStatus;
 
 export const listCampaigns = protectedProcedure
 	.input(z.object({ limit: z.number().int().min(1).max(50).default(20) }))
@@ -247,9 +589,12 @@ export const listCampaigns = protectedProcedure
 				select: {
 					completedAt: true,
 					createdAt: true,
+					estimatedCostKobo: true,
 					failedMessages: true,
 					id: true,
+					name: true,
 					scenario: true,
+					scheduledAt: true,
 					sentMessages: true,
 					status: true,
 					totalMessages: true,
@@ -260,9 +605,12 @@ export const listCampaigns = protectedProcedure
 			return rows.map((c) => ({
 				completedAt: c.completedAt,
 				createdAt: c.createdAt,
+				estimatedCostKobo: c.estimatedCostKobo,
 				failed: c.failedMessages,
 				id: c.id,
+				name: c.name,
 				scenario: c.scenario,
+				scheduledAt: c.scheduledAt,
 				sent: c.sentMessages,
 				status: c.status,
 				total: c.totalMessages,

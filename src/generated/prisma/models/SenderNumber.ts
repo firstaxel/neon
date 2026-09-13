@@ -13,8 +13,7 @@ import type * as Prisma from "../internal/prismaNamespace.ts";
 
 /**
  * Model SenderNumber
- * Registered sender numbers used for outbound campaigns.
- * Rotated round-robin across active numbers to spread send volume.
+ *
  */
 export type SenderNumberModel =
 	runtime.Types.Result.DefaultSelection<Prisma.$SenderNumberPayload>;

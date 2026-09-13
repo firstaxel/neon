@@ -13,7 +13,7 @@ import type * as Prisma from "../internal/prismaNamespace.ts";
 
 /**
  * Model UserProfile
- * Extended profile collected during onboarding.
+ *
  */
 export type UserProfileModel =
 	runtime.Types.Result.DefaultSelection<Prisma.$UserProfilePayload>;
@@ -420,7 +420,7 @@ export type UserProfileCreateInput = {
 	timezone?: string;
 	createdAt?: Date | string;
 	updatedAt?: Date | string;
-	user: Prisma.UserCreateNestedOneWithoutUserProfilesInput;
+	user: Prisma.UserCreateNestedOneWithoutUserProfileInput;
 };
 
 export type UserProfileUncheckedCreateInput = {
@@ -454,7 +454,7 @@ export type UserProfileUpdateInput = {
 	timezone?: Prisma.StringFieldUpdateOperationsInput | string;
 	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 	updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-	user?: Prisma.UserUpdateOneRequiredWithoutUserProfilesNestedInput;
+	user?: Prisma.UserUpdateOneRequiredWithoutUserProfileNestedInput;
 };
 
 export type UserProfileUncheckedUpdateInput = {
@@ -524,14 +524,9 @@ export type UserProfileUncheckedUpdateManyInput = {
 	updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
-export type UserProfileListRelationFilter = {
-	every?: Prisma.UserProfileWhereInput;
-	some?: Prisma.UserProfileWhereInput;
-	none?: Prisma.UserProfileWhereInput;
-};
-
-export type UserProfileOrderByRelationAggregateInput = {
-	_count?: Prisma.SortOrder;
+export type UserProfileNullableScalarRelationFilter = {
+	is?: Prisma.UserProfileWhereInput | null;
+	isNot?: Prisma.UserProfileWhereInput | null;
 };
 
 export type UserProfileCountOrderByAggregateInput = {
@@ -593,118 +588,72 @@ export type UserProfileSumOrderByAggregateInput = {
 	onboardingStep?: Prisma.SortOrder;
 };
 
-export type UserProfileCreateNestedManyWithoutUserInput = {
-	create?:
-		| Prisma.XOR<
-				Prisma.UserProfileCreateWithoutUserInput,
-				Prisma.UserProfileUncheckedCreateWithoutUserInput
-		  >
-		| Prisma.UserProfileCreateWithoutUserInput[]
-		| Prisma.UserProfileUncheckedCreateWithoutUserInput[];
-	connectOrCreate?:
-		| Prisma.UserProfileCreateOrConnectWithoutUserInput
-		| Prisma.UserProfileCreateOrConnectWithoutUserInput[];
-	createMany?: Prisma.UserProfileCreateManyUserInputEnvelope;
-	connect?:
-		| Prisma.UserProfileWhereUniqueInput
-		| Prisma.UserProfileWhereUniqueInput[];
+export type UserProfileCreateNestedOneWithoutUserInput = {
+	create?: Prisma.XOR<
+		Prisma.UserProfileCreateWithoutUserInput,
+		Prisma.UserProfileUncheckedCreateWithoutUserInput
+	>;
+	connectOrCreate?: Prisma.UserProfileCreateOrConnectWithoutUserInput;
+	connect?: Prisma.UserProfileWhereUniqueInput;
 };
 
-export type UserProfileUncheckedCreateNestedManyWithoutUserInput = {
-	create?:
-		| Prisma.XOR<
-				Prisma.UserProfileCreateWithoutUserInput,
-				Prisma.UserProfileUncheckedCreateWithoutUserInput
-		  >
-		| Prisma.UserProfileCreateWithoutUserInput[]
-		| Prisma.UserProfileUncheckedCreateWithoutUserInput[];
-	connectOrCreate?:
-		| Prisma.UserProfileCreateOrConnectWithoutUserInput
-		| Prisma.UserProfileCreateOrConnectWithoutUserInput[];
-	createMany?: Prisma.UserProfileCreateManyUserInputEnvelope;
-	connect?:
-		| Prisma.UserProfileWhereUniqueInput
-		| Prisma.UserProfileWhereUniqueInput[];
+export type UserProfileUncheckedCreateNestedOneWithoutUserInput = {
+	create?: Prisma.XOR<
+		Prisma.UserProfileCreateWithoutUserInput,
+		Prisma.UserProfileUncheckedCreateWithoutUserInput
+	>;
+	connectOrCreate?: Prisma.UserProfileCreateOrConnectWithoutUserInput;
+	connect?: Prisma.UserProfileWhereUniqueInput;
 };
 
-export type UserProfileUpdateManyWithoutUserNestedInput = {
-	create?:
-		| Prisma.XOR<
-				Prisma.UserProfileCreateWithoutUserInput,
-				Prisma.UserProfileUncheckedCreateWithoutUserInput
-		  >
-		| Prisma.UserProfileCreateWithoutUserInput[]
-		| Prisma.UserProfileUncheckedCreateWithoutUserInput[];
-	connectOrCreate?:
-		| Prisma.UserProfileCreateOrConnectWithoutUserInput
-		| Prisma.UserProfileCreateOrConnectWithoutUserInput[];
-	upsert?:
-		| Prisma.UserProfileUpsertWithWhereUniqueWithoutUserInput
-		| Prisma.UserProfileUpsertWithWhereUniqueWithoutUserInput[];
-	createMany?: Prisma.UserProfileCreateManyUserInputEnvelope;
-	set?:
-		| Prisma.UserProfileWhereUniqueInput
-		| Prisma.UserProfileWhereUniqueInput[];
-	disconnect?:
-		| Prisma.UserProfileWhereUniqueInput
-		| Prisma.UserProfileWhereUniqueInput[];
-	delete?:
-		| Prisma.UserProfileWhereUniqueInput
-		| Prisma.UserProfileWhereUniqueInput[];
-	connect?:
-		| Prisma.UserProfileWhereUniqueInput
-		| Prisma.UserProfileWhereUniqueInput[];
-	update?:
-		| Prisma.UserProfileUpdateWithWhereUniqueWithoutUserInput
-		| Prisma.UserProfileUpdateWithWhereUniqueWithoutUserInput[];
-	updateMany?:
-		| Prisma.UserProfileUpdateManyWithWhereWithoutUserInput
-		| Prisma.UserProfileUpdateManyWithWhereWithoutUserInput[];
-	deleteMany?:
-		| Prisma.UserProfileScalarWhereInput
-		| Prisma.UserProfileScalarWhereInput[];
+export type UserProfileUpdateOneWithoutUserNestedInput = {
+	create?: Prisma.XOR<
+		Prisma.UserProfileCreateWithoutUserInput,
+		Prisma.UserProfileUncheckedCreateWithoutUserInput
+	>;
+	connectOrCreate?: Prisma.UserProfileCreateOrConnectWithoutUserInput;
+	upsert?: Prisma.UserProfileUpsertWithoutUserInput;
+	disconnect?: Prisma.UserProfileWhereInput | boolean;
+	delete?: Prisma.UserProfileWhereInput | boolean;
+	connect?: Prisma.UserProfileWhereUniqueInput;
+	update?: Prisma.XOR<
+		Prisma.XOR<
+			Prisma.UserProfileUpdateToOneWithWhereWithoutUserInput,
+			Prisma.UserProfileUpdateWithoutUserInput
+		>,
+		Prisma.UserProfileUncheckedUpdateWithoutUserInput
+	>;
 };
 
-export type UserProfileUncheckedUpdateManyWithoutUserNestedInput = {
-	create?:
-		| Prisma.XOR<
-				Prisma.UserProfileCreateWithoutUserInput,
-				Prisma.UserProfileUncheckedCreateWithoutUserInput
-		  >
-		| Prisma.UserProfileCreateWithoutUserInput[]
-		| Prisma.UserProfileUncheckedCreateWithoutUserInput[];
-	connectOrCreate?:
-		| Prisma.UserProfileCreateOrConnectWithoutUserInput
-		| Prisma.UserProfileCreateOrConnectWithoutUserInput[];
-	upsert?:
-		| Prisma.UserProfileUpsertWithWhereUniqueWithoutUserInput
-		| Prisma.UserProfileUpsertWithWhereUniqueWithoutUserInput[];
-	createMany?: Prisma.UserProfileCreateManyUserInputEnvelope;
-	set?:
-		| Prisma.UserProfileWhereUniqueInput
-		| Prisma.UserProfileWhereUniqueInput[];
-	disconnect?:
-		| Prisma.UserProfileWhereUniqueInput
-		| Prisma.UserProfileWhereUniqueInput[];
-	delete?:
-		| Prisma.UserProfileWhereUniqueInput
-		| Prisma.UserProfileWhereUniqueInput[];
-	connect?:
-		| Prisma.UserProfileWhereUniqueInput
-		| Prisma.UserProfileWhereUniqueInput[];
-	update?:
-		| Prisma.UserProfileUpdateWithWhereUniqueWithoutUserInput
-		| Prisma.UserProfileUpdateWithWhereUniqueWithoutUserInput[];
-	updateMany?:
-		| Prisma.UserProfileUpdateManyWithWhereWithoutUserInput
-		| Prisma.UserProfileUpdateManyWithWhereWithoutUserInput[];
-	deleteMany?:
-		| Prisma.UserProfileScalarWhereInput
-		| Prisma.UserProfileScalarWhereInput[];
+export type UserProfileUncheckedUpdateOneWithoutUserNestedInput = {
+	create?: Prisma.XOR<
+		Prisma.UserProfileCreateWithoutUserInput,
+		Prisma.UserProfileUncheckedCreateWithoutUserInput
+	>;
+	connectOrCreate?: Prisma.UserProfileCreateOrConnectWithoutUserInput;
+	upsert?: Prisma.UserProfileUpsertWithoutUserInput;
+	disconnect?: Prisma.UserProfileWhereInput | boolean;
+	delete?: Prisma.UserProfileWhereInput | boolean;
+	connect?: Prisma.UserProfileWhereUniqueInput;
+	update?: Prisma.XOR<
+		Prisma.XOR<
+			Prisma.UserProfileUpdateToOneWithWhereWithoutUserInput,
+			Prisma.UserProfileUpdateWithoutUserInput
+		>,
+		Prisma.UserProfileUncheckedUpdateWithoutUserInput
+	>;
 };
 
 export type EnumUserRoleFieldUpdateOperationsInput = {
 	set?: $Enums.UserRole;
+};
+
+export type IntFieldUpdateOperationsInput = {
+	set?: number;
+	increment?: number;
+	decrement?: number;
+	multiply?: number;
+	divide?: number;
 };
 
 export type UserProfileCreateWithoutUserInput = {
@@ -747,15 +696,7 @@ export type UserProfileCreateOrConnectWithoutUserInput = {
 	>;
 };
 
-export type UserProfileCreateManyUserInputEnvelope = {
-	data:
-		| Prisma.UserProfileCreateManyUserInput
-		| Prisma.UserProfileCreateManyUserInput[];
-	skipDuplicates?: boolean;
-};
-
-export type UserProfileUpsertWithWhereUniqueWithoutUserInput = {
-	where: Prisma.UserProfileWhereUniqueInput;
+export type UserProfileUpsertWithoutUserInput = {
 	update: Prisma.XOR<
 		Prisma.UserProfileUpdateWithoutUserInput,
 		Prisma.UserProfileUncheckedUpdateWithoutUserInput
@@ -764,62 +705,15 @@ export type UserProfileUpsertWithWhereUniqueWithoutUserInput = {
 		Prisma.UserProfileCreateWithoutUserInput,
 		Prisma.UserProfileUncheckedCreateWithoutUserInput
 	>;
+	where?: Prisma.UserProfileWhereInput;
 };
 
-export type UserProfileUpdateWithWhereUniqueWithoutUserInput = {
-	where: Prisma.UserProfileWhereUniqueInput;
+export type UserProfileUpdateToOneWithWhereWithoutUserInput = {
+	where?: Prisma.UserProfileWhereInput;
 	data: Prisma.XOR<
 		Prisma.UserProfileUpdateWithoutUserInput,
 		Prisma.UserProfileUncheckedUpdateWithoutUserInput
 	>;
-};
-
-export type UserProfileUpdateManyWithWhereWithoutUserInput = {
-	where: Prisma.UserProfileScalarWhereInput;
-	data: Prisma.XOR<
-		Prisma.UserProfileUpdateManyMutationInput,
-		Prisma.UserProfileUncheckedUpdateManyWithoutUserInput
-	>;
-};
-
-export type UserProfileScalarWhereInput = {
-	AND?:
-		| Prisma.UserProfileScalarWhereInput
-		| Prisma.UserProfileScalarWhereInput[];
-	OR?: Prisma.UserProfileScalarWhereInput[];
-	NOT?:
-		| Prisma.UserProfileScalarWhereInput
-		| Prisma.UserProfileScalarWhereInput[];
-	id?: Prisma.StringFilter<"UserProfile"> | string;
-	userId?: Prisma.StringFilter<"UserProfile"> | string;
-	orgType?: Prisma.StringNullableFilter<"UserProfile"> | string | null;
-	orgName?: Prisma.StringNullableFilter<"UserProfile"> | string | null;
-	orgSize?: Prisma.StringNullableFilter<"UserProfile"> | string | null;
-	role?: Prisma.EnumUserRoleFilter<"UserProfile"> | $Enums.UserRole;
-	phone?: Prisma.StringNullableFilter<"UserProfile"> | string | null;
-	senderId?: Prisma.StringNullableFilter<"UserProfile"> | string | null;
-	usePlatformSender?: Prisma.BoolFilter<"UserProfile"> | boolean;
-	onboardingComplete?: Prisma.BoolFilter<"UserProfile"> | boolean;
-	onboardingStep?: Prisma.IntFilter<"UserProfile"> | number;
-	timezone?: Prisma.StringFilter<"UserProfile"> | string;
-	createdAt?: Prisma.DateTimeFilter<"UserProfile"> | Date | string;
-	updatedAt?: Prisma.DateTimeFilter<"UserProfile"> | Date | string;
-};
-
-export type UserProfileCreateManyUserInput = {
-	id?: string;
-	orgType?: string | null;
-	orgName?: string | null;
-	orgSize?: string | null;
-	role?: $Enums.UserRole;
-	phone?: string | null;
-	senderId?: string | null;
-	usePlatformSender?: boolean;
-	onboardingComplete?: boolean;
-	onboardingStep?: number;
-	timezone?: string;
-	createdAt?: Date | string;
-	updatedAt?: Date | string;
 };
 
 export type UserProfileUpdateWithoutUserInput = {
@@ -839,22 +733,6 @@ export type UserProfileUpdateWithoutUserInput = {
 };
 
 export type UserProfileUncheckedUpdateWithoutUserInput = {
-	id?: Prisma.StringFieldUpdateOperationsInput | string;
-	orgType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	orgName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	orgSize?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole;
-	phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	senderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	usePlatformSender?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-	onboardingComplete?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-	onboardingStep?: Prisma.IntFieldUpdateOperationsInput | number;
-	timezone?: Prisma.StringFieldUpdateOperationsInput | string;
-	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-	updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-};
-
-export type UserProfileUncheckedUpdateManyWithoutUserInput = {
 	id?: Prisma.StringFieldUpdateOperationsInput | string;
 	orgType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	orgName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;

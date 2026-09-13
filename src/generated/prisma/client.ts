@@ -68,10 +68,30 @@ export type Account = Prisma.AccountModel;
  */
 export type Verification = Prisma.VerificationModel;
 /**
+ * Model UserProfile
+ *
+ */
+export type UserProfile = Prisma.UserProfileModel;
+/**
+ * Model Wallet
+ *
+ */
+export type Wallet = Prisma.WalletModel;
+/**
+ * Model Transaction
+ *
+ */
+export type Transaction = Prisma.TransactionModel;
+/**
  * Model ParseJob
  *
  */
 export type ParseJob = Prisma.ParseJobModel;
+/**
+ * Model ContactImport
+ *
+ */
+export type ContactImport = Prisma.ContactImportModel;
 /**
  * Model Contact
  *
@@ -84,77 +104,41 @@ export type Contact = Prisma.ContactModel;
 export type Campaign = Prisma.CampaignModel;
 /**
  * Model Message
- * One row per individual message send attempt within a campaign.
+ *
  */
 export type Message = Prisma.MessageModel;
 /**
- * Model Wallet
- * One wallet per user. All amounts stored in kobo (₦1 = 100 kobo).
- * Never use floats for money — always integer kobo.
- */
-export type Wallet = Prisma.WalletModel;
-/**
- * Model Transaction
- * Immutable ledger entry — one row per financial event.
- */
-export type Transaction = Prisma.TransactionModel;
-/**
- * Model Subscription
- * Monthly subscription record for a user.
- */
-export type Subscription = Prisma.SubscriptionModel;
-/**
- * Model UserProfile
- * Extended profile collected during onboarding.
- */
-export type UserProfile = Prisma.UserProfileModel;
-/**
- * Model MessageTemplate
- * A WhatsApp Business API message template.
- * Submitted to Meta for approval before it can be used in campaigns.
- * Also stores an SMS fallback body for contacts on the SMS channel.
- */
-export type MessageTemplate = Prisma.MessageTemplateModel;
-/**
- * Model SenderNumber
- * Registered sender numbers used for outbound campaigns.
- * Rotated round-robin across active numbers to spread send volume.
- */
-export type SenderNumber = Prisma.SenderNumberModel;
-/**
  * Model PendingDelivery
- * When deliveryMode = utility_prescreen, we send a cheap UTILITY consent
- * message first. When the contact replies YES, the webhook looks up this
- * table and fires the real marketing message.
  *
- * Rows are deleted (or marked replied=true) once the real message is sent.
- * Expired rows (expiresAt < now) are ignored by the webhook.
  */
 export type PendingDelivery = Prisma.PendingDeliveryModel;
 /**
  * Model InboundMessage
- * Every inbound reply received via WhatsApp or SMS webhook.
- * Used to power the Inbox tab — shows all conversations a user can reply to.
- * The service window (24h from receivedAt for WhatsApp) determines whether
- * a free-form reply can be sent or if a template is needed (and billed higher).
+ *
  */
 export type InboundMessage = Prisma.InboundMessageModel;
 /**
+ * Model MessageTemplate
+ *
+ */
+export type MessageTemplate = Prisma.MessageTemplateModel;
+/**
+ * Model SenderNumber
+ *
+ */
+export type SenderNumber = Prisma.SenderNumberModel;
+/**
  * Model OrgInvite
- * Pending invite sent by an org owner to add a team member.
- * On acceptance the row is marked accepted=true and an OrgMember row is created.
+ *
  */
 export type OrgInvite = Prisma.OrgInviteModel;
 /**
  * Model OrgMember
- * Active team membership — joins a user to an owner's org.
- * ownerId = the account whose wallet + data is being shared.
+ *
  */
 export type OrgMember = Prisma.OrgMemberModel;
 /**
  * Model OrgJoinRequest
- * A request from a user (or unauthenticated visitor) to join an org.
- * Owners see these in their team settings and can approve or decline.
- * On approval an OrgMember row is created and the requester is notified.
+ *
  */
 export type OrgJoinRequest = Prisma.OrgJoinRequestModel;

@@ -13,9 +13,7 @@ import type * as Prisma from "../internal/prismaNamespace.ts";
 
 /**
  * Model MessageTemplate
- * A WhatsApp Business API message template.
- * Submitted to Meta for approval before it can be used in campaigns.
- * Also stores an SMS fallback body for contacts on the SMS channel.
+ *
  */
 export type MessageTemplateModel =
 	runtime.Types.Result.DefaultSelection<Prisma.$MessageTemplatePayload>;

@@ -37,7 +37,7 @@ export function SmsTemplateEditView({ id }: { id: string }) {
 
 	if (isLoading) {
 		return (
-			<div style={{ margin: "0 auto", maxWidth: 860, padding: "32px 28px" }}>
+			<div className="mx-auto w-full max-w-6xl px-4 py-8">
 				<Skeleton className="mb-6 h-8 w-48" />
 				<Skeleton className="mb-8 h-6 w-64" />
 				<div className="space-y-4">
@@ -51,10 +51,7 @@ export function SmsTemplateEditView({ id }: { id: string }) {
 
 	if (!template) {
 		return (
-			<div
-				className="text-center text-muted-foreground"
-				style={{ padding: "32px 28px" }}
-			>
+			<div className="mx-auto w-full max-w-6xl px-4 py-20 text-center text-muted-foreground">
 				Template not found.{" "}
 				<Button
 					onClick={() =>
@@ -74,7 +71,7 @@ export function SmsTemplateEditView({ id }: { id: string }) {
 	}
 
 	return (
-		<div style={{ margin: "0 auto", maxWidth: 860, padding: "32px 28px" }}>
+		<div className="mx-auto w-full max-w-6xl px-4 py-8">
 			<div className="mb-6 flex items-center gap-3">
 				<Button
 					className="gap-1.5 rounded-xl"

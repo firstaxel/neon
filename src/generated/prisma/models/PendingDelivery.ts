@@ -13,12 +13,7 @@ import type * as Prisma from "../internal/prismaNamespace.ts";
 
 /**
  * Model PendingDelivery
- * When deliveryMode = utility_prescreen, we send a cheap UTILITY consent
- * message first. When the contact replies YES, the webhook looks up this
- * table and fires the real marketing message.
  *
- * Rows are deleted (or marked replied=true) once the real message is sent.
- * Expired rows (expiresAt < now) are ignored by the webhook.
  */
 export type PendingDeliveryModel =
 	runtime.Types.Result.DefaultSelection<Prisma.$PendingDeliveryPayload>;

@@ -13,8 +13,7 @@ import type * as Prisma from "../internal/prismaNamespace.ts";
 
 /**
  * Model OrgInvite
- * Pending invite sent by an org owner to add a team member.
- * On acceptance the row is marked accepted=true and an OrgMember row is created.
+ *
  */
 export type OrgInviteModel =
 	runtime.Types.Result.DefaultSelection<Prisma.$OrgInvitePayload>;
@@ -731,15 +730,9 @@ export type $OrgInvitePayload<
 	scalars: runtime.Types.Extensions.GetPayloadResult<
 		{
 			id: string;
-			/**
-			 * The userId of the account that owns this org (the inviter)
-			 */
 			ownerId: string;
 			email: string;
 			role: $Enums.OrgRole;
-			/**
-			 * Secure random token embedded in the invite link — single-use
-			 */
 			token: string;
 			expiresAt: Date;
 			accepted: boolean;

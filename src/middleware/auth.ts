@@ -14,6 +14,7 @@ const PUBLIC_PATHS = new Set([
 	"/register",
 	"/verify-email",
 	"/reset-password",
+	"/forgot-password",
 ]);
 
 /**
@@ -111,7 +112,9 @@ export const authMiddleware = createMiddleware().server(({ next }) => {
 	// 4. Authenticated on a public/auth page → redirect into the app
 	if (isAuthenticated && isPublicPath) {
 		const callbackParam = searchParams.get("callbackURL");
-		const destination = isSafeRedirect(callbackParam) ? callbackParam : "/";
+		const destination = isSafeRedirect(callbackParam)
+			? callbackParam
+			: "/dashboard";
 
 		throw new Response(null, {
 			headers: {

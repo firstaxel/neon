@@ -1,5 +1,5 @@
 import { eventType, Inngest, staticSchema } from "inngest";
-import type { MessageType } from "#/features/billing/utils";
+import type { MessageType } from "#/features/billing/utils/format";
 import type { MessageChannel, ScenarioId } from "../types";
 
 // ─── Shared payload types ─────────────────────────────────────────────────────
@@ -60,6 +60,7 @@ export type CampaignSendPayload = {
 	scenario: ScenarioId;
 	templateVars: Record<string, string>;
 	forceSmsChannel?: boolean;
+	scheduledAt?: string;
 };
 
 export type CampaignSendSinglePayload = {
@@ -72,6 +73,9 @@ export type CampaignSendSinglePayload = {
 	deliveryMode: DeliveryMode;
 	message: string;
 	messageType: MessageType;
+	senderId?: string;
+	segments?: number;
+	costKobo?: number;
 };
 
 export type ContactListParsePayload = {

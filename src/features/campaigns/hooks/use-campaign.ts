@@ -4,13 +4,13 @@ import { orpc } from "#/orpc/client";
 
 export interface CampaignPayload {
 	contacts: Array<{
+		channel: "whatsapp" | "sms";
 		id: string;
 		name: string;
 		phone: string;
-		channel: "whatsapp" | "sms";
 		type: string;
 	}>;
-	customTemplate?: { whatsapp: string; sms: string };
+	customTemplate?: { sms: string; whatsapp: string };
 	scenario: ScenarioId;
 	useCustom: boolean;
 }
@@ -22,6 +22,37 @@ export function useSendCampaign() {
 		orpc.campaign.send.mutationOptions({
 			onSuccess: () => {
 				queryClient.invalidateQueries({ queryKey: ["campaigns"] });
+			},
+		})
+	);
+}
+
+export function useEstimateCampaignCost() {
+	return useMutation(orpc.campaign.estimateCost.mutationOptions());
+}
+
+export function useCreateSmsCampaign() {
+	const queryClient = useQueryClient();
+
+	return useMutation(
+		orpc.campaign.createSmsCampaign.mutationOptions({
+			onSuccess: () => {
+				queryClient.invalidateQueries({ queryKey: ["campaigns"] });
+				queryClient.invalidateQueries({ queryKey: ["wallet"] });
+			},
+		})
+	);
+}
+
+export function useCancelScheduledCampaign() {
+	const queryClient = useQueryClient();
+
+	return useMutation(
+		orpc.campaign.cancelScheduledCampaign.mutationOptions({
+			onSuccess: () => {
+				queryClient.invalidateQueries({ queryKey: ["campaigns"] });
+				queryClient.invalidateQueries({ queryKey: ["campaignStatus"] });
+				queryClient.invalidateQueries({ queryKey: ["wallet"] });
 			},
 		})
 	);
@@ -49,8 +80,16 @@ export function useCampaignStatus(campaignId: string | null) {
 			queryKey: ["campaignStatus", campaignId],
 			refetchInterval: ({ state }) => {
 				const status = state.data?.status;
-				return status === "completed" || status === "failed" ? false : 2000;
+				return status === "completed" ||
+					status === "failed" ||
+					status === "cancelled"
+					? false
+					: 2000;
 			},
 		})
 	);
+}
+
+export function useCampaignDetail(campaignId: string | null) {
+	return useCampaignStatus(campaignId);
 }

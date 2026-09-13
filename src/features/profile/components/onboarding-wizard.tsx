@@ -174,7 +174,7 @@ function WelcomeStep({ name }: { name: string }) {
 
 			<div className="space-y-2">
 				<h2 className="font-semibold text-xl">
-					{first ? `Welcome, ${first}! 👋` : "Welcome to Melow! 👋"}
+					{first ? `Welcome, ${first}! 👋` : "Welcome to Velocast! 👋"}
 				</h2>
 				<p className="mx-auto max-w-sm text-muted-foreground text-sm leading-relaxed">
 					Set up your account in a few steps and start reaching your contacts
@@ -590,15 +590,19 @@ function AllSetStep({ orgName }: { orgName: string }) {
 interface OnboardingWizardProps {
 	/** Pre-populated from the session — avoid a separate profile fetch */
 	initialName?: string;
+	initialStep?: number;
+	initialValues?: Partial<WizardValues>;
 	/** Called when the user clicks "Go to dashboard" on the final step */
 	onComplete: () => void;
 }
 
 export function OnboardingWizard({
 	initialName = "",
+	initialStep = 0,
+	initialValues,
 	onComplete,
 }: OnboardingWizardProps) {
-	const [step, setStep] = useState(0);
+	const [step, setStep] = useState(initialStep);
 
 	const { mutateAsync: completeStep, isPending: saving } =
 		useCompleteOnboarding();
@@ -608,16 +612,20 @@ export function OnboardingWizard({
 	const form = useForm({
 		defaultValues: {
 			name: initialName,
-			orgName: "",
-			orgSize: "1-50",
-			orgType: "church",
-			phone: "",
-			role: "staff",
-			smsSenderId: "",
+			orgName: initialValues?.orgName ?? "",
+			orgSize: initialValues?.orgSize ?? "1-50",
+			orgType: initialValues?.orgType ?? "church",
+			phone: initialValues?.phone ?? "",
+			role: initialValues?.role ?? "admin",
+			smsSenderId: initialValues?.smsSenderId ?? "",
 			topUpAmount: 5000,
-			usePlatformSender: true,
+			usePlatformSender: initialValues?.usePlatformSender ?? true,
 		} as WizardValues,
 		onSubmit: async ({ value }) => {
+			const timezone =
+				typeof Intl === "undefined"
+					? "Africa/Lagos"
+					: Intl.DateTimeFormat().resolvedOptions().timeZone;
 			await completeStep({
 				complete: true,
 				name: value.name,
@@ -625,9 +633,10 @@ export function OnboardingWizard({
 				orgSize: value.orgSize,
 				orgType: value.orgType,
 				phone: value.phone,
-				role: value.role,
+				role: value.role ?? "admin",
 				smsSenderId: value.smsSenderId || undefined,
 				step: 4,
+				timezone,
 				usePlatformSender: value.usePlatformSender,
 			});
 			onComplete();
@@ -643,8 +652,8 @@ export function OnboardingWizard({
 			orgSize: v.orgSize,
 			orgType: v.orgType,
 			phone: v.phone,
-			role: v.role,
-			step: 1,
+			role: v.role ?? "admin",
+			step: 2,
 		});
 		setStep(2);
 	}

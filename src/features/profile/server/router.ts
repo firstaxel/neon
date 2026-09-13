@@ -104,6 +104,71 @@ export const updateProfile = protectedProcedure
 		return { name: name ?? context.session.user.name, profile, success: true };
 	});
 
+// ─── Termii Submission Helper ────────────────────────────────────────────────
+
+export async function submitSenderIdToTermii({
+	companyName,
+	senderId,
+}: {
+	companyName: string;
+	senderId: string;
+}): Promise<{
+	submitted: boolean;
+	reason: string;
+	success: boolean;
+	senderId?: string;
+}> {
+	const termiiApiKey = process.env.TERMII_API_KEY;
+	if (!termiiApiKey) {
+		return {
+			reason:
+				"Sender ID saved. TERMII_API_KEY not configured — submit manually via Termii dashboard.",
+			submitted: false,
+			success: true,
+		};
+	}
+
+	try {
+		const res = await fetch("https://v3.api.termii.com/api/sender-id/request", {
+			body: JSON.stringify({
+				api_key: termiiApiKey,
+				company: companyName,
+				sender_id: senderId,
+				usecase:
+					"Sending transactional and informational messages to our members and customers",
+			}),
+			headers: { "Content-Type": "application/json" },
+			method: "POST",
+		});
+
+		const data = (await res.json()) as { code?: string; message?: string };
+
+		if (!res.ok) {
+			return {
+				reason: data.message ?? `Termii returned ${res.status}`,
+				submitted: true,
+				success: false,
+			};
+		}
+
+		return {
+			reason:
+				data.message ??
+				"Submitted — Termii & NCC approval takes 2–5 business days.",
+			senderId,
+			submitted: true,
+			success: true,
+		};
+	} catch (err) {
+		const error = err instanceof Error ? err.message : String(err);
+		return {
+			reason: `Network error submitting to Termii: ${error}`,
+			submitted: false,
+			success: false,
+		};
+	}
+}
+
 // ─── completeOnboarding ───────────────────────────────────────────────────────
 
 export const completeOnboarding = protectedProcedure
@@ -123,69 +188,105 @@ export const completeOnboarding = protectedProcedure
 			...profileFields
 		} = input;
 
-		if (name) {
-			await context.db.user.update({
-				data: { name },
-				where: { id: context.session.user.id },
-			});
-		}
+		const userId = context.session.user.id;
 
-		const profile = await context.db.userProfile.upsert({
-			create: {
-				onboardingComplete: complete,
-				onboardingStep: step,
-				userId: context.session.user.id,
-				...profileFields,
-			},
-			update: {
-				onboardingComplete: complete,
-				onboardingStep: step,
-				...profileFields,
-			},
-			where: { userId: context.session.user.id },
+		const profile = await context.db.$transaction(async (tx) => {
+			if (name) {
+				await tx.user.update({
+					data: { name },
+					where: { id: userId },
+				});
+			}
+
+			const role = profileFields.role ?? "admin";
+			const timezone = profileFields.timezone ?? "Africa/Lagos";
+
+			const userProfile = await tx.userProfile.upsert({
+				create: {
+					onboardingComplete: complete,
+					onboardingStep: step,
+					role,
+					timezone,
+					userId,
+					...profileFields,
+				},
+				update: {
+					onboardingComplete: complete,
+					onboardingStep: step,
+					role,
+					timezone,
+					...profileFields,
+				},
+				where: { userId },
+			});
+
+			const cleanId = smsSenderId?.replace(/[^a-zA-Z0-9]/g, "").slice(0, 11);
+			if (cleanId && cleanId.length >= 3 && usePlatformSender === false) {
+				const existing = await tx.senderNumber.findFirst({
+					where: { channel: "sms", userId },
+				});
+				if (existing) {
+					await tx.senderNumber.update({
+						data: {
+							isActive: false,
+							label: "Primary SMS Sender ID",
+							number: cleanId,
+						},
+						where: { id: existing.id },
+					});
+				} else {
+					await tx.senderNumber.create({
+						data: {
+							channel: "sms",
+							isActive: false,
+							label: "Primary SMS Sender ID",
+							number: cleanId,
+							userId,
+						},
+					});
+				}
+			}
+
+			if (complete) {
+				// Initialize zero-balance wallet atomically with onboarding
+				await tx.wallet.upsert({
+					create: {
+						balanceKobo: 0,
+						heldKobo: 0,
+						userId,
+					},
+					update: {},
+					where: { userId },
+				});
+
+				// Seed default scenario templates for the organization type
+				await seedScenarioTemplates(tx, userId, profileFields.orgType);
+			}
+
+			return userProfile;
 		});
 
-		// Save sender ID when user explicitly chose "register my own" (usePlatformSender=false)
+		// Submit to Termii after database transaction completes (non-blocking)
+		const cleanSenderId = smsSenderId
+			?.replace(/[^a-zA-Z0-9]/g, "")
+			.slice(0, 11);
 		if (
-			smsSenderId &&
-			smsSenderId.trim().length >= 3 &&
+			cleanSenderId &&
+			cleanSenderId.length >= 3 &&
 			usePlatformSender === false
 		) {
-			const cleanId = smsSenderId.replace(/[^a-zA-Z0-9]/g, "").slice(0, 11);
-			const existing = await context.db.senderNumber.findFirst({
-				where: { channel: "sms", userId: context.session.user.id },
-			});
-			if (existing) {
-				await context.db.senderNumber.update({
-					data: {
-						isActive: false,
-						label: "Primary SMS Sender ID",
-						number: cleanId,
-					},
-					where: { id: existing.id },
+			try {
+				await submitSenderIdToTermii({
+					companyName: profileFields.orgName ?? "Velocast User",
+					senderId: cleanSenderId,
 				});
-			} else {
-				await context.db.senderNumber.create({
-					data: {
-						channel: "sms",
-						isActive: false,
-						label: "Primary SMS Sender ID",
-						number: cleanId,
-						userId: context.session.user.id,
-					},
-				});
+			} catch {
+				// Termii submission failure or delay does not block onboarding completion
 			}
 		}
 
-		if (complete) {
-			await seedScenarioTemplates(
-				context.db,
-				context.session.user.id,
-				profileFields.orgType
-			);
-		}
-
-		invalidate(context.session.user.id, "profile.get");
+		invalidate(userId, "profile.get");
+		invalidate(userId, "profile.getSenderNumbers");
 		return { complete, profile, step, success: true };
 	});
 
@@ -291,72 +392,25 @@ export const submitSenderId = protectedProcedure
 		}
 
 		// 2. Submit to Termii
-		const termiiApiKey = process.env.TERMII_API_KEY;
-		if (!termiiApiKey) {
-			invalidate(context.session.user.id, "profile.getSenderNumbers");
-			return {
-				dbId: dbRecord.id,
-				reason:
-					"Sender ID saved. TERMII_API_KEY not configured — submit manually via Termii dashboard.",
-				senderId,
-				submitted: false,
-				success: true,
-			};
-		}
-
 		const profile = await context.db.userProfile.findUnique({
 			select: { orgName: true },
 			where: { userId: context.session.user.id },
 		});
 		const companyName = profile?.orgName ?? "Velocast User";
 
-		try {
-			const res = await fetch(
-				"https://v3.api.termii.com/api/sender-id/request",
-				{
-					body: JSON.stringify({
-						api_key: termiiApiKey,
-						company: companyName,
-						sender_id: senderId,
-						usecase:
-							"Sending transactional and informational messages to our members and customers",
-					}),
-					headers: { "Content-Type": "application/json" },
-					method: "POST",
-				}
-			);
+		const termiiResult = await submitSenderIdToTermii({
+			companyName,
+			senderId,
+		});
 
-			const data = (await res.json()) as { code?: string; message?: string };
-
-			if (!res.ok) {
-				return {
-					dbId: dbRecord.id,
-					reason: data.message ?? `Termii returned ${res.status}`,
-					senderId,
-					submitted: true,
-					success: false,
-				};
-			}
-
-			return {
-				dbId: dbRecord.id,
-				reason:
-					data.message ??
-					"Submitted — Termii & NCC approval takes 2–5 business days.",
-				senderId,
-				submitted: true,
-				success: true,
-			};
-		} catch (err) {
-			const error = err instanceof Error ? err.message : String(err);
-			return {
-				dbId: dbRecord.id,
-				reason: `Network error submitting to Termii: ${error}`,
-				senderId,
-				submitted: false,
-				success: false,
-			};
-		}
+		invalidate(context.session.user.id, "profile.getSenderNumbers");
+		return {
+			dbId: dbRecord.id,
+			reason: termiiResult.reason,
+			senderId,
+			submitted: termiiResult.submitted,
+			success: termiiResult.success,
+		};
 	});
 
 // ─── deleteSenderNumber ───────────────────────────────────────────────────────

@@ -13,8 +13,7 @@ import type * as Prisma from "../internal/prismaNamespace.ts";
 
 /**
  * Model OrgMember
- * Active team membership — joins a user to an owner's org.
- * ownerId = the account whose wallet + data is being shared.
+ *
  */
 export type OrgMemberModel =
 	runtime.Types.Result.DefaultSelection<Prisma.$OrgMemberPayload>;
@@ -827,13 +826,7 @@ export type $OrgMemberPayload<
 	scalars: runtime.Types.Extensions.GetPayloadResult<
 		{
 			id: string;
-			/**
-			 * The org owner's userId — this is the "workspace"
-			 */
 			ownerId: string;
-			/**
-			 * The member's own userId
-			 */
 			userId: string;
 			role: $Enums.OrgRole;
 			joinedAt: Date;

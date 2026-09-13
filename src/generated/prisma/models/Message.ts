@@ -13,7 +13,7 @@ import type * as Prisma from "../internal/prismaNamespace.ts";
 
 /**
  * Model Message
- * One row per individual message send attempt within a campaign.
+ *
  */
 export type MessageModel =
 	runtime.Types.Result.DefaultSelection<Prisma.$MessagePayload>;
@@ -27,10 +27,14 @@ export type AggregateMessage = {
 };
 
 export type MessageAvgAggregateOutputType = {
+	segments: number | null;
+	costKobo: number | null;
 	retryCount: number | null;
 };
 
 export type MessageSumAggregateOutputType = {
+	segments: number | null;
+	costKobo: number | null;
 	retryCount: number | null;
 };
 
@@ -42,14 +46,16 @@ export type MessageMinAggregateOutputType = {
 	phone: string | null;
 	channel: $Enums.MessageChannel | null;
 	message: string | null;
+	segments: number | null;
+	costKobo: number | null;
 	status: $Enums.MessageStatus | null;
-	twilioSid: string | null;
+	fromNumber: string | null;
+	termiiMessageId: string | null;
+	metaMessageId: string | null;
 	errorMessage: string | null;
 	retryCount: number | null;
 	sentAt: Date | null;
 	deliveredAt: Date | null;
-	fromNumber: string | null;
-	metaMessageId: string | null;
 	createdAt: Date | null;
 };
 
@@ -61,14 +67,16 @@ export type MessageMaxAggregateOutputType = {
 	phone: string | null;
 	channel: $Enums.MessageChannel | null;
 	message: string | null;
+	segments: number | null;
+	costKobo: number | null;
 	status: $Enums.MessageStatus | null;
-	twilioSid: string | null;
+	fromNumber: string | null;
+	termiiMessageId: string | null;
+	metaMessageId: string | null;
 	errorMessage: string | null;
 	retryCount: number | null;
 	sentAt: Date | null;
 	deliveredAt: Date | null;
-	fromNumber: string | null;
-	metaMessageId: string | null;
 	createdAt: Date | null;
 };
 
@@ -80,23 +88,29 @@ export type MessageCountAggregateOutputType = {
 	phone: number;
 	channel: number;
 	message: number;
+	segments: number;
+	costKobo: number;
 	status: number;
-	twilioSid: number;
+	fromNumber: number;
+	termiiMessageId: number;
+	metaMessageId: number;
 	errorMessage: number;
 	retryCount: number;
 	sentAt: number;
 	deliveredAt: number;
-	fromNumber: number;
-	metaMessageId: number;
 	createdAt: number;
 	_all: number;
 };
 
 export type MessageAvgAggregateInputType = {
+	segments?: true;
+	costKobo?: true;
 	retryCount?: true;
 };
 
 export type MessageSumAggregateInputType = {
+	segments?: true;
+	costKobo?: true;
 	retryCount?: true;
 };
 
@@ -108,14 +122,16 @@ export type MessageMinAggregateInputType = {
 	phone?: true;
 	channel?: true;
 	message?: true;
+	segments?: true;
+	costKobo?: true;
 	status?: true;
-	twilioSid?: true;
+	fromNumber?: true;
+	termiiMessageId?: true;
+	metaMessageId?: true;
 	errorMessage?: true;
 	retryCount?: true;
 	sentAt?: true;
 	deliveredAt?: true;
-	fromNumber?: true;
-	metaMessageId?: true;
 	createdAt?: true;
 };
 
@@ -127,14 +143,16 @@ export type MessageMaxAggregateInputType = {
 	phone?: true;
 	channel?: true;
 	message?: true;
+	segments?: true;
+	costKobo?: true;
 	status?: true;
-	twilioSid?: true;
+	fromNumber?: true;
+	termiiMessageId?: true;
+	metaMessageId?: true;
 	errorMessage?: true;
 	retryCount?: true;
 	sentAt?: true;
 	deliveredAt?: true;
-	fromNumber?: true;
-	metaMessageId?: true;
 	createdAt?: true;
 };
 
@@ -146,14 +164,16 @@ export type MessageCountAggregateInputType = {
 	phone?: true;
 	channel?: true;
 	message?: true;
+	segments?: true;
+	costKobo?: true;
 	status?: true;
-	twilioSid?: true;
+	fromNumber?: true;
+	termiiMessageId?: true;
+	metaMessageId?: true;
 	errorMessage?: true;
 	retryCount?: true;
 	sentAt?: true;
 	deliveredAt?: true;
-	fromNumber?: true;
-	metaMessageId?: true;
 	createdAt?: true;
 	_all?: true;
 };
@@ -259,14 +279,16 @@ export type MessageGroupByOutputType = {
 	phone: string;
 	channel: $Enums.MessageChannel;
 	message: string;
+	segments: number;
+	costKobo: number | null;
 	status: $Enums.MessageStatus;
-	twilioSid: string | null;
+	fromNumber: string | null;
+	termiiMessageId: string | null;
+	metaMessageId: string | null;
 	errorMessage: string | null;
 	retryCount: number;
 	sentAt: Date | null;
 	deliveredAt: Date | null;
-	fromNumber: string | null;
-	metaMessageId: string | null;
 	createdAt: Date;
 	_count: MessageCountAggregateOutputType | null;
 	_avg: MessageAvgAggregateOutputType | null;
@@ -299,20 +321,21 @@ export type MessageWhereInput = {
 	phone?: Prisma.StringFilter<"Message"> | string;
 	channel?: Prisma.EnumMessageChannelFilter<"Message"> | $Enums.MessageChannel;
 	message?: Prisma.StringFilter<"Message"> | string;
+	segments?: Prisma.IntFilter<"Message"> | number;
+	costKobo?: Prisma.IntNullableFilter<"Message"> | number | null;
 	status?: Prisma.EnumMessageStatusFilter<"Message"> | $Enums.MessageStatus;
-	twilioSid?: Prisma.StringNullableFilter<"Message"> | string | null;
+	fromNumber?: Prisma.StringNullableFilter<"Message"> | string | null;
+	termiiMessageId?: Prisma.StringNullableFilter<"Message"> | string | null;
+	metaMessageId?: Prisma.StringNullableFilter<"Message"> | string | null;
 	errorMessage?: Prisma.StringNullableFilter<"Message"> | string | null;
 	retryCount?: Prisma.IntFilter<"Message"> | number;
 	sentAt?: Prisma.DateTimeNullableFilter<"Message"> | Date | string | null;
 	deliveredAt?: Prisma.DateTimeNullableFilter<"Message"> | Date | string | null;
-	fromNumber?: Prisma.StringNullableFilter<"Message"> | string | null;
-	metaMessageId?: Prisma.StringNullableFilter<"Message"> | string | null;
 	createdAt?: Prisma.DateTimeFilter<"Message"> | Date | string;
 	campaign?: Prisma.XOR<
 		Prisma.CampaignScalarRelationFilter,
 		Prisma.CampaignWhereInput
 	>;
-	users?: Prisma.UserListRelationFilter;
 };
 
 export type MessageOrderByWithRelationInput = {
@@ -323,22 +346,24 @@ export type MessageOrderByWithRelationInput = {
 	phone?: Prisma.SortOrder;
 	channel?: Prisma.SortOrder;
 	message?: Prisma.SortOrder;
+	segments?: Prisma.SortOrder;
+	costKobo?: Prisma.SortOrderInput | Prisma.SortOrder;
 	status?: Prisma.SortOrder;
-	twilioSid?: Prisma.SortOrderInput | Prisma.SortOrder;
+	fromNumber?: Prisma.SortOrderInput | Prisma.SortOrder;
+	termiiMessageId?: Prisma.SortOrderInput | Prisma.SortOrder;
+	metaMessageId?: Prisma.SortOrderInput | Prisma.SortOrder;
 	errorMessage?: Prisma.SortOrderInput | Prisma.SortOrder;
 	retryCount?: Prisma.SortOrder;
 	sentAt?: Prisma.SortOrderInput | Prisma.SortOrder;
 	deliveredAt?: Prisma.SortOrderInput | Prisma.SortOrder;
-	fromNumber?: Prisma.SortOrderInput | Prisma.SortOrder;
-	metaMessageId?: Prisma.SortOrderInput | Prisma.SortOrder;
 	createdAt?: Prisma.SortOrder;
 	campaign?: Prisma.CampaignOrderByWithRelationInput;
-	users?: Prisma.UserOrderByRelationAggregateInput;
 };
 
 export type MessageWhereUniqueInput = Prisma.AtLeast<
 	{
 		id?: string;
+		termiiMessageId?: string;
 		metaMessageId?: string;
 		AND?: Prisma.MessageWhereInput | Prisma.MessageWhereInput[];
 		OR?: Prisma.MessageWhereInput[];
@@ -351,8 +376,10 @@ export type MessageWhereUniqueInput = Prisma.AtLeast<
 			| Prisma.EnumMessageChannelFilter<"Message">
 			| $Enums.MessageChannel;
 		message?: Prisma.StringFilter<"Message"> | string;
+		segments?: Prisma.IntFilter<"Message"> | number;
+		costKobo?: Prisma.IntNullableFilter<"Message"> | number | null;
 		status?: Prisma.EnumMessageStatusFilter<"Message"> | $Enums.MessageStatus;
-		twilioSid?: Prisma.StringNullableFilter<"Message"> | string | null;
+		fromNumber?: Prisma.StringNullableFilter<"Message"> | string | null;
 		errorMessage?: Prisma.StringNullableFilter<"Message"> | string | null;
 		retryCount?: Prisma.IntFilter<"Message"> | number;
 		sentAt?: Prisma.DateTimeNullableFilter<"Message"> | Date | string | null;
@@ -361,15 +388,13 @@ export type MessageWhereUniqueInput = Prisma.AtLeast<
 			| Date
 			| string
 			| null;
-		fromNumber?: Prisma.StringNullableFilter<"Message"> | string | null;
 		createdAt?: Prisma.DateTimeFilter<"Message"> | Date | string;
 		campaign?: Prisma.XOR<
 			Prisma.CampaignScalarRelationFilter,
 			Prisma.CampaignWhereInput
 		>;
-		users?: Prisma.UserListRelationFilter;
 	},
-	"id" | "metaMessageId"
+	"id" | "termiiMessageId" | "metaMessageId"
 >;
 
 export type MessageOrderByWithAggregationInput = {
@@ -380,14 +405,16 @@ export type MessageOrderByWithAggregationInput = {
 	phone?: Prisma.SortOrder;
 	channel?: Prisma.SortOrder;
 	message?: Prisma.SortOrder;
+	segments?: Prisma.SortOrder;
+	costKobo?: Prisma.SortOrderInput | Prisma.SortOrder;
 	status?: Prisma.SortOrder;
-	twilioSid?: Prisma.SortOrderInput | Prisma.SortOrder;
+	fromNumber?: Prisma.SortOrderInput | Prisma.SortOrder;
+	termiiMessageId?: Prisma.SortOrderInput | Prisma.SortOrder;
+	metaMessageId?: Prisma.SortOrderInput | Prisma.SortOrder;
 	errorMessage?: Prisma.SortOrderInput | Prisma.SortOrder;
 	retryCount?: Prisma.SortOrder;
 	sentAt?: Prisma.SortOrderInput | Prisma.SortOrder;
 	deliveredAt?: Prisma.SortOrderInput | Prisma.SortOrder;
-	fromNumber?: Prisma.SortOrderInput | Prisma.SortOrder;
-	metaMessageId?: Prisma.SortOrderInput | Prisma.SortOrder;
 	createdAt?: Prisma.SortOrder;
 	_count?: Prisma.MessageCountOrderByAggregateInput;
 	_avg?: Prisma.MessageAvgOrderByAggregateInput;
@@ -416,10 +443,20 @@ export type MessageScalarWhereWithAggregatesInput = {
 		| Prisma.EnumMessageChannelWithAggregatesFilter<"Message">
 		| $Enums.MessageChannel;
 	message?: Prisma.StringWithAggregatesFilter<"Message"> | string;
+	segments?: Prisma.IntWithAggregatesFilter<"Message"> | number;
+	costKobo?: Prisma.IntNullableWithAggregatesFilter<"Message"> | number | null;
 	status?:
 		| Prisma.EnumMessageStatusWithAggregatesFilter<"Message">
 		| $Enums.MessageStatus;
-	twilioSid?:
+	fromNumber?:
+		| Prisma.StringNullableWithAggregatesFilter<"Message">
+		| string
+		| null;
+	termiiMessageId?:
+		| Prisma.StringNullableWithAggregatesFilter<"Message">
+		| string
+		| null;
+	metaMessageId?:
 		| Prisma.StringNullableWithAggregatesFilter<"Message">
 		| string
 		| null;
@@ -438,14 +475,6 @@ export type MessageScalarWhereWithAggregatesInput = {
 		| Date
 		| string
 		| null;
-	fromNumber?:
-		| Prisma.StringNullableWithAggregatesFilter<"Message">
-		| string
-		| null;
-	metaMessageId?:
-		| Prisma.StringNullableWithAggregatesFilter<"Message">
-		| string
-		| null;
 	createdAt?: Prisma.DateTimeWithAggregatesFilter<"Message"> | Date | string;
 };
 
@@ -456,17 +485,18 @@ export type MessageCreateInput = {
 	phone: string;
 	channel: $Enums.MessageChannel;
 	message: string;
+	segments?: number;
+	costKobo?: number | null;
 	status?: $Enums.MessageStatus;
-	twilioSid?: string | null;
+	fromNumber?: string | null;
+	termiiMessageId?: string | null;
+	metaMessageId?: string | null;
 	errorMessage?: string | null;
 	retryCount?: number;
 	sentAt?: Date | string | null;
 	deliveredAt?: Date | string | null;
-	fromNumber?: string | null;
-	metaMessageId?: string | null;
 	createdAt?: Date | string;
 	campaign: Prisma.CampaignCreateNestedOneWithoutMessagesInput;
-	users?: Prisma.UserCreateNestedManyWithoutMessagesInput;
 };
 
 export type MessageUncheckedCreateInput = {
@@ -477,16 +507,17 @@ export type MessageUncheckedCreateInput = {
 	phone: string;
 	channel: $Enums.MessageChannel;
 	message: string;
+	segments?: number;
+	costKobo?: number | null;
 	status?: $Enums.MessageStatus;
-	twilioSid?: string | null;
+	fromNumber?: string | null;
+	termiiMessageId?: string | null;
+	metaMessageId?: string | null;
 	errorMessage?: string | null;
 	retryCount?: number;
 	sentAt?: Date | string | null;
 	deliveredAt?: Date | string | null;
-	fromNumber?: string | null;
-	metaMessageId?: string | null;
 	createdAt?: Date | string;
-	users?: Prisma.UserUncheckedCreateNestedManyWithoutMessagesInput;
 };
 
 export type MessageUpdateInput = {
@@ -498,10 +529,20 @@ export type MessageUpdateInput = {
 		| Prisma.EnumMessageChannelFieldUpdateOperationsInput
 		| $Enums.MessageChannel;
 	message?: Prisma.StringFieldUpdateOperationsInput | string;
+	segments?: Prisma.IntFieldUpdateOperationsInput | number;
+	costKobo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 	status?:
 		| Prisma.EnumMessageStatusFieldUpdateOperationsInput
 		| $Enums.MessageStatus;
-	twilioSid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	fromNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	termiiMessageId?:
+		| Prisma.NullableStringFieldUpdateOperationsInput
+		| string
+		| null;
+	metaMessageId?:
+		| Prisma.NullableStringFieldUpdateOperationsInput
+		| string
+		| null;
 	errorMessage?:
 		| Prisma.NullableStringFieldUpdateOperationsInput
 		| string
@@ -517,14 +558,8 @@ export type MessageUpdateInput = {
 		| Date
 		| string
 		| null;
-	fromNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	metaMessageId?:
-		| Prisma.NullableStringFieldUpdateOperationsInput
-		| string
-		| null;
 	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 	campaign?: Prisma.CampaignUpdateOneRequiredWithoutMessagesNestedInput;
-	users?: Prisma.UserUpdateManyWithoutMessagesNestedInput;
 };
 
 export type MessageUncheckedUpdateInput = {
@@ -537,10 +572,20 @@ export type MessageUncheckedUpdateInput = {
 		| Prisma.EnumMessageChannelFieldUpdateOperationsInput
 		| $Enums.MessageChannel;
 	message?: Prisma.StringFieldUpdateOperationsInput | string;
+	segments?: Prisma.IntFieldUpdateOperationsInput | number;
+	costKobo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 	status?:
 		| Prisma.EnumMessageStatusFieldUpdateOperationsInput
 		| $Enums.MessageStatus;
-	twilioSid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	fromNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	termiiMessageId?:
+		| Prisma.NullableStringFieldUpdateOperationsInput
+		| string
+		| null;
+	metaMessageId?:
+		| Prisma.NullableStringFieldUpdateOperationsInput
+		| string
+		| null;
 	errorMessage?:
 		| Prisma.NullableStringFieldUpdateOperationsInput
 		| string
@@ -556,13 +601,7 @@ export type MessageUncheckedUpdateInput = {
 		| Date
 		| string
 		| null;
-	fromNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	metaMessageId?:
-		| Prisma.NullableStringFieldUpdateOperationsInput
-		| string
-		| null;
 	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-	users?: Prisma.UserUncheckedUpdateManyWithoutMessagesNestedInput;
 };
 
 export type MessageCreateManyInput = {
@@ -573,14 +612,16 @@ export type MessageCreateManyInput = {
 	phone: string;
 	channel: $Enums.MessageChannel;
 	message: string;
+	segments?: number;
+	costKobo?: number | null;
 	status?: $Enums.MessageStatus;
-	twilioSid?: string | null;
+	fromNumber?: string | null;
+	termiiMessageId?: string | null;
+	metaMessageId?: string | null;
 	errorMessage?: string | null;
 	retryCount?: number;
 	sentAt?: Date | string | null;
 	deliveredAt?: Date | string | null;
-	fromNumber?: string | null;
-	metaMessageId?: string | null;
 	createdAt?: Date | string;
 };
 
@@ -593,10 +634,20 @@ export type MessageUpdateManyMutationInput = {
 		| Prisma.EnumMessageChannelFieldUpdateOperationsInput
 		| $Enums.MessageChannel;
 	message?: Prisma.StringFieldUpdateOperationsInput | string;
+	segments?: Prisma.IntFieldUpdateOperationsInput | number;
+	costKobo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 	status?:
 		| Prisma.EnumMessageStatusFieldUpdateOperationsInput
 		| $Enums.MessageStatus;
-	twilioSid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	fromNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	termiiMessageId?:
+		| Prisma.NullableStringFieldUpdateOperationsInput
+		| string
+		| null;
+	metaMessageId?:
+		| Prisma.NullableStringFieldUpdateOperationsInput
+		| string
+		| null;
 	errorMessage?:
 		| Prisma.NullableStringFieldUpdateOperationsInput
 		| string
@@ -610,11 +661,6 @@ export type MessageUpdateManyMutationInput = {
 	deliveredAt?:
 		| Prisma.NullableDateTimeFieldUpdateOperationsInput
 		| Date
-		| string
-		| null;
-	fromNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	metaMessageId?:
-		| Prisma.NullableStringFieldUpdateOperationsInput
 		| string
 		| null;
 	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -630,10 +676,20 @@ export type MessageUncheckedUpdateManyInput = {
 		| Prisma.EnumMessageChannelFieldUpdateOperationsInput
 		| $Enums.MessageChannel;
 	message?: Prisma.StringFieldUpdateOperationsInput | string;
+	segments?: Prisma.IntFieldUpdateOperationsInput | number;
+	costKobo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 	status?:
 		| Prisma.EnumMessageStatusFieldUpdateOperationsInput
 		| $Enums.MessageStatus;
-	twilioSid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	fromNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	termiiMessageId?:
+		| Prisma.NullableStringFieldUpdateOperationsInput
+		| string
+		| null;
+	metaMessageId?:
+		| Prisma.NullableStringFieldUpdateOperationsInput
+		| string
+		| null;
 	errorMessage?:
 		| Prisma.NullableStringFieldUpdateOperationsInput
 		| string
@@ -647,11 +703,6 @@ export type MessageUncheckedUpdateManyInput = {
 	deliveredAt?:
 		| Prisma.NullableDateTimeFieldUpdateOperationsInput
 		| Date
-		| string
-		| null;
-	fromNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	metaMessageId?:
-		| Prisma.NullableStringFieldUpdateOperationsInput
 		| string
 		| null;
 	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -675,18 +726,22 @@ export type MessageCountOrderByAggregateInput = {
 	phone?: Prisma.SortOrder;
 	channel?: Prisma.SortOrder;
 	message?: Prisma.SortOrder;
+	segments?: Prisma.SortOrder;
+	costKobo?: Prisma.SortOrder;
 	status?: Prisma.SortOrder;
-	twilioSid?: Prisma.SortOrder;
+	fromNumber?: Prisma.SortOrder;
+	termiiMessageId?: Prisma.SortOrder;
+	metaMessageId?: Prisma.SortOrder;
 	errorMessage?: Prisma.SortOrder;
 	retryCount?: Prisma.SortOrder;
 	sentAt?: Prisma.SortOrder;
 	deliveredAt?: Prisma.SortOrder;
-	fromNumber?: Prisma.SortOrder;
-	metaMessageId?: Prisma.SortOrder;
 	createdAt?: Prisma.SortOrder;
 };
 
 export type MessageAvgOrderByAggregateInput = {
+	segments?: Prisma.SortOrder;
+	costKobo?: Prisma.SortOrder;
 	retryCount?: Prisma.SortOrder;
 };
 
@@ -698,14 +753,16 @@ export type MessageMaxOrderByAggregateInput = {
 	phone?: Prisma.SortOrder;
 	channel?: Prisma.SortOrder;
 	message?: Prisma.SortOrder;
+	segments?: Prisma.SortOrder;
+	costKobo?: Prisma.SortOrder;
 	status?: Prisma.SortOrder;
-	twilioSid?: Prisma.SortOrder;
+	fromNumber?: Prisma.SortOrder;
+	termiiMessageId?: Prisma.SortOrder;
+	metaMessageId?: Prisma.SortOrder;
 	errorMessage?: Prisma.SortOrder;
 	retryCount?: Prisma.SortOrder;
 	sentAt?: Prisma.SortOrder;
 	deliveredAt?: Prisma.SortOrder;
-	fromNumber?: Prisma.SortOrder;
-	metaMessageId?: Prisma.SortOrder;
 	createdAt?: Prisma.SortOrder;
 };
 
@@ -717,109 +774,23 @@ export type MessageMinOrderByAggregateInput = {
 	phone?: Prisma.SortOrder;
 	channel?: Prisma.SortOrder;
 	message?: Prisma.SortOrder;
+	segments?: Prisma.SortOrder;
+	costKobo?: Prisma.SortOrder;
 	status?: Prisma.SortOrder;
-	twilioSid?: Prisma.SortOrder;
+	fromNumber?: Prisma.SortOrder;
+	termiiMessageId?: Prisma.SortOrder;
+	metaMessageId?: Prisma.SortOrder;
 	errorMessage?: Prisma.SortOrder;
 	retryCount?: Prisma.SortOrder;
 	sentAt?: Prisma.SortOrder;
 	deliveredAt?: Prisma.SortOrder;
-	fromNumber?: Prisma.SortOrder;
-	metaMessageId?: Prisma.SortOrder;
 	createdAt?: Prisma.SortOrder;
 };
 
 export type MessageSumOrderByAggregateInput = {
+	segments?: Prisma.SortOrder;
+	costKobo?: Prisma.SortOrder;
 	retryCount?: Prisma.SortOrder;
-};
-
-export type MessageCreateNestedManyWithoutUsersInput = {
-	create?:
-		| Prisma.XOR<
-				Prisma.MessageCreateWithoutUsersInput,
-				Prisma.MessageUncheckedCreateWithoutUsersInput
-		  >
-		| Prisma.MessageCreateWithoutUsersInput[]
-		| Prisma.MessageUncheckedCreateWithoutUsersInput[];
-	connectOrCreate?:
-		| Prisma.MessageCreateOrConnectWithoutUsersInput
-		| Prisma.MessageCreateOrConnectWithoutUsersInput[];
-	connect?: Prisma.MessageWhereUniqueInput | Prisma.MessageWhereUniqueInput[];
-};
-
-export type MessageUncheckedCreateNestedManyWithoutUsersInput = {
-	create?:
-		| Prisma.XOR<
-				Prisma.MessageCreateWithoutUsersInput,
-				Prisma.MessageUncheckedCreateWithoutUsersInput
-		  >
-		| Prisma.MessageCreateWithoutUsersInput[]
-		| Prisma.MessageUncheckedCreateWithoutUsersInput[];
-	connectOrCreate?:
-		| Prisma.MessageCreateOrConnectWithoutUsersInput
-		| Prisma.MessageCreateOrConnectWithoutUsersInput[];
-	connect?: Prisma.MessageWhereUniqueInput | Prisma.MessageWhereUniqueInput[];
-};
-
-export type MessageUpdateManyWithoutUsersNestedInput = {
-	create?:
-		| Prisma.XOR<
-				Prisma.MessageCreateWithoutUsersInput,
-				Prisma.MessageUncheckedCreateWithoutUsersInput
-		  >
-		| Prisma.MessageCreateWithoutUsersInput[]
-		| Prisma.MessageUncheckedCreateWithoutUsersInput[];
-	connectOrCreate?:
-		| Prisma.MessageCreateOrConnectWithoutUsersInput
-		| Prisma.MessageCreateOrConnectWithoutUsersInput[];
-	upsert?:
-		| Prisma.MessageUpsertWithWhereUniqueWithoutUsersInput
-		| Prisma.MessageUpsertWithWhereUniqueWithoutUsersInput[];
-	set?: Prisma.MessageWhereUniqueInput | Prisma.MessageWhereUniqueInput[];
-	disconnect?:
-		| Prisma.MessageWhereUniqueInput
-		| Prisma.MessageWhereUniqueInput[];
-	delete?: Prisma.MessageWhereUniqueInput | Prisma.MessageWhereUniqueInput[];
-	connect?: Prisma.MessageWhereUniqueInput | Prisma.MessageWhereUniqueInput[];
-	update?:
-		| Prisma.MessageUpdateWithWhereUniqueWithoutUsersInput
-		| Prisma.MessageUpdateWithWhereUniqueWithoutUsersInput[];
-	updateMany?:
-		| Prisma.MessageUpdateManyWithWhereWithoutUsersInput
-		| Prisma.MessageUpdateManyWithWhereWithoutUsersInput[];
-	deleteMany?:
-		| Prisma.MessageScalarWhereInput
-		| Prisma.MessageScalarWhereInput[];
-};
-
-export type MessageUncheckedUpdateManyWithoutUsersNestedInput = {
-	create?:
-		| Prisma.XOR<
-				Prisma.MessageCreateWithoutUsersInput,
-				Prisma.MessageUncheckedCreateWithoutUsersInput
-		  >
-		| Prisma.MessageCreateWithoutUsersInput[]
-		| Prisma.MessageUncheckedCreateWithoutUsersInput[];
-	connectOrCreate?:
-		| Prisma.MessageCreateOrConnectWithoutUsersInput
-		| Prisma.MessageCreateOrConnectWithoutUsersInput[];
-	upsert?:
-		| Prisma.MessageUpsertWithWhereUniqueWithoutUsersInput
-		| Prisma.MessageUpsertWithWhereUniqueWithoutUsersInput[];
-	set?: Prisma.MessageWhereUniqueInput | Prisma.MessageWhereUniqueInput[];
-	disconnect?:
-		| Prisma.MessageWhereUniqueInput
-		| Prisma.MessageWhereUniqueInput[];
-	delete?: Prisma.MessageWhereUniqueInput | Prisma.MessageWhereUniqueInput[];
-	connect?: Prisma.MessageWhereUniqueInput | Prisma.MessageWhereUniqueInput[];
-	update?:
-		| Prisma.MessageUpdateWithWhereUniqueWithoutUsersInput
-		| Prisma.MessageUpdateWithWhereUniqueWithoutUsersInput[];
-	updateMany?:
-		| Prisma.MessageUpdateManyWithWhereWithoutUsersInput
-		| Prisma.MessageUpdateManyWithWhereWithoutUsersInput[];
-	deleteMany?:
-		| Prisma.MessageScalarWhereInput
-		| Prisma.MessageScalarWhereInput[];
 };
 
 export type MessageCreateNestedManyWithoutCampaignInput = {
@@ -920,102 +891,6 @@ export type EnumMessageStatusFieldUpdateOperationsInput = {
 	set?: $Enums.MessageStatus;
 };
 
-export type MessageCreateWithoutUsersInput = {
-	id?: string;
-	contactId?: string | null;
-	contactName: string;
-	phone: string;
-	channel: $Enums.MessageChannel;
-	message: string;
-	status?: $Enums.MessageStatus;
-	twilioSid?: string | null;
-	errorMessage?: string | null;
-	retryCount?: number;
-	sentAt?: Date | string | null;
-	deliveredAt?: Date | string | null;
-	fromNumber?: string | null;
-	metaMessageId?: string | null;
-	createdAt?: Date | string;
-	campaign: Prisma.CampaignCreateNestedOneWithoutMessagesInput;
-};
-
-export type MessageUncheckedCreateWithoutUsersInput = {
-	id?: string;
-	campaignId: string;
-	contactId?: string | null;
-	contactName: string;
-	phone: string;
-	channel: $Enums.MessageChannel;
-	message: string;
-	status?: $Enums.MessageStatus;
-	twilioSid?: string | null;
-	errorMessage?: string | null;
-	retryCount?: number;
-	sentAt?: Date | string | null;
-	deliveredAt?: Date | string | null;
-	fromNumber?: string | null;
-	metaMessageId?: string | null;
-	createdAt?: Date | string;
-};
-
-export type MessageCreateOrConnectWithoutUsersInput = {
-	where: Prisma.MessageWhereUniqueInput;
-	create: Prisma.XOR<
-		Prisma.MessageCreateWithoutUsersInput,
-		Prisma.MessageUncheckedCreateWithoutUsersInput
-	>;
-};
-
-export type MessageUpsertWithWhereUniqueWithoutUsersInput = {
-	where: Prisma.MessageWhereUniqueInput;
-	update: Prisma.XOR<
-		Prisma.MessageUpdateWithoutUsersInput,
-		Prisma.MessageUncheckedUpdateWithoutUsersInput
-	>;
-	create: Prisma.XOR<
-		Prisma.MessageCreateWithoutUsersInput,
-		Prisma.MessageUncheckedCreateWithoutUsersInput
-	>;
-};
-
-export type MessageUpdateWithWhereUniqueWithoutUsersInput = {
-	where: Prisma.MessageWhereUniqueInput;
-	data: Prisma.XOR<
-		Prisma.MessageUpdateWithoutUsersInput,
-		Prisma.MessageUncheckedUpdateWithoutUsersInput
-	>;
-};
-
-export type MessageUpdateManyWithWhereWithoutUsersInput = {
-	where: Prisma.MessageScalarWhereInput;
-	data: Prisma.XOR<
-		Prisma.MessageUpdateManyMutationInput,
-		Prisma.MessageUncheckedUpdateManyWithoutUsersInput
-	>;
-};
-
-export type MessageScalarWhereInput = {
-	AND?: Prisma.MessageScalarWhereInput | Prisma.MessageScalarWhereInput[];
-	OR?: Prisma.MessageScalarWhereInput[];
-	NOT?: Prisma.MessageScalarWhereInput | Prisma.MessageScalarWhereInput[];
-	id?: Prisma.StringFilter<"Message"> | string;
-	campaignId?: Prisma.StringFilter<"Message"> | string;
-	contactId?: Prisma.StringNullableFilter<"Message"> | string | null;
-	contactName?: Prisma.StringFilter<"Message"> | string;
-	phone?: Prisma.StringFilter<"Message"> | string;
-	channel?: Prisma.EnumMessageChannelFilter<"Message"> | $Enums.MessageChannel;
-	message?: Prisma.StringFilter<"Message"> | string;
-	status?: Prisma.EnumMessageStatusFilter<"Message"> | $Enums.MessageStatus;
-	twilioSid?: Prisma.StringNullableFilter<"Message"> | string | null;
-	errorMessage?: Prisma.StringNullableFilter<"Message"> | string | null;
-	retryCount?: Prisma.IntFilter<"Message"> | number;
-	sentAt?: Prisma.DateTimeNullableFilter<"Message"> | Date | string | null;
-	deliveredAt?: Prisma.DateTimeNullableFilter<"Message"> | Date | string | null;
-	fromNumber?: Prisma.StringNullableFilter<"Message"> | string | null;
-	metaMessageId?: Prisma.StringNullableFilter<"Message"> | string | null;
-	createdAt?: Prisma.DateTimeFilter<"Message"> | Date | string;
-};
-
 export type MessageCreateWithoutCampaignInput = {
 	id?: string;
 	contactId?: string | null;
@@ -1023,16 +898,17 @@ export type MessageCreateWithoutCampaignInput = {
 	phone: string;
 	channel: $Enums.MessageChannel;
 	message: string;
+	segments?: number;
+	costKobo?: number | null;
 	status?: $Enums.MessageStatus;
-	twilioSid?: string | null;
+	fromNumber?: string | null;
+	termiiMessageId?: string | null;
+	metaMessageId?: string | null;
 	errorMessage?: string | null;
 	retryCount?: number;
 	sentAt?: Date | string | null;
 	deliveredAt?: Date | string | null;
-	fromNumber?: string | null;
-	metaMessageId?: string | null;
 	createdAt?: Date | string;
-	users?: Prisma.UserCreateNestedManyWithoutMessagesInput;
 };
 
 export type MessageUncheckedCreateWithoutCampaignInput = {
@@ -1042,16 +918,17 @@ export type MessageUncheckedCreateWithoutCampaignInput = {
 	phone: string;
 	channel: $Enums.MessageChannel;
 	message: string;
+	segments?: number;
+	costKobo?: number | null;
 	status?: $Enums.MessageStatus;
-	twilioSid?: string | null;
+	fromNumber?: string | null;
+	termiiMessageId?: string | null;
+	metaMessageId?: string | null;
 	errorMessage?: string | null;
 	retryCount?: number;
 	sentAt?: Date | string | null;
 	deliveredAt?: Date | string | null;
-	fromNumber?: string | null;
-	metaMessageId?: string | null;
 	createdAt?: Date | string;
-	users?: Prisma.UserUncheckedCreateNestedManyWithoutMessagesInput;
 };
 
 export type MessageCreateOrConnectWithoutCampaignInput = {
@@ -1097,115 +974,28 @@ export type MessageUpdateManyWithWhereWithoutCampaignInput = {
 	>;
 };
 
-export type MessageUpdateWithoutUsersInput = {
-	id?: Prisma.StringFieldUpdateOperationsInput | string;
-	contactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	contactName?: Prisma.StringFieldUpdateOperationsInput | string;
-	phone?: Prisma.StringFieldUpdateOperationsInput | string;
-	channel?:
-		| Prisma.EnumMessageChannelFieldUpdateOperationsInput
-		| $Enums.MessageChannel;
-	message?: Prisma.StringFieldUpdateOperationsInput | string;
-	status?:
-		| Prisma.EnumMessageStatusFieldUpdateOperationsInput
-		| $Enums.MessageStatus;
-	twilioSid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	errorMessage?:
-		| Prisma.NullableStringFieldUpdateOperationsInput
-		| string
-		| null;
-	retryCount?: Prisma.IntFieldUpdateOperationsInput | number;
-	sentAt?:
-		| Prisma.NullableDateTimeFieldUpdateOperationsInput
-		| Date
-		| string
-		| null;
-	deliveredAt?:
-		| Prisma.NullableDateTimeFieldUpdateOperationsInput
-		| Date
-		| string
-		| null;
-	fromNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	metaMessageId?:
-		| Prisma.NullableStringFieldUpdateOperationsInput
-		| string
-		| null;
-	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-	campaign?: Prisma.CampaignUpdateOneRequiredWithoutMessagesNestedInput;
-};
-
-export type MessageUncheckedUpdateWithoutUsersInput = {
-	id?: Prisma.StringFieldUpdateOperationsInput | string;
-	campaignId?: Prisma.StringFieldUpdateOperationsInput | string;
-	contactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	contactName?: Prisma.StringFieldUpdateOperationsInput | string;
-	phone?: Prisma.StringFieldUpdateOperationsInput | string;
-	channel?:
-		| Prisma.EnumMessageChannelFieldUpdateOperationsInput
-		| $Enums.MessageChannel;
-	message?: Prisma.StringFieldUpdateOperationsInput | string;
-	status?:
-		| Prisma.EnumMessageStatusFieldUpdateOperationsInput
-		| $Enums.MessageStatus;
-	twilioSid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	errorMessage?:
-		| Prisma.NullableStringFieldUpdateOperationsInput
-		| string
-		| null;
-	retryCount?: Prisma.IntFieldUpdateOperationsInput | number;
-	sentAt?:
-		| Prisma.NullableDateTimeFieldUpdateOperationsInput
-		| Date
-		| string
-		| null;
-	deliveredAt?:
-		| Prisma.NullableDateTimeFieldUpdateOperationsInput
-		| Date
-		| string
-		| null;
-	fromNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	metaMessageId?:
-		| Prisma.NullableStringFieldUpdateOperationsInput
-		| string
-		| null;
-	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-};
-
-export type MessageUncheckedUpdateManyWithoutUsersInput = {
-	id?: Prisma.StringFieldUpdateOperationsInput | string;
-	campaignId?: Prisma.StringFieldUpdateOperationsInput | string;
-	contactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	contactName?: Prisma.StringFieldUpdateOperationsInput | string;
-	phone?: Prisma.StringFieldUpdateOperationsInput | string;
-	channel?:
-		| Prisma.EnumMessageChannelFieldUpdateOperationsInput
-		| $Enums.MessageChannel;
-	message?: Prisma.StringFieldUpdateOperationsInput | string;
-	status?:
-		| Prisma.EnumMessageStatusFieldUpdateOperationsInput
-		| $Enums.MessageStatus;
-	twilioSid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	errorMessage?:
-		| Prisma.NullableStringFieldUpdateOperationsInput
-		| string
-		| null;
-	retryCount?: Prisma.IntFieldUpdateOperationsInput | number;
-	sentAt?:
-		| Prisma.NullableDateTimeFieldUpdateOperationsInput
-		| Date
-		| string
-		| null;
-	deliveredAt?:
-		| Prisma.NullableDateTimeFieldUpdateOperationsInput
-		| Date
-		| string
-		| null;
-	fromNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	metaMessageId?:
-		| Prisma.NullableStringFieldUpdateOperationsInput
-		| string
-		| null;
-	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+export type MessageScalarWhereInput = {
+	AND?: Prisma.MessageScalarWhereInput | Prisma.MessageScalarWhereInput[];
+	OR?: Prisma.MessageScalarWhereInput[];
+	NOT?: Prisma.MessageScalarWhereInput | Prisma.MessageScalarWhereInput[];
+	id?: Prisma.StringFilter<"Message"> | string;
+	campaignId?: Prisma.StringFilter<"Message"> | string;
+	contactId?: Prisma.StringNullableFilter<"Message"> | string | null;
+	contactName?: Prisma.StringFilter<"Message"> | string;
+	phone?: Prisma.StringFilter<"Message"> | string;
+	channel?: Prisma.EnumMessageChannelFilter<"Message"> | $Enums.MessageChannel;
+	message?: Prisma.StringFilter<"Message"> | string;
+	segments?: Prisma.IntFilter<"Message"> | number;
+	costKobo?: Prisma.IntNullableFilter<"Message"> | number | null;
+	status?: Prisma.EnumMessageStatusFilter<"Message"> | $Enums.MessageStatus;
+	fromNumber?: Prisma.StringNullableFilter<"Message"> | string | null;
+	termiiMessageId?: Prisma.StringNullableFilter<"Message"> | string | null;
+	metaMessageId?: Prisma.StringNullableFilter<"Message"> | string | null;
+	errorMessage?: Prisma.StringNullableFilter<"Message"> | string | null;
+	retryCount?: Prisma.IntFilter<"Message"> | number;
+	sentAt?: Prisma.DateTimeNullableFilter<"Message"> | Date | string | null;
+	deliveredAt?: Prisma.DateTimeNullableFilter<"Message"> | Date | string | null;
+	createdAt?: Prisma.DateTimeFilter<"Message"> | Date | string;
 };
 
 export type MessageCreateManyCampaignInput = {
@@ -1215,14 +1005,16 @@ export type MessageCreateManyCampaignInput = {
 	phone: string;
 	channel: $Enums.MessageChannel;
 	message: string;
+	segments?: number;
+	costKobo?: number | null;
 	status?: $Enums.MessageStatus;
-	twilioSid?: string | null;
+	fromNumber?: string | null;
+	termiiMessageId?: string | null;
+	metaMessageId?: string | null;
 	errorMessage?: string | null;
 	retryCount?: number;
 	sentAt?: Date | string | null;
 	deliveredAt?: Date | string | null;
-	fromNumber?: string | null;
-	metaMessageId?: string | null;
 	createdAt?: Date | string;
 };
 
@@ -1235,10 +1027,20 @@ export type MessageUpdateWithoutCampaignInput = {
 		| Prisma.EnumMessageChannelFieldUpdateOperationsInput
 		| $Enums.MessageChannel;
 	message?: Prisma.StringFieldUpdateOperationsInput | string;
+	segments?: Prisma.IntFieldUpdateOperationsInput | number;
+	costKobo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 	status?:
 		| Prisma.EnumMessageStatusFieldUpdateOperationsInput
 		| $Enums.MessageStatus;
-	twilioSid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	fromNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	termiiMessageId?:
+		| Prisma.NullableStringFieldUpdateOperationsInput
+		| string
+		| null;
+	metaMessageId?:
+		| Prisma.NullableStringFieldUpdateOperationsInput
+		| string
+		| null;
 	errorMessage?:
 		| Prisma.NullableStringFieldUpdateOperationsInput
 		| string
@@ -1254,13 +1056,7 @@ export type MessageUpdateWithoutCampaignInput = {
 		| Date
 		| string
 		| null;
-	fromNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	metaMessageId?:
-		| Prisma.NullableStringFieldUpdateOperationsInput
-		| string
-		| null;
 	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-	users?: Prisma.UserUpdateManyWithoutMessagesNestedInput;
 };
 
 export type MessageUncheckedUpdateWithoutCampaignInput = {
@@ -1272,10 +1068,20 @@ export type MessageUncheckedUpdateWithoutCampaignInput = {
 		| Prisma.EnumMessageChannelFieldUpdateOperationsInput
 		| $Enums.MessageChannel;
 	message?: Prisma.StringFieldUpdateOperationsInput | string;
+	segments?: Prisma.IntFieldUpdateOperationsInput | number;
+	costKobo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 	status?:
 		| Prisma.EnumMessageStatusFieldUpdateOperationsInput
 		| $Enums.MessageStatus;
-	twilioSid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	fromNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	termiiMessageId?:
+		| Prisma.NullableStringFieldUpdateOperationsInput
+		| string
+		| null;
+	metaMessageId?:
+		| Prisma.NullableStringFieldUpdateOperationsInput
+		| string
+		| null;
 	errorMessage?:
 		| Prisma.NullableStringFieldUpdateOperationsInput
 		| string
@@ -1291,13 +1097,7 @@ export type MessageUncheckedUpdateWithoutCampaignInput = {
 		| Date
 		| string
 		| null;
-	fromNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	metaMessageId?:
-		| Prisma.NullableStringFieldUpdateOperationsInput
-		| string
-		| null;
 	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-	users?: Prisma.UserUncheckedUpdateManyWithoutMessagesNestedInput;
 };
 
 export type MessageUncheckedUpdateManyWithoutCampaignInput = {
@@ -1309,10 +1109,20 @@ export type MessageUncheckedUpdateManyWithoutCampaignInput = {
 		| Prisma.EnumMessageChannelFieldUpdateOperationsInput
 		| $Enums.MessageChannel;
 	message?: Prisma.StringFieldUpdateOperationsInput | string;
+	segments?: Prisma.IntFieldUpdateOperationsInput | number;
+	costKobo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null;
 	status?:
 		| Prisma.EnumMessageStatusFieldUpdateOperationsInput
 		| $Enums.MessageStatus;
-	twilioSid?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	fromNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	termiiMessageId?:
+		| Prisma.NullableStringFieldUpdateOperationsInput
+		| string
+		| null;
+	metaMessageId?:
+		| Prisma.NullableStringFieldUpdateOperationsInput
+		| string
+		| null;
 	errorMessage?:
 		| Prisma.NullableStringFieldUpdateOperationsInput
 		| string
@@ -1328,50 +1138,7 @@ export type MessageUncheckedUpdateManyWithoutCampaignInput = {
 		| Date
 		| string
 		| null;
-	fromNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	metaMessageId?:
-		| Prisma.NullableStringFieldUpdateOperationsInput
-		| string
-		| null;
 	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-};
-
-/**
- * Count Type MessageCountOutputType
- */
-
-export type MessageCountOutputType = {
-	users: number;
-};
-
-export type MessageCountOutputTypeSelect<
-	ExtArgs extends
-		runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
-> = {
-	users?: boolean | MessageCountOutputTypeCountUsersArgs;
-};
-
-/**
- * MessageCountOutputType without action
- */
-export type MessageCountOutputTypeDefaultArgs<
-	ExtArgs extends
-		runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
-> = {
-	/**
-	 * Select specific fields to fetch from the MessageCountOutputType
-	 */
-	select?: Prisma.MessageCountOutputTypeSelect<ExtArgs> | null;
-};
-
-/**
- * MessageCountOutputType without action
- */
-export type MessageCountOutputTypeCountUsersArgs<
-	ExtArgs extends
-		runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
-> = {
-	where?: Prisma.UserWhereInput;
 };
 
 export type MessageSelect<
@@ -1386,18 +1153,18 @@ export type MessageSelect<
 		phone?: boolean;
 		channel?: boolean;
 		message?: boolean;
+		segments?: boolean;
+		costKobo?: boolean;
 		status?: boolean;
-		twilioSid?: boolean;
+		fromNumber?: boolean;
+		termiiMessageId?: boolean;
+		metaMessageId?: boolean;
 		errorMessage?: boolean;
 		retryCount?: boolean;
 		sentAt?: boolean;
 		deliveredAt?: boolean;
-		fromNumber?: boolean;
-		metaMessageId?: boolean;
 		createdAt?: boolean;
 		campaign?: boolean | Prisma.CampaignDefaultArgs<ExtArgs>;
-		users?: boolean | Prisma.Message$usersArgs<ExtArgs>;
-		_count?: boolean | Prisma.MessageCountOutputTypeDefaultArgs<ExtArgs>;
 	},
 	ExtArgs["result"]["message"]
 >;
@@ -1414,14 +1181,16 @@ export type MessageSelectCreateManyAndReturn<
 		phone?: boolean;
 		channel?: boolean;
 		message?: boolean;
+		segments?: boolean;
+		costKobo?: boolean;
 		status?: boolean;
-		twilioSid?: boolean;
+		fromNumber?: boolean;
+		termiiMessageId?: boolean;
+		metaMessageId?: boolean;
 		errorMessage?: boolean;
 		retryCount?: boolean;
 		sentAt?: boolean;
 		deliveredAt?: boolean;
-		fromNumber?: boolean;
-		metaMessageId?: boolean;
 		createdAt?: boolean;
 		campaign?: boolean | Prisma.CampaignDefaultArgs<ExtArgs>;
 	},
@@ -1440,14 +1209,16 @@ export type MessageSelectUpdateManyAndReturn<
 		phone?: boolean;
 		channel?: boolean;
 		message?: boolean;
+		segments?: boolean;
+		costKobo?: boolean;
 		status?: boolean;
-		twilioSid?: boolean;
+		fromNumber?: boolean;
+		termiiMessageId?: boolean;
+		metaMessageId?: boolean;
 		errorMessage?: boolean;
 		retryCount?: boolean;
 		sentAt?: boolean;
 		deliveredAt?: boolean;
-		fromNumber?: boolean;
-		metaMessageId?: boolean;
 		createdAt?: boolean;
 		campaign?: boolean | Prisma.CampaignDefaultArgs<ExtArgs>;
 	},
@@ -1462,14 +1233,16 @@ export type MessageSelectScalar = {
 	phone?: boolean;
 	channel?: boolean;
 	message?: boolean;
+	segments?: boolean;
+	costKobo?: boolean;
 	status?: boolean;
-	twilioSid?: boolean;
+	fromNumber?: boolean;
+	termiiMessageId?: boolean;
+	metaMessageId?: boolean;
 	errorMessage?: boolean;
 	retryCount?: boolean;
 	sentAt?: boolean;
 	deliveredAt?: boolean;
-	fromNumber?: boolean;
-	metaMessageId?: boolean;
 	createdAt?: boolean;
 };
 
@@ -1484,14 +1257,16 @@ export type MessageOmit<
 	| "phone"
 	| "channel"
 	| "message"
+	| "segments"
+	| "costKobo"
 	| "status"
-	| "twilioSid"
+	| "fromNumber"
+	| "termiiMessageId"
+	| "metaMessageId"
 	| "errorMessage"
 	| "retryCount"
 	| "sentAt"
 	| "deliveredAt"
-	| "fromNumber"
-	| "metaMessageId"
 	| "createdAt",
 	ExtArgs["result"]["message"]
 >;
@@ -1500,8 +1275,6 @@ export type MessageInclude<
 		runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
 	campaign?: boolean | Prisma.CampaignDefaultArgs<ExtArgs>;
-	users?: boolean | Prisma.Message$usersArgs<ExtArgs>;
-	_count?: boolean | Prisma.MessageCountOutputTypeDefaultArgs<ExtArgs>;
 };
 export type MessageIncludeCreateManyAndReturn<
 	ExtArgs extends
@@ -1523,7 +1296,6 @@ export type $MessagePayload<
 	name: "Message";
 	objects: {
 		campaign: Prisma.$CampaignPayload<ExtArgs>;
-		users: Prisma.$UserPayload<ExtArgs>[];
 	};
 	scalars: runtime.Types.Extensions.GetPayloadResult<
 		{
@@ -1534,14 +1306,16 @@ export type $MessagePayload<
 			phone: string;
 			channel: $Enums.MessageChannel;
 			message: string;
+			segments: number;
+			costKobo: number | null;
 			status: $Enums.MessageStatus;
-			twilioSid: string | null;
+			fromNumber: string | null;
+			termiiMessageId: string | null;
+			metaMessageId: string | null;
 			errorMessage: string | null;
 			retryCount: number;
 			sentAt: Date | null;
 			deliveredAt: Date | null;
-			fromNumber: string | null;
-			metaMessageId: string | null;
 			createdAt: Date;
 		},
 		ExtArgs["result"]["message"]
@@ -2141,17 +1915,6 @@ export interface Prisma__MessageClient<
 			| undefined
 			| null
 	): runtime.Types.Utils.JsPromise<TResult1 | TResult2>;
-	users<T extends Prisma.Message$usersArgs<ExtArgs> = {}>(
-		args?: Prisma.Subset<T, Prisma.Message$usersArgs<ExtArgs>>
-	): Prisma.PrismaPromise<
-		| runtime.Types.Result.GetResult<
-				Prisma.$UserPayload<ExtArgs>,
-				T,
-				"findMany",
-				GlobalOmitOptions
-		  >
-		| Null
-	>;
 	readonly [Symbol.toStringTag]: "PrismaPromise";
 }
 
@@ -2163,6 +1926,7 @@ export interface MessageFieldRefs {
 	readonly channel: Prisma.FieldRef<"Message", "MessageChannel">;
 	readonly contactId: Prisma.FieldRef<"Message", "String">;
 	readonly contactName: Prisma.FieldRef<"Message", "String">;
+	readonly costKobo: Prisma.FieldRef<"Message", "Int">;
 	readonly createdAt: Prisma.FieldRef<"Message", "DateTime">;
 	readonly deliveredAt: Prisma.FieldRef<"Message", "DateTime">;
 	readonly errorMessage: Prisma.FieldRef<"Message", "String">;
@@ -2172,9 +1936,10 @@ export interface MessageFieldRefs {
 	readonly metaMessageId: Prisma.FieldRef<"Message", "String">;
 	readonly phone: Prisma.FieldRef<"Message", "String">;
 	readonly retryCount: Prisma.FieldRef<"Message", "Int">;
+	readonly segments: Prisma.FieldRef<"Message", "Int">;
 	readonly sentAt: Prisma.FieldRef<"Message", "DateTime">;
 	readonly status: Prisma.FieldRef<"Message", "MessageStatus">;
-	readonly twilioSid: Prisma.FieldRef<"Message", "String">;
+	readonly termiiMessageId: Prisma.FieldRef<"Message", "String">;
 }
 
 // Custom InputTypes
@@ -2638,35 +2403,6 @@ export type MessageDeleteManyArgs<
 	 * Limit how many Messages to delete.
 	 */
 	limit?: number;
-};
-
-/**
- * Message.users
- */
-export type Message$usersArgs<
-	ExtArgs extends
-		runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
-> = {
-	/**
-	 * Select specific fields to fetch from the User
-	 */
-	select?: Prisma.UserSelect<ExtArgs> | null;
-	/**
-	 * Omit specific fields from the User
-	 */
-	omit?: Prisma.UserOmit<ExtArgs> | null;
-	/**
-	 * Choose, which related nodes to fetch as well
-	 */
-	include?: Prisma.UserInclude<ExtArgs> | null;
-	where?: Prisma.UserWhereInput;
-	orderBy?:
-		| Prisma.UserOrderByWithRelationInput
-		| Prisma.UserOrderByWithRelationInput[];
-	cursor?: Prisma.UserWhereUniqueInput;
-	take?: number;
-	skip?: number;
-	distinct?: Prisma.UserScalarFieldEnum | Prisma.UserScalarFieldEnum[];
 };
 
 /**

@@ -13,7 +13,7 @@ import type * as Prisma from "../internal/prismaNamespace.ts";
 
 /**
  * Model Transaction
- * Immutable ledger entry — one row per financial event.
+ *
  */
 export type TransactionModel =
 	runtime.Types.Result.DefaultSelection<Prisma.$TransactionPayload>;
@@ -76,6 +76,7 @@ export type TransactionCountAggregateOutputType = {
 	description: number;
 	reference: number;
 	paystackRef: number;
+	metadata: number;
 	campaignId: number;
 	messageId: number;
 	createdAt: number;
@@ -132,6 +133,7 @@ export type TransactionCountAggregateInputType = {
 	description?: true;
 	reference?: true;
 	paystackRef?: true;
+	metadata?: true;
 	campaignId?: true;
 	messageId?: true;
 	createdAt?: true;
@@ -241,6 +243,7 @@ export type TransactionGroupByOutputType = {
 	description: string;
 	reference: string;
 	paystackRef: string | null;
+	metadata: runtime.JsonValue | null;
 	campaignId: string | null;
 	messageId: string | null;
 	createdAt: Date;
@@ -281,6 +284,7 @@ export type TransactionWhereInput = {
 	description?: Prisma.StringFilter<"Transaction"> | string;
 	reference?: Prisma.StringFilter<"Transaction"> | string;
 	paystackRef?: Prisma.StringNullableFilter<"Transaction"> | string | null;
+	metadata?: Prisma.JsonNullableFilter<"Transaction">;
 	campaignId?: Prisma.StringNullableFilter<"Transaction"> | string | null;
 	messageId?: Prisma.StringNullableFilter<"Transaction"> | string | null;
 	createdAt?: Prisma.DateTimeFilter<"Transaction"> | Date | string;
@@ -288,6 +292,10 @@ export type TransactionWhereInput = {
 		Prisma.WalletScalarRelationFilter,
 		Prisma.WalletWhereInput
 	>;
+	campaign?: Prisma.XOR<
+		Prisma.CampaignNullableScalarRelationFilter,
+		Prisma.CampaignWhereInput
+	> | null;
 };
 
 export type TransactionOrderByWithRelationInput = {
@@ -300,16 +308,19 @@ export type TransactionOrderByWithRelationInput = {
 	description?: Prisma.SortOrder;
 	reference?: Prisma.SortOrder;
 	paystackRef?: Prisma.SortOrderInput | Prisma.SortOrder;
+	metadata?: Prisma.SortOrderInput | Prisma.SortOrder;
 	campaignId?: Prisma.SortOrderInput | Prisma.SortOrder;
 	messageId?: Prisma.SortOrderInput | Prisma.SortOrder;
 	createdAt?: Prisma.SortOrder;
 	wallet?: Prisma.WalletOrderByWithRelationInput;
+	campaign?: Prisma.CampaignOrderByWithRelationInput;
 };
 
 export type TransactionWhereUniqueInput = Prisma.AtLeast<
 	{
 		id?: string;
 		reference?: string;
+		paystackRef?: string;
 		AND?: Prisma.TransactionWhereInput | Prisma.TransactionWhereInput[];
 		OR?: Prisma.TransactionWhereInput[];
 		NOT?: Prisma.TransactionWhereInput | Prisma.TransactionWhereInput[];
@@ -323,7 +334,7 @@ export type TransactionWhereUniqueInput = Prisma.AtLeast<
 		amountKobo?: Prisma.IntFilter<"Transaction"> | number;
 		balanceAfterKobo?: Prisma.IntFilter<"Transaction"> | number;
 		description?: Prisma.StringFilter<"Transaction"> | string;
-		paystackRef?: Prisma.StringNullableFilter<"Transaction"> | string | null;
+		metadata?: Prisma.JsonNullableFilter<"Transaction">;
 		campaignId?: Prisma.StringNullableFilter<"Transaction"> | string | null;
 		messageId?: Prisma.StringNullableFilter<"Transaction"> | string | null;
 		createdAt?: Prisma.DateTimeFilter<"Transaction"> | Date | string;
@@ -331,8 +342,12 @@ export type TransactionWhereUniqueInput = Prisma.AtLeast<
 			Prisma.WalletScalarRelationFilter,
 			Prisma.WalletWhereInput
 		>;
+		campaign?: Prisma.XOR<
+			Prisma.CampaignNullableScalarRelationFilter,
+			Prisma.CampaignWhereInput
+		> | null;
 	},
-	"id" | "reference"
+	"id" | "reference" | "paystackRef"
 >;
 
 export type TransactionOrderByWithAggregationInput = {
@@ -345,6 +360,7 @@ export type TransactionOrderByWithAggregationInput = {
 	description?: Prisma.SortOrder;
 	reference?: Prisma.SortOrder;
 	paystackRef?: Prisma.SortOrderInput | Prisma.SortOrder;
+	metadata?: Prisma.SortOrderInput | Prisma.SortOrder;
 	campaignId?: Prisma.SortOrderInput | Prisma.SortOrder;
 	messageId?: Prisma.SortOrderInput | Prisma.SortOrder;
 	createdAt?: Prisma.SortOrder;
@@ -379,6 +395,7 @@ export type TransactionScalarWhereWithAggregatesInput = {
 		| Prisma.StringNullableWithAggregatesFilter<"Transaction">
 		| string
 		| null;
+	metadata?: Prisma.JsonNullableWithAggregatesFilter<"Transaction">;
 	campaignId?:
 		| Prisma.StringNullableWithAggregatesFilter<"Transaction">
 		| string
@@ -402,10 +419,11 @@ export type TransactionCreateInput = {
 	description: string;
 	reference: string;
 	paystackRef?: string | null;
-	campaignId?: string | null;
+	metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
 	messageId?: string | null;
 	createdAt?: Date | string;
 	wallet: Prisma.WalletCreateNestedOneWithoutTransactionsInput;
+	campaign?: Prisma.CampaignCreateNestedOneWithoutTransactionsInput;
 };
 
 export type TransactionUncheckedCreateInput = {
@@ -418,6 +436,7 @@ export type TransactionUncheckedCreateInput = {
 	description: string;
 	reference: string;
 	paystackRef?: string | null;
+	metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
 	campaignId?: string | null;
 	messageId?: string | null;
 	createdAt?: Date | string;
@@ -436,10 +455,11 @@ export type TransactionUpdateInput = {
 	description?: Prisma.StringFieldUpdateOperationsInput | string;
 	reference?: Prisma.StringFieldUpdateOperationsInput | string;
 	paystackRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	campaignId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
 	messageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 	wallet?: Prisma.WalletUpdateOneRequiredWithoutTransactionsNestedInput;
+	campaign?: Prisma.CampaignUpdateOneWithoutTransactionsNestedInput;
 };
 
 export type TransactionUncheckedUpdateInput = {
@@ -456,6 +476,7 @@ export type TransactionUncheckedUpdateInput = {
 	description?: Prisma.StringFieldUpdateOperationsInput | string;
 	reference?: Prisma.StringFieldUpdateOperationsInput | string;
 	paystackRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
 	campaignId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	messageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -471,6 +492,7 @@ export type TransactionCreateManyInput = {
 	description: string;
 	reference: string;
 	paystackRef?: string | null;
+	metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
 	campaignId?: string | null;
 	messageId?: string | null;
 	createdAt?: Date | string;
@@ -489,7 +511,7 @@ export type TransactionUpdateManyMutationInput = {
 	description?: Prisma.StringFieldUpdateOperationsInput | string;
 	reference?: Prisma.StringFieldUpdateOperationsInput | string;
 	paystackRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	campaignId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
 	messageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -508,6 +530,7 @@ export type TransactionUncheckedUpdateManyInput = {
 	description?: Prisma.StringFieldUpdateOperationsInput | string;
 	reference?: Prisma.StringFieldUpdateOperationsInput | string;
 	paystackRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
 	campaignId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	messageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -533,6 +556,7 @@ export type TransactionCountOrderByAggregateInput = {
 	description?: Prisma.SortOrder;
 	reference?: Prisma.SortOrder;
 	paystackRef?: Prisma.SortOrder;
+	metadata?: Prisma.SortOrder;
 	campaignId?: Prisma.SortOrder;
 	messageId?: Prisma.SortOrder;
 	createdAt?: Prisma.SortOrder;
@@ -696,6 +720,116 @@ export type EnumTransactionStatusFieldUpdateOperationsInput = {
 	set?: $Enums.TransactionStatus;
 };
 
+export type TransactionCreateNestedManyWithoutCampaignInput = {
+	create?:
+		| Prisma.XOR<
+				Prisma.TransactionCreateWithoutCampaignInput,
+				Prisma.TransactionUncheckedCreateWithoutCampaignInput
+		  >
+		| Prisma.TransactionCreateWithoutCampaignInput[]
+		| Prisma.TransactionUncheckedCreateWithoutCampaignInput[];
+	connectOrCreate?:
+		| Prisma.TransactionCreateOrConnectWithoutCampaignInput
+		| Prisma.TransactionCreateOrConnectWithoutCampaignInput[];
+	createMany?: Prisma.TransactionCreateManyCampaignInputEnvelope;
+	connect?:
+		| Prisma.TransactionWhereUniqueInput
+		| Prisma.TransactionWhereUniqueInput[];
+};
+
+export type TransactionUncheckedCreateNestedManyWithoutCampaignInput = {
+	create?:
+		| Prisma.XOR<
+				Prisma.TransactionCreateWithoutCampaignInput,
+				Prisma.TransactionUncheckedCreateWithoutCampaignInput
+		  >
+		| Prisma.TransactionCreateWithoutCampaignInput[]
+		| Prisma.TransactionUncheckedCreateWithoutCampaignInput[];
+	connectOrCreate?:
+		| Prisma.TransactionCreateOrConnectWithoutCampaignInput
+		| Prisma.TransactionCreateOrConnectWithoutCampaignInput[];
+	createMany?: Prisma.TransactionCreateManyCampaignInputEnvelope;
+	connect?:
+		| Prisma.TransactionWhereUniqueInput
+		| Prisma.TransactionWhereUniqueInput[];
+};
+
+export type TransactionUpdateManyWithoutCampaignNestedInput = {
+	create?:
+		| Prisma.XOR<
+				Prisma.TransactionCreateWithoutCampaignInput,
+				Prisma.TransactionUncheckedCreateWithoutCampaignInput
+		  >
+		| Prisma.TransactionCreateWithoutCampaignInput[]
+		| Prisma.TransactionUncheckedCreateWithoutCampaignInput[];
+	connectOrCreate?:
+		| Prisma.TransactionCreateOrConnectWithoutCampaignInput
+		| Prisma.TransactionCreateOrConnectWithoutCampaignInput[];
+	upsert?:
+		| Prisma.TransactionUpsertWithWhereUniqueWithoutCampaignInput
+		| Prisma.TransactionUpsertWithWhereUniqueWithoutCampaignInput[];
+	createMany?: Prisma.TransactionCreateManyCampaignInputEnvelope;
+	set?:
+		| Prisma.TransactionWhereUniqueInput
+		| Prisma.TransactionWhereUniqueInput[];
+	disconnect?:
+		| Prisma.TransactionWhereUniqueInput
+		| Prisma.TransactionWhereUniqueInput[];
+	delete?:
+		| Prisma.TransactionWhereUniqueInput
+		| Prisma.TransactionWhereUniqueInput[];
+	connect?:
+		| Prisma.TransactionWhereUniqueInput
+		| Prisma.TransactionWhereUniqueInput[];
+	update?:
+		| Prisma.TransactionUpdateWithWhereUniqueWithoutCampaignInput
+		| Prisma.TransactionUpdateWithWhereUniqueWithoutCampaignInput[];
+	updateMany?:
+		| Prisma.TransactionUpdateManyWithWhereWithoutCampaignInput
+		| Prisma.TransactionUpdateManyWithWhereWithoutCampaignInput[];
+	deleteMany?:
+		| Prisma.TransactionScalarWhereInput
+		| Prisma.TransactionScalarWhereInput[];
+};
+
+export type TransactionUncheckedUpdateManyWithoutCampaignNestedInput = {
+	create?:
+		| Prisma.XOR<
+				Prisma.TransactionCreateWithoutCampaignInput,
+				Prisma.TransactionUncheckedCreateWithoutCampaignInput
+		  >
+		| Prisma.TransactionCreateWithoutCampaignInput[]
+		| Prisma.TransactionUncheckedCreateWithoutCampaignInput[];
+	connectOrCreate?:
+		| Prisma.TransactionCreateOrConnectWithoutCampaignInput
+		| Prisma.TransactionCreateOrConnectWithoutCampaignInput[];
+	upsert?:
+		| Prisma.TransactionUpsertWithWhereUniqueWithoutCampaignInput
+		| Prisma.TransactionUpsertWithWhereUniqueWithoutCampaignInput[];
+	createMany?: Prisma.TransactionCreateManyCampaignInputEnvelope;
+	set?:
+		| Prisma.TransactionWhereUniqueInput
+		| Prisma.TransactionWhereUniqueInput[];
+	disconnect?:
+		| Prisma.TransactionWhereUniqueInput
+		| Prisma.TransactionWhereUniqueInput[];
+	delete?:
+		| Prisma.TransactionWhereUniqueInput
+		| Prisma.TransactionWhereUniqueInput[];
+	connect?:
+		| Prisma.TransactionWhereUniqueInput
+		| Prisma.TransactionWhereUniqueInput[];
+	update?:
+		| Prisma.TransactionUpdateWithWhereUniqueWithoutCampaignInput
+		| Prisma.TransactionUpdateWithWhereUniqueWithoutCampaignInput[];
+	updateMany?:
+		| Prisma.TransactionUpdateManyWithWhereWithoutCampaignInput
+		| Prisma.TransactionUpdateManyWithWhereWithoutCampaignInput[];
+	deleteMany?:
+		| Prisma.TransactionScalarWhereInput
+		| Prisma.TransactionScalarWhereInput[];
+};
+
 export type TransactionCreateWithoutWalletInput = {
 	id?: string;
 	type: $Enums.TransactionType;
@@ -705,9 +839,10 @@ export type TransactionCreateWithoutWalletInput = {
 	description: string;
 	reference: string;
 	paystackRef?: string | null;
-	campaignId?: string | null;
+	metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
 	messageId?: string | null;
 	createdAt?: Date | string;
+	campaign?: Prisma.CampaignCreateNestedOneWithoutTransactionsInput;
 };
 
 export type TransactionUncheckedCreateWithoutWalletInput = {
@@ -719,6 +854,7 @@ export type TransactionUncheckedCreateWithoutWalletInput = {
 	description: string;
 	reference: string;
 	paystackRef?: string | null;
+	metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
 	campaignId?: string | null;
 	messageId?: string | null;
 	createdAt?: Date | string;
@@ -788,9 +924,83 @@ export type TransactionScalarWhereInput = {
 	description?: Prisma.StringFilter<"Transaction"> | string;
 	reference?: Prisma.StringFilter<"Transaction"> | string;
 	paystackRef?: Prisma.StringNullableFilter<"Transaction"> | string | null;
+	metadata?: Prisma.JsonNullableFilter<"Transaction">;
 	campaignId?: Prisma.StringNullableFilter<"Transaction"> | string | null;
 	messageId?: Prisma.StringNullableFilter<"Transaction"> | string | null;
 	createdAt?: Prisma.DateTimeFilter<"Transaction"> | Date | string;
+};
+
+export type TransactionCreateWithoutCampaignInput = {
+	id?: string;
+	type: $Enums.TransactionType;
+	status?: $Enums.TransactionStatus;
+	amountKobo: number;
+	balanceAfterKobo: number;
+	description: string;
+	reference: string;
+	paystackRef?: string | null;
+	metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+	messageId?: string | null;
+	createdAt?: Date | string;
+	wallet: Prisma.WalletCreateNestedOneWithoutTransactionsInput;
+};
+
+export type TransactionUncheckedCreateWithoutCampaignInput = {
+	id?: string;
+	walletId: string;
+	type: $Enums.TransactionType;
+	status?: $Enums.TransactionStatus;
+	amountKobo: number;
+	balanceAfterKobo: number;
+	description: string;
+	reference: string;
+	paystackRef?: string | null;
+	metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+	messageId?: string | null;
+	createdAt?: Date | string;
+};
+
+export type TransactionCreateOrConnectWithoutCampaignInput = {
+	where: Prisma.TransactionWhereUniqueInput;
+	create: Prisma.XOR<
+		Prisma.TransactionCreateWithoutCampaignInput,
+		Prisma.TransactionUncheckedCreateWithoutCampaignInput
+	>;
+};
+
+export type TransactionCreateManyCampaignInputEnvelope = {
+	data:
+		| Prisma.TransactionCreateManyCampaignInput
+		| Prisma.TransactionCreateManyCampaignInput[];
+	skipDuplicates?: boolean;
+};
+
+export type TransactionUpsertWithWhereUniqueWithoutCampaignInput = {
+	where: Prisma.TransactionWhereUniqueInput;
+	update: Prisma.XOR<
+		Prisma.TransactionUpdateWithoutCampaignInput,
+		Prisma.TransactionUncheckedUpdateWithoutCampaignInput
+	>;
+	create: Prisma.XOR<
+		Prisma.TransactionCreateWithoutCampaignInput,
+		Prisma.TransactionUncheckedCreateWithoutCampaignInput
+	>;
+};
+
+export type TransactionUpdateWithWhereUniqueWithoutCampaignInput = {
+	where: Prisma.TransactionWhereUniqueInput;
+	data: Prisma.XOR<
+		Prisma.TransactionUpdateWithoutCampaignInput,
+		Prisma.TransactionUncheckedUpdateWithoutCampaignInput
+	>;
+};
+
+export type TransactionUpdateManyWithWhereWithoutCampaignInput = {
+	where: Prisma.TransactionScalarWhereInput;
+	data: Prisma.XOR<
+		Prisma.TransactionUpdateManyMutationInput,
+		Prisma.TransactionUncheckedUpdateManyWithoutCampaignInput
+	>;
 };
 
 export type TransactionCreateManyWalletInput = {
@@ -802,6 +1012,7 @@ export type TransactionCreateManyWalletInput = {
 	description: string;
 	reference: string;
 	paystackRef?: string | null;
+	metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
 	campaignId?: string | null;
 	messageId?: string | null;
 	createdAt?: Date | string;
@@ -820,9 +1031,10 @@ export type TransactionUpdateWithoutWalletInput = {
 	description?: Prisma.StringFieldUpdateOperationsInput | string;
 	reference?: Prisma.StringFieldUpdateOperationsInput | string;
 	paystackRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-	campaignId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
 	messageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+	campaign?: Prisma.CampaignUpdateOneWithoutTransactionsNestedInput;
 };
 
 export type TransactionUncheckedUpdateWithoutWalletInput = {
@@ -838,6 +1050,7 @@ export type TransactionUncheckedUpdateWithoutWalletInput = {
 	description?: Prisma.StringFieldUpdateOperationsInput | string;
 	reference?: Prisma.StringFieldUpdateOperationsInput | string;
 	paystackRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
 	campaignId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	messageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -856,7 +1069,80 @@ export type TransactionUncheckedUpdateManyWithoutWalletInput = {
 	description?: Prisma.StringFieldUpdateOperationsInput | string;
 	reference?: Prisma.StringFieldUpdateOperationsInput | string;
 	paystackRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
 	campaignId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	messageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type TransactionCreateManyCampaignInput = {
+	id?: string;
+	walletId: string;
+	type: $Enums.TransactionType;
+	status?: $Enums.TransactionStatus;
+	amountKobo: number;
+	balanceAfterKobo: number;
+	description: string;
+	reference: string;
+	paystackRef?: string | null;
+	metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+	messageId?: string | null;
+	createdAt?: Date | string;
+};
+
+export type TransactionUpdateWithoutCampaignInput = {
+	id?: Prisma.StringFieldUpdateOperationsInput | string;
+	type?:
+		| Prisma.EnumTransactionTypeFieldUpdateOperationsInput
+		| $Enums.TransactionType;
+	status?:
+		| Prisma.EnumTransactionStatusFieldUpdateOperationsInput
+		| $Enums.TransactionStatus;
+	amountKobo?: Prisma.IntFieldUpdateOperationsInput | number;
+	balanceAfterKobo?: Prisma.IntFieldUpdateOperationsInput | number;
+	description?: Prisma.StringFieldUpdateOperationsInput | string;
+	reference?: Prisma.StringFieldUpdateOperationsInput | string;
+	paystackRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+	messageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+	wallet?: Prisma.WalletUpdateOneRequiredWithoutTransactionsNestedInput;
+};
+
+export type TransactionUncheckedUpdateWithoutCampaignInput = {
+	id?: Prisma.StringFieldUpdateOperationsInput | string;
+	walletId?: Prisma.StringFieldUpdateOperationsInput | string;
+	type?:
+		| Prisma.EnumTransactionTypeFieldUpdateOperationsInput
+		| $Enums.TransactionType;
+	status?:
+		| Prisma.EnumTransactionStatusFieldUpdateOperationsInput
+		| $Enums.TransactionStatus;
+	amountKobo?: Prisma.IntFieldUpdateOperationsInput | number;
+	balanceAfterKobo?: Prisma.IntFieldUpdateOperationsInput | number;
+	description?: Prisma.StringFieldUpdateOperationsInput | string;
+	reference?: Prisma.StringFieldUpdateOperationsInput | string;
+	paystackRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+	messageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type TransactionUncheckedUpdateManyWithoutCampaignInput = {
+	id?: Prisma.StringFieldUpdateOperationsInput | string;
+	walletId?: Prisma.StringFieldUpdateOperationsInput | string;
+	type?:
+		| Prisma.EnumTransactionTypeFieldUpdateOperationsInput
+		| $Enums.TransactionType;
+	status?:
+		| Prisma.EnumTransactionStatusFieldUpdateOperationsInput
+		| $Enums.TransactionStatus;
+	amountKobo?: Prisma.IntFieldUpdateOperationsInput | number;
+	balanceAfterKobo?: Prisma.IntFieldUpdateOperationsInput | number;
+	description?: Prisma.StringFieldUpdateOperationsInput | string;
+	reference?: Prisma.StringFieldUpdateOperationsInput | string;
+	paystackRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
 	messageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -875,10 +1161,12 @@ export type TransactionSelect<
 		description?: boolean;
 		reference?: boolean;
 		paystackRef?: boolean;
+		metadata?: boolean;
 		campaignId?: boolean;
 		messageId?: boolean;
 		createdAt?: boolean;
 		wallet?: boolean | Prisma.WalletDefaultArgs<ExtArgs>;
+		campaign?: boolean | Prisma.Transaction$campaignArgs<ExtArgs>;
 	},
 	ExtArgs["result"]["transaction"]
 >;
@@ -897,10 +1185,12 @@ export type TransactionSelectCreateManyAndReturn<
 		description?: boolean;
 		reference?: boolean;
 		paystackRef?: boolean;
+		metadata?: boolean;
 		campaignId?: boolean;
 		messageId?: boolean;
 		createdAt?: boolean;
 		wallet?: boolean | Prisma.WalletDefaultArgs<ExtArgs>;
+		campaign?: boolean | Prisma.Transaction$campaignArgs<ExtArgs>;
 	},
 	ExtArgs["result"]["transaction"]
 >;
@@ -919,10 +1209,12 @@ export type TransactionSelectUpdateManyAndReturn<
 		description?: boolean;
 		reference?: boolean;
 		paystackRef?: boolean;
+		metadata?: boolean;
 		campaignId?: boolean;
 		messageId?: boolean;
 		createdAt?: boolean;
 		wallet?: boolean | Prisma.WalletDefaultArgs<ExtArgs>;
+		campaign?: boolean | Prisma.Transaction$campaignArgs<ExtArgs>;
 	},
 	ExtArgs["result"]["transaction"]
 >;
@@ -937,6 +1229,7 @@ export type TransactionSelectScalar = {
 	description?: boolean;
 	reference?: boolean;
 	paystackRef?: boolean;
+	metadata?: boolean;
 	campaignId?: boolean;
 	messageId?: boolean;
 	createdAt?: boolean;
@@ -955,6 +1248,7 @@ export type TransactionOmit<
 	| "description"
 	| "reference"
 	| "paystackRef"
+	| "metadata"
 	| "campaignId"
 	| "messageId"
 	| "createdAt",
@@ -965,18 +1259,21 @@ export type TransactionInclude<
 		runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
 	wallet?: boolean | Prisma.WalletDefaultArgs<ExtArgs>;
+	campaign?: boolean | Prisma.Transaction$campaignArgs<ExtArgs>;
 };
 export type TransactionIncludeCreateManyAndReturn<
 	ExtArgs extends
 		runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
 	wallet?: boolean | Prisma.WalletDefaultArgs<ExtArgs>;
+	campaign?: boolean | Prisma.Transaction$campaignArgs<ExtArgs>;
 };
 export type TransactionIncludeUpdateManyAndReturn<
 	ExtArgs extends
 		runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
 	wallet?: boolean | Prisma.WalletDefaultArgs<ExtArgs>;
+	campaign?: boolean | Prisma.Transaction$campaignArgs<ExtArgs>;
 };
 
 export type $TransactionPayload<
@@ -986,6 +1283,7 @@ export type $TransactionPayload<
 	name: "Transaction";
 	objects: {
 		wallet: Prisma.$WalletPayload<ExtArgs>;
+		campaign: Prisma.$CampaignPayload<ExtArgs> | null;
 	};
 	scalars: runtime.Types.Extensions.GetPayloadResult<
 		{
@@ -998,6 +1296,7 @@ export type $TransactionPayload<
 			description: string;
 			reference: string;
 			paystackRef: string | null;
+			metadata: runtime.JsonValue | null;
 			campaignId: string | null;
 			messageId: string | null;
 			createdAt: Date;
@@ -1552,6 +1851,19 @@ export interface Prisma__TransactionClient<
 		runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 	GlobalOmitOptions = {},
 > extends Prisma.PrismaPromise<T> {
+	campaign<T extends Prisma.Transaction$campaignArgs<ExtArgs> = {}>(
+		args?: Prisma.Subset<T, Prisma.Transaction$campaignArgs<ExtArgs>>
+	): Prisma.Prisma__CampaignClient<
+		runtime.Types.Result.GetResult<
+			Prisma.$CampaignPayload<ExtArgs>,
+			T,
+			"findUniqueOrThrow",
+			GlobalOmitOptions
+		> | null,
+		null,
+		ExtArgs,
+		GlobalOmitOptions
+	>;
 	/**
 	 * Attaches a callback for only the rejection of the Promise.
 	 * @param onrejected The callback to execute when the Promise is rejected.
@@ -1616,6 +1928,7 @@ export interface TransactionFieldRefs {
 	readonly description: Prisma.FieldRef<"Transaction", "String">;
 	readonly id: Prisma.FieldRef<"Transaction", "String">;
 	readonly messageId: Prisma.FieldRef<"Transaction", "String">;
+	readonly metadata: Prisma.FieldRef<"Transaction", "Json">;
 	readonly paystackRef: Prisma.FieldRef<"Transaction", "String">;
 	readonly reference: Prisma.FieldRef<"Transaction", "String">;
 	readonly status: Prisma.FieldRef<"Transaction", "TransactionStatus">;
@@ -2090,6 +2403,28 @@ export type TransactionDeleteManyArgs<
 	 * Limit how many Transactions to delete.
 	 */
 	limit?: number;
+};
+
+/**
+ * Transaction.campaign
+ */
+export type Transaction$campaignArgs<
+	ExtArgs extends
+		runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+	/**
+	 * Select specific fields to fetch from the Campaign
+	 */
+	select?: Prisma.CampaignSelect<ExtArgs> | null;
+	/**
+	 * Omit specific fields from the Campaign
+	 */
+	omit?: Prisma.CampaignOmit<ExtArgs> | null;
+	/**
+	 * Choose, which related nodes to fetch as well
+	 */
+	include?: Prisma.CampaignInclude<ExtArgs> | null;
+	where?: Prisma.CampaignWhereInput;
 };
 
 /**

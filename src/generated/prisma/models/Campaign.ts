@@ -30,27 +30,33 @@ export type CampaignAvgAggregateOutputType = {
 	totalMessages: number | null;
 	sentMessages: number | null;
 	failedMessages: number | null;
+	estimatedCostKobo: number | null;
 };
 
 export type CampaignSumAggregateOutputType = {
 	totalMessages: number | null;
 	sentMessages: number | null;
 	failedMessages: number | null;
+	estimatedCostKobo: number | null;
 };
 
 export type CampaignMinAggregateOutputType = {
 	id: string | null;
 	userId: string | null;
+	name: string | null;
 	scenario: $Enums.Scenario | null;
 	status: $Enums.JobStatus | null;
 	deliveryMode: $Enums.DeliveryMode | null;
+	senderId: string | null;
 	whatsappTemplate: string | null;
 	smsTemplate: string | null;
 	useCustomTemplate: boolean | null;
 	totalMessages: number | null;
 	sentMessages: number | null;
 	failedMessages: number | null;
+	estimatedCostKobo: number | null;
 	inngestEventId: string | null;
+	scheduledAt: Date | null;
 	createdAt: Date | null;
 	startedAt: Date | null;
 	completedAt: Date | null;
@@ -59,16 +65,20 @@ export type CampaignMinAggregateOutputType = {
 export type CampaignMaxAggregateOutputType = {
 	id: string | null;
 	userId: string | null;
+	name: string | null;
 	scenario: $Enums.Scenario | null;
 	status: $Enums.JobStatus | null;
 	deliveryMode: $Enums.DeliveryMode | null;
+	senderId: string | null;
 	whatsappTemplate: string | null;
 	smsTemplate: string | null;
 	useCustomTemplate: boolean | null;
 	totalMessages: number | null;
 	sentMessages: number | null;
 	failedMessages: number | null;
+	estimatedCostKobo: number | null;
 	inngestEventId: string | null;
+	scheduledAt: Date | null;
 	createdAt: Date | null;
 	startedAt: Date | null;
 	completedAt: Date | null;
@@ -77,16 +87,20 @@ export type CampaignMaxAggregateOutputType = {
 export type CampaignCountAggregateOutputType = {
 	id: number;
 	userId: number;
+	name: number;
 	scenario: number;
 	status: number;
 	deliveryMode: number;
+	senderId: number;
 	whatsappTemplate: number;
 	smsTemplate: number;
 	useCustomTemplate: number;
 	totalMessages: number;
 	sentMessages: number;
 	failedMessages: number;
+	estimatedCostKobo: number;
 	inngestEventId: number;
+	scheduledAt: number;
 	createdAt: number;
 	startedAt: number;
 	completedAt: number;
@@ -97,27 +111,33 @@ export type CampaignAvgAggregateInputType = {
 	totalMessages?: true;
 	sentMessages?: true;
 	failedMessages?: true;
+	estimatedCostKobo?: true;
 };
 
 export type CampaignSumAggregateInputType = {
 	totalMessages?: true;
 	sentMessages?: true;
 	failedMessages?: true;
+	estimatedCostKobo?: true;
 };
 
 export type CampaignMinAggregateInputType = {
 	id?: true;
 	userId?: true;
+	name?: true;
 	scenario?: true;
 	status?: true;
 	deliveryMode?: true;
+	senderId?: true;
 	whatsappTemplate?: true;
 	smsTemplate?: true;
 	useCustomTemplate?: true;
 	totalMessages?: true;
 	sentMessages?: true;
 	failedMessages?: true;
+	estimatedCostKobo?: true;
 	inngestEventId?: true;
+	scheduledAt?: true;
 	createdAt?: true;
 	startedAt?: true;
 	completedAt?: true;
@@ -126,16 +146,20 @@ export type CampaignMinAggregateInputType = {
 export type CampaignMaxAggregateInputType = {
 	id?: true;
 	userId?: true;
+	name?: true;
 	scenario?: true;
 	status?: true;
 	deliveryMode?: true;
+	senderId?: true;
 	whatsappTemplate?: true;
 	smsTemplate?: true;
 	useCustomTemplate?: true;
 	totalMessages?: true;
 	sentMessages?: true;
 	failedMessages?: true;
+	estimatedCostKobo?: true;
 	inngestEventId?: true;
+	scheduledAt?: true;
 	createdAt?: true;
 	startedAt?: true;
 	completedAt?: true;
@@ -144,16 +168,20 @@ export type CampaignMaxAggregateInputType = {
 export type CampaignCountAggregateInputType = {
 	id?: true;
 	userId?: true;
+	name?: true;
 	scenario?: true;
 	status?: true;
 	deliveryMode?: true;
+	senderId?: true;
 	whatsappTemplate?: true;
 	smsTemplate?: true;
 	useCustomTemplate?: true;
 	totalMessages?: true;
 	sentMessages?: true;
 	failedMessages?: true;
+	estimatedCostKobo?: true;
 	inngestEventId?: true;
+	scheduledAt?: true;
 	createdAt?: true;
 	startedAt?: true;
 	completedAt?: true;
@@ -256,16 +284,20 @@ export type CampaignGroupByArgs<
 export type CampaignGroupByOutputType = {
 	id: string;
 	userId: string;
+	name: string | null;
 	scenario: $Enums.Scenario;
 	status: $Enums.JobStatus;
 	deliveryMode: $Enums.DeliveryMode;
+	senderId: string | null;
 	whatsappTemplate: string;
 	smsTemplate: string;
 	useCustomTemplate: boolean;
 	totalMessages: number;
 	sentMessages: number;
 	failedMessages: number;
+	estimatedCostKobo: number;
 	inngestEventId: string | null;
+	scheduledAt: Date | null;
 	createdAt: Date;
 	startedAt: Date | null;
 	completedAt: Date | null;
@@ -295,18 +327,26 @@ export type CampaignWhereInput = {
 	NOT?: Prisma.CampaignWhereInput | Prisma.CampaignWhereInput[];
 	id?: Prisma.StringFilter<"Campaign"> | string;
 	userId?: Prisma.StringFilter<"Campaign"> | string;
+	name?: Prisma.StringNullableFilter<"Campaign"> | string | null;
 	scenario?: Prisma.EnumScenarioFilter<"Campaign"> | $Enums.Scenario;
 	status?: Prisma.EnumJobStatusFilter<"Campaign"> | $Enums.JobStatus;
 	deliveryMode?:
 		| Prisma.EnumDeliveryModeFilter<"Campaign">
 		| $Enums.DeliveryMode;
+	senderId?: Prisma.StringNullableFilter<"Campaign"> | string | null;
 	whatsappTemplate?: Prisma.StringFilter<"Campaign"> | string;
 	smsTemplate?: Prisma.StringFilter<"Campaign"> | string;
 	useCustomTemplate?: Prisma.BoolFilter<"Campaign"> | boolean;
 	totalMessages?: Prisma.IntFilter<"Campaign"> | number;
 	sentMessages?: Prisma.IntFilter<"Campaign"> | number;
 	failedMessages?: Prisma.IntFilter<"Campaign"> | number;
+	estimatedCostKobo?: Prisma.IntFilter<"Campaign"> | number;
 	inngestEventId?: Prisma.StringNullableFilter<"Campaign"> | string | null;
+	scheduledAt?:
+		| Prisma.DateTimeNullableFilter<"Campaign">
+		| Date
+		| string
+		| null;
 	createdAt?: Prisma.DateTimeFilter<"Campaign"> | Date | string;
 	startedAt?: Prisma.DateTimeNullableFilter<"Campaign"> | Date | string | null;
 	completedAt?:
@@ -316,6 +356,7 @@ export type CampaignWhereInput = {
 		| null;
 	user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>;
 	messages?: Prisma.MessageListRelationFilter;
+	transactions?: Prisma.TransactionListRelationFilter;
 	pendingDeliveries?: Prisma.PendingDeliveryListRelationFilter;
 	inboundMessages?: Prisma.InboundMessageListRelationFilter;
 };
@@ -323,21 +364,26 @@ export type CampaignWhereInput = {
 export type CampaignOrderByWithRelationInput = {
 	id?: Prisma.SortOrder;
 	userId?: Prisma.SortOrder;
+	name?: Prisma.SortOrderInput | Prisma.SortOrder;
 	scenario?: Prisma.SortOrder;
 	status?: Prisma.SortOrder;
 	deliveryMode?: Prisma.SortOrder;
+	senderId?: Prisma.SortOrderInput | Prisma.SortOrder;
 	whatsappTemplate?: Prisma.SortOrder;
 	smsTemplate?: Prisma.SortOrder;
 	useCustomTemplate?: Prisma.SortOrder;
 	totalMessages?: Prisma.SortOrder;
 	sentMessages?: Prisma.SortOrder;
 	failedMessages?: Prisma.SortOrder;
+	estimatedCostKobo?: Prisma.SortOrder;
 	inngestEventId?: Prisma.SortOrderInput | Prisma.SortOrder;
+	scheduledAt?: Prisma.SortOrderInput | Prisma.SortOrder;
 	createdAt?: Prisma.SortOrder;
 	startedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
 	completedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
 	user?: Prisma.UserOrderByWithRelationInput;
 	messages?: Prisma.MessageOrderByRelationAggregateInput;
+	transactions?: Prisma.TransactionOrderByRelationAggregateInput;
 	pendingDeliveries?: Prisma.PendingDeliveryOrderByRelationAggregateInput;
 	inboundMessages?: Prisma.InboundMessageOrderByRelationAggregateInput;
 };
@@ -349,18 +395,26 @@ export type CampaignWhereUniqueInput = Prisma.AtLeast<
 		OR?: Prisma.CampaignWhereInput[];
 		NOT?: Prisma.CampaignWhereInput | Prisma.CampaignWhereInput[];
 		userId?: Prisma.StringFilter<"Campaign"> | string;
+		name?: Prisma.StringNullableFilter<"Campaign"> | string | null;
 		scenario?: Prisma.EnumScenarioFilter<"Campaign"> | $Enums.Scenario;
 		status?: Prisma.EnumJobStatusFilter<"Campaign"> | $Enums.JobStatus;
 		deliveryMode?:
 			| Prisma.EnumDeliveryModeFilter<"Campaign">
 			| $Enums.DeliveryMode;
+		senderId?: Prisma.StringNullableFilter<"Campaign"> | string | null;
 		whatsappTemplate?: Prisma.StringFilter<"Campaign"> | string;
 		smsTemplate?: Prisma.StringFilter<"Campaign"> | string;
 		useCustomTemplate?: Prisma.BoolFilter<"Campaign"> | boolean;
 		totalMessages?: Prisma.IntFilter<"Campaign"> | number;
 		sentMessages?: Prisma.IntFilter<"Campaign"> | number;
 		failedMessages?: Prisma.IntFilter<"Campaign"> | number;
+		estimatedCostKobo?: Prisma.IntFilter<"Campaign"> | number;
 		inngestEventId?: Prisma.StringNullableFilter<"Campaign"> | string | null;
+		scheduledAt?:
+			| Prisma.DateTimeNullableFilter<"Campaign">
+			| Date
+			| string
+			| null;
 		createdAt?: Prisma.DateTimeFilter<"Campaign"> | Date | string;
 		startedAt?:
 			| Prisma.DateTimeNullableFilter<"Campaign">
@@ -374,6 +428,7 @@ export type CampaignWhereUniqueInput = Prisma.AtLeast<
 			| null;
 		user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>;
 		messages?: Prisma.MessageListRelationFilter;
+		transactions?: Prisma.TransactionListRelationFilter;
 		pendingDeliveries?: Prisma.PendingDeliveryListRelationFilter;
 		inboundMessages?: Prisma.InboundMessageListRelationFilter;
 	},
@@ -383,16 +438,20 @@ export type CampaignWhereUniqueInput = Prisma.AtLeast<
 export type CampaignOrderByWithAggregationInput = {
 	id?: Prisma.SortOrder;
 	userId?: Prisma.SortOrder;
+	name?: Prisma.SortOrderInput | Prisma.SortOrder;
 	scenario?: Prisma.SortOrder;
 	status?: Prisma.SortOrder;
 	deliveryMode?: Prisma.SortOrder;
+	senderId?: Prisma.SortOrderInput | Prisma.SortOrder;
 	whatsappTemplate?: Prisma.SortOrder;
 	smsTemplate?: Prisma.SortOrder;
 	useCustomTemplate?: Prisma.SortOrder;
 	totalMessages?: Prisma.SortOrder;
 	sentMessages?: Prisma.SortOrder;
 	failedMessages?: Prisma.SortOrder;
+	estimatedCostKobo?: Prisma.SortOrder;
 	inngestEventId?: Prisma.SortOrderInput | Prisma.SortOrder;
+	scheduledAt?: Prisma.SortOrderInput | Prisma.SortOrder;
 	createdAt?: Prisma.SortOrder;
 	startedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
 	completedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -413,6 +472,7 @@ export type CampaignScalarWhereWithAggregatesInput = {
 		| Prisma.CampaignScalarWhereWithAggregatesInput[];
 	id?: Prisma.StringWithAggregatesFilter<"Campaign"> | string;
 	userId?: Prisma.StringWithAggregatesFilter<"Campaign"> | string;
+	name?: Prisma.StringNullableWithAggregatesFilter<"Campaign"> | string | null;
 	scenario?:
 		| Prisma.EnumScenarioWithAggregatesFilter<"Campaign">
 		| $Enums.Scenario;
@@ -422,14 +482,24 @@ export type CampaignScalarWhereWithAggregatesInput = {
 	deliveryMode?:
 		| Prisma.EnumDeliveryModeWithAggregatesFilter<"Campaign">
 		| $Enums.DeliveryMode;
+	senderId?:
+		| Prisma.StringNullableWithAggregatesFilter<"Campaign">
+		| string
+		| null;
 	whatsappTemplate?: Prisma.StringWithAggregatesFilter<"Campaign"> | string;
 	smsTemplate?: Prisma.StringWithAggregatesFilter<"Campaign"> | string;
 	useCustomTemplate?: Prisma.BoolWithAggregatesFilter<"Campaign"> | boolean;
 	totalMessages?: Prisma.IntWithAggregatesFilter<"Campaign"> | number;
 	sentMessages?: Prisma.IntWithAggregatesFilter<"Campaign"> | number;
 	failedMessages?: Prisma.IntWithAggregatesFilter<"Campaign"> | number;
+	estimatedCostKobo?: Prisma.IntWithAggregatesFilter<"Campaign"> | number;
 	inngestEventId?:
 		| Prisma.StringNullableWithAggregatesFilter<"Campaign">
+		| string
+		| null;
+	scheduledAt?:
+		| Prisma.DateTimeNullableWithAggregatesFilter<"Campaign">
+		| Date
 		| string
 		| null;
 	createdAt?: Prisma.DateTimeWithAggregatesFilter<"Campaign"> | Date | string;
@@ -447,21 +517,26 @@ export type CampaignScalarWhereWithAggregatesInput = {
 
 export type CampaignCreateInput = {
 	id?: string;
+	name?: string | null;
 	scenario: $Enums.Scenario;
 	status?: $Enums.JobStatus;
 	deliveryMode?: $Enums.DeliveryMode;
+	senderId?: string | null;
 	whatsappTemplate: string;
 	smsTemplate: string;
 	useCustomTemplate?: boolean;
 	totalMessages?: number;
 	sentMessages?: number;
 	failedMessages?: number;
+	estimatedCostKobo?: number;
 	inngestEventId?: string | null;
+	scheduledAt?: Date | string | null;
 	createdAt?: Date | string;
 	startedAt?: Date | string | null;
 	completedAt?: Date | string | null;
 	user: Prisma.UserCreateNestedOneWithoutCampaignsInput;
 	messages?: Prisma.MessageCreateNestedManyWithoutCampaignInput;
+	transactions?: Prisma.TransactionCreateNestedManyWithoutCampaignInput;
 	pendingDeliveries?: Prisma.PendingDeliveryCreateNestedManyWithoutCampaignInput;
 	inboundMessages?: Prisma.InboundMessageCreateNestedManyWithoutCampaignInput;
 };
@@ -469,39 +544,52 @@ export type CampaignCreateInput = {
 export type CampaignUncheckedCreateInput = {
 	id?: string;
 	userId: string;
+	name?: string | null;
 	scenario: $Enums.Scenario;
 	status?: $Enums.JobStatus;
 	deliveryMode?: $Enums.DeliveryMode;
+	senderId?: string | null;
 	whatsappTemplate: string;
 	smsTemplate: string;
 	useCustomTemplate?: boolean;
 	totalMessages?: number;
 	sentMessages?: number;
 	failedMessages?: number;
+	estimatedCostKobo?: number;
 	inngestEventId?: string | null;
+	scheduledAt?: Date | string | null;
 	createdAt?: Date | string;
 	startedAt?: Date | string | null;
 	completedAt?: Date | string | null;
 	messages?: Prisma.MessageUncheckedCreateNestedManyWithoutCampaignInput;
+	transactions?: Prisma.TransactionUncheckedCreateNestedManyWithoutCampaignInput;
 	pendingDeliveries?: Prisma.PendingDeliveryUncheckedCreateNestedManyWithoutCampaignInput;
 	inboundMessages?: Prisma.InboundMessageUncheckedCreateNestedManyWithoutCampaignInput;
 };
 
 export type CampaignUpdateInput = {
 	id?: Prisma.StringFieldUpdateOperationsInput | string;
+	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	scenario?: Prisma.EnumScenarioFieldUpdateOperationsInput | $Enums.Scenario;
 	status?: Prisma.EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus;
 	deliveryMode?:
 		| Prisma.EnumDeliveryModeFieldUpdateOperationsInput
 		| $Enums.DeliveryMode;
+	senderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	whatsappTemplate?: Prisma.StringFieldUpdateOperationsInput | string;
 	smsTemplate?: Prisma.StringFieldUpdateOperationsInput | string;
 	useCustomTemplate?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	totalMessages?: Prisma.IntFieldUpdateOperationsInput | number;
 	sentMessages?: Prisma.IntFieldUpdateOperationsInput | number;
 	failedMessages?: Prisma.IntFieldUpdateOperationsInput | number;
+	estimatedCostKobo?: Prisma.IntFieldUpdateOperationsInput | number;
 	inngestEventId?:
 		| Prisma.NullableStringFieldUpdateOperationsInput
+		| string
+		| null;
+	scheduledAt?:
+		| Prisma.NullableDateTimeFieldUpdateOperationsInput
+		| Date
 		| string
 		| null;
 	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -517,6 +605,7 @@ export type CampaignUpdateInput = {
 		| null;
 	user?: Prisma.UserUpdateOneRequiredWithoutCampaignsNestedInput;
 	messages?: Prisma.MessageUpdateManyWithoutCampaignNestedInput;
+	transactions?: Prisma.TransactionUpdateManyWithoutCampaignNestedInput;
 	pendingDeliveries?: Prisma.PendingDeliveryUpdateManyWithoutCampaignNestedInput;
 	inboundMessages?: Prisma.InboundMessageUpdateManyWithoutCampaignNestedInput;
 };
@@ -524,19 +613,27 @@ export type CampaignUpdateInput = {
 export type CampaignUncheckedUpdateInput = {
 	id?: Prisma.StringFieldUpdateOperationsInput | string;
 	userId?: Prisma.StringFieldUpdateOperationsInput | string;
+	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	scenario?: Prisma.EnumScenarioFieldUpdateOperationsInput | $Enums.Scenario;
 	status?: Prisma.EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus;
 	deliveryMode?:
 		| Prisma.EnumDeliveryModeFieldUpdateOperationsInput
 		| $Enums.DeliveryMode;
+	senderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	whatsappTemplate?: Prisma.StringFieldUpdateOperationsInput | string;
 	smsTemplate?: Prisma.StringFieldUpdateOperationsInput | string;
 	useCustomTemplate?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	totalMessages?: Prisma.IntFieldUpdateOperationsInput | number;
 	sentMessages?: Prisma.IntFieldUpdateOperationsInput | number;
 	failedMessages?: Prisma.IntFieldUpdateOperationsInput | number;
+	estimatedCostKobo?: Prisma.IntFieldUpdateOperationsInput | number;
 	inngestEventId?:
 		| Prisma.NullableStringFieldUpdateOperationsInput
+		| string
+		| null;
+	scheduledAt?:
+		| Prisma.NullableDateTimeFieldUpdateOperationsInput
+		| Date
 		| string
 		| null;
 	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -551,6 +648,7 @@ export type CampaignUncheckedUpdateInput = {
 		| string
 		| null;
 	messages?: Prisma.MessageUncheckedUpdateManyWithoutCampaignNestedInput;
+	transactions?: Prisma.TransactionUncheckedUpdateManyWithoutCampaignNestedInput;
 	pendingDeliveries?: Prisma.PendingDeliveryUncheckedUpdateManyWithoutCampaignNestedInput;
 	inboundMessages?: Prisma.InboundMessageUncheckedUpdateManyWithoutCampaignNestedInput;
 };
@@ -558,16 +656,20 @@ export type CampaignUncheckedUpdateInput = {
 export type CampaignCreateManyInput = {
 	id?: string;
 	userId: string;
+	name?: string | null;
 	scenario: $Enums.Scenario;
 	status?: $Enums.JobStatus;
 	deliveryMode?: $Enums.DeliveryMode;
+	senderId?: string | null;
 	whatsappTemplate: string;
 	smsTemplate: string;
 	useCustomTemplate?: boolean;
 	totalMessages?: number;
 	sentMessages?: number;
 	failedMessages?: number;
+	estimatedCostKobo?: number;
 	inngestEventId?: string | null;
+	scheduledAt?: Date | string | null;
 	createdAt?: Date | string;
 	startedAt?: Date | string | null;
 	completedAt?: Date | string | null;
@@ -575,19 +677,27 @@ export type CampaignCreateManyInput = {
 
 export type CampaignUpdateManyMutationInput = {
 	id?: Prisma.StringFieldUpdateOperationsInput | string;
+	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	scenario?: Prisma.EnumScenarioFieldUpdateOperationsInput | $Enums.Scenario;
 	status?: Prisma.EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus;
 	deliveryMode?:
 		| Prisma.EnumDeliveryModeFieldUpdateOperationsInput
 		| $Enums.DeliveryMode;
+	senderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	whatsappTemplate?: Prisma.StringFieldUpdateOperationsInput | string;
 	smsTemplate?: Prisma.StringFieldUpdateOperationsInput | string;
 	useCustomTemplate?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	totalMessages?: Prisma.IntFieldUpdateOperationsInput | number;
 	sentMessages?: Prisma.IntFieldUpdateOperationsInput | number;
 	failedMessages?: Prisma.IntFieldUpdateOperationsInput | number;
+	estimatedCostKobo?: Prisma.IntFieldUpdateOperationsInput | number;
 	inngestEventId?:
 		| Prisma.NullableStringFieldUpdateOperationsInput
+		| string
+		| null;
+	scheduledAt?:
+		| Prisma.NullableDateTimeFieldUpdateOperationsInput
+		| Date
 		| string
 		| null;
 	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -606,19 +716,27 @@ export type CampaignUpdateManyMutationInput = {
 export type CampaignUncheckedUpdateManyInput = {
 	id?: Prisma.StringFieldUpdateOperationsInput | string;
 	userId?: Prisma.StringFieldUpdateOperationsInput | string;
+	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	scenario?: Prisma.EnumScenarioFieldUpdateOperationsInput | $Enums.Scenario;
 	status?: Prisma.EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus;
 	deliveryMode?:
 		| Prisma.EnumDeliveryModeFieldUpdateOperationsInput
 		| $Enums.DeliveryMode;
+	senderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	whatsappTemplate?: Prisma.StringFieldUpdateOperationsInput | string;
 	smsTemplate?: Prisma.StringFieldUpdateOperationsInput | string;
 	useCustomTemplate?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	totalMessages?: Prisma.IntFieldUpdateOperationsInput | number;
 	sentMessages?: Prisma.IntFieldUpdateOperationsInput | number;
 	failedMessages?: Prisma.IntFieldUpdateOperationsInput | number;
+	estimatedCostKobo?: Prisma.IntFieldUpdateOperationsInput | number;
 	inngestEventId?:
 		| Prisma.NullableStringFieldUpdateOperationsInput
+		| string
+		| null;
+	scheduledAt?:
+		| Prisma.NullableDateTimeFieldUpdateOperationsInput
+		| Date
 		| string
 		| null;
 	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -644,19 +762,28 @@ export type CampaignOrderByRelationAggregateInput = {
 	_count?: Prisma.SortOrder;
 };
 
+export type CampaignNullableScalarRelationFilter = {
+	is?: Prisma.CampaignWhereInput | null;
+	isNot?: Prisma.CampaignWhereInput | null;
+};
+
 export type CampaignCountOrderByAggregateInput = {
 	id?: Prisma.SortOrder;
 	userId?: Prisma.SortOrder;
+	name?: Prisma.SortOrder;
 	scenario?: Prisma.SortOrder;
 	status?: Prisma.SortOrder;
 	deliveryMode?: Prisma.SortOrder;
+	senderId?: Prisma.SortOrder;
 	whatsappTemplate?: Prisma.SortOrder;
 	smsTemplate?: Prisma.SortOrder;
 	useCustomTemplate?: Prisma.SortOrder;
 	totalMessages?: Prisma.SortOrder;
 	sentMessages?: Prisma.SortOrder;
 	failedMessages?: Prisma.SortOrder;
+	estimatedCostKobo?: Prisma.SortOrder;
 	inngestEventId?: Prisma.SortOrder;
+	scheduledAt?: Prisma.SortOrder;
 	createdAt?: Prisma.SortOrder;
 	startedAt?: Prisma.SortOrder;
 	completedAt?: Prisma.SortOrder;
@@ -666,21 +793,26 @@ export type CampaignAvgOrderByAggregateInput = {
 	totalMessages?: Prisma.SortOrder;
 	sentMessages?: Prisma.SortOrder;
 	failedMessages?: Prisma.SortOrder;
+	estimatedCostKobo?: Prisma.SortOrder;
 };
 
 export type CampaignMaxOrderByAggregateInput = {
 	id?: Prisma.SortOrder;
 	userId?: Prisma.SortOrder;
+	name?: Prisma.SortOrder;
 	scenario?: Prisma.SortOrder;
 	status?: Prisma.SortOrder;
 	deliveryMode?: Prisma.SortOrder;
+	senderId?: Prisma.SortOrder;
 	whatsappTemplate?: Prisma.SortOrder;
 	smsTemplate?: Prisma.SortOrder;
 	useCustomTemplate?: Prisma.SortOrder;
 	totalMessages?: Prisma.SortOrder;
 	sentMessages?: Prisma.SortOrder;
 	failedMessages?: Prisma.SortOrder;
+	estimatedCostKobo?: Prisma.SortOrder;
 	inngestEventId?: Prisma.SortOrder;
+	scheduledAt?: Prisma.SortOrder;
 	createdAt?: Prisma.SortOrder;
 	startedAt?: Prisma.SortOrder;
 	completedAt?: Prisma.SortOrder;
@@ -689,16 +821,20 @@ export type CampaignMaxOrderByAggregateInput = {
 export type CampaignMinOrderByAggregateInput = {
 	id?: Prisma.SortOrder;
 	userId?: Prisma.SortOrder;
+	name?: Prisma.SortOrder;
 	scenario?: Prisma.SortOrder;
 	status?: Prisma.SortOrder;
 	deliveryMode?: Prisma.SortOrder;
+	senderId?: Prisma.SortOrder;
 	whatsappTemplate?: Prisma.SortOrder;
 	smsTemplate?: Prisma.SortOrder;
 	useCustomTemplate?: Prisma.SortOrder;
 	totalMessages?: Prisma.SortOrder;
 	sentMessages?: Prisma.SortOrder;
 	failedMessages?: Prisma.SortOrder;
+	estimatedCostKobo?: Prisma.SortOrder;
 	inngestEventId?: Prisma.SortOrder;
+	scheduledAt?: Prisma.SortOrder;
 	createdAt?: Prisma.SortOrder;
 	startedAt?: Prisma.SortOrder;
 	completedAt?: Prisma.SortOrder;
@@ -708,16 +844,12 @@ export type CampaignSumOrderByAggregateInput = {
 	totalMessages?: Prisma.SortOrder;
 	sentMessages?: Prisma.SortOrder;
 	failedMessages?: Prisma.SortOrder;
+	estimatedCostKobo?: Prisma.SortOrder;
 };
 
 export type CampaignScalarRelationFilter = {
 	is?: Prisma.CampaignWhereInput;
 	isNot?: Prisma.CampaignWhereInput;
-};
-
-export type CampaignNullableScalarRelationFilter = {
-	is?: Prisma.CampaignWhereInput | null;
-	isNot?: Prisma.CampaignWhereInput | null;
 };
 
 export type CampaignCreateNestedManyWithoutUserInput = {
@@ -814,6 +946,34 @@ export type CampaignUncheckedUpdateManyWithoutUserNestedInput = {
 		| Prisma.CampaignScalarWhereInput[];
 };
 
+export type CampaignCreateNestedOneWithoutTransactionsInput = {
+	create?: Prisma.XOR<
+		Prisma.CampaignCreateWithoutTransactionsInput,
+		Prisma.CampaignUncheckedCreateWithoutTransactionsInput
+	>;
+	connectOrCreate?: Prisma.CampaignCreateOrConnectWithoutTransactionsInput;
+	connect?: Prisma.CampaignWhereUniqueInput;
+};
+
+export type CampaignUpdateOneWithoutTransactionsNestedInput = {
+	create?: Prisma.XOR<
+		Prisma.CampaignCreateWithoutTransactionsInput,
+		Prisma.CampaignUncheckedCreateWithoutTransactionsInput
+	>;
+	connectOrCreate?: Prisma.CampaignCreateOrConnectWithoutTransactionsInput;
+	upsert?: Prisma.CampaignUpsertWithoutTransactionsInput;
+	disconnect?: Prisma.CampaignWhereInput | boolean;
+	delete?: Prisma.CampaignWhereInput | boolean;
+	connect?: Prisma.CampaignWhereUniqueInput;
+	update?: Prisma.XOR<
+		Prisma.XOR<
+			Prisma.CampaignUpdateToOneWithWhereWithoutTransactionsInput,
+			Prisma.CampaignUpdateWithoutTransactionsInput
+		>,
+		Prisma.CampaignUncheckedUpdateWithoutTransactionsInput
+	>;
+};
+
 export type EnumScenarioFieldUpdateOperationsInput = {
 	set?: $Enums.Scenario;
 };
@@ -824,14 +984,6 @@ export type EnumJobStatusFieldUpdateOperationsInput = {
 
 export type EnumDeliveryModeFieldUpdateOperationsInput = {
 	set?: $Enums.DeliveryMode;
-};
-
-export type IntFieldUpdateOperationsInput = {
-	set?: number;
-	increment?: number;
-	decrement?: number;
-	multiply?: number;
-	divide?: number;
 };
 
 export type CampaignCreateNestedOneWithoutMessagesInput = {
@@ -916,40 +1068,50 @@ export type CampaignUpdateOneWithoutInboundMessagesNestedInput = {
 
 export type CampaignCreateWithoutUserInput = {
 	id?: string;
+	name?: string | null;
 	scenario: $Enums.Scenario;
 	status?: $Enums.JobStatus;
 	deliveryMode?: $Enums.DeliveryMode;
+	senderId?: string | null;
 	whatsappTemplate: string;
 	smsTemplate: string;
 	useCustomTemplate?: boolean;
 	totalMessages?: number;
 	sentMessages?: number;
 	failedMessages?: number;
+	estimatedCostKobo?: number;
 	inngestEventId?: string | null;
+	scheduledAt?: Date | string | null;
 	createdAt?: Date | string;
 	startedAt?: Date | string | null;
 	completedAt?: Date | string | null;
 	messages?: Prisma.MessageCreateNestedManyWithoutCampaignInput;
+	transactions?: Prisma.TransactionCreateNestedManyWithoutCampaignInput;
 	pendingDeliveries?: Prisma.PendingDeliveryCreateNestedManyWithoutCampaignInput;
 	inboundMessages?: Prisma.InboundMessageCreateNestedManyWithoutCampaignInput;
 };
 
 export type CampaignUncheckedCreateWithoutUserInput = {
 	id?: string;
+	name?: string | null;
 	scenario: $Enums.Scenario;
 	status?: $Enums.JobStatus;
 	deliveryMode?: $Enums.DeliveryMode;
+	senderId?: string | null;
 	whatsappTemplate: string;
 	smsTemplate: string;
 	useCustomTemplate?: boolean;
 	totalMessages?: number;
 	sentMessages?: number;
 	failedMessages?: number;
+	estimatedCostKobo?: number;
 	inngestEventId?: string | null;
+	scheduledAt?: Date | string | null;
 	createdAt?: Date | string;
 	startedAt?: Date | string | null;
 	completedAt?: Date | string | null;
 	messages?: Prisma.MessageUncheckedCreateNestedManyWithoutCampaignInput;
+	transactions?: Prisma.TransactionUncheckedCreateNestedManyWithoutCampaignInput;
 	pendingDeliveries?: Prisma.PendingDeliveryUncheckedCreateNestedManyWithoutCampaignInput;
 	inboundMessages?: Prisma.InboundMessageUncheckedCreateNestedManyWithoutCampaignInput;
 };
@@ -1003,18 +1165,26 @@ export type CampaignScalarWhereInput = {
 	NOT?: Prisma.CampaignScalarWhereInput | Prisma.CampaignScalarWhereInput[];
 	id?: Prisma.StringFilter<"Campaign"> | string;
 	userId?: Prisma.StringFilter<"Campaign"> | string;
+	name?: Prisma.StringNullableFilter<"Campaign"> | string | null;
 	scenario?: Prisma.EnumScenarioFilter<"Campaign"> | $Enums.Scenario;
 	status?: Prisma.EnumJobStatusFilter<"Campaign"> | $Enums.JobStatus;
 	deliveryMode?:
 		| Prisma.EnumDeliveryModeFilter<"Campaign">
 		| $Enums.DeliveryMode;
+	senderId?: Prisma.StringNullableFilter<"Campaign"> | string | null;
 	whatsappTemplate?: Prisma.StringFilter<"Campaign"> | string;
 	smsTemplate?: Prisma.StringFilter<"Campaign"> | string;
 	useCustomTemplate?: Prisma.BoolFilter<"Campaign"> | boolean;
 	totalMessages?: Prisma.IntFilter<"Campaign"> | number;
 	sentMessages?: Prisma.IntFilter<"Campaign"> | number;
 	failedMessages?: Prisma.IntFilter<"Campaign"> | number;
+	estimatedCostKobo?: Prisma.IntFilter<"Campaign"> | number;
 	inngestEventId?: Prisma.StringNullableFilter<"Campaign"> | string | null;
+	scheduledAt?:
+		| Prisma.DateTimeNullableFilter<"Campaign">
+		| Date
+		| string
+		| null;
 	createdAt?: Prisma.DateTimeFilter<"Campaign"> | Date | string;
 	startedAt?: Prisma.DateTimeNullableFilter<"Campaign"> | Date | string | null;
 	completedAt?:
@@ -1024,22 +1194,189 @@ export type CampaignScalarWhereInput = {
 		| null;
 };
 
-export type CampaignCreateWithoutMessagesInput = {
+export type CampaignCreateWithoutTransactionsInput = {
 	id?: string;
+	name?: string | null;
 	scenario: $Enums.Scenario;
 	status?: $Enums.JobStatus;
 	deliveryMode?: $Enums.DeliveryMode;
+	senderId?: string | null;
 	whatsappTemplate: string;
 	smsTemplate: string;
 	useCustomTemplate?: boolean;
 	totalMessages?: number;
 	sentMessages?: number;
 	failedMessages?: number;
+	estimatedCostKobo?: number;
 	inngestEventId?: string | null;
+	scheduledAt?: Date | string | null;
 	createdAt?: Date | string;
 	startedAt?: Date | string | null;
 	completedAt?: Date | string | null;
 	user: Prisma.UserCreateNestedOneWithoutCampaignsInput;
+	messages?: Prisma.MessageCreateNestedManyWithoutCampaignInput;
+	pendingDeliveries?: Prisma.PendingDeliveryCreateNestedManyWithoutCampaignInput;
+	inboundMessages?: Prisma.InboundMessageCreateNestedManyWithoutCampaignInput;
+};
+
+export type CampaignUncheckedCreateWithoutTransactionsInput = {
+	id?: string;
+	userId: string;
+	name?: string | null;
+	scenario: $Enums.Scenario;
+	status?: $Enums.JobStatus;
+	deliveryMode?: $Enums.DeliveryMode;
+	senderId?: string | null;
+	whatsappTemplate: string;
+	smsTemplate: string;
+	useCustomTemplate?: boolean;
+	totalMessages?: number;
+	sentMessages?: number;
+	failedMessages?: number;
+	estimatedCostKobo?: number;
+	inngestEventId?: string | null;
+	scheduledAt?: Date | string | null;
+	createdAt?: Date | string;
+	startedAt?: Date | string | null;
+	completedAt?: Date | string | null;
+	messages?: Prisma.MessageUncheckedCreateNestedManyWithoutCampaignInput;
+	pendingDeliveries?: Prisma.PendingDeliveryUncheckedCreateNestedManyWithoutCampaignInput;
+	inboundMessages?: Prisma.InboundMessageUncheckedCreateNestedManyWithoutCampaignInput;
+};
+
+export type CampaignCreateOrConnectWithoutTransactionsInput = {
+	where: Prisma.CampaignWhereUniqueInput;
+	create: Prisma.XOR<
+		Prisma.CampaignCreateWithoutTransactionsInput,
+		Prisma.CampaignUncheckedCreateWithoutTransactionsInput
+	>;
+};
+
+export type CampaignUpsertWithoutTransactionsInput = {
+	update: Prisma.XOR<
+		Prisma.CampaignUpdateWithoutTransactionsInput,
+		Prisma.CampaignUncheckedUpdateWithoutTransactionsInput
+	>;
+	create: Prisma.XOR<
+		Prisma.CampaignCreateWithoutTransactionsInput,
+		Prisma.CampaignUncheckedCreateWithoutTransactionsInput
+	>;
+	where?: Prisma.CampaignWhereInput;
+};
+
+export type CampaignUpdateToOneWithWhereWithoutTransactionsInput = {
+	where?: Prisma.CampaignWhereInput;
+	data: Prisma.XOR<
+		Prisma.CampaignUpdateWithoutTransactionsInput,
+		Prisma.CampaignUncheckedUpdateWithoutTransactionsInput
+	>;
+};
+
+export type CampaignUpdateWithoutTransactionsInput = {
+	id?: Prisma.StringFieldUpdateOperationsInput | string;
+	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	scenario?: Prisma.EnumScenarioFieldUpdateOperationsInput | $Enums.Scenario;
+	status?: Prisma.EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus;
+	deliveryMode?:
+		| Prisma.EnumDeliveryModeFieldUpdateOperationsInput
+		| $Enums.DeliveryMode;
+	senderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	whatsappTemplate?: Prisma.StringFieldUpdateOperationsInput | string;
+	smsTemplate?: Prisma.StringFieldUpdateOperationsInput | string;
+	useCustomTemplate?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	totalMessages?: Prisma.IntFieldUpdateOperationsInput | number;
+	sentMessages?: Prisma.IntFieldUpdateOperationsInput | number;
+	failedMessages?: Prisma.IntFieldUpdateOperationsInput | number;
+	estimatedCostKobo?: Prisma.IntFieldUpdateOperationsInput | number;
+	inngestEventId?:
+		| Prisma.NullableStringFieldUpdateOperationsInput
+		| string
+		| null;
+	scheduledAt?:
+		| Prisma.NullableDateTimeFieldUpdateOperationsInput
+		| Date
+		| string
+		| null;
+	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+	startedAt?:
+		| Prisma.NullableDateTimeFieldUpdateOperationsInput
+		| Date
+		| string
+		| null;
+	completedAt?:
+		| Prisma.NullableDateTimeFieldUpdateOperationsInput
+		| Date
+		| string
+		| null;
+	user?: Prisma.UserUpdateOneRequiredWithoutCampaignsNestedInput;
+	messages?: Prisma.MessageUpdateManyWithoutCampaignNestedInput;
+	pendingDeliveries?: Prisma.PendingDeliveryUpdateManyWithoutCampaignNestedInput;
+	inboundMessages?: Prisma.InboundMessageUpdateManyWithoutCampaignNestedInput;
+};
+
+export type CampaignUncheckedUpdateWithoutTransactionsInput = {
+	id?: Prisma.StringFieldUpdateOperationsInput | string;
+	userId?: Prisma.StringFieldUpdateOperationsInput | string;
+	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	scenario?: Prisma.EnumScenarioFieldUpdateOperationsInput | $Enums.Scenario;
+	status?: Prisma.EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus;
+	deliveryMode?:
+		| Prisma.EnumDeliveryModeFieldUpdateOperationsInput
+		| $Enums.DeliveryMode;
+	senderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	whatsappTemplate?: Prisma.StringFieldUpdateOperationsInput | string;
+	smsTemplate?: Prisma.StringFieldUpdateOperationsInput | string;
+	useCustomTemplate?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	totalMessages?: Prisma.IntFieldUpdateOperationsInput | number;
+	sentMessages?: Prisma.IntFieldUpdateOperationsInput | number;
+	failedMessages?: Prisma.IntFieldUpdateOperationsInput | number;
+	estimatedCostKobo?: Prisma.IntFieldUpdateOperationsInput | number;
+	inngestEventId?:
+		| Prisma.NullableStringFieldUpdateOperationsInput
+		| string
+		| null;
+	scheduledAt?:
+		| Prisma.NullableDateTimeFieldUpdateOperationsInput
+		| Date
+		| string
+		| null;
+	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+	startedAt?:
+		| Prisma.NullableDateTimeFieldUpdateOperationsInput
+		| Date
+		| string
+		| null;
+	completedAt?:
+		| Prisma.NullableDateTimeFieldUpdateOperationsInput
+		| Date
+		| string
+		| null;
+	messages?: Prisma.MessageUncheckedUpdateManyWithoutCampaignNestedInput;
+	pendingDeliveries?: Prisma.PendingDeliveryUncheckedUpdateManyWithoutCampaignNestedInput;
+	inboundMessages?: Prisma.InboundMessageUncheckedUpdateManyWithoutCampaignNestedInput;
+};
+
+export type CampaignCreateWithoutMessagesInput = {
+	id?: string;
+	name?: string | null;
+	scenario: $Enums.Scenario;
+	status?: $Enums.JobStatus;
+	deliveryMode?: $Enums.DeliveryMode;
+	senderId?: string | null;
+	whatsappTemplate: string;
+	smsTemplate: string;
+	useCustomTemplate?: boolean;
+	totalMessages?: number;
+	sentMessages?: number;
+	failedMessages?: number;
+	estimatedCostKobo?: number;
+	inngestEventId?: string | null;
+	scheduledAt?: Date | string | null;
+	createdAt?: Date | string;
+	startedAt?: Date | string | null;
+	completedAt?: Date | string | null;
+	user: Prisma.UserCreateNestedOneWithoutCampaignsInput;
+	transactions?: Prisma.TransactionCreateNestedManyWithoutCampaignInput;
 	pendingDeliveries?: Prisma.PendingDeliveryCreateNestedManyWithoutCampaignInput;
 	inboundMessages?: Prisma.InboundMessageCreateNestedManyWithoutCampaignInput;
 };
@@ -1047,19 +1384,24 @@ export type CampaignCreateWithoutMessagesInput = {
 export type CampaignUncheckedCreateWithoutMessagesInput = {
 	id?: string;
 	userId: string;
+	name?: string | null;
 	scenario: $Enums.Scenario;
 	status?: $Enums.JobStatus;
 	deliveryMode?: $Enums.DeliveryMode;
+	senderId?: string | null;
 	whatsappTemplate: string;
 	smsTemplate: string;
 	useCustomTemplate?: boolean;
 	totalMessages?: number;
 	sentMessages?: number;
 	failedMessages?: number;
+	estimatedCostKobo?: number;
 	inngestEventId?: string | null;
+	scheduledAt?: Date | string | null;
 	createdAt?: Date | string;
 	startedAt?: Date | string | null;
 	completedAt?: Date | string | null;
+	transactions?: Prisma.TransactionUncheckedCreateNestedManyWithoutCampaignInput;
 	pendingDeliveries?: Prisma.PendingDeliveryUncheckedCreateNestedManyWithoutCampaignInput;
 	inboundMessages?: Prisma.InboundMessageUncheckedCreateNestedManyWithoutCampaignInput;
 };
@@ -1094,19 +1436,27 @@ export type CampaignUpdateToOneWithWhereWithoutMessagesInput = {
 
 export type CampaignUpdateWithoutMessagesInput = {
 	id?: Prisma.StringFieldUpdateOperationsInput | string;
+	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	scenario?: Prisma.EnumScenarioFieldUpdateOperationsInput | $Enums.Scenario;
 	status?: Prisma.EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus;
 	deliveryMode?:
 		| Prisma.EnumDeliveryModeFieldUpdateOperationsInput
 		| $Enums.DeliveryMode;
+	senderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	whatsappTemplate?: Prisma.StringFieldUpdateOperationsInput | string;
 	smsTemplate?: Prisma.StringFieldUpdateOperationsInput | string;
 	useCustomTemplate?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	totalMessages?: Prisma.IntFieldUpdateOperationsInput | number;
 	sentMessages?: Prisma.IntFieldUpdateOperationsInput | number;
 	failedMessages?: Prisma.IntFieldUpdateOperationsInput | number;
+	estimatedCostKobo?: Prisma.IntFieldUpdateOperationsInput | number;
 	inngestEventId?:
 		| Prisma.NullableStringFieldUpdateOperationsInput
+		| string
+		| null;
+	scheduledAt?:
+		| Prisma.NullableDateTimeFieldUpdateOperationsInput
+		| Date
 		| string
 		| null;
 	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1121,6 +1471,7 @@ export type CampaignUpdateWithoutMessagesInput = {
 		| string
 		| null;
 	user?: Prisma.UserUpdateOneRequiredWithoutCampaignsNestedInput;
+	transactions?: Prisma.TransactionUpdateManyWithoutCampaignNestedInput;
 	pendingDeliveries?: Prisma.PendingDeliveryUpdateManyWithoutCampaignNestedInput;
 	inboundMessages?: Prisma.InboundMessageUpdateManyWithoutCampaignNestedInput;
 };
@@ -1128,19 +1479,27 @@ export type CampaignUpdateWithoutMessagesInput = {
 export type CampaignUncheckedUpdateWithoutMessagesInput = {
 	id?: Prisma.StringFieldUpdateOperationsInput | string;
 	userId?: Prisma.StringFieldUpdateOperationsInput | string;
+	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	scenario?: Prisma.EnumScenarioFieldUpdateOperationsInput | $Enums.Scenario;
 	status?: Prisma.EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus;
 	deliveryMode?:
 		| Prisma.EnumDeliveryModeFieldUpdateOperationsInput
 		| $Enums.DeliveryMode;
+	senderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	whatsappTemplate?: Prisma.StringFieldUpdateOperationsInput | string;
 	smsTemplate?: Prisma.StringFieldUpdateOperationsInput | string;
 	useCustomTemplate?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	totalMessages?: Prisma.IntFieldUpdateOperationsInput | number;
 	sentMessages?: Prisma.IntFieldUpdateOperationsInput | number;
 	failedMessages?: Prisma.IntFieldUpdateOperationsInput | number;
+	estimatedCostKobo?: Prisma.IntFieldUpdateOperationsInput | number;
 	inngestEventId?:
 		| Prisma.NullableStringFieldUpdateOperationsInput
+		| string
+		| null;
+	scheduledAt?:
+		| Prisma.NullableDateTimeFieldUpdateOperationsInput
+		| Date
 		| string
 		| null;
 	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1154,47 +1513,58 @@ export type CampaignUncheckedUpdateWithoutMessagesInput = {
 		| Date
 		| string
 		| null;
+	transactions?: Prisma.TransactionUncheckedUpdateManyWithoutCampaignNestedInput;
 	pendingDeliveries?: Prisma.PendingDeliveryUncheckedUpdateManyWithoutCampaignNestedInput;
 	inboundMessages?: Prisma.InboundMessageUncheckedUpdateManyWithoutCampaignNestedInput;
 };
 
 export type CampaignCreateWithoutPendingDeliveriesInput = {
 	id?: string;
+	name?: string | null;
 	scenario: $Enums.Scenario;
 	status?: $Enums.JobStatus;
 	deliveryMode?: $Enums.DeliveryMode;
+	senderId?: string | null;
 	whatsappTemplate: string;
 	smsTemplate: string;
 	useCustomTemplate?: boolean;
 	totalMessages?: number;
 	sentMessages?: number;
 	failedMessages?: number;
+	estimatedCostKobo?: number;
 	inngestEventId?: string | null;
+	scheduledAt?: Date | string | null;
 	createdAt?: Date | string;
 	startedAt?: Date | string | null;
 	completedAt?: Date | string | null;
 	user: Prisma.UserCreateNestedOneWithoutCampaignsInput;
 	messages?: Prisma.MessageCreateNestedManyWithoutCampaignInput;
+	transactions?: Prisma.TransactionCreateNestedManyWithoutCampaignInput;
 	inboundMessages?: Prisma.InboundMessageCreateNestedManyWithoutCampaignInput;
 };
 
 export type CampaignUncheckedCreateWithoutPendingDeliveriesInput = {
 	id?: string;
 	userId: string;
+	name?: string | null;
 	scenario: $Enums.Scenario;
 	status?: $Enums.JobStatus;
 	deliveryMode?: $Enums.DeliveryMode;
+	senderId?: string | null;
 	whatsappTemplate: string;
 	smsTemplate: string;
 	useCustomTemplate?: boolean;
 	totalMessages?: number;
 	sentMessages?: number;
 	failedMessages?: number;
+	estimatedCostKobo?: number;
 	inngestEventId?: string | null;
+	scheduledAt?: Date | string | null;
 	createdAt?: Date | string;
 	startedAt?: Date | string | null;
 	completedAt?: Date | string | null;
 	messages?: Prisma.MessageUncheckedCreateNestedManyWithoutCampaignInput;
+	transactions?: Prisma.TransactionUncheckedCreateNestedManyWithoutCampaignInput;
 	inboundMessages?: Prisma.InboundMessageUncheckedCreateNestedManyWithoutCampaignInput;
 };
 
@@ -1228,19 +1598,27 @@ export type CampaignUpdateToOneWithWhereWithoutPendingDeliveriesInput = {
 
 export type CampaignUpdateWithoutPendingDeliveriesInput = {
 	id?: Prisma.StringFieldUpdateOperationsInput | string;
+	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	scenario?: Prisma.EnumScenarioFieldUpdateOperationsInput | $Enums.Scenario;
 	status?: Prisma.EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus;
 	deliveryMode?:
 		| Prisma.EnumDeliveryModeFieldUpdateOperationsInput
 		| $Enums.DeliveryMode;
+	senderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	whatsappTemplate?: Prisma.StringFieldUpdateOperationsInput | string;
 	smsTemplate?: Prisma.StringFieldUpdateOperationsInput | string;
 	useCustomTemplate?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	totalMessages?: Prisma.IntFieldUpdateOperationsInput | number;
 	sentMessages?: Prisma.IntFieldUpdateOperationsInput | number;
 	failedMessages?: Prisma.IntFieldUpdateOperationsInput | number;
+	estimatedCostKobo?: Prisma.IntFieldUpdateOperationsInput | number;
 	inngestEventId?:
 		| Prisma.NullableStringFieldUpdateOperationsInput
+		| string
+		| null;
+	scheduledAt?:
+		| Prisma.NullableDateTimeFieldUpdateOperationsInput
+		| Date
 		| string
 		| null;
 	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1256,25 +1634,34 @@ export type CampaignUpdateWithoutPendingDeliveriesInput = {
 		| null;
 	user?: Prisma.UserUpdateOneRequiredWithoutCampaignsNestedInput;
 	messages?: Prisma.MessageUpdateManyWithoutCampaignNestedInput;
+	transactions?: Prisma.TransactionUpdateManyWithoutCampaignNestedInput;
 	inboundMessages?: Prisma.InboundMessageUpdateManyWithoutCampaignNestedInput;
 };
 
 export type CampaignUncheckedUpdateWithoutPendingDeliveriesInput = {
 	id?: Prisma.StringFieldUpdateOperationsInput | string;
 	userId?: Prisma.StringFieldUpdateOperationsInput | string;
+	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	scenario?: Prisma.EnumScenarioFieldUpdateOperationsInput | $Enums.Scenario;
 	status?: Prisma.EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus;
 	deliveryMode?:
 		| Prisma.EnumDeliveryModeFieldUpdateOperationsInput
 		| $Enums.DeliveryMode;
+	senderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	whatsappTemplate?: Prisma.StringFieldUpdateOperationsInput | string;
 	smsTemplate?: Prisma.StringFieldUpdateOperationsInput | string;
 	useCustomTemplate?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	totalMessages?: Prisma.IntFieldUpdateOperationsInput | number;
 	sentMessages?: Prisma.IntFieldUpdateOperationsInput | number;
 	failedMessages?: Prisma.IntFieldUpdateOperationsInput | number;
+	estimatedCostKobo?: Prisma.IntFieldUpdateOperationsInput | number;
 	inngestEventId?:
 		| Prisma.NullableStringFieldUpdateOperationsInput
+		| string
+		| null;
+	scheduledAt?:
+		| Prisma.NullableDateTimeFieldUpdateOperationsInput
+		| Date
 		| string
 		| null;
 	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1289,46 +1676,57 @@ export type CampaignUncheckedUpdateWithoutPendingDeliveriesInput = {
 		| string
 		| null;
 	messages?: Prisma.MessageUncheckedUpdateManyWithoutCampaignNestedInput;
+	transactions?: Prisma.TransactionUncheckedUpdateManyWithoutCampaignNestedInput;
 	inboundMessages?: Prisma.InboundMessageUncheckedUpdateManyWithoutCampaignNestedInput;
 };
 
 export type CampaignCreateWithoutInboundMessagesInput = {
 	id?: string;
+	name?: string | null;
 	scenario: $Enums.Scenario;
 	status?: $Enums.JobStatus;
 	deliveryMode?: $Enums.DeliveryMode;
+	senderId?: string | null;
 	whatsappTemplate: string;
 	smsTemplate: string;
 	useCustomTemplate?: boolean;
 	totalMessages?: number;
 	sentMessages?: number;
 	failedMessages?: number;
+	estimatedCostKobo?: number;
 	inngestEventId?: string | null;
+	scheduledAt?: Date | string | null;
 	createdAt?: Date | string;
 	startedAt?: Date | string | null;
 	completedAt?: Date | string | null;
 	user: Prisma.UserCreateNestedOneWithoutCampaignsInput;
 	messages?: Prisma.MessageCreateNestedManyWithoutCampaignInput;
+	transactions?: Prisma.TransactionCreateNestedManyWithoutCampaignInput;
 	pendingDeliveries?: Prisma.PendingDeliveryCreateNestedManyWithoutCampaignInput;
 };
 
 export type CampaignUncheckedCreateWithoutInboundMessagesInput = {
 	id?: string;
 	userId: string;
+	name?: string | null;
 	scenario: $Enums.Scenario;
 	status?: $Enums.JobStatus;
 	deliveryMode?: $Enums.DeliveryMode;
+	senderId?: string | null;
 	whatsappTemplate: string;
 	smsTemplate: string;
 	useCustomTemplate?: boolean;
 	totalMessages?: number;
 	sentMessages?: number;
 	failedMessages?: number;
+	estimatedCostKobo?: number;
 	inngestEventId?: string | null;
+	scheduledAt?: Date | string | null;
 	createdAt?: Date | string;
 	startedAt?: Date | string | null;
 	completedAt?: Date | string | null;
 	messages?: Prisma.MessageUncheckedCreateNestedManyWithoutCampaignInput;
+	transactions?: Prisma.TransactionUncheckedCreateNestedManyWithoutCampaignInput;
 	pendingDeliveries?: Prisma.PendingDeliveryUncheckedCreateNestedManyWithoutCampaignInput;
 };
 
@@ -1362,19 +1760,27 @@ export type CampaignUpdateToOneWithWhereWithoutInboundMessagesInput = {
 
 export type CampaignUpdateWithoutInboundMessagesInput = {
 	id?: Prisma.StringFieldUpdateOperationsInput | string;
+	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	scenario?: Prisma.EnumScenarioFieldUpdateOperationsInput | $Enums.Scenario;
 	status?: Prisma.EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus;
 	deliveryMode?:
 		| Prisma.EnumDeliveryModeFieldUpdateOperationsInput
 		| $Enums.DeliveryMode;
+	senderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	whatsappTemplate?: Prisma.StringFieldUpdateOperationsInput | string;
 	smsTemplate?: Prisma.StringFieldUpdateOperationsInput | string;
 	useCustomTemplate?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	totalMessages?: Prisma.IntFieldUpdateOperationsInput | number;
 	sentMessages?: Prisma.IntFieldUpdateOperationsInput | number;
 	failedMessages?: Prisma.IntFieldUpdateOperationsInput | number;
+	estimatedCostKobo?: Prisma.IntFieldUpdateOperationsInput | number;
 	inngestEventId?:
 		| Prisma.NullableStringFieldUpdateOperationsInput
+		| string
+		| null;
+	scheduledAt?:
+		| Prisma.NullableDateTimeFieldUpdateOperationsInput
+		| Date
 		| string
 		| null;
 	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1390,25 +1796,34 @@ export type CampaignUpdateWithoutInboundMessagesInput = {
 		| null;
 	user?: Prisma.UserUpdateOneRequiredWithoutCampaignsNestedInput;
 	messages?: Prisma.MessageUpdateManyWithoutCampaignNestedInput;
+	transactions?: Prisma.TransactionUpdateManyWithoutCampaignNestedInput;
 	pendingDeliveries?: Prisma.PendingDeliveryUpdateManyWithoutCampaignNestedInput;
 };
 
 export type CampaignUncheckedUpdateWithoutInboundMessagesInput = {
 	id?: Prisma.StringFieldUpdateOperationsInput | string;
 	userId?: Prisma.StringFieldUpdateOperationsInput | string;
+	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	scenario?: Prisma.EnumScenarioFieldUpdateOperationsInput | $Enums.Scenario;
 	status?: Prisma.EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus;
 	deliveryMode?:
 		| Prisma.EnumDeliveryModeFieldUpdateOperationsInput
 		| $Enums.DeliveryMode;
+	senderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	whatsappTemplate?: Prisma.StringFieldUpdateOperationsInput | string;
 	smsTemplate?: Prisma.StringFieldUpdateOperationsInput | string;
 	useCustomTemplate?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	totalMessages?: Prisma.IntFieldUpdateOperationsInput | number;
 	sentMessages?: Prisma.IntFieldUpdateOperationsInput | number;
 	failedMessages?: Prisma.IntFieldUpdateOperationsInput | number;
+	estimatedCostKobo?: Prisma.IntFieldUpdateOperationsInput | number;
 	inngestEventId?:
 		| Prisma.NullableStringFieldUpdateOperationsInput
+		| string
+		| null;
+	scheduledAt?:
+		| Prisma.NullableDateTimeFieldUpdateOperationsInput
+		| Date
 		| string
 		| null;
 	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1423,21 +1838,26 @@ export type CampaignUncheckedUpdateWithoutInboundMessagesInput = {
 		| string
 		| null;
 	messages?: Prisma.MessageUncheckedUpdateManyWithoutCampaignNestedInput;
+	transactions?: Prisma.TransactionUncheckedUpdateManyWithoutCampaignNestedInput;
 	pendingDeliveries?: Prisma.PendingDeliveryUncheckedUpdateManyWithoutCampaignNestedInput;
 };
 
 export type CampaignCreateManyUserInput = {
 	id?: string;
+	name?: string | null;
 	scenario: $Enums.Scenario;
 	status?: $Enums.JobStatus;
 	deliveryMode?: $Enums.DeliveryMode;
+	senderId?: string | null;
 	whatsappTemplate: string;
 	smsTemplate: string;
 	useCustomTemplate?: boolean;
 	totalMessages?: number;
 	sentMessages?: number;
 	failedMessages?: number;
+	estimatedCostKobo?: number;
 	inngestEventId?: string | null;
+	scheduledAt?: Date | string | null;
 	createdAt?: Date | string;
 	startedAt?: Date | string | null;
 	completedAt?: Date | string | null;
@@ -1445,19 +1865,27 @@ export type CampaignCreateManyUserInput = {
 
 export type CampaignUpdateWithoutUserInput = {
 	id?: Prisma.StringFieldUpdateOperationsInput | string;
+	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	scenario?: Prisma.EnumScenarioFieldUpdateOperationsInput | $Enums.Scenario;
 	status?: Prisma.EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus;
 	deliveryMode?:
 		| Prisma.EnumDeliveryModeFieldUpdateOperationsInput
 		| $Enums.DeliveryMode;
+	senderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	whatsappTemplate?: Prisma.StringFieldUpdateOperationsInput | string;
 	smsTemplate?: Prisma.StringFieldUpdateOperationsInput | string;
 	useCustomTemplate?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	totalMessages?: Prisma.IntFieldUpdateOperationsInput | number;
 	sentMessages?: Prisma.IntFieldUpdateOperationsInput | number;
 	failedMessages?: Prisma.IntFieldUpdateOperationsInput | number;
+	estimatedCostKobo?: Prisma.IntFieldUpdateOperationsInput | number;
 	inngestEventId?:
 		| Prisma.NullableStringFieldUpdateOperationsInput
+		| string
+		| null;
+	scheduledAt?:
+		| Prisma.NullableDateTimeFieldUpdateOperationsInput
+		| Date
 		| string
 		| null;
 	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1472,25 +1900,34 @@ export type CampaignUpdateWithoutUserInput = {
 		| string
 		| null;
 	messages?: Prisma.MessageUpdateManyWithoutCampaignNestedInput;
+	transactions?: Prisma.TransactionUpdateManyWithoutCampaignNestedInput;
 	pendingDeliveries?: Prisma.PendingDeliveryUpdateManyWithoutCampaignNestedInput;
 	inboundMessages?: Prisma.InboundMessageUpdateManyWithoutCampaignNestedInput;
 };
 
 export type CampaignUncheckedUpdateWithoutUserInput = {
 	id?: Prisma.StringFieldUpdateOperationsInput | string;
+	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	scenario?: Prisma.EnumScenarioFieldUpdateOperationsInput | $Enums.Scenario;
 	status?: Prisma.EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus;
 	deliveryMode?:
 		| Prisma.EnumDeliveryModeFieldUpdateOperationsInput
 		| $Enums.DeliveryMode;
+	senderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	whatsappTemplate?: Prisma.StringFieldUpdateOperationsInput | string;
 	smsTemplate?: Prisma.StringFieldUpdateOperationsInput | string;
 	useCustomTemplate?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	totalMessages?: Prisma.IntFieldUpdateOperationsInput | number;
 	sentMessages?: Prisma.IntFieldUpdateOperationsInput | number;
 	failedMessages?: Prisma.IntFieldUpdateOperationsInput | number;
+	estimatedCostKobo?: Prisma.IntFieldUpdateOperationsInput | number;
 	inngestEventId?:
 		| Prisma.NullableStringFieldUpdateOperationsInput
+		| string
+		| null;
+	scheduledAt?:
+		| Prisma.NullableDateTimeFieldUpdateOperationsInput
+		| Date
 		| string
 		| null;
 	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1505,25 +1942,34 @@ export type CampaignUncheckedUpdateWithoutUserInput = {
 		| string
 		| null;
 	messages?: Prisma.MessageUncheckedUpdateManyWithoutCampaignNestedInput;
+	transactions?: Prisma.TransactionUncheckedUpdateManyWithoutCampaignNestedInput;
 	pendingDeliveries?: Prisma.PendingDeliveryUncheckedUpdateManyWithoutCampaignNestedInput;
 	inboundMessages?: Prisma.InboundMessageUncheckedUpdateManyWithoutCampaignNestedInput;
 };
 
 export type CampaignUncheckedUpdateManyWithoutUserInput = {
 	id?: Prisma.StringFieldUpdateOperationsInput | string;
+	name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	scenario?: Prisma.EnumScenarioFieldUpdateOperationsInput | $Enums.Scenario;
 	status?: Prisma.EnumJobStatusFieldUpdateOperationsInput | $Enums.JobStatus;
 	deliveryMode?:
 		| Prisma.EnumDeliveryModeFieldUpdateOperationsInput
 		| $Enums.DeliveryMode;
+	senderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 	whatsappTemplate?: Prisma.StringFieldUpdateOperationsInput | string;
 	smsTemplate?: Prisma.StringFieldUpdateOperationsInput | string;
 	useCustomTemplate?: Prisma.BoolFieldUpdateOperationsInput | boolean;
 	totalMessages?: Prisma.IntFieldUpdateOperationsInput | number;
 	sentMessages?: Prisma.IntFieldUpdateOperationsInput | number;
 	failedMessages?: Prisma.IntFieldUpdateOperationsInput | number;
+	estimatedCostKobo?: Prisma.IntFieldUpdateOperationsInput | number;
 	inngestEventId?:
 		| Prisma.NullableStringFieldUpdateOperationsInput
+		| string
+		| null;
+	scheduledAt?:
+		| Prisma.NullableDateTimeFieldUpdateOperationsInput
+		| Date
 		| string
 		| null;
 	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1545,6 +1991,7 @@ export type CampaignUncheckedUpdateManyWithoutUserInput = {
 
 export type CampaignCountOutputType = {
 	messages: number;
+	transactions: number;
 	pendingDeliveries: number;
 	inboundMessages: number;
 };
@@ -1554,6 +2001,7 @@ export type CampaignCountOutputTypeSelect<
 		runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
 	messages?: boolean | CampaignCountOutputTypeCountMessagesArgs;
+	transactions?: boolean | CampaignCountOutputTypeCountTransactionsArgs;
 	pendingDeliveries?:
 		| boolean
 		| CampaignCountOutputTypeCountPendingDeliveriesArgs;
@@ -1586,6 +2034,16 @@ export type CampaignCountOutputTypeCountMessagesArgs<
 /**
  * CampaignCountOutputType without action
  */
+export type CampaignCountOutputTypeCountTransactionsArgs<
+	ExtArgs extends
+		runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+	where?: Prisma.TransactionWhereInput;
+};
+
+/**
+ * CampaignCountOutputType without action
+ */
 export type CampaignCountOutputTypeCountPendingDeliveriesArgs<
 	ExtArgs extends
 		runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
@@ -1610,21 +2068,26 @@ export type CampaignSelect<
 	{
 		id?: boolean;
 		userId?: boolean;
+		name?: boolean;
 		scenario?: boolean;
 		status?: boolean;
 		deliveryMode?: boolean;
+		senderId?: boolean;
 		whatsappTemplate?: boolean;
 		smsTemplate?: boolean;
 		useCustomTemplate?: boolean;
 		totalMessages?: boolean;
 		sentMessages?: boolean;
 		failedMessages?: boolean;
+		estimatedCostKobo?: boolean;
 		inngestEventId?: boolean;
+		scheduledAt?: boolean;
 		createdAt?: boolean;
 		startedAt?: boolean;
 		completedAt?: boolean;
 		user?: boolean | Prisma.UserDefaultArgs<ExtArgs>;
 		messages?: boolean | Prisma.Campaign$messagesArgs<ExtArgs>;
+		transactions?: boolean | Prisma.Campaign$transactionsArgs<ExtArgs>;
 		pendingDeliveries?:
 			| boolean
 			| Prisma.Campaign$pendingDeliveriesArgs<ExtArgs>;
@@ -1641,16 +2104,20 @@ export type CampaignSelectCreateManyAndReturn<
 	{
 		id?: boolean;
 		userId?: boolean;
+		name?: boolean;
 		scenario?: boolean;
 		status?: boolean;
 		deliveryMode?: boolean;
+		senderId?: boolean;
 		whatsappTemplate?: boolean;
 		smsTemplate?: boolean;
 		useCustomTemplate?: boolean;
 		totalMessages?: boolean;
 		sentMessages?: boolean;
 		failedMessages?: boolean;
+		estimatedCostKobo?: boolean;
 		inngestEventId?: boolean;
+		scheduledAt?: boolean;
 		createdAt?: boolean;
 		startedAt?: boolean;
 		completedAt?: boolean;
@@ -1666,16 +2133,20 @@ export type CampaignSelectUpdateManyAndReturn<
 	{
 		id?: boolean;
 		userId?: boolean;
+		name?: boolean;
 		scenario?: boolean;
 		status?: boolean;
 		deliveryMode?: boolean;
+		senderId?: boolean;
 		whatsappTemplate?: boolean;
 		smsTemplate?: boolean;
 		useCustomTemplate?: boolean;
 		totalMessages?: boolean;
 		sentMessages?: boolean;
 		failedMessages?: boolean;
+		estimatedCostKobo?: boolean;
 		inngestEventId?: boolean;
+		scheduledAt?: boolean;
 		createdAt?: boolean;
 		startedAt?: boolean;
 		completedAt?: boolean;
@@ -1687,16 +2158,20 @@ export type CampaignSelectUpdateManyAndReturn<
 export type CampaignSelectScalar = {
 	id?: boolean;
 	userId?: boolean;
+	name?: boolean;
 	scenario?: boolean;
 	status?: boolean;
 	deliveryMode?: boolean;
+	senderId?: boolean;
 	whatsappTemplate?: boolean;
 	smsTemplate?: boolean;
 	useCustomTemplate?: boolean;
 	totalMessages?: boolean;
 	sentMessages?: boolean;
 	failedMessages?: boolean;
+	estimatedCostKobo?: boolean;
 	inngestEventId?: boolean;
+	scheduledAt?: boolean;
 	createdAt?: boolean;
 	startedAt?: boolean;
 	completedAt?: boolean;
@@ -1708,16 +2183,20 @@ export type CampaignOmit<
 > = runtime.Types.Extensions.GetOmit<
 	| "id"
 	| "userId"
+	| "name"
 	| "scenario"
 	| "status"
 	| "deliveryMode"
+	| "senderId"
 	| "whatsappTemplate"
 	| "smsTemplate"
 	| "useCustomTemplate"
 	| "totalMessages"
 	| "sentMessages"
 	| "failedMessages"
+	| "estimatedCostKobo"
 	| "inngestEventId"
+	| "scheduledAt"
 	| "createdAt"
 	| "startedAt"
 	| "completedAt",
@@ -1729,6 +2208,7 @@ export type CampaignInclude<
 > = {
 	user?: boolean | Prisma.UserDefaultArgs<ExtArgs>;
 	messages?: boolean | Prisma.Campaign$messagesArgs<ExtArgs>;
+	transactions?: boolean | Prisma.Campaign$transactionsArgs<ExtArgs>;
 	pendingDeliveries?: boolean | Prisma.Campaign$pendingDeliveriesArgs<ExtArgs>;
 	inboundMessages?: boolean | Prisma.Campaign$inboundMessagesArgs<ExtArgs>;
 	_count?: boolean | Prisma.CampaignCountOutputTypeDefaultArgs<ExtArgs>;
@@ -1754,6 +2234,7 @@ export type $CampaignPayload<
 	objects: {
 		user: Prisma.$UserPayload<ExtArgs>;
 		messages: Prisma.$MessagePayload<ExtArgs>[];
+		transactions: Prisma.$TransactionPayload<ExtArgs>[];
 		pendingDeliveries: Prisma.$PendingDeliveryPayload<ExtArgs>[];
 		inboundMessages: Prisma.$InboundMessagePayload<ExtArgs>[];
 	};
@@ -1761,16 +2242,20 @@ export type $CampaignPayload<
 		{
 			id: string;
 			userId: string;
+			name: string | null;
 			scenario: $Enums.Scenario;
 			status: $Enums.JobStatus;
 			deliveryMode: $Enums.DeliveryMode;
+			senderId: string | null;
 			whatsappTemplate: string;
 			smsTemplate: string;
 			useCustomTemplate: boolean;
 			totalMessages: number;
 			sentMessages: number;
 			failedMessages: number;
+			estimatedCostKobo: number;
 			inngestEventId: string | null;
+			scheduledAt: Date | null;
 			createdAt: Date;
 			startedAt: Date | null;
 			completedAt: Date | null;
@@ -2393,6 +2878,17 @@ export interface Prisma__CampaignClient<
 			| undefined
 			| null
 	): runtime.Types.Utils.JsPromise<TResult1 | TResult2>;
+	transactions<T extends Prisma.Campaign$transactionsArgs<ExtArgs> = {}>(
+		args?: Prisma.Subset<T, Prisma.Campaign$transactionsArgs<ExtArgs>>
+	): Prisma.PrismaPromise<
+		| runtime.Types.Result.GetResult<
+				Prisma.$TransactionPayload<ExtArgs>,
+				T,
+				"findMany",
+				GlobalOmitOptions
+		  >
+		| Null
+	>;
 	user<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(
 		args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>
 	): Prisma.Prisma__UserClient<
@@ -2417,10 +2913,14 @@ export interface CampaignFieldRefs {
 	readonly completedAt: Prisma.FieldRef<"Campaign", "DateTime">;
 	readonly createdAt: Prisma.FieldRef<"Campaign", "DateTime">;
 	readonly deliveryMode: Prisma.FieldRef<"Campaign", "DeliveryMode">;
+	readonly estimatedCostKobo: Prisma.FieldRef<"Campaign", "Int">;
 	readonly failedMessages: Prisma.FieldRef<"Campaign", "Int">;
 	readonly id: Prisma.FieldRef<"Campaign", "String">;
 	readonly inngestEventId: Prisma.FieldRef<"Campaign", "String">;
+	readonly name: Prisma.FieldRef<"Campaign", "String">;
 	readonly scenario: Prisma.FieldRef<"Campaign", "Scenario">;
+	readonly scheduledAt: Prisma.FieldRef<"Campaign", "DateTime">;
+	readonly senderId: Prisma.FieldRef<"Campaign", "String">;
 	readonly sentMessages: Prisma.FieldRef<"Campaign", "Int">;
 	readonly smsTemplate: Prisma.FieldRef<"Campaign", "String">;
 	readonly startedAt: Prisma.FieldRef<"Campaign", "DateTime">;
@@ -2921,6 +3421,37 @@ export type Campaign$messagesArgs<
 	take?: number;
 	skip?: number;
 	distinct?: Prisma.MessageScalarFieldEnum | Prisma.MessageScalarFieldEnum[];
+};
+
+/**
+ * Campaign.transactions
+ */
+export type Campaign$transactionsArgs<
+	ExtArgs extends
+		runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+	/**
+	 * Select specific fields to fetch from the Transaction
+	 */
+	select?: Prisma.TransactionSelect<ExtArgs> | null;
+	/**
+	 * Omit specific fields from the Transaction
+	 */
+	omit?: Prisma.TransactionOmit<ExtArgs> | null;
+	/**
+	 * Choose, which related nodes to fetch as well
+	 */
+	include?: Prisma.TransactionInclude<ExtArgs> | null;
+	where?: Prisma.TransactionWhereInput;
+	orderBy?:
+		| Prisma.TransactionOrderByWithRelationInput
+		| Prisma.TransactionOrderByWithRelationInput[];
+	cursor?: Prisma.TransactionWhereUniqueInput;
+	take?: number;
+	skip?: number;
+	distinct?:
+		| Prisma.TransactionScalarFieldEnum
+		| Prisma.TransactionScalarFieldEnum[];
 };
 
 /**

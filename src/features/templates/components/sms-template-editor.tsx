@@ -120,8 +120,8 @@ export function SmsOnlyTemplateEditor({
 		<Card className="w-full max-w-3xl rounded-2xl">
 			<CardHeader className="pb-4">
 				<div className="flex items-center gap-2.5">
-					<div className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#60a5fa25] bg-[#60a5fa15]">
-						<Phone className="h-4 w-4 text-[#60a5fa]" />
+					<div className="flex h-8 w-8 items-center justify-center rounded-lg border border-blue-500/25 bg-blue-500/10 dark:border-[#60a5fa25] dark:bg-[#60a5fa15]">
+						<Phone className="h-4 w-4 text-blue-600 dark:text-[#60a5fa]" />
 					</div>
 					<div>
 						<CardTitle className="text-base">
@@ -131,9 +131,9 @@ export function SmsOnlyTemplateEditor({
 							Ready to use immediately — no approval required
 						</p>
 					</div>
-					<div className="ml-auto flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/8 px-2.5 py-1">
-						<CheckCircle2 className="h-3 w-3 text-emerald-400" />
-						<span className="font-medium text-[10px] text-emerald-400">
+					<div className="ml-auto flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 dark:bg-emerald-500/8">
+						<CheckCircle2 className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+						<span className="font-medium text-emerald-700 text-xs dark:text-emerald-400">
 							Auto-approved
 						</span>
 					</div>
@@ -198,9 +198,9 @@ export function SmsOnlyTemplateEditor({
 									{(Object.keys(CATEGORY_LABELS) as WaCategory[]).map((c) => (
 										<button
 											className={[
-												"rounded-full border px-2 py-0.5 font-medium text-[10px] transition-colors",
+												"rounded-full border px-2 py-0.5 font-medium text-xs transition-colors",
 												field.state.value === c
-													? "border-[#60a5fa40] bg-[#60a5fa15] text-[#60a5fa]"
+													? "border-blue-500/40 bg-blue-500/15 text-blue-700 dark:border-[#60a5fa40] dark:bg-[#60a5fa15] dark:text-[#60a5fa]"
 													: "border-border text-muted-foreground hover:border-muted-foreground/60",
 											].join(" ")}
 											key={c}
@@ -251,7 +251,7 @@ export function SmsOnlyTemplateEditor({
 							Cancel
 						</Button>
 						<Button
-							className="gap-2 rounded-xl bg-[#60a5fa] text-white hover:bg-[#60a5fa]/90"
+							className="gap-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700 dark:bg-[#60a5fa] dark:text-slate-950 dark:hover:bg-[#60a5fa]/90"
 							disabled={!canSubmit || isSaving}
 							onClick={() => form.handleSubmit()}
 							type="button"

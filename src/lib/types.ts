@@ -9,7 +9,13 @@ export type MessageStatus =
 	| "sent"
 	| "failed"
 	| "rate_limited";
-export type JobStatus = "pending" | "processing" | "completed" | "failed";
+export type JobStatus =
+	| "pending"
+	| "dispatching"
+	| "processing"
+	| "completed"
+	| "failed"
+	| "cancelled";
 export type ParseJobStatus = "pending" | "parsing" | "done" | "error";
 
 export interface Contact {

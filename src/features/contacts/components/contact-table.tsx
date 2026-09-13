@@ -11,6 +11,7 @@ import {
 	Phone,
 	Search,
 	SlidersHorizontal,
+	Tag,
 	Trash2,
 	X,
 } from "lucide-react";
@@ -50,7 +51,8 @@ import {
 import { getContactTypeLabels } from "#/features/miscellaneous/org";
 import { useProfile } from "#/features/profile/hooks/use-profile";
 import { orpc } from "#/orpc/client";
-import { useContacts } from "../hooks/use-contacts";
+import { useContacts, useDeleteContacts, useTags } from "../hooks/use-contacts";
+import { BulkTagDialog } from "./bulk-tag-dialog";
 import { ContactDialog } from "./contact-dialog";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -83,15 +85,16 @@ interface ContactsTableProps {
 // ─── Styling constants ────────────────────────────────────────────────────────
 
 const CHANNEL_CLASS: Record<string, string> = {
-	sms: "border-[#60a5fa40] bg-[#0d1a2e] text-[#60a5fa]",
-	whatsapp: "border-[#25d36640] bg-[#0d2016] text-[#25d366]",
+	sms: "border-blue-500/30 bg-blue-500/10 text-blue-700 dark:border-[#60a5fa40] dark:bg-[#0d1a2e] dark:text-[#60a5fa]",
+	whatsapp:
+		"border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:border-[#25d36640] dark:bg-[#0d2016] dark:text-[#25d366]",
 };
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 
 function TableSkeleton({
 	rows = 8,
-	cols = 5,
+	cols = 6,
 }: {
 	rows?: number;
 	cols?: number;
@@ -129,6 +132,10 @@ function useFilterState(disableUrlSync: boolean) {
 		"type",
 		parseAsString.withDefault("")
 	);
+	const [urlTag, setUrlTag] = useQueryState(
+		"tag",
+		parseAsString.withDefault("")
+	);
 	const [urlPage, setUrlPage] = useQueryState(
 		"page",
 		parseAsInteger.withDefault(1)
@@ -142,6 +149,7 @@ function useFilterState(disableUrlSync: boolean) {
 	const [localSearch, setLocalSearch] = useState("");
 	const [localChannel, setLocalChannel] = useState("");
 	const [localType, setLocalType] = useState("");
+	const [localTag, setLocalTag] = useState("");
 	const [localPage, setLocalPage] = useState(1);
 	const [localDupes, setLocalDupes] = useState("");
 
@@ -155,7 +163,9 @@ function useFilterState(disableUrlSync: boolean) {
 			setDuplicates: (v: string | null) => setLocalDupes(v ?? ""),
 			setPage: (v: number) => setLocalPage(v),
 			setSearch: (v: string | null) => setLocalSearch(v ?? ""),
+			setTag: (v: string | null) => setLocalTag(v ?? ""),
 			setType: (v: string | null) => setLocalType(v ?? ""),
+			tag: localTag,
 			type: localType,
 		};
 	}
@@ -168,7 +178,9 @@ function useFilterState(disableUrlSync: boolean) {
 		setDuplicates: setUrlDupes,
 		setPage: setUrlPage,
 		setSearch: setUrlSearch,
+		setTag: setUrlTag,
 		setType: setUrlType,
+		tag: urlTag,
 		type: urlType,
 	};
 }
@@ -189,6 +201,8 @@ export function ContactsTable({
 		setChannel,
 		type,
 		setType,
+		tag,
+		setTag,
 		page,
 		setPage,
 		duplicates,
@@ -200,6 +214,8 @@ export function ContactsTable({
 		new Map()
 	);
 	const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+	const [bulkTagOpen, setBulkTagOpen] = useState(false);
+	const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false);
 
 	// Dialog state
 	const [detailId, setDetailId] = useState<string | null>(null);
@@ -215,6 +231,10 @@ export function ContactsTable({
 	const { data: profile } = useProfile();
 	const typeLabels = getContactTypeLabels(profile?.orgType);
 
+	// Tags query for filter dropdown
+	const { data: tagData } = useTags();
+	const availableTags = tagData?.tags ?? [];
+
 	// Mutations
 	const deleteMutation = useMutation(
 		orpc.contacts.delete.mutationOptions({
@@ -224,10 +244,13 @@ export function ContactsTable({
 				}),
 			onSuccess: () => {
 				qc.invalidateQueries({ queryKey: ["contacts"] });
+				qc.invalidateQueries({ queryKey: ["tags"] });
 				toast.success("Contact deleted");
 			},
 		})
 	);
+
+	const bulkDeleteMutation = useDeleteContacts();
 
 	const autoMergeMutation = useMutation(
 		orpc.contacts.autoMergeDuplicates.mutationOptions({
@@ -265,6 +288,7 @@ export function ContactsTable({
 		page,
 		pageSize: 15,
 		search: search || undefined,
+		tag: tag || undefined,
 		type:
 			(type as "new_contact" | "returning" | "contact" | "prospect") ||
 			undefined,
@@ -272,7 +296,7 @@ export function ContactsTable({
 
 	const contacts = data?.contacts ?? [];
 	const pagination = data?.pagination;
-	const hasFilters = !!(search || channel || type || duplicates);
+	const hasFilters = !!(search || channel || type || duplicates || tag);
 
 	// ── Selection ──────────────────────────────────────────────────────────────
 
@@ -324,8 +348,36 @@ export function ContactsTable({
 		setSearch(null);
 		setChannel(null);
 		setType(null);
+		setTag(null);
 		setDuplicates(null);
 		setPage(1);
+	}
+
+	function clearSelection() {
+		setInternalMap(new Map());
+		onSelectionChange?.([]);
+	}
+
+	function handleBulkDelete() {
+		const ids = Array.from(activeIds);
+		if (ids.length === 0) {
+			return;
+		}
+
+		bulkDeleteMutation.mutate(
+			{ ids },
+			{
+				onError: (e) =>
+					toast.error("Bulk delete failed", {
+						description: e instanceof Error ? e.message : "Unknown error",
+					}),
+				onSuccess: (res) => {
+					toast.success(`Deleted ${res.deleted} contacts`);
+					clearSelection();
+					setBulkDeleteConfirmOpen(false);
+				},
+			}
+		);
 	}
 
 	return (
@@ -371,6 +423,48 @@ export function ContactsTable({
 				</div>
 			)}
 
+			{/* ── Bulk Actions Banner ── */}
+			{selectable && totalSelected > 0 && (
+				<div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/25 bg-primary/5 px-4 py-2.5">
+					<div className="flex items-center gap-2">
+						<Badge className="font-semibold text-xs" variant="default">
+							{totalSelected} selected
+						</Badge>
+						<span className="text-muted-foreground text-xs">
+							Choose an action for selected contacts:
+						</span>
+					</div>
+					<div className="flex items-center gap-2">
+						<Button
+							className="h-8 gap-1.5 rounded-lg text-xs"
+							onClick={() => setBulkTagOpen(true)}
+							size="sm"
+							variant="outline"
+						>
+							<Tag className="h-3.5 w-3.5" />
+							Manage Tags
+						</Button>
+						<Button
+							className="h-8 gap-1.5 rounded-lg border-red-500/30 text-red-500 text-xs hover:bg-red-500/10"
+							onClick={() => setBulkDeleteConfirmOpen(true)}
+							size="sm"
+							variant="outline"
+						>
+							<Trash2 className="h-3.5 w-3.5" />
+							Delete Selected
+						</Button>
+						<Button
+							className="h-8 text-muted-foreground text-xs"
+							onClick={clearSelection}
+							size="sm"
+							variant="ghost"
+						>
+							Clear
+						</Button>
+					</div>
+				</div>
+			)}
+
 			{/* ── Toolbar ── */}
 			<div className="flex flex-wrap items-center gap-2">
 				<div className="relative min-w-[180px] flex-1">
@@ -410,7 +504,7 @@ export function ContactsTable({
 					}}
 					value={type || "all"}
 				>
-					<SelectTrigger className="h-9 w-[140px] rounded-xl">
+					<SelectTrigger className="h-9 w-[135px] rounded-xl">
 						<SelectValue placeholder="Type" />
 					</SelectTrigger>
 					<SelectContent>
@@ -421,6 +515,26 @@ export function ContactsTable({
 						<SelectItem value="returning">{typeLabels.returning}</SelectItem>
 						<SelectItem value="contact">{typeLabels.contact}</SelectItem>
 						<SelectItem value="prospect">{typeLabels.prospect}</SelectItem>
+					</SelectContent>
+				</Select>
+
+				<Select
+					onValueChange={(v) => {
+						setTag(v === "all" ? null : v);
+						setPage(1);
+					}}
+					value={tag || "all"}
+				>
+					<SelectTrigger className="h-9 w-[130px] rounded-xl">
+						<SelectValue placeholder="Tag" />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="all">All tags</SelectItem>
+						{availableTags.map(({ tag: t, count }) => (
+							<SelectItem key={t} value={t}>
+								{t} ({count})
+							</SelectItem>
+						))}
 					</SelectContent>
 				</Select>
 
@@ -470,7 +584,6 @@ export function ContactsTable({
 								<TableHead className="w-10 pl-4">
 									<Checkbox
 										aria-label="Select all on page"
-										// indeterminate via data attr — shadcn Checkbox supports this
 										checked={allPageChecked}
 										data-state={
 											somePageChecked
@@ -487,26 +600,27 @@ export function ContactsTable({
 							<TableHead>Phone</TableHead>
 							<TableHead>Channel</TableHead>
 							<TableHead>Type</TableHead>
+							<TableHead className="hidden md:table-cell">Tags</TableHead>
 							<TableHead className="hidden sm:table-cell">Added</TableHead>
 							{!selectable && <TableHead className="w-10" />}
 						</TableRow>
 					</TableHeader>
 					<TableBody>
 						{isLoading ? (
-							<TableSkeleton cols={selectable ? 6 : 5} rows={8} />
+							<TableSkeleton cols={selectable ? 7 : 6} rows={8} />
 						) : contacts.length === 0 ? (
 							<TableRow>
 								<TableCell
 									className="py-16 text-center text-muted-foreground text-sm"
-									colSpan={selectable ? 6 : 5}
+									colSpan={selectable ? 7 : 6}
 								>
 									{hasFilters
 										? "No contacts match your filters."
-										: "No contacts yet — upload a contact list image to get started."}
+										: "No contacts yet. Click Add Contact or Import CSV to get started."}
 								</TableCell>
 							</TableRow>
 						) : (
-							contacts.map((contact) => {
+							contacts.map((contact: any) => {
 								const isSelected = activeIds.has(contact.id);
 								const asSelected: SelectedContact = {
 									channel: contact.channel,
@@ -592,6 +706,27 @@ export function ContactsTable({
 													contact.type}
 											</Badge>
 										</TableCell>
+										<TableCell className="hidden md:table-cell">
+											<div className="flex max-w-[180px] flex-wrap gap-1">
+												{contact.tags.slice(0, 2).map((t: string) => (
+													<Badge
+														className="font-normal text-[10px]"
+														key={t}
+														variant="outline"
+													>
+														{t}
+													</Badge>
+												))}
+												{contact.tags.length > 2 && (
+													<Badge
+														className="font-normal text-[10px]"
+														variant="secondary"
+													>
+														+{contact.tags.length - 2}
+													</Badge>
+												)}
+											</div>
+										</TableCell>
 										<TableCell className="hidden text-muted-foreground text-xs sm:table-cell">
 											{new Date(contact.createdAt).toLocaleDateString("en-GB", {
 												day: "numeric",
@@ -624,46 +759,35 @@ export function ContactsTable({
 
 			{/* ── Pagination ── */}
 			{pagination && pagination.totalPages > 1 && (
-				<div className="flex items-center justify-between text-muted-foreground text-xs">
-					<span>
-						Page {pagination.page} of {pagination.totalPages}
+				<div className="flex items-center justify-between pt-1 text-xs">
+					<span className="text-muted-foreground">
+						Page {pagination.page} of {pagination.totalPages} (
+						{pagination.total} contacts)
 					</span>
 					<div className="flex items-center gap-1.5">
 						<Button
-							className="h-7 w-7"
-							disabled={pagination.page <= 1}
-							onClick={() => setPage(pagination.page - 1)}
-							size="icon"
+							className="h-8 w-8 p-0"
+							disabled={page <= 1}
+							onClick={() => setPage(page - 1)}
+							size="sm"
 							variant="outline"
 						>
-							<ChevronLeft className="h-3.5 w-3.5" />
+							<ChevronLeft className="h-4 w-4" />
 						</Button>
 						<Button
-							className="h-7 w-7"
-							disabled={pagination.page >= pagination.totalPages}
-							onClick={() => setPage(pagination.page + 1)}
-							size="icon"
+							className="h-8 w-8 p-0"
+							disabled={page >= pagination.totalPages}
+							onClick={() => setPage(page + 1)}
+							size="sm"
 							variant="outline"
 						>
-							<ChevronRight className="h-3.5 w-3.5" />
+							<ChevronRight className="h-4 w-4" />
 						</Button>
 					</div>
 				</div>
 			)}
 
-			{/* ── Detail dialog ── */}
-			<ContactDialog
-				contactId={detailId}
-				onOpenChange={(open) => {
-					setDialogOpen(open);
-					if (!open) {
-						setDetailId(null);
-					}
-				}}
-				open={dialogOpen}
-			/>
-
-			{/* ── Delete confirm dialog ── */}
+			{/* ── Single Delete Alert ── */}
 			<AlertDialog
 				onOpenChange={(o) => {
 					if (!o) {
@@ -676,7 +800,8 @@ export function ContactsTable({
 					<AlertDialogHeader>
 						<AlertDialogTitle>Delete contact?</AlertDialogTitle>
 						<AlertDialogDescription>
-							This contact will be permanently removed. This cannot be undone.
+							This permanently removes this contact from your address book. This
+							action cannot be undone.
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
@@ -685,11 +810,9 @@ export function ContactsTable({
 							className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
 							onClick={() => {
 								if (deleteConfirmId) {
-									deleteMutation.mutate({
-										id: deleteConfirmId,
-									});
+									deleteMutation.mutate({ id: deleteConfirmId });
+									setDeleteConfirmId(null);
 								}
-								setDeleteConfirmId(null);
 							}}
 						>
 							Delete
@@ -697,6 +820,58 @@ export function ContactsTable({
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
+
+			{/* ── Bulk Delete Alert ── */}
+			<AlertDialog
+				onOpenChange={setBulkDeleteConfirmOpen}
+				open={bulkDeleteConfirmOpen}
+			>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>
+							Delete {totalSelected} contacts?
+						</AlertDialogTitle>
+						<AlertDialogDescription>
+							This permanently removes the {totalSelected} selected contacts
+							from your address book. This action cannot be undone.
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>Cancel</AlertDialogCancel>
+						<AlertDialogAction
+							className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+							disabled={bulkDeleteMutation.isPending}
+							onClick={handleBulkDelete}
+						>
+							{bulkDeleteMutation.isPending
+								? "Deleting…"
+								: "Delete All Selected"}
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
+
+			{/* ── Bulk Tag Dialog ── */}
+			<BulkTagDialog
+				contactIds={Array.from(activeIds)}
+				onOpenChange={setBulkTagOpen}
+				onSuccess={() => {
+					clearSelection();
+				}}
+				open={bulkTagOpen}
+			/>
+
+			{/* ── Detail Dialog ── */}
+			<ContactDialog
+				contactId={detailId}
+				onOpenChange={(o) => {
+					setDialogOpen(o);
+					if (!o) {
+						setDetailId(null);
+					}
+				}}
+				open={dialogOpen}
+			/>
 		</div>
 	);
 }

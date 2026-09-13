@@ -759,9 +759,9 @@ export type ParseJobSumOrderByAggregateInput = {
 	confidence?: Prisma.SortOrder;
 };
 
-export type ParseJobScalarRelationFilter = {
-	is?: Prisma.ParseJobWhereInput;
-	isNot?: Prisma.ParseJobWhereInput;
+export type ParseJobNullableScalarRelationFilter = {
+	is?: Prisma.ParseJobWhereInput | null;
+	isNot?: Prisma.ParseJobWhereInput | null;
 };
 
 export type ParseJobCreateNestedManyWithoutUserInput = {
@@ -896,13 +896,15 @@ export type ParseJobCreateNestedOneWithoutContactsInput = {
 	connect?: Prisma.ParseJobWhereUniqueInput;
 };
 
-export type ParseJobUpdateOneRequiredWithoutContactsNestedInput = {
+export type ParseJobUpdateOneWithoutContactsNestedInput = {
 	create?: Prisma.XOR<
 		Prisma.ParseJobCreateWithoutContactsInput,
 		Prisma.ParseJobUncheckedCreateWithoutContactsInput
 	>;
 	connectOrCreate?: Prisma.ParseJobCreateOrConnectWithoutContactsInput;
 	upsert?: Prisma.ParseJobUpsertWithoutContactsInput;
+	disconnect?: Prisma.ParseJobWhereInput | boolean;
+	delete?: Prisma.ParseJobWhereInput | boolean;
 	connect?: Prisma.ParseJobWhereUniqueInput;
 	update?: Prisma.XOR<
 		Prisma.XOR<

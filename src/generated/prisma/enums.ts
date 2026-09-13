@@ -8,6 +8,38 @@
  * 🟢 You can import this file directly.
  */
 
+export const UserRole = {
+	admin: "admin",
+	coordinator: "coordinator",
+	leader: "leader",
+	manager: "manager",
+	staff: "staff",
+	volunteer: "volunteer",
+} as const;
+
+export type UserRole = (typeof UserRole)[keyof typeof UserRole];
+
+export const TransactionType = {
+	campaign_hold: "campaign_hold",
+	campaign_refund: "campaign_refund",
+	deposit: "deposit",
+	message_debit: "message_debit",
+	refund: "refund",
+} as const;
+
+export type TransactionType =
+	(typeof TransactionType)[keyof typeof TransactionType];
+
+export const TransactionStatus = {
+	completed: "completed",
+	failed: "failed",
+	pending: "pending",
+	reversed: "reversed",
+} as const;
+
+export type TransactionStatus =
+	(typeof TransactionStatus)[keyof typeof TransactionStatus];
+
 export const MessageChannel = {
 	sms: "sms",
 	whatsapp: "whatsapp",
@@ -35,14 +67,41 @@ export const ParseJobStatus = {
 export type ParseJobStatus =
 	(typeof ParseJobStatus)[keyof typeof ParseJobStatus];
 
-export const JobStatus = {
+export const ImportStatus = {
 	completed: "completed",
+	failed: "failed",
+	in_progress: "in_progress",
+} as const;
+
+export type ImportStatus = (typeof ImportStatus)[keyof typeof ImportStatus];
+
+export const ImportStrategy = {
+	overwrite: "overwrite",
+	skip_duplicates: "skip_duplicates",
+	tags_only: "tags_only",
+} as const;
+
+export type ImportStrategy =
+	(typeof ImportStrategy)[keyof typeof ImportStrategy];
+
+export const JobStatus = {
+	cancelled: "cancelled",
+	completed: "completed",
+	dispatching: "dispatching",
 	failed: "failed",
 	pending: "pending",
 	processing: "processing",
 } as const;
 
 export type JobStatus = (typeof JobStatus)[keyof typeof JobStatus];
+
+export const DeliveryMode = {
+	marketing: "marketing",
+	sms_fallback: "sms_fallback",
+	utility_prescreen: "utility_prescreen",
+} as const;
+
+export type DeliveryMode = (typeof DeliveryMode)[keyof typeof DeliveryMode];
 
 export const MessageStatus = {
 	delivered: "delivered",
@@ -67,66 +126,6 @@ export const Scenario = {
 } as const;
 
 export type Scenario = (typeof Scenario)[keyof typeof Scenario];
-
-export const DeliveryMode = {
-	marketing: "marketing",
-	sms_fallback: "sms_fallback",
-	utility_prescreen: "utility_prescreen",
-} as const;
-
-export type DeliveryMode = (typeof DeliveryMode)[keyof typeof DeliveryMode];
-
-export const TransactionType = {
-	campaign_hold: "campaign_hold",
-	campaign_refund: "campaign_refund",
-	deposit: "deposit",
-	message_debit: "message_debit",
-	refund: "refund",
-	subscription: "subscription",
-} as const;
-
-export type TransactionType =
-	(typeof TransactionType)[keyof typeof TransactionType];
-
-export const TransactionStatus = {
-	completed: "completed",
-	failed: "failed",
-	pending: "pending",
-	reversed: "reversed",
-} as const;
-
-export type TransactionStatus =
-	(typeof TransactionStatus)[keyof typeof TransactionStatus];
-
-export const SubscriptionStatus = {
-	active: "active",
-	cancelled: "cancelled",
-	expired: "expired",
-	paused: "paused",
-} as const;
-
-export type SubscriptionStatus =
-	(typeof SubscriptionStatus)[keyof typeof SubscriptionStatus];
-
-export const SubscriptionPlan = {
-	growth: "growth",
-	pro: "pro",
-	starter: "starter",
-} as const;
-
-export type SubscriptionPlan =
-	(typeof SubscriptionPlan)[keyof typeof SubscriptionPlan];
-
-export const UserRole = {
-	admin: "admin",
-	coordinator: "coordinator",
-	leader: "leader",
-	manager: "manager",
-	staff: "staff",
-	volunteer: "volunteer",
-} as const;
-
-export type UserRole = (typeof UserRole)[keyof typeof UserRole];
 
 export const WaTemplateCategory = {
 	AUTHENTICATION: "AUTHENTICATION",

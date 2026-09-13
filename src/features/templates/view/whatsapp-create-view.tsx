@@ -33,7 +33,7 @@ export function WaTemplateCreateView() {
 	}
 
 	return (
-		<div style={{ margin: "0 auto", maxWidth: 1100, padding: "32px 28px" }}>
+		<div className="mx-auto w-full max-w-6xl px-4 py-8">
 			<div className="mb-6 flex items-center gap-3">
 				<Button
 					className="gap-1.5 rounded-xl"

@@ -1,9 +1,8 @@
 /**
- * /billing/verify
+ * src/features/billing/views/billing-verify.tsx
  *
- * Paystack redirects here after payment.
- * ?reference=xxx         — Paystack reference (required)
- * ?type=subscription     — optional, shows subscription copy
+ * Paystack redirects here after deposit payment.
+ * ?reference=xxx: Paystack deposit reference (required)
  */
 
 import { Link, useRouter } from "@tanstack/react-router";
@@ -11,7 +10,6 @@ import {
 	ArrowLeft,
 	CheckCircle2,
 	Loader2,
-	Sparkles,
 	Wallet,
 	XCircle,
 } from "lucide-react";
@@ -19,19 +17,12 @@ import { Suspense, useEffect, useState } from "react";
 import { Button } from "#/components/ui/button";
 import { Card } from "#/components/ui/card";
 import { Separator } from "#/components/ui/separator";
+import { useVerifyDeposit } from "#/features/billing/hooks/use-billing";
 import { cn } from "#/lib/utils";
-import { useVerifyDeposit } from "../hooks/use-billing";
 
 type State = "loading" | "success" | "error";
-type PayType = "deposit" | "subscription";
 
-function VerifyContent({
-	reference,
-	payType,
-}: {
-	reference: string;
-	payType: PayType;
-}) {
+function VerifyContent({ reference }: { reference: string }) {
 	const router = useRouter();
 
 	const [state, setState] = useState<State>("loading");
@@ -51,54 +42,67 @@ function VerifyContent({
 			return;
 		}
 
+		let redirectTimer: ReturnType<typeof setTimeout> | undefined;
+
 		mutate(
 			{ reference },
 			{
+				onError: (err: unknown) => {
+					setState("error");
+					setHeadline("Verification failed");
+					const msg = err instanceof Error ? err.message : "";
+					setDetail(
+						msg ||
+							"We could not verify this payment. If funds were deducted, please contact support with your reference."
+					);
+				},
 				onSuccess: (data) => {
 					try {
 						setState("success");
 
-						if (payType === "subscription") {
-							setHeadline("Plan activated!");
-							setDetail(
-								"Your subscription is now live. Your monthly message allowance is ready to use."
-							);
-						} else if (data.alreadyProcessed) {
+						const formattedAmount =
+							data.newBalanceFormatted && data.amountKobo
+								? `₦${((data.amountKobo ?? 0) / 100).toLocaleString()}`
+								: null;
+
+						if (data.alreadyProcessed) {
 							setHeadline("Already credited");
 							setDetail(
 								"This payment was already processed. Your wallet balance is up to date."
 							);
+							setAmount(formattedAmount);
 						} else {
-							const n = ((data.amountKobo ?? 0) / 100).toLocaleString();
-							setHeadline("Payment confirmed!");
+							setHeadline("Payment confirmed");
 							setDetail("Your wallet has been topped up successfully.");
-							setAmount(`\u20a6${n}`);
+							setAmount(formattedAmount);
 						}
 
-						setTimeout(
-							() =>
-								router.navigate({
-									to: "/billing",
-								}),
-							3500
-						);
+						redirectTimer = setTimeout(() => {
+							router.navigate({ to: "/billing" });
+						}, 3000);
 					} catch (err: unknown) {
 						setState("error");
 						setHeadline("Verification failed");
 						const msg = err instanceof Error ? err.message : "";
 						setDetail(
 							msg ||
-								"We couldn't verify this payment. If funds were deducted, please contact support with your reference number."
+								"We could not verify this payment. If funds were deducted, please contact support with your reference."
 						);
 					}
 				},
 			}
 		);
-	}, [reference, router, payType, mutate]);
+
+		return () => {
+			if (redirectTimer) {
+				clearTimeout(redirectTimer);
+			}
+		};
+	}, [reference, router, mutate]);
 
 	return (
 		<div className="flex min-h-screen flex-col items-center justify-center bg-background p-6">
-			{/* Subtle dot grid background */}
+			{/* Dot pattern background */}
 			<div
 				className="pointer-events-none fixed inset-0 opacity-[0.03]"
 				style={{
@@ -117,11 +121,7 @@ function VerifyContent({
 							"border-primary/25 bg-primary/10"
 						)}
 					>
-						{payType === "subscription" ? (
-							<Sparkles className="h-4 w-4 text-primary" />
-						) : (
-							<Wallet className="h-4 w-4 text-primary" />
-						)}
+						<Wallet className="h-4 w-4 text-primary" />
 					</div>
 					<span className="font-bold font-display text-foreground text-lg tracking-tight">
 						Velocast
@@ -129,7 +129,7 @@ function VerifyContent({
 				</div>
 
 				<Card className="overflow-hidden">
-					{/* Icon area */}
+					{/* Status icon area */}
 					<div
 						className={cn(
 							"flex flex-col items-center gap-4 px-8 pt-10 pb-8",
@@ -137,7 +137,6 @@ function VerifyContent({
 							state === "error" && "bg-destructive/3"
 						)}
 					>
-						{/* Status icon */}
 						<div
 							className={cn(
 								"flex h-16 w-16 items-center justify-center rounded-full border-2 transition-all duration-500",
@@ -146,36 +145,36 @@ function VerifyContent({
 								state === "error" && "border-destructive/30 bg-destructive/10"
 							)}
 						>
-							{state === "loading" && (
+							{state === "loading" ? (
 								<Loader2 className="h-7 w-7 animate-spin text-muted-foreground" />
-							)}
-							{state === "success" && (
+							) : null}
+							{state === "success" ? (
 								<CheckCircle2 className="h-7 w-7 text-primary" />
-							)}
-							{state === "error" && (
+							) : null}
+							{state === "error" ? (
 								<XCircle className="h-7 w-7 text-destructive" />
-							)}
+							) : null}
 						</div>
 
 						{/* Headline */}
 						<div className="text-center">
 							<h1 className="font-bold font-display text-foreground text-xl tracking-tight">
-								{state === "loading" ? "Verifying payment…" : headline}
+								{state === "loading" ? "Verifying payment..." : headline || ""}
 							</h1>
 
-							{/* Amount badge — success deposit only */}
-							{state === "success" && amount && (
+							{/* Amount badge */}
+							{state === "success" && amount ? (
 								<div className="mt-2 inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5">
 									<span className="font-bold font-mono text-primary text-xl">
 										{amount}
 									</span>
 								</div>
-							)}
+							) : null}
 
 							<p className="mt-2 max-w-xs text-muted-foreground text-sm leading-relaxed">
 								{state === "loading"
-									? "Please wait while we confirm your payment with Paystack…"
-									: detail}
+									? "Please wait while we confirm your payment with Paystack..."
+									: detail || ""}
 							</p>
 						</div>
 					</div>
@@ -184,17 +183,17 @@ function VerifyContent({
 
 					{/* Footer action */}
 					<div className="px-6 py-5">
-						{state === "loading" && (
+						{state === "loading" ? (
 							<p className="text-center text-muted-foreground/60 text-xs">
 								This usually takes just a moment
 							</p>
-						)}
+						) : null}
 
-						{state === "success" && (
+						{state === "success" ? (
 							<div className="flex flex-col items-center gap-2">
 								<div className="flex items-center gap-2 text-muted-foreground text-xs">
 									<Loader2 className="h-3 w-3 animate-spin" />
-									Redirecting to billing…
+									Redirecting to billing...
 								</div>
 								<Link
 									className="text-muted-foreground/60 text-xs underline underline-offset-2"
@@ -203,12 +202,13 @@ function VerifyContent({
 									Go now
 								</Link>
 							</div>
-						)}
+						) : null}
 
-						{state === "error" && (
+						{state === "error" ? (
 							<div className="flex flex-col gap-3">
 								<Button
 									className="w-full rounded-xl font-bold"
+									nativeButton={false}
 									render={
 										<Link to="/billing">
 											<Wallet className="h-4 w-4" /> Go to Billing
@@ -219,54 +219,51 @@ function VerifyContent({
 									Still having issues?{" "}
 									<a
 										className="text-muted-foreground underline underline-offset-2 transition-colors hover:text-foreground"
-										href="mailto:support@ Velocast.app"
+										href="mailto:support@velocast.app"
 									>
 										Contact support
 									</a>
-									{reference && (
+									{reference ? (
 										<span>
-											{" · "}ref:{" "}
+											{" "}
+											ref:{" "}
 											<code className="font-mono text-[10px]">
-												{reference.slice(0, 18)}…
+												{reference.slice(0, 18)}...
 											</code>
 										</span>
-									)}
+									) : null}
 								</p>
 							</div>
-						)}
+						) : null}
 					</div>
 				</Card>
 
-				{/* Back link — only while loading */}
-				{state === "loading" && (
+				{/* Back link */}
+				{state === "loading" ? (
 					<div className="mt-5 flex justify-center">
 						<Link
-							className="flex items-center gap-1.5 text-muted-foreground text-xs transition-colors hover:text-foreground"
+							className="inline-flex items-center gap-1.5 text-muted-foreground text-xs transition-colors hover:text-foreground"
 							to="/billing"
 						>
-							<ArrowLeft className="h-3.5 w-3.5" /> Cancel and go back
+							<ArrowLeft className="h-3.5 w-3.5" /> Cancel and return to billing
 						</Link>
 					</div>
-				)}
+				) : null}
 			</div>
 		</div>
 	);
 }
 
-export default function BillingVerifyPage({
-	params,
-}: {
-	params: { reference: string; payType: PayType };
-}) {
+export function BillingVerifyView({ reference }: { reference?: string }) {
 	return (
 		<Suspense
 			fallback={
 				<div className="flex min-h-screen items-center justify-center bg-background">
-					<Loader2 className="h-7 w-7 animate-spin text-primary" />
+					<Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
 				</div>
 			}
 		>
-			<VerifyContent {...params} />
+			<VerifyContent reference={reference ?? ""} />
 		</Suspense>
 	);
 }

@@ -30,4 +30,9 @@ export type {
 	ParseJob,
 	ParseJobStatus,
 	Scenario,
+	Transaction,
+	TransactionStatus,
+	TransactionType,
+	UserProfile,
+	Wallet,
 } from "./generated/prisma/client.js";

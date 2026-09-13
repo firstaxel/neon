@@ -1,5 +1,5 @@
 /**
- * src/lib/paystack.ts
+ * src/features/payment/paystack/index.ts
  *
  * Typed Paystack API client.
  * All amounts going TO Paystack are in kobo (₦1 = 100 kobo).
@@ -7,6 +7,8 @@
  *
  * Docs: https://paystack.com/docs/api/
  */
+
+import { createHmac, timingSafeEqual } from "node:crypto";
 
 const BASE = "https://api.paystack.co";
 
@@ -32,13 +34,17 @@ async function request<T>(
 		...(body ? { body: JSON.stringify(body) } : {}),
 	});
 
-	const json = await res.json();
+	const json = (await res.json()) as {
+		status: boolean;
+		message?: string;
+		data: T;
+	};
 
 	if (!(res.ok && json.status)) {
 		throw new Error(json.message ?? `Paystack error: ${res.status}`);
 	}
 
-	return json.data as T;
+	return json.data;
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -50,29 +56,21 @@ export interface InitializeTransactionResult {
 }
 
 export interface VerifyTransactionResult {
-	amount: number; // kobo
-	authorization: { authorization_code: string };
+	amount: number; // gross amount in kobo
+	authorization?: {
+		authorization_code?: string;
+		channel?: string;
+		bank?: string;
+		last4?: string;
+	};
 	currency: string;
 	customer: { email: string; customer_code: string };
+	fees?: number;
 	id: number;
+	metadata?: Record<string, unknown>;
 	paid_at: string;
 	reference: string;
 	status: "success" | "failed" | "abandoned" | "pending";
-}
-
-export interface CreateSubscriptionResult {
-	email_token: string;
-	plan: { plan_code: string; amount: number };
-	status: string;
-	subscription_code: string;
-}
-
-export interface FetchSubscriptionResult {
-	amount: number; // kobo
-	next_payment_date: string;
-	plan: { plan_code: string; name: string; interval: string };
-	status: string;
-	subscription_code: string;
 }
 
 // ─── One-time deposit ─────────────────────────────────────────────────────────
@@ -80,27 +78,41 @@ export interface FetchSubscriptionResult {
 /**
  * Start a one-time deposit. Returns a Paystack checkout URL.
  *
- * @param email    User's email (Paystack uses this to identify the customer)
- * @param amountKobo  Amount in kobo to deposit
- * @param reference  Unique idempotency reference — store this to verify later
- * @param callbackUrl  Where to redirect after payment
+ * @param email User email
+ * @param netAmountKobo Amount to credit to the user's wallet in kobo
+ * @param feeKobo Gateway fee to pass through in kobo
+ * @param reference Unique deposit reference
+ * @param callbackUrl Redirect URL after payment completion
  */
-export function initializeDeposit(
-	email: string,
-	amountKobo: number,
-	reference: string,
-	callbackUrl: string
-): Promise<InitializeTransactionResult> {
+export function initializeDeposit({
+	email,
+	netAmountKobo,
+	feeKobo,
+	reference,
+	callbackUrl,
+}: {
+	email: string;
+	netAmountKobo: number;
+	feeKobo: number;
+	reference: string;
+	callbackUrl: string;
+}): Promise<InitializeTransactionResult> {
+	const grossAmountKobo = netAmountKobo + feeKobo;
 	return request<InitializeTransactionResult>(
 		"POST",
 		"/transaction/initialize",
 		{
-			amount: amountKobo,
+			amount: grossAmountKobo,
 			callback_url: callbackUrl,
 			channels: ["card", "bank", "ussd", "bank_transfer"],
 			currency: "NGN",
 			email,
-			metadata: { type: "wallet_deposit" },
+			metadata: {
+				feeKobo,
+				grossKobo: grossAmountKobo,
+				netKobo: netAmountKobo,
+				type: "wallet_deposit",
+			},
 			reference,
 		}
 	);
@@ -108,7 +120,7 @@ export function initializeDeposit(
 
 /**
  * Verify a completed transaction by reference.
- * Call this from your Paystack webhook AND the callback URL handler.
+ * Call this from your Paystack webhook and the callback URL handler.
  */
 export function verifyTransaction(
 	reference: string
@@ -119,72 +131,27 @@ export function verifyTransaction(
 	);
 }
 
-// ─── Subscriptions ────────────────────────────────────────────────────────────
-
-/**
- * Create a Paystack recurring subscription for a user.
- *
- * @param customerEmail   User's email
- * @param planCode        Paystack plan code (e.g. "PLN_xxxx") — set in dashboard
- * @param authorizationCode  From a previous successful charge (card on file)
- */
-export function createSubscription(
-	customerEmail: string,
-	planCode: string,
-	authorizationCode: string
-): Promise<CreateSubscriptionResult> {
-	return request<CreateSubscriptionResult>("POST", "/subscription", {
-		authorization: authorizationCode,
-		customer: customerEmail,
-		plan: planCode,
-	});
-}
-
-/**
- * Fetch a subscription by its Paystack subscription code.
- */
-export function fetchSubscription(
-	subscriptionCode: string
-): Promise<FetchSubscriptionResult> {
-	return request<FetchSubscriptionResult>(
-		"GET",
-		`/subscription/${subscriptionCode}`
-	);
-}
-
-/**
- * Disable (cancel) a Paystack subscription.
- * Requires the subscription code + email token (returned at creation).
- */
-export function cancelSubscription(
-	subscriptionCode: string,
-	emailToken: string
-): Promise<{ subscription_code: string }> {
-	return request<{ subscription_code: string }>(
-		"POST",
-		"/subscription/disable",
-		{ code: subscriptionCode, token: emailToken }
-	);
-}
-
 // ─── Webhook validation ───────────────────────────────────────────────────────
 
-import { createHmac } from "node:crypto";
-
 /**
- * Validate that a webhook request genuinely came from Paystack.
- * Call this at the top of your webhook handler before processing anything.
+ * Validate that a webhook request genuinely came from Paystack using timing safe HMAC.
  */
 export function validateWebhookSignature(
 	rawBody: string,
 	paystackSignature: string
 ): boolean {
 	const secret = process.env.PAYSTACK_SECRET_KEY;
-	if (!secret) {
+	if (!(secret && paystackSignature)) {
 		return false;
 	}
 
 	const hash = createHmac("sha512", secret).update(rawBody).digest("hex");
+	if (hash.length !== paystackSignature.length) {
+		return false;
+	}
 
-	return hash === paystackSignature;
+	return timingSafeEqual(
+		Buffer.from(hash, "utf8"),
+		Buffer.from(paystackSignature, "utf8")
+	);
 }

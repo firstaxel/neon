@@ -128,8 +128,8 @@ function WaTemplateCard({
 			className={[
 				"w-full overflow-hidden rounded-xl border text-left transition-all duration-150",
 				selected
-					? "border-[#25d36660] bg-[#0d2016] ring-2 ring-[#25d36620]"
-					: "border-border bg-muted/20 hover:border-[#25d36630]",
+					? "border-emerald-500/60 bg-emerald-500/10 ring-2 ring-emerald-500/20 dark:border-[#25d36660] dark:bg-[#0d2016] dark:ring-[#25d36620]"
+					: "border-border bg-muted/20 hover:border-emerald-500/30 dark:hover:border-[#25d36630]",
 			].join(" ")}
 			onClick={onSelect}
 			type="button"
@@ -138,13 +138,11 @@ function WaTemplateCard({
 				<div
 					className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${
 						selected
-							? "border border-[#25d36640] bg-[#25d36620]"
-							: "border border-border bg-muted"
+							? "border border-emerald-500/40 bg-emerald-500/20 text-emerald-700 dark:border-[#25d36640] dark:bg-[#25d36620] dark:text-[#25d366]"
+							: "border border-border bg-muted text-muted-foreground"
 					}`}
 				>
-					<MessageSquare
-						className={`h-3.5 w-3.5 ${selected ? "text-[#25d366]" : "text-muted-foreground"}`}
-					/>
+					<MessageSquare className="h-3.5 w-3.5" />
 				</div>
 				<div className="min-w-0 flex-1">
 					<div className="flex flex-wrap items-center gap-1.5">
@@ -152,21 +150,21 @@ function WaTemplateCard({
 							{template.displayName}
 						</p>
 						{selected && (
-							<CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#25d366]" />
+							<CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-[#25d366]" />
 						)}
 					</div>
 					<div className="mt-0.5 mb-2 flex items-center gap-1.5">
 						<Badge
-							className="h-4 rounded-full py-0 text-[9px] capitalize"
+							className="h-4 rounded-full py-0 text-xs capitalize"
 							variant="outline"
 						>
 							{template.category}
 						</Badge>
-						<span className="text-[9px] text-muted-foreground">
+						<span className="text-muted-foreground text-xs">
 							{template.language}
 						</span>
 					</div>
-					<p className="line-clamp-2 text-[11px] text-foreground/70 leading-relaxed">
+					<p className="line-clamp-2 text-foreground/80 text-xs leading-relaxed dark:text-foreground/70">
 						{preview}
 					</p>
 				</div>
@@ -193,8 +191,8 @@ function SmsTemplateCard({
 			className={[
 				"w-full overflow-hidden rounded-xl border text-left transition-all duration-150",
 				selected
-					? "border-[#60a5fa60] bg-[#0d1a2e] ring-2 ring-[#60a5fa20]"
-					: "border-border bg-muted/20 hover:border-[#60a5fa30]",
+					? "border-blue-500/60 bg-blue-500/10 ring-2 ring-blue-500/20 dark:border-[#60a5fa60] dark:bg-[#0d1a2e] dark:ring-[#60a5fa20]"
+					: "border-border bg-muted/20 hover:border-blue-500/30 dark:hover:border-[#60a5fa30]",
 			].join(" ")}
 			onClick={onSelect}
 			type="button"
@@ -203,13 +201,11 @@ function SmsTemplateCard({
 				<div
 					className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${
 						selected
-							? "border border-[#60a5fa40] bg-[#60a5fa20]"
-							: "border border-border bg-muted"
+							? "border border-blue-500/40 bg-blue-500/20 text-blue-700 dark:border-[#60a5fa40] dark:bg-[#60a5fa20] dark:text-[#60a5fa]"
+							: "border border-border bg-muted text-muted-foreground"
 					}`}
 				>
-					<Phone
-						className={`h-3.5 w-3.5 ${selected ? "text-[#60a5fa]" : "text-muted-foreground"}`}
-					/>
+					<Phone className="h-3.5 w-3.5" />
 				</div>
 				<div className="min-w-0 flex-1">
 					<div className="flex items-center gap-1.5">
@@ -217,11 +213,11 @@ function SmsTemplateCard({
 							{template.displayName}
 						</p>
 						{selected && (
-							<CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[#60a5fa]" />
+							<CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-blue-600 dark:text-[#60a5fa]" />
 						)}
 					</div>
 					<Badge
-						className="mt-0.5 mb-2 h-4 rounded-full border-[#60a5fa20] bg-[#60a5fa08] py-0 text-[#60a5fa] text-[9px] capitalize"
+						className="mt-0.5 mb-2 h-4 rounded-full border-blue-500/25 bg-blue-500/10 py-0 text-blue-700 text-xs capitalize dark:border-[#60a5fa20] dark:bg-[#60a5fa08] dark:text-[#60a5fa]"
 						variant="secondary"
 					>
 						{template.category}
@@ -326,12 +322,12 @@ function ChannelPickerPanel({
 						<div
 							className={`flex items-center gap-2 rounded-xl border px-3 py-2 ${
 								isWa
-									? "border-[#25d36630] bg-[#0d2016]"
-									: "border-[#60a5fa30] bg-[#0d1a2e]"
+									? "border-emerald-500/30 bg-emerald-500/10 text-emerald-800 dark:border-[#25d36630] dark:bg-[#0d2016] dark:text-foreground"
+									: "border-blue-500/30 bg-blue-500/10 text-blue-800 dark:border-[#60a5fa30] dark:bg-[#0d1a2e] dark:text-foreground"
 							}`}
 						>
 							<div
-								className={`h-1.5 w-1.5 rounded-full ${isWa ? "bg-[#25d366]" : "bg-[#60a5fa]"}`}
+								className={`h-1.5 w-1.5 rounded-full ${isWa ? "bg-emerald-600 dark:bg-[#25d366]" : "bg-blue-600 dark:bg-[#60a5fa]"}`}
 							/>
 							<span className="flex-1 truncate font-medium text-xs">
 								{sel.displayName}
@@ -376,14 +372,14 @@ function ChannelPickerPanel({
 						<div
 							className={`flex h-10 w-10 items-center justify-center rounded-xl ${
 								isWa
-									? "border border-[#25d36630] bg-[#0d2016]"
-									: "border border-[#60a5fa30] bg-[#0d1a2e]"
+									? "border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:border-[#25d36630] dark:bg-[#0d2016] dark:text-[#25d366]"
+									: "border border-blue-500/30 bg-blue-500/10 text-blue-700 dark:border-[#60a5fa30] dark:bg-[#0d1a2e] dark:text-[#60a5fa]"
 							}`}
 						>
 							{isWa ? (
-								<MessageSquare className="h-4 w-4 text-[#25d366]" />
+								<MessageSquare className="h-4 w-4" />
 							) : (
-								<Phone className="h-4 w-4 text-[#60a5fa]" />
+								<Phone className="h-4 w-4" />
 							)}
 						</div>
 						<div>
@@ -511,7 +507,7 @@ export function TemplatePickerDialog({
 									className={[
 										"flex w-full items-center gap-3 px-6 py-3.5 text-left transition-colors",
 										activeSection === "wa"
-											? "bg-[#0d2016]"
+											? "bg-emerald-500/10 dark:bg-[#0d2016]"
 											: "hover:bg-muted/30",
 									].join(" ")}
 									onClick={() =>
@@ -522,19 +518,17 @@ export function TemplatePickerDialog({
 									<div
 										className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border ${
 											activeSection === "wa"
-												? "border-[#25d36650] bg-[#25d36620]"
-												: "border-border bg-muted"
+												? "border-emerald-500/50 bg-emerald-500/20 text-emerald-700 dark:border-[#25d36650] dark:bg-[#25d36620] dark:text-[#25d366]"
+												: "border-border bg-muted text-muted-foreground"
 										}`}
 									>
-										<MessageSquare
-											className={`h-4 w-4 ${activeSection === "wa" ? "text-[#25d366]" : "text-muted-foreground"}`}
-										/>
+										<MessageSquare className="h-4 w-4" />
 									</div>
 									<div className="min-w-0 flex-1">
 										<div className="flex items-center gap-2">
 											<p className="font-semibold text-sm">WhatsApp Template</p>
 											{selectedWa && (
-												<Badge className="h-4 rounded-full border border-[#25d36640] bg-[#25d36620] py-0 text-[#25d366] text-[9px]">
+												<Badge className="h-4 rounded-full border border-emerald-500/40 bg-emerald-500/15 py-0 text-emerald-700 text-xs dark:border-[#25d36640] dark:bg-[#25d36620] dark:text-[#25d366]">
 													{selectedWa.displayName}
 												</Badge>
 											)}
@@ -573,7 +567,7 @@ export function TemplatePickerDialog({
 									className={[
 										"flex w-full items-center gap-3 px-6 py-3.5 text-left transition-colors",
 										activeSection === "sms"
-											? "bg-[#0d1a2e]"
+											? "bg-blue-500/10 dark:bg-[#0d1a2e]"
 											: "hover:bg-muted/30",
 									].join(" ")}
 									onClick={() =>
@@ -584,19 +578,17 @@ export function TemplatePickerDialog({
 									<div
 										className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border ${
 											activeSection === "sms"
-												? "border-[#60a5fa50] bg-[#60a5fa20]"
-												: "border-border bg-muted"
+												? "border-blue-500/50 bg-blue-500/20 text-blue-700 dark:border-[#60a5fa50] dark:bg-[#60a5fa20] dark:text-[#60a5fa]"
+												: "border-border bg-muted text-muted-foreground"
 										}`}
 									>
-										<Phone
-											className={`h-4 w-4 ${activeSection === "sms" ? "text-[#60a5fa]" : "text-muted-foreground"}`}
-										/>
+										<Phone className="h-4 w-4" />
 									</div>
 									<div className="min-w-0 flex-1">
 										<div className="flex items-center gap-2">
 											<p className="font-semibold text-sm">SMS Template</p>
 											{selectedSms && (
-												<Badge className="h-4 rounded-full border border-[#60a5fa40] bg-[#60a5fa20] py-0 text-[#60a5fa] text-[9px]">
+												<Badge className="h-4 rounded-full border border-blue-500/40 bg-blue-500/15 py-0 text-blue-700 text-xs dark:border-[#60a5fa40] dark:bg-[#60a5fa20] dark:text-[#60a5fa]">
 													{selectedSms.displayName}
 												</Badge>
 											)}

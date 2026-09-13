@@ -13,14 +13,43 @@ export function useWallet() {
 }
 
 // ── Transactions ──────────────────────────────────────────────────────────────
-export function useTransactions(page = 1) {
+export type TransactionTypeFilter =
+	| "deposit"
+	| "message_debit"
+	| "campaign_hold"
+	| "campaign_refund"
+	| "refund";
+
+export interface UseTransactionsParams {
+	page?: number;
+	pageSize?: number;
+	type?: TransactionTypeFilter;
+}
+
+export function useTransactions(params: number | UseTransactionsParams = 1) {
+	const normalized =
+		typeof params === "number"
+			? { page: params, pageSize: 20, type: undefined }
+			: {
+					page: params.page ?? 1,
+					pageSize: params.pageSize ?? 20,
+					type: params.type,
+				};
+
 	return useQuery(
 		orpc.billing.getTransactions.queryOptions({
 			input: {
-				page,
+				page: normalized.page,
+				pageSize: normalized.pageSize,
+				...(normalized.type ? { type: normalized.type } : {}),
 			},
 			placeholderData: (prev) => prev,
-			queryKey: ["transactions", page],
+			queryKey: [
+				"transactions",
+				normalized.page,
+				normalized.pageSize,
+				normalized.type,
+			],
 			staleTime: 30_000,
 		})
 	);
@@ -58,30 +87,6 @@ export function useCampaignCost(
 			input: { contactIds, contacts, deliveryMode },
 			queryKey: ["campaignCost", contacts, deliveryMode, contactIds],
 			staleTime: 5000,
-		})
-	);
-}
-
-// ── Subscription ──────────────────────────────────────────────────────────────
-export function useSubscription() {
-	return useQuery(
-		orpc.billing.getSubscription.queryOptions({
-			staleTime: 60_000,
-		})
-	);
-}
-
-export function useInitSubscription() {
-	return useMutation(orpc.billing.initSubscription.mutationOptions());
-}
-
-export function useCancelSubscription() {
-	const queryClient = useQueryClient();
-	return useMutation(
-		orpc.billing.cancelSubscription.mutationOptions({
-			onSuccess: () => {
-				queryClient.invalidateQueries({ queryKey: ["subscription"] });
-			},
 		})
 	);
 }

@@ -1,29 +1,19 @@
 /**
- * POST /api/paystack/webhook
+ * POST /api/webhooks/paystack
  *
  * Receives Paystack webhook events and processes them server-side.
- * This is the authoritative path for crediting wallets and activating
- * subscriptions — the client verify flow is a UX convenience fallback only.
+ * This is the authoritative path for crediting wallets.
  *
  * Events handled:
- *   charge.success         → credit user wallet for deposit
- *   subscription.create    → activate Subscription row
- *   subscription.disable   → mark Subscription as cancelled
- *   invoice.payment_failed → notify user + pause subscription
- *
- * Set this URL in your Paystack Dashboard → Settings → Webhooks:
- *   https://yourdomain.com/api/paystack/webhook
+ *   charge.success → credit user wallet for deposit
  */
 import { createFileRoute } from "@tanstack/react-router";
-import { v4 as uuidv4 } from "uuid";
 import { prisma } from "#/db";
-import {
-	creditWallet,
-	formatNaira,
-	type PlanKey,
-	PRICING,
-} from "#/features/billing/utils";
+import { creditWallet } from "#/features/billing/utils";
+import { formatNaira } from "#/features/billing/utils/format";
 import { validateWebhookSignature } from "#/features/payment/paystack";
+import type { Prisma } from "#/generated/prisma/client";
+import { invalidate } from "#/lib/cache";
 
 export const Route = createFileRoute("/api/webhooks/paystack")({
 	server: {
@@ -39,14 +29,21 @@ export async function paystackWebhook(req: Request) {
 	const signature = req.headers.get("x-paystack-signature") ?? "";
 
 	if (!validateWebhookSignature(rawBody, signature)) {
-		console.warn("[Paystack Webhook] Invalid signature — rejecting");
+		console.warn("[Paystack Webhook] Invalid signature: rejecting");
 		return Response.json({ error: "Invalid signature" }, { status: 401 });
 	}
 
-	const payload = JSON.parse(rawBody) as {
+	let payload: {
 		event: string;
 		data: Record<string, unknown>;
 	};
+	try {
+		payload = JSON.parse(rawBody);
+	} catch {
+		console.warn("[Paystack Webhook] Malformed JSON payload");
+		return Response.json({ error: "Invalid JSON payload" }, { status: 400 });
+	}
+
 	const { event, data } = payload;
 
 	console.info(`[Paystack Webhook] Event: ${event}`);
@@ -56,180 +53,86 @@ export async function paystackWebhook(req: Request) {
 			// ── Deposit completed ─────────────────────────────────────────────────
 			case "charge.success": {
 				const reference = data.reference as string;
-				const amountKobo = data.amount as number;
-				const metadata = (data.metadata ?? {}) as Record<string, string>;
-				const type = metadata.type;
+				const grossAmountKobo = data.amount as number;
+				const currency = data.currency as string;
+				const metadata = (data.metadata ?? {}) as Record<string, unknown>;
+				const { type } = metadata;
 
-				// Only handle wallet deposits here, not subscription auth charges
 				if (type !== "wallet_deposit") {
 					break;
 				}
 
-				// Find which user this belongs to via pending transaction
 				const pending = await prisma.transaction.findUnique({
 					include: { wallet: true },
 					where: { reference },
 				});
 
 				if (!pending) {
-					console.warn(`[Webhook] No pending transaction for ref ${reference}`);
+					console.warn(
+						`[Paystack Webhook] No pending transaction for ref ${reference}`
+					);
 					break;
 				}
 				if (pending.status === "completed") {
-					console.info(`[Webhook] Already processed ${reference} — skipping`);
+					console.info(
+						`[Paystack Webhook] Already processed ${reference}: skipping`
+					);
 					break;
 				}
 
-				// Credit wallet
+				const pendingMeta =
+					(pending.metadata as Record<string, unknown> | null) ?? {};
+				const expectedGrossKobo =
+					typeof pendingMeta.grossKobo === "number"
+						? pendingMeta.grossKobo
+						: pending.amountKobo;
+
+				if (currency !== "NGN" || grossAmountKobo !== expectedGrossKobo) {
+					console.warn(
+						`[Paystack Webhook] Mismatched amount/currency for ref ${reference}. Expected ${expectedGrossKobo} NGN, received ${grossAmountKobo} ${currency}`
+					);
+					await prisma.transaction.update({
+						data: { status: "failed" },
+						where: { reference },
+					});
+					break;
+				}
+
+				// Credit wallet with net deposit amount
 				await creditWallet({
-					amountKobo,
-					description: `Wallet top-up of ${formatNaira(amountKobo)}`,
+					amountKobo: pending.amountKobo,
+					description: pending.description,
+					metadata: {
+						...pendingMeta,
+						authorization: data.authorization,
+						channel: (data.authorization as Record<string, unknown> | undefined)
+							?.channel,
+						gatewayFeeKobo: data.fees,
+						paidAt: data.paid_at,
+					} as Prisma.InputJsonValue,
 					paystackRef: reference,
-					reference: `${reference}_webhook`,
+					reference,
 					type: "deposit",
 					userId: pending.wallet.userId,
 				});
 
-				// Mark original pending record as completed
-				await prisma.transaction.update({
-					data: { paystackRef: reference, status: "completed" },
-					where: { reference },
-				});
+				// Invalidate cached reads for the user
+				invalidate(pending.wallet.userId, "billing.getWallet");
+				invalidate(pending.wallet.userId, "billing.getTransactions");
 
 				console.info(
-					`[Webhook] Credited ${formatNaira(amountKobo)} to wallet for tx ${reference}`
-				);
-				break;
-			}
-
-			// ── Subscription created ──────────────────────────────────────────────
-			case "subscription.create": {
-				const subData = data as Record<string, unknown>;
-				const subCode = subData.subscription_code as string;
-				const planCode = (subData.plan as Record<string, unknown>)
-					.plan_code as string;
-				const customerEmail = (subData.customer as Record<string, unknown>)
-					.email as string;
-				const nextPayDate = subData.next_payment_date as string;
-				const customerCode = (subData.customer as Record<string, unknown>)
-					.customer_code as string;
-
-				// Find the plan from our config
-				const planEntry = Object.entries(PRICING.PLANS).find(
-					([, p]) => p.paystackPlanCode === planCode
-				);
-
-				if (!planEntry) {
-					console.warn(`[Webhook] Unknown plan code ${planCode}`);
-					break;
-				}
-
-				const [planKey, planConfig] = planEntry;
-
-				// Find user by email
-				const user = await prisma.user.findUnique({
-					where: { email: customerEmail },
-				});
-				if (!user) {
-					break;
-				}
-
-				// Upsert subscription — handles both new and renewals
-				const now = new Date();
-				const end = new Date(nextPayDate);
-
-				await prisma.subscription.upsert({
-					create: {
-						currentPeriodEnd: end,
-						currentPeriodStart: now,
-						messagesUsedThisCycle: 0,
-						monthlyMessageLimit: planConfig.monthlyLimit,
-						paystackCustomerCode: customerCode,
-						paystackPlanCode: planCode,
-						paystackSubCode: subCode,
-						plan: planKey as PlanKey,
-						status: "active",
-						userId: user.id,
-					},
-					update: {
-						currentPeriodEnd: end,
-						currentPeriodStart: now,
-						messagesUsedThisCycle: 0,
-						monthlyMessageLimit: planConfig.monthlyLimit,
-						paystackPlanCode: planCode,
-						paystackSubCode: subCode,
-						plan: planKey as PlanKey,
-						status: "active",
-					},
-					where: { userId: user.id },
-				});
-
-				// Record subscription transaction
-				const wallet = await prisma.wallet.findUnique({
-					where: { userId: user.id },
-				});
-				if (wallet) {
-					await prisma.transaction.create({
-						data: {
-							amountKobo: planConfig.priceKobo,
-							balanceAfterKobo: wallet.balanceKobo,
-							description: `${planConfig.label} plan subscription`,
-							paystackRef: subCode,
-							reference: `sub_event_${uuidv4()}`,
-							status: "completed",
-							type: "subscription",
-							walletId: wallet.id,
-						},
-					});
-				}
-
-				console.info(
-					`[Webhook] Subscription ${subCode} activated for ${customerEmail}`
-				);
-				break;
-			}
-
-			// ── Subscription cancelled ────────────────────────────────────────────
-			case "subscription.disable": {
-				const subCode = data.subscription_code as string;
-
-				await prisma.subscription.updateMany({
-					data: { cancelledAt: new Date(), status: "cancelled" },
-					where: { paystackSubCode: subCode },
-				});
-
-				console.info(`[Webhook] Subscription ${subCode} cancelled`);
-				break;
-			}
-
-			// ── Invoice payment failed ────────────────────────────────────────────
-			case "invoice.payment_failed": {
-				const subCode = (data.subscription as Record<string, unknown>)
-					?.subscription_code as string | undefined;
-				if (!subCode) {
-					break;
-				}
-
-				await prisma.subscription.updateMany({
-					data: { status: "paused" },
-					where: { paystackSubCode: subCode },
-				});
-
-				console.warn(
-					`[Webhook] Subscription ${subCode} paused — payment failed`
+					`[Paystack Webhook] Credited ${formatNaira(pending.amountKobo)} to wallet for tx ${reference}`
 				);
 				break;
 			}
 
 			default:
-				console.info(`[Webhook] Unhandled event: ${event}`);
+				console.info(`[Paystack Webhook] Unhandled event: ${event}`);
 		}
 	} catch (err) {
 		console.error("[Paystack Webhook] Error processing event:", err);
-		// Return 200 anyway — Paystack will retry on non-200
-		// Better to acknowledge than to loop retries
 	}
 
-	// Always return 200 so Paystack stops retrying
+	// Always return 200 so Paystack halts retry loops
 	return Response.json({ received: true });
 }

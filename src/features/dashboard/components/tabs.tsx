@@ -173,15 +173,6 @@ function DesktopTabItem({
 				/>
 			)}
 
-			{/* Active bottom indicator line */}
-			{Boolean(isActive) && (
-				<motion.span
-					className="absolute right-3 bottom-1 left-3 h-0.5 rounded-full bg-primary"
-					layoutId="active-nav-underline"
-					transition={{ damping: 30, stiffness: 380, type: "spring" }}
-				/>
-			)}
-
 			{/* Hover highlight */}
 			{Boolean(isHovered && !isActive) && (
 				<motion.span

@@ -1,39 +1,18 @@
 import { Link, useNavigate } from "@tanstack/react-router";
+import { Eye, EyeOff } from "lucide-react";
 import type { JSX, SVGProps } from "react";
 import { useState } from "react";
-import z from "zod";
+import { toast } from "sonner";
 import { Button } from "#/components/ui/button";
 import { Card, CardContent } from "#/components/ui/card";
 import { Input } from "#/components/ui/input";
 import { Separator } from "#/components/ui/separator";
 import { useAppForm } from "#/hooks/form-hook";
 import { authClient } from "#/lib/auth-client";
-import { magicLinkSchema, registerSchema } from "#/schema/auth";
+import { registerSchema } from "#/schema/auth";
+import { AuthBrand } from "./auth-brand";
 
-// ─── Icons ────────────────────────────────────────────────────────────────────
-
-const Logo = (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
-	<svg
-		fill="currentColor"
-		height="48"
-		viewBox="0 0 40 48"
-		width="40"
-		{...props}
-	>
-		<title>Logo</title>
-		<clipPath id="logo-clip-register">
-			<path d="m0 0h40v48h-40z" />
-		</clipPath>
-		<g clipPath="url(#logo-clip-register)">
-			<path d="m25.0887 5.05386-3.933-1.05386-3.3145 12.3696-2.9923-11.16736-3.9331 1.05386 3.233 12.0655-8.05262-8.0526-2.87919 2.8792 8.83271 8.8328-10.99975-2.9474-1.05385625 3.933 12.01860625 3.2204c-.1376-.5935-.2104-1.2119-.2104-1.8473 0-4.4976 3.646-8.1436 8.1437-8.1436 4.4976 0 8.1436 3.646 8.1436 8.1436 0 .6313-.0719 1.2459-.2078 1.8359l10.9227 2.9267 1.0538-3.933-12.0664-3.2332 11.0005-2.9476-1.0539-3.933-12.0659 3.233 8.0526-8.0526-2.8792-2.87916-8.7102 8.71026z" />
-			<path d="m27.8723 26.2214c-.3372 1.4256-1.0491 2.7063-2.0259 3.7324l7.913 7.9131 2.8792-2.8792z" />
-			<path d="m25.7665 30.0366c-.9886 1.0097-2.2379 1.7632-3.6389 2.1515l2.8794 10.746 3.933-1.0539z" />
-			<path d="m21.9807 32.2274c-.65.1671-1.3313.2559-2.0334.2559-.7522 0-1.4806-.102-2.1721-.2929l-2.882 10.7558 3.933 1.0538z" />
-			<path d="m17.6361 32.1507c-1.3796-.4076-2.6067-1.1707-3.5751-2.1833l-7.9325 7.9325 2.87919 2.8792z" />
-			<path d="m13.9956 29.8973c-.9518-1.019-1.6451-2.2826-1.9751-3.6862l-10.95836 2.9363 1.05385 3.933z" />
-		</g>
-	</svg>
-);
+// ─── Google Icon ─────────────────────────────────────────────────────────────
 
 const GoogleIcon = (
 	props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>
@@ -59,148 +38,14 @@ const GoogleIcon = (
 	</svg>
 );
 
-// ─── Shared field component ────────────────────────────────────────────────────
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-// ─── Magic-link registration form ─────────────────────────────────────────────
-
-function MagicLinkRegisterForm({ callbackURL }: { callbackURL: string }) {
-	const [sent, setSent] = useState(false);
-
-	const form = useAppForm({
-		defaultValues: { email: "", name: "" },
-		onSubmit: async ({ value }) => {
-			// Magic link: create account then send the link in one step
-			const { error } = await authClient.signIn.magicLink({
-				callbackURL: callbackURL ?? "/dashboard",
-				email: value.email,
-				name: value.name,
-			});
-			if (error) {
-				throw new Error(error.message ?? "Failed to send link");
-			}
-			setSent(true);
-		},
-		validators: {
-			onBlur: magicLinkSchema.extend({
-				name: z.string().min(1),
-			}),
-		},
-	});
-
-	if (sent) {
-		return (
-			<div className="w-full rounded-xl border border-border bg-muted/40 px-5 py-4 text-center">
-				<p className="font-medium text-foreground text-sm">Check your inbox</p>
-				<p className="mt-1 text-muted-foreground text-xs">
-					We sent a sign-in link to{" "}
-					<span className="font-medium text-foreground">
-						{form.getFieldValue("email")}
-					</span>
-					. It expires in 15 minutes.
-				</p>
-			</div>
-		);
-	}
-
-	return (
-		<form.AppForm>
-			<form
-				className="w-full space-y-4"
-				noValidate
-				onSubmit={(e) => {
-					e.preventDefault();
-					form.handleSubmit();
-				}}
-			>
-				<form.AppField
-					name="name"
-					validators={{
-						onBlur: ({ value }) => {
-							if (!value.trim()) {
-								return "Name is required";
-							}
-							if (value.trim().length < 2) {
-								return "Name must be at least 2 characters";
-							}
-						},
-					}}
-				>
-					{(field) => (
-						<field.Field id={field.name}>
-							<Input
-								aria-invalid={
-									field.state.meta.isTouched &&
-									field.state.meta.errors.length > 0
-								}
-								autoComplete="name"
-								className="w-full rounded-xl"
-								id={field.name}
-								name={field.name}
-								onBlur={field.handleBlur}
-								onChange={(e) => field.handleChange(e.target.value)}
-								placeholder="Your name"
-								type="text"
-								value={field.state.value}
-							/>
-						</field.Field>
-					)}
-				</form.AppField>
-
-				<form.AppField name="email">
-					{(field) => (
-						<field.Field id={field.name}>
-							<Input
-								aria-invalid={
-									field.state.meta.isTouched &&
-									field.state.meta.errors.length > 0
-								}
-								autoComplete="email"
-								className="w-full rounded-xl"
-								id={field.name}
-								name={field.name}
-								onBlur={field.handleBlur}
-								onChange={(e) => field.handleChange(e.target.value)}
-								placeholder="Your email"
-								type="email"
-								value={field.state.value}
-							/>
-						</field.Field>
-					)}
-				</form.AppField>
-
-				<form.Subscribe
-					selector={(s) => [s.canSubmit, s.isSubmitting, s.errors] as const}
-				>
-					{([canSubmit, isSubmitting, errors]) => (
-						<div className="flex flex-col gap-2">
-							{errors.length > 0 && (
-								<p
-									className="text-center text-destructive text-xs"
-									role="alert"
-								>
-									{String(errors[0])}
-								</p>
-							)}
-							<Button
-								className="w-full rounded-xl"
-								disabled={!canSubmit || isSubmitting}
-								size="lg"
-								type="submit"
-							>
-								{isSubmitting ? "Sending…" : "Send me the magic link"}
-							</Button>
-						</div>
-					)}
-				</form.Subscribe>
-			</form>
-		</form.AppForm>
-	);
-}
-
-// ─── Password registration form ────────────────────────────────────────────────
+// ─── Registration Form ────────────────────────────────────────────────────────
 
 function PasswordRegisterForm({ callbackURL }: { callbackURL: string }) {
 	const navigate = useNavigate();
+	const [showPassword, setShowPassword] = useState(false);
+	const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
 	const form = useAppForm({
 		defaultValues: {
@@ -210,16 +55,22 @@ function PasswordRegisterForm({ callbackURL }: { callbackURL: string }) {
 			password: "",
 		},
 		onSubmit: async ({ value }) => {
+			const destination = callbackURL || "/onboarding";
 			const { error } = await authClient.signUp.email({
-				callbackURL: callbackURL ?? "/dashboard",
+				callbackURL: destination,
 				email: value.email,
 				name: value.name,
 				password: value.password,
 			});
 			if (error) {
-				throw new Error(error.message ?? "Failed to create account");
+				toast.error(error.message ?? "Failed to create account");
+				return;
 			}
-			navigate({ to: callbackURL ?? "/dashboard" });
+			toast.success("Account created! Please verify your email.");
+			navigate({
+				search: { email: value.email },
+				to: "/verify-email",
+			});
 		},
 		validators: {
 			onBlur: registerSchema,
@@ -236,73 +87,146 @@ function PasswordRegisterForm({ callbackURL }: { callbackURL: string }) {
 					form.handleSubmit();
 				}}
 			>
-				<form.AppField name="name">
+				{/* Full Name */}
+				<form.AppField
+					name="name"
+					validators={{
+						onBlur: ({ value }) => {
+							if (!value.trim()) {
+								return "Full name is required";
+							}
+							if (value.trim().length < 2) {
+								return "Name must be at least 2 characters";
+							}
+						},
+					}}
+				>
 					{(field) => (
-						<field.Field id={field.name}>
+						<field.Field className="gap-1.5" id={field.name}>
+							<label
+								className="font-medium text-foreground text-xs"
+								htmlFor={field.name}
+							>
+								Full Name
+							</label>
 							<Input
 								aria-invalid={
 									field.state.meta.isTouched &&
 									field.state.meta.errors.length > 0
 								}
 								autoComplete="name"
-								className="w-full rounded-xl"
+								autoFocus
 								id={field.name}
 								name={field.name}
 								onBlur={field.handleBlur}
 								onChange={(e) => field.handleChange(e.target.value)}
-								placeholder="Your name"
+								placeholder="Adewale Bello"
 								type="text"
 								value={field.state.value}
 							/>
+							<field.Error className="text-destructive text-xs" />
 						</field.Field>
 					)}
 				</form.AppField>
 
-				<form.AppField name="email">
+				{/* Email Address */}
+				<form.AppField
+					name="email"
+					validators={{
+						onBlur: ({ value }) => {
+							if (!value.trim()) {
+								return "Email address is required";
+							}
+							if (!emailRegex.test(value)) {
+								return "Please enter a valid email address";
+							}
+						},
+					}}
+				>
 					{(field) => (
-						<field.Field id={field.name}>
+						<field.Field className="gap-1.5" id={field.name}>
+							<label
+								className="font-medium text-foreground text-xs"
+								htmlFor={field.name}
+							>
+								Email Address
+							</label>
 							<Input
 								aria-invalid={
 									field.state.meta.isTouched &&
 									field.state.meta.errors.length > 0
 								}
 								autoComplete="email"
-								className="w-full rounded-xl"
 								id={field.name}
 								name={field.name}
 								onBlur={field.handleBlur}
 								onChange={(e) => field.handleChange(e.target.value)}
-								placeholder="Your email"
+								placeholder="leader@organization.org"
 								type="email"
 								value={field.state.value}
 							/>
+							<field.Error className="text-destructive text-xs" />
 						</field.Field>
 					)}
 				</form.AppField>
 
-				<form.AppField name="password">
+				{/* Password */}
+				<form.AppField
+					name="password"
+					validators={{
+						onBlur: ({ value }) => {
+							if (!value) {
+								return "Password is required";
+							}
+							if (value.length < 8) {
+								return "Password must be at least 8 characters";
+							}
+						},
+					}}
+				>
 					{(field) => (
-						<field.Field id={field.name}>
-							<Input
-								aria-invalid={
-									field.state.meta.isTouched &&
-									field.state.meta.errors.length > 0
-								}
-								autoComplete="new-password"
-								autoFocus
-								className="w-full rounded-xl"
-								id={field.name}
-								name={field.name}
-								onBlur={field.handleBlur}
-								onChange={(e) => field.handleChange(e.target.value)}
-								placeholder="Create a password"
-								type="password"
-								value={field.state.value}
-							/>
+						<field.Field className="gap-1.5" id={field.name}>
+							<label
+								className="font-medium text-foreground text-xs"
+								htmlFor={field.name}
+							>
+								Password
+							</label>
+							<div className="relative">
+								<Input
+									aria-invalid={
+										field.state.meta.isTouched &&
+										field.state.meta.errors.length > 0
+									}
+									autoComplete="new-password"
+									className="pr-10"
+									id={field.name}
+									name={field.name}
+									onBlur={field.handleBlur}
+									onChange={(e) => field.handleChange(e.target.value)}
+									placeholder="Min. 8 characters"
+									type={showPassword ? "text" : "password"}
+									value={field.state.value}
+								/>
+								<button
+									aria-label={showPassword ? "Hide password" : "Show password"}
+									className="absolute inset-y-0 right-3 flex items-center text-muted-foreground transition-colors hover:text-foreground focus:outline-none"
+									onClick={() => setShowPassword((v) => !v)}
+									type="button"
+								>
+									{showPassword ? (
+										<EyeOff className="size-4" />
+									) : (
+										<Eye className="size-4" />
+									)}
+								</button>
+							</div>
+							<field.Error className="text-destructive text-xs" />
 						</field.Field>
 					)}
 				</form.AppField>
 
+				{/* Confirm Password */}
 				<form.AppField
 					name="confirmPassword"
 					validators={{
@@ -317,48 +241,63 @@ function PasswordRegisterForm({ callbackURL }: { callbackURL: string }) {
 					}}
 				>
 					{(field) => (
-						<field.Field id={field.name}>
-							<Input
-								aria-invalid={
-									field.state.meta.isTouched &&
-									field.state.meta.errors.length > 0
-								}
-								autoComplete="new-password"
-								className="w-full rounded-xl"
-								id={field.name}
-								name={field.name}
-								onBlur={field.handleBlur}
-								onChange={(e) => field.handleChange(e.target.value)}
-								placeholder="Confirm your password"
-								type="password"
-								value={field.state.value}
-							/>
+						<field.Field className="gap-1.5" id={field.name}>
+							<label
+								className="font-medium text-foreground text-xs"
+								htmlFor={field.name}
+							>
+								Confirm Password
+							</label>
+							<div className="relative">
+								<Input
+									aria-invalid={
+										field.state.meta.isTouched &&
+										field.state.meta.errors.length > 0
+									}
+									autoComplete="new-password"
+									className="pr-10"
+									id={field.name}
+									name={field.name}
+									onBlur={field.handleBlur}
+									onChange={(e) => field.handleChange(e.target.value)}
+									placeholder="Repeat password"
+									type={showConfirmPassword ? "text" : "password"}
+									value={field.state.value}
+								/>
+								<button
+									aria-label={
+										showConfirmPassword
+											? "Hide confirmed password"
+											: "Show confirmed password"
+									}
+									className="absolute inset-y-0 right-3 flex items-center text-muted-foreground transition-colors hover:text-foreground focus:outline-none"
+									onClick={() => setShowConfirmPassword((v) => !v)}
+									type="button"
+								>
+									{showConfirmPassword ? (
+										<EyeOff className="size-4" />
+									) : (
+										<Eye className="size-4" />
+									)}
+								</button>
+							</div>
+							<field.Error className="text-destructive text-xs" />
 						</field.Field>
 					)}
 				</form.AppField>
 
 				<form.Subscribe
-					selector={(s) => [s.canSubmit, s.isSubmitting, s.errors] as const}
+					selector={(s) => [s.canSubmit, s.isSubmitting] as const}
 				>
-					{([canSubmit, isSubmitting, errors]) => (
-						<div className="flex flex-col gap-2">
-							{errors.length > 0 && (
-								<p
-									className="text-center text-destructive text-xs"
-									role="alert"
-								>
-									{String(errors[0])}
-								</p>
-							)}
-							<Button
-								className="w-full rounded-xl"
-								disabled={!canSubmit || isSubmitting}
-								size="lg"
-								type="submit"
-							>
-								{isSubmitting ? "Creating account…" : "Create account"}
-							</Button>
-						</div>
+					{([canSubmit, isSubmitting]) => (
+						<Button
+							className="mt-2 w-full"
+							disabled={!canSubmit || isSubmitting}
+							size="lg"
+							type="submit"
+						>
+							{isSubmitting ? "Creating account…" : "Create account"}
+						</Button>
 					)}
 				</form.Subscribe>
 			</form>
@@ -373,87 +312,74 @@ export default function RegisterView({
 }: {
 	callbackURL?: string;
 }) {
-	const [usePassword, setUsePassword] = useState(false);
+	const handleGoogleSignUp = async () => {
+		try {
+			await authClient.signIn.social({
+				callbackURL: callbackURL ?? "/dashboard",
+				provider: "google",
+			});
+		} catch {
+			toast.error("Failed to initiate Google sign-in. Please try again.");
+		}
+	};
 
 	return (
-		<div className="flex min-h-dvh items-center justify-center">
-			<Card className="w-full max-w-sm rounded-4xl px-6 py-10 pt-14">
-				<CardContent>
-					<div className="flex flex-col items-center space-y-8">
-						<Logo />
+		<Card className="w-full rounded-4xl py-8 shadow-md">
+			<CardContent>
+				<div className="flex flex-col items-center space-y-6">
+					<AuthBrand />
 
-						<div className="space-y-2 text-center">
-							<h1 className="text-balance font-semibold text-3xl text-foreground">
-								Create an account
-							</h1>
-							<p className="text-pretty text-muted-foreground text-sm">
-								Already have one?{" "}
-								<Link className="text-foreground hover:underline" to="/login">
-									Sign in
-								</Link>
-							</p>
-						</div>
-
-						<div className="w-full space-y-4">
-							<Button
-								className="w-full gap-2 rounded-xl"
-								onClick={() =>
-									authClient.signIn.social({
-										callbackURL: callbackURL ?? "/dashboard	",
-										provider: "google",
-									})
-								}
-								size="lg"
-								type="button"
-								variant="outline"
+					<div className="space-y-1.5 text-center">
+						<h1 className="font-semibold text-2xl text-foreground tracking-tight">
+							Create your account
+						</h1>
+						<p className="text-muted-foreground text-sm">
+							Already registered?{" "}
+							<Link
+								className="font-medium text-foreground underline underline-offset-4 hover:text-primary"
+								to="/login"
 							>
-								<GoogleIcon />
-								Continue with Google
-							</Button>
-
-							<div className="flex items-center gap-4 py-2">
-								<Separator className="flex-1" />
-								<span className="text-muted-foreground text-sm">OR</span>
-								<Separator className="flex-1" />
-							</div>
-
-							{/* Swap form — each mode has its own isolated form instance */}
-							{usePassword ? (
-								<PasswordRegisterForm
-									callbackURL={callbackURL ?? "/dashboard"}
-								/>
-							) : (
-								<MagicLinkRegisterForm
-									callbackURL={callbackURL ?? "/dashboard"}
-								/>
-							)}
-
-							<Button
-								className="w-full text-muted-foreground text-sm"
-								onClick={() => setUsePassword((v) => !v)}
-								type="button"
-								variant="link"
-							>
-								{usePassword
-									? "Sign up using magic link"
-									: "Sign up using password"}
-							</Button>
-						</div>
-
-						<p className="w-11/12 text-pretty text-center text-muted-foreground text-xs">
-							You acknowledge that you read, and agree, to our{" "}
-							<Link className="underline hover:text-foreground" to="/">
-								Terms of Service
-							</Link>{" "}
-							and our{" "}
-							<Link className="underline hover:text-foreground" to="/">
-								Privacy Policy
+								Sign in
 							</Link>
-							.
 						</p>
 					</div>
-				</CardContent>
-			</Card>
-		</div>
+
+					<div className="w-full space-y-4">
+						<Button
+							className="w-full gap-2.5"
+							onClick={handleGoogleSignUp}
+							size="lg"
+							type="button"
+							variant="outline"
+						>
+							<GoogleIcon />
+							Continue with Google
+						</Button>
+
+						<div className="flex items-center gap-4 py-1">
+							<Separator className="flex-1" />
+							<span className="font-mono text-muted-foreground text-xs uppercase tracking-wider">
+								OR
+							</span>
+							<Separator className="flex-1" />
+						</div>
+
+						<PasswordRegisterForm callbackURL={callbackURL ?? "/dashboard"} />
+					</div>
+
+					<p className="w-11/12 text-balance text-center text-muted-foreground text-xs leading-relaxed">
+						By creating an account, you agree to Velocast's{" "}
+						<Link className="underline hover:text-foreground" to="/">
+							Terms of Service
+						</Link>{" "}
+						and{" "}
+						<Link className="underline hover:text-foreground" to="/">
+							Privacy Policy
+						</Link>
+						.
+					</p>
+				</div>
+			</CardContent>
+		</Card>
 	);
 }

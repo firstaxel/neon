@@ -7,7 +7,7 @@
 
 import { Link, useNavigate } from "@tanstack/react-router";
 import { LogOut, Settings } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import {
 	DropdownMenu,
@@ -27,16 +27,16 @@ export function UserMenu() {
 	const navigate = useNavigate();
 	const [signingOut, setSigningOut] = useState(false);
 
-	async function handleSignOut() {
+	const handleSignOut = useCallback(async () => {
 		setSigningOut(true);
 		try {
 			await authClient.signOut();
 			navigate({ to: "/login" });
 		} catch {
-			toast.error("Sign out failed — try again");
+			toast.error("Sign out failed, please try again");
 			setSigningOut(false);
 		}
-	}
+	}, [navigate]);
 
 	const displayName = profile?.name ?? profile?.email ?? "Account";
 	const email = profile?.email ?? "";
@@ -69,7 +69,7 @@ export function UserMenu() {
 								<p className="truncate font-medium text-sm leading-tight">
 									{displayName}
 								</p>
-								{email && (
+								{Boolean(email) && (
 									<p className="truncate text-[11px] text-muted-foreground leading-tight">
 										{email}
 									</p>

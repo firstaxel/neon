@@ -18,6 +18,7 @@ import { Route as authForgotPasswordIndexRouteImport } from './routes/(auth)/for
 import { Route as authLoginIndexRouteImport } from './routes/(auth)/login/index'
 import { Route as authRegisterIndexRouteImport } from './routes/(auth)/register/index'
 import { Route as authResetPasswordIndexRouteImport } from './routes/(auth)/reset-password/index'
+import { Route as authVerifyEmailIndexRouteImport } from './routes/(auth)/verify-email/index'
 import { Route as dashboardBillingIndexRouteImport } from './routes/(dashboard)/billing/index'
 import { Route as dashboardCampaignsIndexRouteImport } from './routes/(dashboard)/campaigns/index'
 import { Route as dashboardContactsIndexRouteImport } from './routes/(dashboard)/contacts/index'
@@ -36,6 +37,7 @@ import { Route as dashboardCampaignsCreateIndexRouteImport } from './routes/(das
 import { Route as dashboardTemplatesCreateSmsIndexRouteImport } from './routes/(dashboard)/templates/create/sms/index'
 import { Route as dashboardTemplatesCreateWhatsappIndexRouteImport } from './routes/(dashboard)/templates/create/whatsapp/index'
 import { Route as dashboardTemplatesSmsTemplateIdIndexRouteImport } from './routes/(dashboard)/templates/sms/$templateId/index'
+import { Route as dashboardTemplatesWhatsappTemplateIdIndexRouteImport } from './routes/(dashboard)/templates/whatsapp/$templateId/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -78,6 +80,11 @@ const authRegisterIndexRoute = authRegisterIndexRouteImport.update({
 const authResetPasswordIndexRoute = authResetPasswordIndexRouteImport.update({
   id: '/reset-password/',
   path: '/reset-password/',
+  getParentRoute: () => authRouteRoute,
+} as any)
+const authVerifyEmailIndexRoute = authVerifyEmailIndexRouteImport.update({
+  id: '/verify-email/',
+  path: '/verify-email/',
   getParentRoute: () => authRouteRoute,
 } as any)
 const dashboardBillingIndexRoute = dashboardBillingIndexRouteImport.update({
@@ -177,6 +184,12 @@ const dashboardTemplatesSmsTemplateIdIndexRoute =
     path: '/templates/sms/$templateId/',
     getParentRoute: () => dashboardRouteRoute,
   } as any)
+const dashboardTemplatesWhatsappTemplateIdIndexRoute =
+  dashboardTemplatesWhatsappTemplateIdIndexRouteImport.update({
+    id: '/templates/whatsapp/$templateId/',
+    path: '/templates/whatsapp/$templateId/',
+    getParentRoute: () => dashboardRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -190,6 +203,7 @@ export interface FileRoutesByFullPath {
   '/login/': typeof authLoginIndexRoute
   '/register/': typeof authRegisterIndexRoute
   '/reset-password/': typeof authResetPasswordIndexRoute
+  '/verify-email/': typeof authVerifyEmailIndexRoute
   '/billing/': typeof dashboardBillingIndexRoute
   '/campaigns/': typeof dashboardCampaignsIndexRoute
   '/contacts/': typeof dashboardContactsIndexRoute
@@ -204,6 +218,7 @@ export interface FileRoutesByFullPath {
   '/templates/create/sms/': typeof dashboardTemplatesCreateSmsIndexRoute
   '/templates/create/whatsapp/': typeof dashboardTemplatesCreateWhatsappIndexRoute
   '/templates/sms/$templateId/': typeof dashboardTemplatesSmsTemplateIdIndexRoute
+  '/templates/whatsapp/$templateId/': typeof dashboardTemplatesWhatsappTemplateIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -217,6 +232,7 @@ export interface FileRoutesByTo {
   '/login': typeof authLoginIndexRoute
   '/register': typeof authRegisterIndexRoute
   '/reset-password': typeof authResetPasswordIndexRoute
+  '/verify-email': typeof authVerifyEmailIndexRoute
   '/billing': typeof dashboardBillingIndexRoute
   '/campaigns': typeof dashboardCampaignsIndexRoute
   '/contacts': typeof dashboardContactsIndexRoute
@@ -231,6 +247,7 @@ export interface FileRoutesByTo {
   '/templates/create/sms': typeof dashboardTemplatesCreateSmsIndexRoute
   '/templates/create/whatsapp': typeof dashboardTemplatesCreateWhatsappIndexRoute
   '/templates/sms/$templateId': typeof dashboardTemplatesSmsTemplateIdIndexRoute
+  '/templates/whatsapp/$templateId': typeof dashboardTemplatesWhatsappTemplateIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -247,6 +264,7 @@ export interface FileRoutesById {
   '/(auth)/login/': typeof authLoginIndexRoute
   '/(auth)/register/': typeof authRegisterIndexRoute
   '/(auth)/reset-password/': typeof authResetPasswordIndexRoute
+  '/(auth)/verify-email/': typeof authVerifyEmailIndexRoute
   '/(dashboard)/billing/': typeof dashboardBillingIndexRoute
   '/(dashboard)/campaigns/': typeof dashboardCampaignsIndexRoute
   '/(dashboard)/contacts/': typeof dashboardContactsIndexRoute
@@ -261,6 +279,7 @@ export interface FileRoutesById {
   '/(dashboard)/templates/create/sms/': typeof dashboardTemplatesCreateSmsIndexRoute
   '/(dashboard)/templates/create/whatsapp/': typeof dashboardTemplatesCreateWhatsappIndexRoute
   '/(dashboard)/templates/sms/$templateId/': typeof dashboardTemplatesSmsTemplateIdIndexRoute
+  '/(dashboard)/templates/whatsapp/$templateId/': typeof dashboardTemplatesWhatsappTemplateIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -276,6 +295,7 @@ export interface FileRouteTypes {
     | '/login/'
     | '/register/'
     | '/reset-password/'
+    | '/verify-email/'
     | '/billing/'
     | '/campaigns/'
     | '/contacts/'
@@ -290,6 +310,7 @@ export interface FileRouteTypes {
     | '/templates/create/sms/'
     | '/templates/create/whatsapp/'
     | '/templates/sms/$templateId/'
+    | '/templates/whatsapp/$templateId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -303,6 +324,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/reset-password'
+    | '/verify-email'
     | '/billing'
     | '/campaigns'
     | '/contacts'
@@ -317,6 +339,7 @@ export interface FileRouteTypes {
     | '/templates/create/sms'
     | '/templates/create/whatsapp'
     | '/templates/sms/$templateId'
+    | '/templates/whatsapp/$templateId'
   id:
     | '__root__'
     | '/'
@@ -332,6 +355,7 @@ export interface FileRouteTypes {
     | '/(auth)/login/'
     | '/(auth)/register/'
     | '/(auth)/reset-password/'
+    | '/(auth)/verify-email/'
     | '/(dashboard)/billing/'
     | '/(dashboard)/campaigns/'
     | '/(dashboard)/contacts/'
@@ -346,6 +370,7 @@ export interface FileRouteTypes {
     | '/(dashboard)/templates/create/sms/'
     | '/(dashboard)/templates/create/whatsapp/'
     | '/(dashboard)/templates/sms/$templateId/'
+    | '/(dashboard)/templates/whatsapp/$templateId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -423,6 +448,13 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password/'
       preLoaderRoute: typeof authResetPasswordIndexRouteImport
+      parentRoute: typeof authRouteRoute
+    }
+    '/(auth)/verify-email/': {
+      id: '/(auth)/verify-email/'
+      path: '/verify-email'
+      fullPath: '/verify-email/'
+      preLoaderRoute: typeof authVerifyEmailIndexRouteImport
       parentRoute: typeof authRouteRoute
     }
     '/(dashboard)/billing/': {
@@ -551,6 +583,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof dashboardTemplatesSmsTemplateIdIndexRouteImport
       parentRoute: typeof dashboardRouteRoute
     }
+    '/(dashboard)/templates/whatsapp/$templateId/': {
+      id: '/(dashboard)/templates/whatsapp/$templateId/'
+      path: '/templates/whatsapp/$templateId'
+      fullPath: '/templates/whatsapp/$templateId/'
+      preLoaderRoute: typeof dashboardTemplatesWhatsappTemplateIdIndexRouteImport
+      parentRoute: typeof dashboardRouteRoute
+    }
   }
 }
 
@@ -559,6 +598,7 @@ interface authRouteRouteChildren {
   authLoginIndexRoute: typeof authLoginIndexRoute
   authRegisterIndexRoute: typeof authRegisterIndexRoute
   authResetPasswordIndexRoute: typeof authResetPasswordIndexRoute
+  authVerifyEmailIndexRoute: typeof authVerifyEmailIndexRoute
 }
 
 const authRouteRouteChildren: authRouteRouteChildren = {
@@ -566,6 +606,7 @@ const authRouteRouteChildren: authRouteRouteChildren = {
   authLoginIndexRoute: authLoginIndexRoute,
   authRegisterIndexRoute: authRegisterIndexRoute,
   authResetPasswordIndexRoute: authResetPasswordIndexRoute,
+  authVerifyEmailIndexRoute: authVerifyEmailIndexRoute,
 }
 
 const authRouteRouteWithChildren = authRouteRoute._addFileChildren(
@@ -587,6 +628,7 @@ interface dashboardRouteRouteChildren {
   dashboardTemplatesCreateSmsIndexRoute: typeof dashboardTemplatesCreateSmsIndexRoute
   dashboardTemplatesCreateWhatsappIndexRoute: typeof dashboardTemplatesCreateWhatsappIndexRoute
   dashboardTemplatesSmsTemplateIdIndexRoute: typeof dashboardTemplatesSmsTemplateIdIndexRoute
+  dashboardTemplatesWhatsappTemplateIdIndexRoute: typeof dashboardTemplatesWhatsappTemplateIdIndexRoute
 }
 
 const dashboardRouteRouteChildren: dashboardRouteRouteChildren = {
@@ -607,6 +649,8 @@ const dashboardRouteRouteChildren: dashboardRouteRouteChildren = {
     dashboardTemplatesCreateWhatsappIndexRoute,
   dashboardTemplatesSmsTemplateIdIndexRoute:
     dashboardTemplatesSmsTemplateIdIndexRoute,
+  dashboardTemplatesWhatsappTemplateIdIndexRoute:
+    dashboardTemplatesWhatsappTemplateIdIndexRoute,
 }
 
 const dashboardRouteRouteWithChildren = dashboardRouteRoute._addFileChildren(

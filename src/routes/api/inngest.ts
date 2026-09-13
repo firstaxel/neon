@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { serve } from "inngest/edge";
 import { parseContactList } from "#/features/jobs/functions/parse-contacts";
+import { reconcileStaleCampaignHolds } from "#/features/jobs/functions/reconcile-holds";
 import {
 	handleLowBalancePause,
 	sendCampaign,
@@ -23,6 +24,7 @@ const handler = serve({
 		sendPrescreenSingle, // Per-message worker (rate-limited, retried)
 		sendPendingMessage, // Real send after YES reply (rate-limited, retried)
 		handleLowBalancePause,
+		reconcileStaleCampaignHolds,
 	],
 });
 

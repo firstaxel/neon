@@ -29,8 +29,15 @@ import type { ScenarioId } from "#/lib/types";
 import { getMetaTemplate } from "./meta-templates";
 import { SCENARIOS } from "./scenario";
 
+export interface TemplateDbClient {
+	messageTemplate: {
+		createMany: PrismaClient["messageTemplate"]["createMany"];
+		findMany: PrismaClient["messageTemplate"]["findMany"];
+	};
+}
+
 export async function seedScenarioTemplates(
-	db: PrismaClient,
+	db: TemplateDbClient,
 	userId: string,
 	orgType?: string | null
 ): Promise<{ seeded: number; skipped: number }> {

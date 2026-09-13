@@ -10,9 +10,10 @@ import {
 	Users,
 	Wallet,
 } from "lucide-react";
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { Button } from "#/components/ui/button";
 import { Card, CardContent } from "#/components/ui/card";
+import { Dialog, DialogContent } from "#/components/ui/dialog";
 import { Skeleton } from "#/components/ui/skeleton";
 import { DepositDialog } from "#/features/billing/components/deposit-dialog";
 import { useWallet } from "#/features/billing/hooks/use-billing";
@@ -20,10 +21,11 @@ import { formatNaira } from "#/features/billing/utils/format";
 import { useCampaigns } from "#/features/campaigns/hooks/use-campaign";
 import { useContacts } from "#/features/contacts/hooks/use-contacts";
 import { ParseJobCard } from "#/features/parsing/components/parsed-card";
+import { RosterReview } from "#/features/parsing/components/roster-review";
 import {
 	useGetParsing,
 	useInvalidateParsing,
-} from "#/features/parsing/hooks/useParsing";
+} from "#/features/parsing/hooks/use-parsing";
 import { useProfile } from "#/features/profile/hooks/use-profile";
 import { Uploader } from "#/features/upload/components";
 import { pageHeadMeta } from "#/lib/metadata";
@@ -222,7 +224,6 @@ function ActivationChecklist({
 								<Link className="inline-flex w-full" to={step.to}>
 									<Button
 										className="w-full justify-between rounded-stadium font-medium text-xs"
-										size="xs"
 										type="button"
 										variant={step.completed ? "outline" : "default"}
 									>
@@ -234,7 +235,6 @@ function ActivationChecklist({
 								<Button
 									className="w-full justify-between rounded-stadium font-medium text-xs"
 									onClick={step.onAction}
-									size="xs"
 									type="button"
 									variant={step.completed ? "outline" : "default"}
 								>
@@ -262,6 +262,25 @@ function RouteComponent() {
 	});
 	const { data: campaigns, isLoading: campaignsLoading } = useCampaigns();
 	const [depositOpen, setDepositOpen] = useState(false);
+	const [reviewJobId, setReviewJobId] = useState<string | null>(null);
+
+	const handleReview = useCallback((id: string) => {
+		setReviewJobId(id);
+	}, []);
+
+	const handleReviewOpenChange = useCallback((open: boolean) => {
+		if (!open) {
+			setReviewJobId(null);
+		}
+	}, []);
+
+	const handleReviewClose = useCallback(() => {
+		setReviewJobId(null);
+	}, []);
+
+	const handleReviewSuccess = useCallback(() => {
+		invalidateParsing();
+	}, [invalidateParsing]);
 
 	const balanceKobo = wallet?.balanceKobo ?? 0;
 	const heldKobo = wallet?.heldKobo ?? 0;
@@ -383,12 +402,28 @@ function RouteComponent() {
 						</p>
 					</div>
 					{parsing.data.map((parse) => (
-						<ParseJobCard {...parse} key={parse.jobId} />
+						<ParseJobCard
+							{...parse}
+							key={parse.jobId}
+							onReview={handleReview}
+						/>
 					))}
 				</div>
 			)}
 
 			<DepositDialog onOpenChange={setDepositOpen} open={depositOpen} />
+
+			<Dialog onOpenChange={handleReviewOpenChange} open={Boolean(reviewJobId)}>
+				<DialogContent className="max-h-[90vh] w-[95vw] overflow-y-auto sm:max-w-5xl lg:max-w-6xl">
+					{reviewJobId ? (
+						<RosterReview
+							jobId={reviewJobId}
+							onClose={handleReviewClose}
+							onSuccess={handleReviewSuccess}
+						/>
+					) : null}
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }

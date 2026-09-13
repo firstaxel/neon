@@ -3,7 +3,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	cancelScheduledCampaign,
 	createSmsCampaign,
+	createWhatsappCampaign,
 	estimateCost,
+	estimateWhatsappCost,
 } from "./index";
 
 vi.mock("#/features/billing/utils", () => ({
@@ -32,7 +34,7 @@ const INSUFFICIENT_BALANCE_REGEX = /Insufficient wallet balance/;
 const DISPATCHING_STATUS_REGEX =
 	/Campaign cannot be cancelled in 'dispatching' status/;
 
-describe("Campaigns router — SMS campaign wizard and dispatch", () => {
+describe("Campaigns router SMS and WhatsApp campaign wizard and dispatch", () => {
 	const mockDb = {
 		campaign: {
 			create: vi.fn(),
@@ -42,6 +44,9 @@ describe("Campaigns router — SMS campaign wizard and dispatch", () => {
 		},
 		contact: {
 			findMany: vi.fn(),
+		},
+		messageTemplate: {
+			findFirst: vi.fn(),
 		},
 		userProfile: {
 			findUnique: vi.fn(),
@@ -372,6 +377,250 @@ describe("Campaigns router — SMS campaign wizard and dispatch", () => {
 			).rejects.toThrow(DISPATCHING_STATUS_REGEX);
 
 			expect(releaseCampaignHold).not.toHaveBeenCalled();
+		});
+	});
+
+	describe("estimateWhatsappCost", () => {
+		const templateId = "a0000000-0000-0000-0000-000000000001";
+
+		it("rejects WhatsApp templates that are not approved by Meta", async () => {
+			mockDb.messageTemplate.findFirst.mockResolvedValue({
+				id: templateId,
+				name: "pending_template",
+				status: "PENDING",
+				userId: "user_test_campaign",
+			});
+
+			await expect(
+				call(
+					estimateWhatsappCost,
+					{
+						channelTarget: "whatsapp",
+						contactIds: ["c1"],
+						templateId,
+					},
+					{ context: mockContext }
+				)
+			).rejects.toThrow(/Only approved WhatsApp templates can be used/);
+		});
+
+		it("calculates 9000 kobo per recipient for pure WhatsApp campaigns", async () => {
+			mockDb.messageTemplate.findFirst.mockResolvedValue({
+				bodyText: "Hello {{1}}, welcome to our event!",
+				id: templateId,
+				name: "approved_template",
+				status: "APPROVED",
+				userId: "user_test_campaign",
+			});
+
+			mockDb.contact.findMany.mockResolvedValue([
+				{
+					channel: "whatsapp",
+					id: "c1",
+					name: "Ada",
+					optedOut: false,
+					phone: "+2348012345678",
+				},
+				{
+					channel: "whatsapp",
+					id: "c2",
+					name: "Chidi",
+					optedOut: false,
+					phone: "+2348098765432",
+				},
+			]);
+
+			mockDb.wallet.findUnique.mockResolvedValue({
+				balanceKobo: 50_000,
+				heldKobo: 0,
+			});
+
+			const result = await call(
+				estimateWhatsappCost,
+				{
+					channelTarget: "whatsapp",
+					contactIds: ["c1", "c2"],
+					templateId,
+				},
+				{ context: mockContext }
+			);
+
+			expect(result.whatsappContactsCount).toBe(2);
+			expect(result.smsContactsCount).toBe(0);
+			expect(result.whatsappCostKobo).toBe(18_000);
+			expect(result.totalEstimatedCostKobo).toBe(18_000);
+			expect(result.sufficientBalance).toBe(true);
+		});
+
+		it("calculates blended cost for Smart Multi Channel mode with WhatsApp and SMS contacts", async () => {
+			mockDb.messageTemplate.findFirst.mockResolvedValue({
+				bodyText: "Hello {{1}}",
+				id: templateId,
+				name: "smart_template",
+				smsBody: "Fallback SMS text",
+				status: "APPROVED",
+				userId: "user_test_campaign",
+			});
+
+			mockDb.contact.findMany.mockResolvedValue([
+				{
+					channel: "whatsapp",
+					id: "c1",
+					name: "Ada",
+					optedOut: false,
+					phone: "+2348012345678",
+				},
+				{
+					channel: "sms",
+					id: "c2",
+					name: "Bayo",
+					optedOut: false,
+					phone: "+2348099998888",
+				},
+			]);
+
+			mockDb.userProfile.findUnique.mockResolvedValue({
+				orgName: "Grace Chapel",
+			});
+
+			mockDb.wallet.findUnique.mockResolvedValue({
+				balanceKobo: 20_000,
+				heldKobo: 0,
+			});
+
+			const result = await call(
+				estimateWhatsappCost,
+				{
+					channelTarget: "smart",
+					contactIds: ["c1", "c2"],
+					smsText: "Hello Bayo from Grace Chapel",
+					templateId,
+				},
+				{ context: mockContext }
+			);
+
+			expect(result.whatsappContactsCount).toBe(1);
+			expect(result.smsContactsCount).toBe(1);
+			expect(result.whatsappCostKobo).toBe(9000);
+			expect(result.smsCostKobo).toBe(600);
+			expect(result.totalEstimatedCostKobo).toBe(9600);
+			expect(result.sufficientBalance).toBe(true);
+		});
+	});
+
+	describe("createWhatsappCampaign", () => {
+		const templateId = "b0000000-0000-0000-0000-000000000002";
+
+		it("rejects creation if any required positional parameter mapping is missing", async () => {
+			mockDb.messageTemplate.findFirst.mockResolvedValue({
+				bodyText: "Hello {{1}}, your seat number is {{2}}",
+				id: templateId,
+				language: "en",
+				name: "event_pass",
+				status: "APPROVED",
+				userId: "user_test_campaign",
+			});
+
+			await expect(
+				call(
+					createWhatsappCampaign,
+					{
+						channelTarget: "whatsapp",
+						contactIds: ["c1"],
+						templateId,
+						templateParams: {
+							"1": "Ada",
+						},
+					},
+					{ context: mockContext }
+				)
+			).rejects.toThrow(/Missing parameter mapping for \{\{2\}\}/);
+		});
+
+		it("creates campaign, places balance hold, and sends Inngest event", async () => {
+			mockDb.messageTemplate.findFirst.mockResolvedValue({
+				bodyText: "Hello {{1}}, welcome!",
+				id: templateId,
+				language: "en",
+				name: "welcome_pass",
+				status: "APPROVED",
+				userId: "user_test_campaign",
+			});
+
+			mockDb.contact.findMany.mockResolvedValue([
+				{
+					channel: "whatsapp",
+					id: "c1",
+					name: "Ada",
+					optedOut: false,
+					phone: "+2348012345678",
+				},
+			]);
+
+			mockDb.userProfile.findUnique.mockResolvedValue({
+				orgName: "Grace Chapel",
+				senderId: "ChurchSMS",
+			});
+
+			mockDb.wallet.findUnique.mockResolvedValue({
+				balanceKobo: 50_000,
+				heldKobo: 0,
+			});
+
+			mockDb.campaign.create.mockResolvedValue({
+				id: "camp_wa_1",
+			});
+
+			(holdCampaignFunds as any).mockResolvedValue({
+				heldKobo: 9000,
+			});
+
+			const result = await call(
+				createWhatsappCampaign,
+				{
+					channelTarget: "whatsapp",
+					contactIds: ["c1"],
+					name: "Sunday Service Welcome",
+					templateId,
+					templateParams: {
+						"1": "name",
+					},
+				},
+				{ context: mockContext }
+			);
+
+			expect(result.status).toBe("pending");
+			expect(result.heldKobo).toBe(9000);
+			expect(result.totalMessages).toBe(1);
+
+			expect(mockDb.campaign.create).toHaveBeenCalledWith({
+				data: expect.objectContaining({
+					channelTarget: "whatsapp",
+					estimatedCostKobo: 9000,
+					templateId,
+					waTemplateLanguage: "en",
+					waTemplateName: "welcome_pass",
+				}),
+			});
+
+			expect(holdCampaignFunds).toHaveBeenCalledWith({
+				amountKobo: 9000,
+				campaignId: expect.any(String),
+				description: "Campaign hold: Sunday Service Welcome",
+				userId: "user_test_campaign",
+			});
+
+			expect(inngest.send).toHaveBeenCalledWith(
+				expect.objectContaining({
+					data: expect.objectContaining({
+						channelTarget: "whatsapp",
+						templateId,
+						waTemplateLanguage: "en",
+						waTemplateName: "welcome_pass",
+					}),
+					name: "Velocast/campaign.send",
+				})
+			);
 		});
 	});
 });

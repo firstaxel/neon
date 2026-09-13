@@ -39,6 +39,7 @@ export type ParseJobSumAggregateOutputType = {
 export type ParseJobMinAggregateOutputType = {
 	id: string | null;
 	status: $Enums.ParseJobStatus | null;
+	reviewStatus: $Enums.ParseJobReviewStatus | null;
 	r2Key: string | null;
 	r2Bucket: string | null;
 	originalFilename: string | null;
@@ -47,6 +48,7 @@ export type ParseJobMinAggregateOutputType = {
 	rawExtractedText: string | null;
 	confidence: number | null;
 	errorMessage: string | null;
+	strategy: $Enums.ImportStrategy | null;
 	inngestEventId: string | null;
 	createdAt: Date | null;
 	startedAt: Date | null;
@@ -57,6 +59,7 @@ export type ParseJobMinAggregateOutputType = {
 export type ParseJobMaxAggregateOutputType = {
 	id: string | null;
 	status: $Enums.ParseJobStatus | null;
+	reviewStatus: $Enums.ParseJobReviewStatus | null;
 	r2Key: string | null;
 	r2Bucket: string | null;
 	originalFilename: string | null;
@@ -65,6 +68,7 @@ export type ParseJobMaxAggregateOutputType = {
 	rawExtractedText: string | null;
 	confidence: number | null;
 	errorMessage: string | null;
+	strategy: $Enums.ImportStrategy | null;
 	inngestEventId: string | null;
 	createdAt: Date | null;
 	startedAt: Date | null;
@@ -75,6 +79,7 @@ export type ParseJobMaxAggregateOutputType = {
 export type ParseJobCountAggregateOutputType = {
 	id: number;
 	status: number;
+	reviewStatus: number;
 	r2Key: number;
 	r2Bucket: number;
 	originalFilename: number;
@@ -84,6 +89,9 @@ export type ParseJobCountAggregateOutputType = {
 	confidence: number;
 	warnings: number;
 	errorMessage: number;
+	candidates: number;
+	tagsApplied: number;
+	strategy: number;
 	inngestEventId: number;
 	createdAt: number;
 	startedAt: number;
@@ -105,6 +113,7 @@ export type ParseJobSumAggregateInputType = {
 export type ParseJobMinAggregateInputType = {
 	id?: true;
 	status?: true;
+	reviewStatus?: true;
 	r2Key?: true;
 	r2Bucket?: true;
 	originalFilename?: true;
@@ -113,6 +122,7 @@ export type ParseJobMinAggregateInputType = {
 	rawExtractedText?: true;
 	confidence?: true;
 	errorMessage?: true;
+	strategy?: true;
 	inngestEventId?: true;
 	createdAt?: true;
 	startedAt?: true;
@@ -123,6 +133,7 @@ export type ParseJobMinAggregateInputType = {
 export type ParseJobMaxAggregateInputType = {
 	id?: true;
 	status?: true;
+	reviewStatus?: true;
 	r2Key?: true;
 	r2Bucket?: true;
 	originalFilename?: true;
@@ -131,6 +142,7 @@ export type ParseJobMaxAggregateInputType = {
 	rawExtractedText?: true;
 	confidence?: true;
 	errorMessage?: true;
+	strategy?: true;
 	inngestEventId?: true;
 	createdAt?: true;
 	startedAt?: true;
@@ -141,6 +153,7 @@ export type ParseJobMaxAggregateInputType = {
 export type ParseJobCountAggregateInputType = {
 	id?: true;
 	status?: true;
+	reviewStatus?: true;
 	r2Key?: true;
 	r2Bucket?: true;
 	originalFilename?: true;
@@ -150,6 +163,9 @@ export type ParseJobCountAggregateInputType = {
 	confidence?: true;
 	warnings?: true;
 	errorMessage?: true;
+	candidates?: true;
+	tagsApplied?: true;
+	strategy?: true;
 	inngestEventId?: true;
 	createdAt?: true;
 	startedAt?: true;
@@ -254,6 +270,7 @@ export type ParseJobGroupByArgs<
 export type ParseJobGroupByOutputType = {
 	id: string;
 	status: $Enums.ParseJobStatus;
+	reviewStatus: $Enums.ParseJobReviewStatus;
 	r2Key: string;
 	r2Bucket: string;
 	originalFilename: string | null;
@@ -263,6 +280,9 @@ export type ParseJobGroupByOutputType = {
 	confidence: number | null;
 	warnings: string[];
 	errorMessage: string | null;
+	candidates: runtime.JsonValue | null;
+	tagsApplied: string[];
+	strategy: $Enums.ImportStrategy;
 	inngestEventId: string | null;
 	createdAt: Date;
 	startedAt: Date | null;
@@ -294,6 +314,9 @@ export type ParseJobWhereInput = {
 	NOT?: Prisma.ParseJobWhereInput | Prisma.ParseJobWhereInput[];
 	id?: Prisma.StringFilter<"ParseJob"> | string;
 	status?: Prisma.EnumParseJobStatusFilter<"ParseJob"> | $Enums.ParseJobStatus;
+	reviewStatus?:
+		| Prisma.EnumParseJobReviewStatusFilter<"ParseJob">
+		| $Enums.ParseJobReviewStatus;
 	r2Key?: Prisma.StringFilter<"ParseJob"> | string;
 	r2Bucket?: Prisma.StringFilter<"ParseJob"> | string;
 	originalFilename?: Prisma.StringNullableFilter<"ParseJob"> | string | null;
@@ -303,6 +326,11 @@ export type ParseJobWhereInput = {
 	confidence?: Prisma.FloatNullableFilter<"ParseJob"> | number | null;
 	warnings?: Prisma.StringNullableListFilter<"ParseJob">;
 	errorMessage?: Prisma.StringNullableFilter<"ParseJob"> | string | null;
+	candidates?: Prisma.JsonNullableFilter<"ParseJob">;
+	tagsApplied?: Prisma.StringNullableListFilter<"ParseJob">;
+	strategy?:
+		| Prisma.EnumImportStrategyFilter<"ParseJob">
+		| $Enums.ImportStrategy;
 	inngestEventId?: Prisma.StringNullableFilter<"ParseJob"> | string | null;
 	createdAt?: Prisma.DateTimeFilter<"ParseJob"> | Date | string;
 	startedAt?: Prisma.DateTimeNullableFilter<"ParseJob"> | Date | string | null;
@@ -319,6 +347,7 @@ export type ParseJobWhereInput = {
 export type ParseJobOrderByWithRelationInput = {
 	id?: Prisma.SortOrder;
 	status?: Prisma.SortOrder;
+	reviewStatus?: Prisma.SortOrder;
 	r2Key?: Prisma.SortOrder;
 	r2Bucket?: Prisma.SortOrder;
 	originalFilename?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -328,6 +357,9 @@ export type ParseJobOrderByWithRelationInput = {
 	confidence?: Prisma.SortOrderInput | Prisma.SortOrder;
 	warnings?: Prisma.SortOrder;
 	errorMessage?: Prisma.SortOrderInput | Prisma.SortOrder;
+	candidates?: Prisma.SortOrderInput | Prisma.SortOrder;
+	tagsApplied?: Prisma.SortOrder;
+	strategy?: Prisma.SortOrder;
 	inngestEventId?: Prisma.SortOrderInput | Prisma.SortOrder;
 	createdAt?: Prisma.SortOrder;
 	startedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -346,6 +378,9 @@ export type ParseJobWhereUniqueInput = Prisma.AtLeast<
 		status?:
 			| Prisma.EnumParseJobStatusFilter<"ParseJob">
 			| $Enums.ParseJobStatus;
+		reviewStatus?:
+			| Prisma.EnumParseJobReviewStatusFilter<"ParseJob">
+			| $Enums.ParseJobReviewStatus;
 		r2Key?: Prisma.StringFilter<"ParseJob"> | string;
 		r2Bucket?: Prisma.StringFilter<"ParseJob"> | string;
 		originalFilename?: Prisma.StringNullableFilter<"ParseJob"> | string | null;
@@ -355,6 +390,11 @@ export type ParseJobWhereUniqueInput = Prisma.AtLeast<
 		confidence?: Prisma.FloatNullableFilter<"ParseJob"> | number | null;
 		warnings?: Prisma.StringNullableListFilter<"ParseJob">;
 		errorMessage?: Prisma.StringNullableFilter<"ParseJob"> | string | null;
+		candidates?: Prisma.JsonNullableFilter<"ParseJob">;
+		tagsApplied?: Prisma.StringNullableListFilter<"ParseJob">;
+		strategy?:
+			| Prisma.EnumImportStrategyFilter<"ParseJob">
+			| $Enums.ImportStrategy;
 		inngestEventId?: Prisma.StringNullableFilter<"ParseJob"> | string | null;
 		createdAt?: Prisma.DateTimeFilter<"ParseJob"> | Date | string;
 		startedAt?:
@@ -377,6 +417,7 @@ export type ParseJobWhereUniqueInput = Prisma.AtLeast<
 export type ParseJobOrderByWithAggregationInput = {
 	id?: Prisma.SortOrder;
 	status?: Prisma.SortOrder;
+	reviewStatus?: Prisma.SortOrder;
 	r2Key?: Prisma.SortOrder;
 	r2Bucket?: Prisma.SortOrder;
 	originalFilename?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -386,6 +427,9 @@ export type ParseJobOrderByWithAggregationInput = {
 	confidence?: Prisma.SortOrderInput | Prisma.SortOrder;
 	warnings?: Prisma.SortOrder;
 	errorMessage?: Prisma.SortOrderInput | Prisma.SortOrder;
+	candidates?: Prisma.SortOrderInput | Prisma.SortOrder;
+	tagsApplied?: Prisma.SortOrder;
+	strategy?: Prisma.SortOrder;
 	inngestEventId?: Prisma.SortOrderInput | Prisma.SortOrder;
 	createdAt?: Prisma.SortOrder;
 	startedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -410,6 +454,9 @@ export type ParseJobScalarWhereWithAggregatesInput = {
 	status?:
 		| Prisma.EnumParseJobStatusWithAggregatesFilter<"ParseJob">
 		| $Enums.ParseJobStatus;
+	reviewStatus?:
+		| Prisma.EnumParseJobReviewStatusWithAggregatesFilter<"ParseJob">
+		| $Enums.ParseJobReviewStatus;
 	r2Key?: Prisma.StringWithAggregatesFilter<"ParseJob"> | string;
 	r2Bucket?: Prisma.StringWithAggregatesFilter<"ParseJob"> | string;
 	originalFilename?:
@@ -434,6 +481,11 @@ export type ParseJobScalarWhereWithAggregatesInput = {
 		| Prisma.StringNullableWithAggregatesFilter<"ParseJob">
 		| string
 		| null;
+	candidates?: Prisma.JsonNullableWithAggregatesFilter<"ParseJob">;
+	tagsApplied?: Prisma.StringNullableListFilter<"ParseJob">;
+	strategy?:
+		| Prisma.EnumImportStrategyWithAggregatesFilter<"ParseJob">
+		| $Enums.ImportStrategy;
 	inngestEventId?:
 		| Prisma.StringNullableWithAggregatesFilter<"ParseJob">
 		| string
@@ -455,6 +507,7 @@ export type ParseJobScalarWhereWithAggregatesInput = {
 export type ParseJobCreateInput = {
 	id?: string;
 	status?: $Enums.ParseJobStatus;
+	reviewStatus?: $Enums.ParseJobReviewStatus;
 	r2Key: string;
 	r2Bucket: string;
 	originalFilename?: string | null;
@@ -464,6 +517,9 @@ export type ParseJobCreateInput = {
 	confidence?: number | null;
 	warnings?: Prisma.ParseJobCreatewarningsInput | string[];
 	errorMessage?: string | null;
+	candidates?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+	tagsApplied?: Prisma.ParseJobCreatetagsAppliedInput | string[];
+	strategy?: $Enums.ImportStrategy;
 	inngestEventId?: string | null;
 	createdAt?: Date | string;
 	startedAt?: Date | string | null;
@@ -475,6 +531,7 @@ export type ParseJobCreateInput = {
 export type ParseJobUncheckedCreateInput = {
 	id?: string;
 	status?: $Enums.ParseJobStatus;
+	reviewStatus?: $Enums.ParseJobReviewStatus;
 	r2Key: string;
 	r2Bucket: string;
 	originalFilename?: string | null;
@@ -484,6 +541,9 @@ export type ParseJobUncheckedCreateInput = {
 	confidence?: number | null;
 	warnings?: Prisma.ParseJobCreatewarningsInput | string[];
 	errorMessage?: string | null;
+	candidates?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+	tagsApplied?: Prisma.ParseJobCreatetagsAppliedInput | string[];
+	strategy?: $Enums.ImportStrategy;
 	inngestEventId?: string | null;
 	createdAt?: Date | string;
 	startedAt?: Date | string | null;
@@ -497,6 +557,9 @@ export type ParseJobUpdateInput = {
 	status?:
 		| Prisma.EnumParseJobStatusFieldUpdateOperationsInput
 		| $Enums.ParseJobStatus;
+	reviewStatus?:
+		| Prisma.EnumParseJobReviewStatusFieldUpdateOperationsInput
+		| $Enums.ParseJobReviewStatus;
 	r2Key?: Prisma.StringFieldUpdateOperationsInput | string;
 	r2Bucket?: Prisma.StringFieldUpdateOperationsInput | string;
 	originalFilename?:
@@ -515,6 +578,11 @@ export type ParseJobUpdateInput = {
 		| Prisma.NullableStringFieldUpdateOperationsInput
 		| string
 		| null;
+	candidates?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+	tagsApplied?: Prisma.ParseJobUpdatetagsAppliedInput | string[];
+	strategy?:
+		| Prisma.EnumImportStrategyFieldUpdateOperationsInput
+		| $Enums.ImportStrategy;
 	inngestEventId?:
 		| Prisma.NullableStringFieldUpdateOperationsInput
 		| string
@@ -539,6 +607,9 @@ export type ParseJobUncheckedUpdateInput = {
 	status?:
 		| Prisma.EnumParseJobStatusFieldUpdateOperationsInput
 		| $Enums.ParseJobStatus;
+	reviewStatus?:
+		| Prisma.EnumParseJobReviewStatusFieldUpdateOperationsInput
+		| $Enums.ParseJobReviewStatus;
 	r2Key?: Prisma.StringFieldUpdateOperationsInput | string;
 	r2Bucket?: Prisma.StringFieldUpdateOperationsInput | string;
 	originalFilename?:
@@ -557,6 +628,11 @@ export type ParseJobUncheckedUpdateInput = {
 		| Prisma.NullableStringFieldUpdateOperationsInput
 		| string
 		| null;
+	candidates?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+	tagsApplied?: Prisma.ParseJobUpdatetagsAppliedInput | string[];
+	strategy?:
+		| Prisma.EnumImportStrategyFieldUpdateOperationsInput
+		| $Enums.ImportStrategy;
 	inngestEventId?:
 		| Prisma.NullableStringFieldUpdateOperationsInput
 		| string
@@ -579,6 +655,7 @@ export type ParseJobUncheckedUpdateInput = {
 export type ParseJobCreateManyInput = {
 	id?: string;
 	status?: $Enums.ParseJobStatus;
+	reviewStatus?: $Enums.ParseJobReviewStatus;
 	r2Key: string;
 	r2Bucket: string;
 	originalFilename?: string | null;
@@ -588,6 +665,9 @@ export type ParseJobCreateManyInput = {
 	confidence?: number | null;
 	warnings?: Prisma.ParseJobCreatewarningsInput | string[];
 	errorMessage?: string | null;
+	candidates?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+	tagsApplied?: Prisma.ParseJobCreatetagsAppliedInput | string[];
+	strategy?: $Enums.ImportStrategy;
 	inngestEventId?: string | null;
 	createdAt?: Date | string;
 	startedAt?: Date | string | null;
@@ -600,6 +680,9 @@ export type ParseJobUpdateManyMutationInput = {
 	status?:
 		| Prisma.EnumParseJobStatusFieldUpdateOperationsInput
 		| $Enums.ParseJobStatus;
+	reviewStatus?:
+		| Prisma.EnumParseJobReviewStatusFieldUpdateOperationsInput
+		| $Enums.ParseJobReviewStatus;
 	r2Key?: Prisma.StringFieldUpdateOperationsInput | string;
 	r2Bucket?: Prisma.StringFieldUpdateOperationsInput | string;
 	originalFilename?:
@@ -618,6 +701,11 @@ export type ParseJobUpdateManyMutationInput = {
 		| Prisma.NullableStringFieldUpdateOperationsInput
 		| string
 		| null;
+	candidates?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+	tagsApplied?: Prisma.ParseJobUpdatetagsAppliedInput | string[];
+	strategy?:
+		| Prisma.EnumImportStrategyFieldUpdateOperationsInput
+		| $Enums.ImportStrategy;
 	inngestEventId?:
 		| Prisma.NullableStringFieldUpdateOperationsInput
 		| string
@@ -640,6 +728,9 @@ export type ParseJobUncheckedUpdateManyInput = {
 	status?:
 		| Prisma.EnumParseJobStatusFieldUpdateOperationsInput
 		| $Enums.ParseJobStatus;
+	reviewStatus?:
+		| Prisma.EnumParseJobReviewStatusFieldUpdateOperationsInput
+		| $Enums.ParseJobReviewStatus;
 	r2Key?: Prisma.StringFieldUpdateOperationsInput | string;
 	r2Bucket?: Prisma.StringFieldUpdateOperationsInput | string;
 	originalFilename?:
@@ -658,6 +749,11 @@ export type ParseJobUncheckedUpdateManyInput = {
 		| Prisma.NullableStringFieldUpdateOperationsInput
 		| string
 		| null;
+	candidates?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+	tagsApplied?: Prisma.ParseJobUpdatetagsAppliedInput | string[];
+	strategy?:
+		| Prisma.EnumImportStrategyFieldUpdateOperationsInput
+		| $Enums.ImportStrategy;
 	inngestEventId?:
 		| Prisma.NullableStringFieldUpdateOperationsInput
 		| string
@@ -697,6 +793,7 @@ export type StringNullableListFilter<$PrismaModel = never> = {
 export type ParseJobCountOrderByAggregateInput = {
 	id?: Prisma.SortOrder;
 	status?: Prisma.SortOrder;
+	reviewStatus?: Prisma.SortOrder;
 	r2Key?: Prisma.SortOrder;
 	r2Bucket?: Prisma.SortOrder;
 	originalFilename?: Prisma.SortOrder;
@@ -706,6 +803,9 @@ export type ParseJobCountOrderByAggregateInput = {
 	confidence?: Prisma.SortOrder;
 	warnings?: Prisma.SortOrder;
 	errorMessage?: Prisma.SortOrder;
+	candidates?: Prisma.SortOrder;
+	tagsApplied?: Prisma.SortOrder;
+	strategy?: Prisma.SortOrder;
 	inngestEventId?: Prisma.SortOrder;
 	createdAt?: Prisma.SortOrder;
 	startedAt?: Prisma.SortOrder;
@@ -721,6 +821,7 @@ export type ParseJobAvgOrderByAggregateInput = {
 export type ParseJobMaxOrderByAggregateInput = {
 	id?: Prisma.SortOrder;
 	status?: Prisma.SortOrder;
+	reviewStatus?: Prisma.SortOrder;
 	r2Key?: Prisma.SortOrder;
 	r2Bucket?: Prisma.SortOrder;
 	originalFilename?: Prisma.SortOrder;
@@ -729,6 +830,7 @@ export type ParseJobMaxOrderByAggregateInput = {
 	rawExtractedText?: Prisma.SortOrder;
 	confidence?: Prisma.SortOrder;
 	errorMessage?: Prisma.SortOrder;
+	strategy?: Prisma.SortOrder;
 	inngestEventId?: Prisma.SortOrder;
 	createdAt?: Prisma.SortOrder;
 	startedAt?: Prisma.SortOrder;
@@ -739,6 +841,7 @@ export type ParseJobMaxOrderByAggregateInput = {
 export type ParseJobMinOrderByAggregateInput = {
 	id?: Prisma.SortOrder;
 	status?: Prisma.SortOrder;
+	reviewStatus?: Prisma.SortOrder;
 	r2Key?: Prisma.SortOrder;
 	r2Bucket?: Prisma.SortOrder;
 	originalFilename?: Prisma.SortOrder;
@@ -747,6 +850,7 @@ export type ParseJobMinOrderByAggregateInput = {
 	rawExtractedText?: Prisma.SortOrder;
 	confidence?: Prisma.SortOrder;
 	errorMessage?: Prisma.SortOrder;
+	strategy?: Prisma.SortOrder;
 	inngestEventId?: Prisma.SortOrder;
 	createdAt?: Prisma.SortOrder;
 	startedAt?: Prisma.SortOrder;
@@ -862,8 +966,16 @@ export type ParseJobCreatewarningsInput = {
 	set: string[];
 };
 
+export type ParseJobCreatetagsAppliedInput = {
+	set: string[];
+};
+
 export type EnumParseJobStatusFieldUpdateOperationsInput = {
 	set?: $Enums.ParseJobStatus;
+};
+
+export type EnumParseJobReviewStatusFieldUpdateOperationsInput = {
+	set?: $Enums.ParseJobReviewStatus;
 };
 
 export type NullableIntFieldUpdateOperationsInput = {
@@ -885,6 +997,15 @@ export type NullableFloatFieldUpdateOperationsInput = {
 export type ParseJobUpdatewarningsInput = {
 	set?: string[];
 	push?: string | string[];
+};
+
+export type ParseJobUpdatetagsAppliedInput = {
+	set?: string[];
+	push?: string | string[];
+};
+
+export type EnumImportStrategyFieldUpdateOperationsInput = {
+	set?: $Enums.ImportStrategy;
 };
 
 export type ParseJobCreateNestedOneWithoutContactsInput = {
@@ -918,6 +1039,7 @@ export type ParseJobUpdateOneWithoutContactsNestedInput = {
 export type ParseJobCreateWithoutUserInput = {
 	id?: string;
 	status?: $Enums.ParseJobStatus;
+	reviewStatus?: $Enums.ParseJobReviewStatus;
 	r2Key: string;
 	r2Bucket: string;
 	originalFilename?: string | null;
@@ -927,6 +1049,9 @@ export type ParseJobCreateWithoutUserInput = {
 	confidence?: number | null;
 	warnings?: Prisma.ParseJobCreatewarningsInput | string[];
 	errorMessage?: string | null;
+	candidates?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+	tagsApplied?: Prisma.ParseJobCreatetagsAppliedInput | string[];
+	strategy?: $Enums.ImportStrategy;
 	inngestEventId?: string | null;
 	createdAt?: Date | string;
 	startedAt?: Date | string | null;
@@ -937,6 +1062,7 @@ export type ParseJobCreateWithoutUserInput = {
 export type ParseJobUncheckedCreateWithoutUserInput = {
 	id?: string;
 	status?: $Enums.ParseJobStatus;
+	reviewStatus?: $Enums.ParseJobReviewStatus;
 	r2Key: string;
 	r2Bucket: string;
 	originalFilename?: string | null;
@@ -946,6 +1072,9 @@ export type ParseJobUncheckedCreateWithoutUserInput = {
 	confidence?: number | null;
 	warnings?: Prisma.ParseJobCreatewarningsInput | string[];
 	errorMessage?: string | null;
+	candidates?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+	tagsApplied?: Prisma.ParseJobCreatetagsAppliedInput | string[];
+	strategy?: $Enums.ImportStrategy;
 	inngestEventId?: string | null;
 	createdAt?: Date | string;
 	startedAt?: Date | string | null;
@@ -1002,6 +1131,9 @@ export type ParseJobScalarWhereInput = {
 	NOT?: Prisma.ParseJobScalarWhereInput | Prisma.ParseJobScalarWhereInput[];
 	id?: Prisma.StringFilter<"ParseJob"> | string;
 	status?: Prisma.EnumParseJobStatusFilter<"ParseJob"> | $Enums.ParseJobStatus;
+	reviewStatus?:
+		| Prisma.EnumParseJobReviewStatusFilter<"ParseJob">
+		| $Enums.ParseJobReviewStatus;
 	r2Key?: Prisma.StringFilter<"ParseJob"> | string;
 	r2Bucket?: Prisma.StringFilter<"ParseJob"> | string;
 	originalFilename?: Prisma.StringNullableFilter<"ParseJob"> | string | null;
@@ -1011,6 +1143,11 @@ export type ParseJobScalarWhereInput = {
 	confidence?: Prisma.FloatNullableFilter<"ParseJob"> | number | null;
 	warnings?: Prisma.StringNullableListFilter<"ParseJob">;
 	errorMessage?: Prisma.StringNullableFilter<"ParseJob"> | string | null;
+	candidates?: Prisma.JsonNullableFilter<"ParseJob">;
+	tagsApplied?: Prisma.StringNullableListFilter<"ParseJob">;
+	strategy?:
+		| Prisma.EnumImportStrategyFilter<"ParseJob">
+		| $Enums.ImportStrategy;
 	inngestEventId?: Prisma.StringNullableFilter<"ParseJob"> | string | null;
 	createdAt?: Prisma.DateTimeFilter<"ParseJob"> | Date | string;
 	startedAt?: Prisma.DateTimeNullableFilter<"ParseJob"> | Date | string | null;
@@ -1025,6 +1162,7 @@ export type ParseJobScalarWhereInput = {
 export type ParseJobCreateWithoutContactsInput = {
 	id?: string;
 	status?: $Enums.ParseJobStatus;
+	reviewStatus?: $Enums.ParseJobReviewStatus;
 	r2Key: string;
 	r2Bucket: string;
 	originalFilename?: string | null;
@@ -1034,6 +1172,9 @@ export type ParseJobCreateWithoutContactsInput = {
 	confidence?: number | null;
 	warnings?: Prisma.ParseJobCreatewarningsInput | string[];
 	errorMessage?: string | null;
+	candidates?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+	tagsApplied?: Prisma.ParseJobCreatetagsAppliedInput | string[];
+	strategy?: $Enums.ImportStrategy;
 	inngestEventId?: string | null;
 	createdAt?: Date | string;
 	startedAt?: Date | string | null;
@@ -1044,6 +1185,7 @@ export type ParseJobCreateWithoutContactsInput = {
 export type ParseJobUncheckedCreateWithoutContactsInput = {
 	id?: string;
 	status?: $Enums.ParseJobStatus;
+	reviewStatus?: $Enums.ParseJobReviewStatus;
 	r2Key: string;
 	r2Bucket: string;
 	originalFilename?: string | null;
@@ -1053,6 +1195,9 @@ export type ParseJobUncheckedCreateWithoutContactsInput = {
 	confidence?: number | null;
 	warnings?: Prisma.ParseJobCreatewarningsInput | string[];
 	errorMessage?: string | null;
+	candidates?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+	tagsApplied?: Prisma.ParseJobCreatetagsAppliedInput | string[];
+	strategy?: $Enums.ImportStrategy;
 	inngestEventId?: string | null;
 	createdAt?: Date | string;
 	startedAt?: Date | string | null;
@@ -1093,6 +1238,9 @@ export type ParseJobUpdateWithoutContactsInput = {
 	status?:
 		| Prisma.EnumParseJobStatusFieldUpdateOperationsInput
 		| $Enums.ParseJobStatus;
+	reviewStatus?:
+		| Prisma.EnumParseJobReviewStatusFieldUpdateOperationsInput
+		| $Enums.ParseJobReviewStatus;
 	r2Key?: Prisma.StringFieldUpdateOperationsInput | string;
 	r2Bucket?: Prisma.StringFieldUpdateOperationsInput | string;
 	originalFilename?:
@@ -1111,6 +1259,11 @@ export type ParseJobUpdateWithoutContactsInput = {
 		| Prisma.NullableStringFieldUpdateOperationsInput
 		| string
 		| null;
+	candidates?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+	tagsApplied?: Prisma.ParseJobUpdatetagsAppliedInput | string[];
+	strategy?:
+		| Prisma.EnumImportStrategyFieldUpdateOperationsInput
+		| $Enums.ImportStrategy;
 	inngestEventId?:
 		| Prisma.NullableStringFieldUpdateOperationsInput
 		| string
@@ -1134,6 +1287,9 @@ export type ParseJobUncheckedUpdateWithoutContactsInput = {
 	status?:
 		| Prisma.EnumParseJobStatusFieldUpdateOperationsInput
 		| $Enums.ParseJobStatus;
+	reviewStatus?:
+		| Prisma.EnumParseJobReviewStatusFieldUpdateOperationsInput
+		| $Enums.ParseJobReviewStatus;
 	r2Key?: Prisma.StringFieldUpdateOperationsInput | string;
 	r2Bucket?: Prisma.StringFieldUpdateOperationsInput | string;
 	originalFilename?:
@@ -1152,6 +1308,11 @@ export type ParseJobUncheckedUpdateWithoutContactsInput = {
 		| Prisma.NullableStringFieldUpdateOperationsInput
 		| string
 		| null;
+	candidates?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+	tagsApplied?: Prisma.ParseJobUpdatetagsAppliedInput | string[];
+	strategy?:
+		| Prisma.EnumImportStrategyFieldUpdateOperationsInput
+		| $Enums.ImportStrategy;
 	inngestEventId?:
 		| Prisma.NullableStringFieldUpdateOperationsInput
 		| string
@@ -1173,6 +1334,7 @@ export type ParseJobUncheckedUpdateWithoutContactsInput = {
 export type ParseJobCreateManyUserInput = {
 	id?: string;
 	status?: $Enums.ParseJobStatus;
+	reviewStatus?: $Enums.ParseJobReviewStatus;
 	r2Key: string;
 	r2Bucket: string;
 	originalFilename?: string | null;
@@ -1182,6 +1344,9 @@ export type ParseJobCreateManyUserInput = {
 	confidence?: number | null;
 	warnings?: Prisma.ParseJobCreatewarningsInput | string[];
 	errorMessage?: string | null;
+	candidates?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+	tagsApplied?: Prisma.ParseJobCreatetagsAppliedInput | string[];
+	strategy?: $Enums.ImportStrategy;
 	inngestEventId?: string | null;
 	createdAt?: Date | string;
 	startedAt?: Date | string | null;
@@ -1193,6 +1358,9 @@ export type ParseJobUpdateWithoutUserInput = {
 	status?:
 		| Prisma.EnumParseJobStatusFieldUpdateOperationsInput
 		| $Enums.ParseJobStatus;
+	reviewStatus?:
+		| Prisma.EnumParseJobReviewStatusFieldUpdateOperationsInput
+		| $Enums.ParseJobReviewStatus;
 	r2Key?: Prisma.StringFieldUpdateOperationsInput | string;
 	r2Bucket?: Prisma.StringFieldUpdateOperationsInput | string;
 	originalFilename?:
@@ -1211,6 +1379,11 @@ export type ParseJobUpdateWithoutUserInput = {
 		| Prisma.NullableStringFieldUpdateOperationsInput
 		| string
 		| null;
+	candidates?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+	tagsApplied?: Prisma.ParseJobUpdatetagsAppliedInput | string[];
+	strategy?:
+		| Prisma.EnumImportStrategyFieldUpdateOperationsInput
+		| $Enums.ImportStrategy;
 	inngestEventId?:
 		| Prisma.NullableStringFieldUpdateOperationsInput
 		| string
@@ -1234,6 +1407,9 @@ export type ParseJobUncheckedUpdateWithoutUserInput = {
 	status?:
 		| Prisma.EnumParseJobStatusFieldUpdateOperationsInput
 		| $Enums.ParseJobStatus;
+	reviewStatus?:
+		| Prisma.EnumParseJobReviewStatusFieldUpdateOperationsInput
+		| $Enums.ParseJobReviewStatus;
 	r2Key?: Prisma.StringFieldUpdateOperationsInput | string;
 	r2Bucket?: Prisma.StringFieldUpdateOperationsInput | string;
 	originalFilename?:
@@ -1252,6 +1428,11 @@ export type ParseJobUncheckedUpdateWithoutUserInput = {
 		| Prisma.NullableStringFieldUpdateOperationsInput
 		| string
 		| null;
+	candidates?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+	tagsApplied?: Prisma.ParseJobUpdatetagsAppliedInput | string[];
+	strategy?:
+		| Prisma.EnumImportStrategyFieldUpdateOperationsInput
+		| $Enums.ImportStrategy;
 	inngestEventId?:
 		| Prisma.NullableStringFieldUpdateOperationsInput
 		| string
@@ -1275,6 +1456,9 @@ export type ParseJobUncheckedUpdateManyWithoutUserInput = {
 	status?:
 		| Prisma.EnumParseJobStatusFieldUpdateOperationsInput
 		| $Enums.ParseJobStatus;
+	reviewStatus?:
+		| Prisma.EnumParseJobReviewStatusFieldUpdateOperationsInput
+		| $Enums.ParseJobReviewStatus;
 	r2Key?: Prisma.StringFieldUpdateOperationsInput | string;
 	r2Bucket?: Prisma.StringFieldUpdateOperationsInput | string;
 	originalFilename?:
@@ -1293,6 +1477,11 @@ export type ParseJobUncheckedUpdateManyWithoutUserInput = {
 		| Prisma.NullableStringFieldUpdateOperationsInput
 		| string
 		| null;
+	candidates?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+	tagsApplied?: Prisma.ParseJobUpdatetagsAppliedInput | string[];
+	strategy?:
+		| Prisma.EnumImportStrategyFieldUpdateOperationsInput
+		| $Enums.ImportStrategy;
 	inngestEventId?:
 		| Prisma.NullableStringFieldUpdateOperationsInput
 		| string
@@ -1355,6 +1544,7 @@ export type ParseJobSelect<
 	{
 		id?: boolean;
 		status?: boolean;
+		reviewStatus?: boolean;
 		r2Key?: boolean;
 		r2Bucket?: boolean;
 		originalFilename?: boolean;
@@ -1364,6 +1554,9 @@ export type ParseJobSelect<
 		confidence?: boolean;
 		warnings?: boolean;
 		errorMessage?: boolean;
+		candidates?: boolean;
+		tagsApplied?: boolean;
+		strategy?: boolean;
 		inngestEventId?: boolean;
 		createdAt?: boolean;
 		startedAt?: boolean;
@@ -1383,6 +1576,7 @@ export type ParseJobSelectCreateManyAndReturn<
 	{
 		id?: boolean;
 		status?: boolean;
+		reviewStatus?: boolean;
 		r2Key?: boolean;
 		r2Bucket?: boolean;
 		originalFilename?: boolean;
@@ -1392,6 +1586,9 @@ export type ParseJobSelectCreateManyAndReturn<
 		confidence?: boolean;
 		warnings?: boolean;
 		errorMessage?: boolean;
+		candidates?: boolean;
+		tagsApplied?: boolean;
+		strategy?: boolean;
 		inngestEventId?: boolean;
 		createdAt?: boolean;
 		startedAt?: boolean;
@@ -1409,6 +1606,7 @@ export type ParseJobSelectUpdateManyAndReturn<
 	{
 		id?: boolean;
 		status?: boolean;
+		reviewStatus?: boolean;
 		r2Key?: boolean;
 		r2Bucket?: boolean;
 		originalFilename?: boolean;
@@ -1418,6 +1616,9 @@ export type ParseJobSelectUpdateManyAndReturn<
 		confidence?: boolean;
 		warnings?: boolean;
 		errorMessage?: boolean;
+		candidates?: boolean;
+		tagsApplied?: boolean;
+		strategy?: boolean;
 		inngestEventId?: boolean;
 		createdAt?: boolean;
 		startedAt?: boolean;
@@ -1431,6 +1632,7 @@ export type ParseJobSelectUpdateManyAndReturn<
 export type ParseJobSelectScalar = {
 	id?: boolean;
 	status?: boolean;
+	reviewStatus?: boolean;
 	r2Key?: boolean;
 	r2Bucket?: boolean;
 	originalFilename?: boolean;
@@ -1440,6 +1642,9 @@ export type ParseJobSelectScalar = {
 	confidence?: boolean;
 	warnings?: boolean;
 	errorMessage?: boolean;
+	candidates?: boolean;
+	tagsApplied?: boolean;
+	strategy?: boolean;
 	inngestEventId?: boolean;
 	createdAt?: boolean;
 	startedAt?: boolean;
@@ -1453,6 +1658,7 @@ export type ParseJobOmit<
 > = runtime.Types.Extensions.GetOmit<
 	| "id"
 	| "status"
+	| "reviewStatus"
 	| "r2Key"
 	| "r2Bucket"
 	| "originalFilename"
@@ -1462,6 +1668,9 @@ export type ParseJobOmit<
 	| "confidence"
 	| "warnings"
 	| "errorMessage"
+	| "candidates"
+	| "tagsApplied"
+	| "strategy"
 	| "inngestEventId"
 	| "createdAt"
 	| "startedAt"
@@ -1503,6 +1712,7 @@ export type $ParseJobPayload<
 		{
 			id: string;
 			status: $Enums.ParseJobStatus;
+			reviewStatus: $Enums.ParseJobReviewStatus;
 			r2Key: string;
 			r2Bucket: string;
 			originalFilename: string | null;
@@ -1512,6 +1722,9 @@ export type $ParseJobPayload<
 			confidence: number | null;
 			warnings: string[];
 			errorMessage: string | null;
+			candidates: runtime.JsonValue | null;
+			tagsApplied: string[];
+			strategy: $Enums.ImportStrategy;
 			inngestEventId: string | null;
 			createdAt: Date;
 			startedAt: Date | null;
@@ -2133,6 +2346,7 @@ export interface Prisma__ParseJobClient<
  * Fields of the ParseJob model
  */
 export interface ParseJobFieldRefs {
+	readonly candidates: Prisma.FieldRef<"ParseJob", "Json">;
 	readonly completedAt: Prisma.FieldRef<"ParseJob", "DateTime">;
 	readonly confidence: Prisma.FieldRef<"ParseJob", "Float">;
 	readonly createdAt: Prisma.FieldRef<"ParseJob", "DateTime">;
@@ -2146,8 +2360,11 @@ export interface ParseJobFieldRefs {
 	readonly r2Bucket: Prisma.FieldRef<"ParseJob", "String">;
 	readonly r2Key: Prisma.FieldRef<"ParseJob", "String">;
 	readonly rawExtractedText: Prisma.FieldRef<"ParseJob", "String">;
+	readonly reviewStatus: Prisma.FieldRef<"ParseJob", "ParseJobReviewStatus">;
 	readonly startedAt: Prisma.FieldRef<"ParseJob", "DateTime">;
 	readonly status: Prisma.FieldRef<"ParseJob", "ParseJobStatus">;
+	readonly strategy: Prisma.FieldRef<"ParseJob", "ImportStrategy">;
+	readonly tagsApplied: Prisma.FieldRef<"ParseJob", "String[]">;
 	readonly warnings: Prisma.FieldRef<"ParseJob", "String[]">;
 }
 

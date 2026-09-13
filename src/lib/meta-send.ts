@@ -66,9 +66,9 @@ function baseUrl() {
  * e.g. "+2348012345678" → "2348012345678"
  *      "08012345678"    → "2348012345678" (Nigerian local → E.164)
  */
-function normalisePhone(phone: string): string {
+export function normalisePhone(phone: string): string {
 	const digits = phone.replace(/\D/g, "");
-	// Nigerian local numbers starting with 0 — prefix with 234
+	// Nigerian local numbers starting with 0: prefix with 234
 	if (digits.startsWith("0") && digits.length === 11) {
 		return `234${digits.slice(1)}`;
 	}

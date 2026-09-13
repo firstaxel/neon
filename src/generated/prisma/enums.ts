@@ -67,6 +67,15 @@ export const ParseJobStatus = {
 export type ParseJobStatus =
 	(typeof ParseJobStatus)[keyof typeof ParseJobStatus];
 
+export const ParseJobReviewStatus = {
+	committed: "committed",
+	dismissed: "dismissed",
+	pending_review: "pending_review",
+} as const;
+
+export type ParseJobReviewStatus =
+	(typeof ParseJobReviewStatus)[keyof typeof ParseJobReviewStatus];
+
 export const ImportStatus = {
 	completed: "completed",
 	failed: "failed",

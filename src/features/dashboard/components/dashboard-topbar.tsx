@@ -2,7 +2,6 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { Plus, Wallet } from "lucide-react";
 import React, { useState } from "react";
 import { Button } from "#/components/ui/button";
-import { Separator } from "#/components/ui/separator";
 import { SidebarTrigger } from "#/components/ui/sidebar";
 import { DepositDialog } from "#/features/billing/components/deposit-dialog";
 import { useWallet } from "#/features/billing/hooks/use-billing";
@@ -57,7 +56,6 @@ export function DashboardTopbar() {
 					aria-label="Toggle navigation sidebar"
 					className="-ml-1"
 				/>
-				<Separator className="mr-2 h-4" orientation="vertical" />
 				<DashboardBreadcrumb />
 
 				<div className="ml-auto flex items-center gap-2">
@@ -75,7 +73,6 @@ export function DashboardTopbar() {
 						<Button
 							aria-label="New Campaign"
 							className="gap-1 rounded-stadium font-medium text-xs"
-							size="xs"
 							type="button"
 						>
 							<Plus className="size-3.5" />

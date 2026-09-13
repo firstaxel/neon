@@ -5,6 +5,7 @@ import {
 	holdCampaignFunds,
 	releaseCampaignHold,
 } from "#/features/billing/utils";
+import { PRICING } from "#/features/billing/utils/format";
 import { normalizePhoneNumber } from "#/features/contacts/utils/phone";
 import { SCENARIO_SEED_TEMPLATES } from "#/features/miscellaneous/scenario";
 import type { PrismaClient } from "#/generated/prisma/client";
@@ -39,8 +40,16 @@ async function resolveAudienceContacts(
 	userId: string,
 	contactIds?: string[],
 	audienceFilter?: { tagIds?: string[]; all?: boolean }
-): Promise<Array<{ id: string; name: string; phone: string }>> {
+): Promise<
+	Array<{
+		channel: "whatsapp" | "sms";
+		id: string;
+		name: string;
+		phone: string;
+	}>
+> {
 	let rows: Array<{
+		channel: "whatsapp" | "sms";
 		id: string;
 		name: string;
 		optedOut: boolean;
@@ -48,34 +57,57 @@ async function resolveAudienceContacts(
 	}> = [];
 
 	if (contactIds && contactIds.length > 0) {
-		rows = await db.contact.findMany({
-			select: { id: true, name: true, optedOut: true, phone: true },
+		rows = (await db.contact.findMany({
+			select: {
+				channel: true,
+				id: true,
+				name: true,
+				optedOut: true,
+				phone: true,
+			},
 			where: {
 				id: { in: contactIds },
 				uploadedBy: userId,
 			},
-		});
+		})) as typeof rows;
 	} else if (audienceFilter?.tagIds && audienceFilter.tagIds.length > 0) {
-		rows = await db.contact.findMany({
-			select: { id: true, name: true, optedOut: true, phone: true },
+		rows = (await db.contact.findMany({
+			select: {
+				channel: true,
+				id: true,
+				name: true,
+				optedOut: true,
+				phone: true,
+			},
 			where: {
 				tags: { hasSome: audienceFilter.tagIds },
 				uploadedBy: userId,
 			},
-		});
+		})) as typeof rows;
 	} else if (audienceFilter?.all) {
-		rows = await db.contact.findMany({
-			select: { id: true, name: true, optedOut: true, phone: true },
+		rows = (await db.contact.findMany({
+			select: {
+				channel: true,
+				id: true,
+				name: true,
+				optedOut: true,
+				phone: true,
+			},
 			where: {
 				uploadedBy: userId,
 			},
-		});
+		})) as typeof rows;
 	}
 
 	const active = rows.filter((c) => !c.optedOut);
 
 	const seenPhones = new Set<string>();
-	const deduplicated: Array<{ id: string; name: string; phone: string }> = [];
+	const deduplicated: Array<{
+		channel: "whatsapp" | "sms";
+		id: string;
+		name: string;
+		phone: string;
+	}> = [];
 
 	for (const contact of active) {
 		const norm = normalizePhoneNumber(contact.phone);
@@ -296,6 +328,334 @@ export const createSmsCampaign = protectedProcedure
 			} catch {
 				// Ignore update error during cleanup
 			}
+			throw inngestError;
+		}
+
+		invalidate(userId, "campaign.list");
+
+		return {
+			campaignId,
+			heldKobo: totalEstimatedCostKobo,
+			scheduledAt: input.scheduledAt ?? null,
+			status: "pending",
+			totalMessages: contacts.length,
+		};
+	});
+
+export const estimateWhatsappCost = protectedProcedure
+	.input(
+		z.object({
+			audienceFilter: z
+				.object({
+					all: z.boolean().optional(),
+					tagIds: z.array(z.string()).optional(),
+				})
+				.optional(),
+			channelTarget: z.enum(["smart", "whatsapp", "sms"]).default("smart"),
+			contactIds: z.array(z.string()).optional(),
+			smsText: z.string().optional(),
+			templateId: z.string().min(1),
+			templateParams: z.record(z.string(), z.string()).optional(),
+			templateVars: z.record(z.string(), z.string()).default({}),
+		})
+	)
+	.handler(async ({ input, context }) => {
+		const userId = context.session.user.id;
+
+		const template = await context.db.messageTemplate.findFirst({
+			where: { id: input.templateId, userId },
+		});
+
+		if (!template) {
+			throw new ORPCError("NOT_FOUND", {
+				message: "WhatsApp template not found.",
+			});
+		}
+
+		if (input.channelTarget !== "sms" && template.status !== "APPROVED") {
+			throw new ORPCError("BAD_REQUEST", {
+				message: "Only approved WhatsApp templates can be used for broadcasts.",
+			});
+		}
+
+		const contacts = await resolveAudienceContacts(
+			context.db,
+			userId,
+			input.contactIds,
+			input.audienceFilter
+		);
+
+		let whatsappContactsCount = 0;
+		let smsContactsCount = 0;
+		const smsContacts: Array<{ id: string; name: string; phone: string }> = [];
+
+		for (const c of contacts) {
+			if (input.channelTarget === "whatsapp") {
+				whatsappContactsCount++;
+			} else if (input.channelTarget === "sms") {
+				smsContactsCount++;
+				smsContacts.push(c);
+			} else if (c.channel === "whatsapp") {
+				whatsappContactsCount++;
+			} else {
+				smsContactsCount++;
+				smsContacts.push(c);
+			}
+		}
+
+		const unitCostKobo = PRICING.PER_MESSAGE.whatsapp_marketing;
+		const whatsappCostKobo = whatsappContactsCount * unitCostKobo;
+
+		let smsCostKobo = 0;
+		if (smsContactsCount > 0) {
+			const profile = await context.db.userProfile.findUnique({
+				select: { orgName: true },
+				where: { userId },
+			});
+			const orgName = profile?.orgName ?? "Velocast";
+			const resolvedTemplateVars: Record<string, string> = {
+				...input.templateVars,
+				org: orgName,
+				org_name: orgName,
+				orgName,
+			};
+
+			const smsCalc = calculateMaxSegmentsForAudience({
+				contacts: smsContacts,
+				template: input.smsText || template.smsBody || "Broadcast message",
+				templateVars: resolvedTemplateVars,
+			});
+			smsCostKobo = smsCalc.totalEstimatedCostKobo;
+		}
+
+		const totalEstimatedCostKobo = whatsappCostKobo + smsCostKobo;
+
+		const wallet = await context.db.wallet.findUnique({
+			select: { balanceKobo: true, heldKobo: true },
+			where: { userId },
+		});
+
+		const availableBalanceKobo =
+			(wallet?.balanceKobo ?? 0) - (wallet?.heldKobo ?? 0);
+		const sufficientBalance = availableBalanceKobo >= totalEstimatedCostKobo;
+
+		return {
+			availableBalanceKobo,
+			channelTarget: input.channelTarget,
+			smsContactsCount,
+			smsCostKobo,
+			sufficientBalance,
+			totalContacts: contacts.length,
+			totalEstimatedCostKobo,
+			unitCostKobo,
+			whatsappContactsCount,
+			whatsappCostKobo,
+		};
+	});
+
+export const createWhatsappCampaign = protectedProcedure
+	.input(
+		z.object({
+			audienceFilter: z
+				.object({
+					all: z.boolean().optional(),
+					tagIds: z.array(z.string()).optional(),
+				})
+				.optional(),
+			channelTarget: z.enum(["smart", "whatsapp", "sms"]).default("smart"),
+			contactIds: z.array(z.string()).optional(),
+			name: z.string().optional(),
+			scenario: ScenarioSchema.default("general"),
+			scheduledAt: z.string().datetime().optional().nullable(),
+			smsText: z.string().optional(),
+			templateId: z.string().min(1),
+			templateParams: z.record(z.string(), z.string()).default({}),
+			templateVars: z.record(z.string(), z.string()).default({}),
+		})
+	)
+	.handler(async ({ input, context }) => {
+		const userId = context.session.user.id;
+
+		const template = await context.db.messageTemplate.findFirst({
+			where: { id: input.templateId, userId },
+		});
+
+		if (!template) {
+			throw new ORPCError("NOT_FOUND", {
+				message: "WhatsApp template not found.",
+			});
+		}
+
+		if (input.channelTarget !== "sms" && template.status !== "APPROVED") {
+			throw new ORPCError("BAD_REQUEST", {
+				message: "Only approved WhatsApp templates can be used for broadcasts.",
+			});
+		}
+
+		if (input.channelTarget !== "sms") {
+			const positionalMatches = Array.from(
+				template.bodyText.matchAll(/\{\{(\d+)\}\}/g)
+			);
+			const requiredIndices = Array.from(
+				new Set(positionalMatches.map((m) => m[1]))
+			);
+			for (const idx of requiredIndices) {
+				const val = input.templateParams[idx];
+				if (!val || val.trim().length === 0) {
+					throw new ORPCError("BAD_REQUEST", {
+						message: `Missing parameter mapping for {{${idx}}}.`,
+					});
+				}
+			}
+		}
+
+		const contacts = await resolveAudienceContacts(
+			context.db,
+			userId,
+			input.contactIds,
+			input.audienceFilter
+		);
+
+		if (contacts.length === 0) {
+			throw new ORPCError("BAD_REQUEST", {
+				message: "No eligible recipients found for campaign.",
+			});
+		}
+
+		let whatsappContactsCount = 0;
+		let smsContactsCount = 0;
+		const smsContacts: Array<{ id: string; name: string; phone: string }> = [];
+
+		for (const c of contacts) {
+			if (input.channelTarget === "whatsapp") {
+				whatsappContactsCount++;
+			} else if (input.channelTarget === "sms") {
+				smsContactsCount++;
+				smsContacts.push(c);
+			} else if (c.channel === "whatsapp") {
+				whatsappContactsCount++;
+			} else {
+				smsContactsCount++;
+				smsContacts.push(c);
+			}
+		}
+
+		const unitCostKobo = PRICING.PER_MESSAGE.whatsapp_marketing;
+		const whatsappCostKobo = whatsappContactsCount * unitCostKobo;
+
+		const profile = await context.db.userProfile.findUnique({
+			select: { orgName: true, senderId: true },
+			where: { userId },
+		});
+		const orgName = profile?.orgName ?? "Velocast";
+		const resolvedTemplateVars: Record<string, string> = {
+			...input.templateVars,
+			org: orgName,
+			org_name: orgName,
+			orgName,
+		};
+
+		let smsCostKobo = 0;
+		const effectiveSmsText =
+			input.smsText || template.smsBody || "Broadcast message";
+		if (smsContactsCount > 0) {
+			const smsCalc = calculateMaxSegmentsForAudience({
+				contacts: smsContacts,
+				template: effectiveSmsText,
+				templateVars: resolvedTemplateVars,
+			});
+			smsCostKobo = smsCalc.totalEstimatedCostKobo;
+		}
+
+		const totalEstimatedCostKobo = whatsappCostKobo + smsCostKobo;
+
+		const wallet = await context.db.wallet.findUnique({
+			select: { balanceKobo: true, heldKobo: true },
+			where: { userId },
+		});
+		const availableBalanceKobo =
+			(wallet?.balanceKobo ?? 0) - (wallet?.heldKobo ?? 0);
+
+		if (availableBalanceKobo < totalEstimatedCostKobo) {
+			throw new ORPCError("BAD_REQUEST", {
+				message: `Insufficient wallet balance. Estimated cost is ${totalEstimatedCostKobo} kobo, but available balance is ${availableBalanceKobo} kobo.`,
+			});
+		}
+
+		const campaignId = uuidv4();
+
+		await context.db.campaign.create({
+			data: {
+				channelTarget: input.channelTarget,
+				deliveryMode: "marketing",
+				estimatedCostKobo: totalEstimatedCostKobo,
+				id: campaignId,
+				name: input.name?.trim() || null,
+				scenario: input.scenario,
+				scheduledAt: input.scheduledAt ? new Date(input.scheduledAt) : null,
+				smsTemplate: effectiveSmsText,
+				status: "pending",
+				templateId: template.id,
+				templateParams: input.templateParams,
+				totalMessages: contacts.length,
+				useCustomTemplate: false,
+				userId,
+				waTemplateLanguage: template.language,
+				waTemplateName: template.name,
+				whatsappTemplate: template.bodyText,
+			},
+		});
+
+		try {
+			await holdCampaignFunds({
+				amountKobo: totalEstimatedCostKobo,
+				campaignId,
+				description: input.name
+					? `Campaign hold: ${input.name}`
+					: `Campaign hold for ${campaignId}`,
+				userId,
+			});
+		} catch (error) {
+			await context.db.campaign
+				.delete({ where: { id: campaignId } })
+				.catch(() => {});
+			throw error;
+		}
+
+		try {
+			await inngest.send({
+				data: {
+					campaignId,
+					channelTarget: input.channelTarget,
+					contactIds: contacts.map((c) => c.id),
+					forceSmsChannel: input.channelTarget === "sms",
+					scenario: "general",
+					scheduledAt: input.scheduledAt ?? undefined,
+					smsTemplate: effectiveSmsText,
+					templateId: template.id,
+					templateParams: input.templateParams,
+					templateVars: resolvedTemplateVars,
+					userId,
+					waTemplateLanguage: template.language,
+					waTemplateName: template.name,
+					whatsappTemplate: template.bodyText,
+				},
+				name: "Velocast/campaign.send",
+			});
+		} catch (inngestError) {
+			try {
+				await releaseCampaignHold({
+					campaignId,
+					reason: "Failed to dispatch campaign send event",
+					userId,
+				});
+			} catch {}
+			try {
+				await context.db.campaign.updateMany({
+					data: { completedAt: new Date(), status: "failed" },
+					where: { id: campaignId },
+				});
+			} catch {}
 			throw inngestError;
 		}
 

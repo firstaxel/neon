@@ -59,8 +59,13 @@ export type CampaignSendPayload = {
 	smsTemplate: string;
 	scenario: ScenarioId;
 	templateVars: Record<string, string>;
+	channelTarget?: "smart" | "whatsapp" | "sms";
 	forceSmsChannel?: boolean;
 	scheduledAt?: string;
+	templateId?: string;
+	templateParams?: Record<string, string>;
+	waTemplateLanguage?: string;
+	waTemplateName?: string;
 };
 
 export type CampaignSendSinglePayload = {
@@ -76,6 +81,9 @@ export type CampaignSendSinglePayload = {
 	senderId?: string;
 	segments?: number;
 	costKobo?: number;
+	waTemplateName?: string;
+	waTemplateLanguage?: string;
+	waTemplateParams?: string[];
 };
 
 export type ContactListParsePayload = {

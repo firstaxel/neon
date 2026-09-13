@@ -9,8 +9,11 @@ export const useGetParsing = () =>
 			queryKey: PARSING_QUERY_KEY,
 			refetchInterval: ({ state }) => {
 				const jobs = state.data?.data ?? [];
+				const threeMinutesAgo = Date.now() - 3 * 60 * 1000;
 				const hasActiveJob = jobs.some(
-					(j) => j.status === "pending" || j.status === "parsing"
+					(j) =>
+						(j.status === "pending" || j.status === "parsing") &&
+						new Date(j.createdAt).getTime() > threeMinutesAgo
 				);
 				return hasActiveJob ? 2000 : false;
 			},

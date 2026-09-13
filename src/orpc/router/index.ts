@@ -8,7 +8,9 @@ import {
 import {
 	cancelScheduledCampaign,
 	createSmsCampaign,
+	createWhatsappCampaign,
 	estimateCost,
+	estimateWhatsappCost,
 	getCampaignDetail,
 	getCampaignStatus,
 	listCampaigns,
@@ -62,9 +64,13 @@ import {
 	updateTemplate,
 } from "#/features/templates/router";
 import {
+	commitParsedJob,
 	confirmDirectUpload,
+	dismissParseJob,
+	getParseJob,
 	getParseStatus,
 	getUploadPresignedUrl,
+	listParseJobs,
 	uploadContactImage,
 } from "#/features/upload/router";
 import { o } from "..";
@@ -92,7 +98,10 @@ export const appRouter = o.router({
 		cancelScheduledCampaign,
 		createSms: createSmsCampaign,
 		createSmsCampaign,
+		createWhatsapp: createWhatsappCampaign,
+		createWhatsappCampaign,
 		estimateCost,
+		estimateWhatsappCost,
 		getCampaignDetail,
 		getDetail: getCampaignDetail,
 		getStatus: getCampaignStatus,
@@ -148,9 +157,13 @@ export const appRouter = o.router({
 		update: updateTemplate,
 	}),
 	upload: o.router({
+		commitParsedJob,
 		confirmDirectUpload,
+		dismissParseJob,
+		getParseJob,
 		getParseStatus,
 		getUploadPresignedUrl,
+		listParseJobs,
 		uploadContactImage,
 	}),
 });

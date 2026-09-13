@@ -9,6 +9,7 @@ import {
 	User,
 	XCircle,
 } from "lucide-react";
+import { useCallback } from "react";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import {
@@ -35,6 +36,8 @@ interface ParsedContact {
 }
 
 export interface ParseJobCardProps {
+	/** Count of candidate contacts staged for review */
+	candidatesCount?: number;
 	/** 0–1 float from Gemini confidence score */
 	confidence?: number | null;
 	contacts?: ParsedContact[];
@@ -45,9 +48,12 @@ export interface ParseJobCardProps {
 	onConfirm?: (contacts: ParsedContact[]) => void;
 	/** Fires when user clicks "Try again" on the error state */
 	onRetry?: () => void;
+	/** Fires when user clicks "Review and Import" on the done state */
+	onReview?: (jobId: string) => void;
 	originalFilename?: string | null;
 	/** 0–100, maps from getParseStatus.progress */
 	progress: number;
+	reviewStatus?: "pending_review" | "committed" | "dismissed";
 	status: ParseJobStatus;
 	totalExtracted?: number;
 	warnings?: string[];
@@ -179,7 +185,11 @@ function DoneState({
 	warnings = [],
 	contacts = [],
 	totalExtracted = 0,
+	candidatesCount = 0,
+	reviewStatus = "pending_review",
+	jobId,
 	onConfirm,
+	onReview,
 }: Pick<
 	ParseJobCardProps,
 	| "fileSizeBytes"
@@ -187,10 +197,23 @@ function DoneState({
 	| "warnings"
 	| "contacts"
 	| "totalExtracted"
+	| "candidatesCount"
+	| "reviewStatus"
+	| "jobId"
 	| "onConfirm"
+	| "onReview"
 >) {
 	const waCount = contacts.filter((c) => c.channel === "whatsapp").length;
 	const smsCount = contacts.filter((c) => c.channel === "sms").length;
+	const effectiveCount = totalExtracted || candidatesCount || contacts.length;
+
+	const handleReviewClick = useCallback(() => {
+		if (onReview) {
+			onReview(jobId);
+		} else {
+			onConfirm?.(contacts);
+		}
+	}, [contacts, jobId, onConfirm, onReview]);
 
 	return (
 		<>
@@ -201,28 +224,39 @@ function DoneState({
 					</div>
 					<div className="min-w-0 flex-1">
 						<CardTitle className="text-base">
-							{totalExtracted} contact{totalExtracted === 1 ? "" : "s"}{" "}
+							{effectiveCount} contact{effectiveCount === 1 ? "" : "s"}{" "}
 							extracted
 						</CardTitle>
 						<CardDescription>
 							{fileSizeBytes ? formatBytes(fileSizeBytes) : "Parsing complete"}
 						</CardDescription>
 					</div>
-					<Badge
-						className="border-emerald-500/40 bg-emerald-500/10 text-emerald-500"
-						variant="outline"
-					>
-						Done
-					</Badge>
+					{reviewStatus === "committed" ? (
+						<Badge
+							className="border-emerald-500/40 bg-emerald-500/10 text-emerald-500"
+							variant="outline"
+						>
+							Imported
+						</Badge>
+					) : reviewStatus === "dismissed" ? (
+						<Badge variant="secondary">Dismissed</Badge>
+					) : (
+						<Badge
+							className="border-blue-500/40 bg-blue-500/10 text-blue-500"
+							variant="outline"
+						>
+							Ready for Review
+						</Badge>
+					)}
 				</div>
 			</CardHeader>
 
 			<CardContent className="space-y-4 pb-2">
 				{/* Stats */}
 				<div className="flex flex-wrap gap-2">
-					{confidence != null && (
-						<Badge variant={confidenceBadgeVariant(confidence)}>
-							{Math.round(confidence * 100)}% confidence
+					{confidence !== null && (
+						<Badge variant={confidenceBadgeVariant(confidence ?? 0)}>
+							{Math.round((confidence ?? 0) * 100)}% confidence
 						</Badge>
 					)}
 					{waCount > 0 && (
@@ -301,16 +335,22 @@ function DoneState({
 				)}
 			</CardContent>
 
-			{onConfirm && (
-				<CardFooter className="pt-2">
-					<Button
-						className="w-full rounded-xl"
-						onClick={() => onConfirm(contacts)}
-					>
-						Use these contacts
+			<CardFooter className="pt-2">
+				{reviewStatus === "committed" ? (
+					<Button className="w-full rounded-xl" disabled variant="outline">
+						<CheckCircle2 className="mr-2 h-4 w-4 text-emerald-500" />
+						Committed to Directory
 					</Button>
-				</CardFooter>
-			)}
+				) : reviewStatus === "dismissed" ? (
+					<Button className="w-full rounded-xl" disabled variant="ghost">
+						Batch Dismissed
+					</Button>
+				) : (
+					<Button className="w-full rounded-xl" onClick={handleReviewClick}>
+						Review and Import ({effectiveCount} Contacts)
+					</Button>
+				)}
+			</CardFooter>
 		</>
 	);
 }
@@ -348,7 +388,7 @@ function ErrorState({
 				</p>
 			</CardContent>
 
-			{onRetry && (
+			{onRetry ? (
 				<CardFooter className="pt-0">
 					<Button
 						className="w-full gap-2 rounded-xl"
@@ -359,7 +399,7 @@ function ErrorState({
 						Try again
 					</Button>
 				</CardFooter>
-			)}
+			) : null}
 		</>
 	);
 }
@@ -401,14 +441,18 @@ export function ParseJobCard(props: ParseJobCardProps) {
 		warnings,
 		contacts,
 		totalExtracted,
+		candidatesCount,
+		reviewStatus,
+		jobId,
 		error,
 		onRetry,
 		onConfirm,
+		onReview,
 	} = props;
 
 	return (
 		<Card className="w-full overflow-hidden rounded-2xl">
-			{originalFilename && <FileChip filename={originalFilename} />}
+			{originalFilename ? <FileChip filename={originalFilename} /> : null}
 
 			{status === "pending" && (
 				<PendingState fileSizeBytes={fileSizeBytes} progress={progress} />
@@ -418,10 +462,14 @@ export function ParseJobCard(props: ParseJobCardProps) {
 			)}
 			{status === "done" && (
 				<DoneState
+					candidatesCount={candidatesCount}
 					confidence={confidence}
 					contacts={contacts}
 					fileSizeBytes={fileSizeBytes}
+					jobId={jobId}
 					onConfirm={onConfirm}
+					onReview={onReview}
+					reviewStatus={reviewStatus}
 					totalExtracted={totalExtracted}
 					warnings={warnings}
 				/>

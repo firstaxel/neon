@@ -21,10 +21,10 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 5 | Prepaid wallet and Paystack deposit | Slice 1 | in-progress |
 | 6 | Contact management and CSV import | Slice 1 | in-progress |
 | 7 | SMS campaign wizard and Termii dispatch | Slice 1 | done |
-| 8 | Gemini AI contact sheet image parsing | Slice 2 | planned |
-| 9 | WhatsApp outreach and template manager | Slice 2 | planned |
-| 10 | Delivery analytics and campaign reports | Slice 2 | planned |
-| 11 | Inbox and two way conversation thread | Slice 2 | planned |
+| 8 | Gemini AI contact sheet image parsing | Slice 2 | done |
+| 9 | WhatsApp outreach and template manager | Slice 2 | done |
+| 10 | Delivery analytics and campaign reports | Slice 2 | in-progress |
+| 11 | Inbox and two way conversation thread | Slice 2 | in-progress |
 
 ## Enrolled existing code
 
@@ -133,25 +133,62 @@ spec [docs/specs/0006-sms-campaign-wizard-and-termii-dispatch.md](docs/specs/000
 
 ## Slice 2: Channel expansion and insights
 
-### 8. Gemini AI contact sheet image parsing · needs a decision
+### 8. Gemini AI contact sheet image parsing · done
 Camera or file upload of roster sheets, presigned upload to storage, and Inngest background extraction via Google Gemini vision model.
 **Done when:** an uploaded image of a handwritten or printed list is parsed into structured names and phone numbers for review and one click import.
-- [ ] Design it (spec): `/architect Gemini AI contact sheet image parsing`
+- [x] Design it (spec): [docs/specs/0007-gemini-ai-contact-sheet-image-parsing.md](docs/specs/0007-gemini-ai-contact-sheet-image-parsing.md)
+- [x] Build it: `/develop Gemini AI contact sheet image parsing`
+  - [x] Schema migration for ParseJob candidate staging and review status (AC-3)
+  - [x] Gemini vision structured extraction and confidence calculation (AC-2, AC-4)
+  - [x] Inngest background job extraction into staged candidates (AC-2, AC-3)
+  - [x] Upload and parsing oRPC procedures for presigned view, batch commit, and dismissal (AC-1, AC-5, AC-6, AC-7, AC-8)
+  - [x] Interactive roster review component with side by side preview and editable table (AC-4, AC-5, AC-6)
+- [x] Verify it: `/check verify Gemini AI contact sheet image parsing`
+- [x] Test it: `/test Gemini AI contact sheet image parsing`
+spec [docs/specs/0007-gemini-ai-contact-sheet-image-parsing.md](docs/specs/0007-gemini-ai-contact-sheet-image-parsing.md) · code in `src/features/upload/`, `src/features/jobs/functions/parse-contacts.ts`, `src/lib/gemini.ts`, `src/features/parsing/`
 
-### 9. WhatsApp outreach and template manager · needs a decision
+### 9. WhatsApp outreach and template manager · done
 Meta Cloud API integration for template synchronization, template approval tracking, broadcast dispatch, and message failure handling.
 **Done when:** approved WhatsApp templates can be selected, mapped to contact variables, and delivered via WhatsApp with status updates.
-- [ ] Design it (spec): `/architect WhatsApp outreach and template manager`
+- [x] Design it (spec): [docs/specs/0008-whatsapp-outreach-and-template-manager.md](docs/specs/0008-whatsapp-outreach-and-template-manager.md)
+- [x] Build it: `/develop WhatsApp outreach and template manager`
+  - [x] Schema migration for campaign template parameters and message delivery tracking (AC-4, AC-7, AC-8, AC-9)
+  - [x] Meta messaging client refactoring for template dispatch and parameter mapping (AC-8)
+  - [x] WhatsApp campaign estimation and creation oRPC procedures with two phase wallet holds (AC-4, AC-5, AC-6, AC-7)
+  - [x] Inngest campaign worker dispatch via Meta Cloud API with wamid tracking (AC-7, AC-8)
+  - [x] Meta webhook status listener and failure hold reconciliation (AC-3, AC-9, AC-10)
+  - [x] Campaign wizard template picker, variable mapping, and live preview UI (AC-4, AC-5)
+- [x] Verify it: `/check verify WhatsApp outreach and template manager`
+- [x] Test it: `/test WhatsApp outreach and template manager`
+spec [docs/specs/0008-whatsapp-outreach-and-template-manager.md](docs/specs/0008-whatsapp-outreach-and-template-manager.md) · code in `src/features/templates/`, `src/features/campaigns/`, `src/features/jobs/functions/send-campaign.ts`, `src/routes/api/webhooks/whatsapp.ts`, `src/lib/meta-send.ts`
 
-### 10. Delivery analytics and campaign reports · needs a decision
+### 10. Delivery analytics and campaign reports · in-progress
 Real time delivery metrics displaying sent counts, delivery confirmations, failure reasons, and per campaign cost breakdown.
 **Done when:** a user can inspect any past campaign to view delivery percentage, recipient status log, and financial deduction details.
-- [ ] Design it (spec): `/architect delivery analytics and campaign reports`
+- [x] Design it (spec): [docs/specs/0009-delivery-analytics-and-campaign-reports.md](docs/specs/0009-delivery-analytics-and-campaign-reports.md)
+- [ ] Build it: `/develop delivery analytics and campaign reports`
+  - [ ] Schema migration for Message failureReason and composite analytics indexes (AC-3, AC-5)
+  - [ ] Termii delivery report webhook handler with token authentication and status mapping (AC-1, AC-3)
+  - [ ] Aggregation procedure for campaign summary metrics, channel breakdown, and financial ledger audit (AC-1, AC-2, AC-3, AC-4)
+  - [ ] Paginated recipient log procedure and streaming RFC 4180 CSV export endpoint (AC-5, AC-6)
+  - [ ] Campaign detail UI upgrade with delivery meters, channel tabs, failure cards, and live polling (AC-1, AC-2, AC-3, AC-4, AC-5, AC-6, AC-7)
+- [ ] Verify it: `/check verify delivery analytics and campaign reports`
+- [ ] Test it: `/test delivery analytics and campaign reports`
+spec [docs/specs/0009-delivery-analytics-and-campaign-reports.md](docs/specs/0009-delivery-analytics-and-campaign-reports.md) · code in `src/features/campaigns/`, `src/routes/api/webhooks/termii.ts`, `src/routes/api/campaigns/export.ts`
 
-### 11. Inbox and two way conversation thread · needs a decision
+### 11. Inbox and two way conversation thread · in-progress
 Centralized inbox receiving incoming customer replies from WhatsApp and SMS webhooks with conversation view and reply capability.
 **Done when:** inbound replies appear in real time conversation threads with read status and outbound direct response sending.
-- [ ] Design it (spec): `/architect inbox and two way conversation thread`
+- [x] Design it (spec): [docs/specs/0010-inbox-and-two-way-conversation-thread.md](docs/specs/0010-inbox-and-two-way-conversation-thread.md)
+- [ ] Build it: `/develop inbox and two way conversation thread`
+  - [ ] Schema migration for ConversationThread model, nullable Message campaignId, and threadId relations (AC-1, AC-2)
+  - [ ] WhatsApp webhook atomic thread upsert, lastInboundAt recording, and unread increment (AC-1, AC-3, AC-6)
+  - [ ] Inbox procedures for thread listing, merged timeline union, status toggle, and contact enrollment (AC-1, AC-2, AC-3, AC-7, AC-8)
+  - [ ] Direct reply procedure with 24 hour window validation, Meta direct text dispatch, and template fallback (AC-3, AC-4, AC-5)
+  - [ ] Responsive master detail split panel inbox UI with live window countdown, composer, and template modal (AC-1, AC-2, AC-3, AC-4, AC-5, AC-6, AC-7, AC-8, AC-9)
+- [ ] Verify it: `/check verify inbox and two way conversation thread`
+- [ ] Test it: `/test inbox and two way conversation thread`
+spec [docs/specs/0010-inbox-and-two-way-conversation-thread.md](docs/specs/0010-inbox-and-two-way-conversation-thread.md) · code in `src/features/inbox/`, `src/routes/(dashboard)/inbox/index.tsx`, `src/routes/api/webhooks/whatsapp.ts`
 
 ## Deferred
 Out of scope for the MVP build pass, recorded here to keep the plan honest.

@@ -6,6 +6,7 @@
  * cancellation race condition protection, batched fan out, and Termii SMS dispatch.
  */
 
+import { startSpan } from "@sentry/tanstackstart-react";
 import { v4 as uuidv4 } from "uuid";
 import { prisma } from "#/db";
 import {
@@ -27,7 +28,7 @@ import {
 	campaignSendSingleEvent,
 	inngest,
 } from "#/lib/inngest/client";
-import { sendWhatsAppMessage } from "#/lib/meta-send";
+import { sendTemplateMessage, sendWhatsAppMessage } from "#/lib/meta-send";
 import { calculateSmsSegments } from "#/lib/sms";
 import { sendSmsMessage } from "#/lib/termii";
 import LowBalanceEmail from "../../../../emails/low-balance-email";
@@ -42,6 +43,46 @@ const FAN_OUT_BATCH_SIZE = 100;
 
 // ─── Orchestrator ─────────────────────────────────────────────────────────────
 
+function resolveContactTemplateParams(
+	templateText: string,
+	contact: { name: string; phone: string },
+	templateParams?: Record<string, string>,
+	templateVars?: Record<string, string>
+): { params: string[]; renderedText: string } {
+	const positionalMatches = Array.from(templateText.matchAll(/\{\{(\d+)\}\}/g));
+	const uniqueIndices = Array.from(
+		new Set(positionalMatches.map((m) => Number.parseInt(m[1], 10)))
+	).sort((a, b) => a - b);
+
+	const params: string[] = [];
+	let renderedText = templateText;
+
+	for (const idx of uniqueIndices) {
+		const key = String(idx);
+		const mapping = templateParams?.[key] ?? "";
+		let val = mapping;
+
+		if (mapping === "name" || mapping === "{{name}}") {
+			val = contact.name;
+		} else if (mapping === "phone" || mapping === "{{phone}}") {
+			val = contact.phone;
+		} else if (
+			mapping === "org" ||
+			mapping === "{{org}}" ||
+			mapping === "orgName"
+		) {
+			val = templateVars?.org || templateVars?.orgName || "Velocast";
+		} else if (templateVars?.[mapping]) {
+			val = templateVars[mapping];
+		}
+
+		params.push(val);
+		renderedText = renderedText.replaceAll(`{{${idx}}}`, val);
+	}
+
+	return { params, renderedText };
+}
+
 export const sendCampaign = inngest.createFunction(
 	{
 		id: "send-campaign",
@@ -55,6 +96,10 @@ export const sendCampaign = inngest.createFunction(
 			campaignId,
 			contactIds,
 			forceSmsChannel,
+			channelTarget,
+			waTemplateName,
+			waTemplateLanguage,
+			templateParams,
 			whatsappTemplate,
 			smsTemplate,
 			scenario,
@@ -65,6 +110,11 @@ export const sendCampaign = inngest.createFunction(
 			campaignId: string;
 			contactIds: string[];
 			forceSmsChannel?: boolean;
+			channelTarget?: "smart" | "whatsapp" | "sms";
+			templateId?: string;
+			waTemplateName?: string;
+			waTemplateLanguage?: string;
+			templateParams?: Record<string, string>;
 			whatsappTemplate: string;
 			smsTemplate: string;
 			scenario: string;
@@ -100,7 +150,7 @@ export const sendCampaign = inngest.createFunction(
 
 		if (!claim.claimed) {
 			logger.warn(
-				`[Campaign] Campaign ${campaignId} is no longer pending (cancelled or already dispatching) — aborting.`
+				`[Campaign] Campaign ${campaignId} is no longer pending (cancelled or already dispatching) aborting.`
 			);
 			return {
 				aborted: true,
@@ -121,8 +171,11 @@ export const sendCampaign = inngest.createFunction(
 				},
 				where: { id: { in: contactIds }, uploadedBy: userId },
 			});
-			if (forceSmsChannel) {
+			if (forceSmsChannel || channelTarget === "sms") {
 				return rows.map((c) => ({ ...c, channel: "sms" as const }));
+			}
+			if (channelTarget === "whatsapp") {
+				return rows.map((c) => ({ ...c, channel: "whatsapp" as const }));
 			}
 			return rows as Array<{
 				id: string;
@@ -213,11 +266,32 @@ export const sendCampaign = inngest.createFunction(
 		// ── Step 5: Build personalised message rows with segment calculations ────
 		const messageRows = await step.run("insert-messages", async () => {
 			const rows = eligibleContacts.map((c) => {
-				const template =
-					c.channel === "whatsapp" ? whatsappTemplate : smsTemplate;
-				const personalized = personalizeMessage(template, c.name, templateVars);
-				const smsCalc =
-					c.channel === "sms" ? calculateSmsSegments(personalized, true) : null;
+				const isWa = c.channel === "whatsapp";
+				let personalized = "";
+				let waParams: string[] | undefined;
+
+				if (isWa) {
+					if (waTemplateName) {
+						const resolved = resolveContactTemplateParams(
+							whatsappTemplate,
+							c,
+							templateParams,
+							templateVars
+						);
+						personalized = resolved.renderedText;
+						waParams = resolved.params;
+					} else {
+						personalized = personalizeMessage(
+							whatsappTemplate,
+							c.name,
+							templateVars
+						);
+					}
+				} else {
+					personalized = personalizeMessage(smsTemplate, c.name, templateVars);
+				}
+
+				const smsCalc = isWa ? null : calculateSmsSegments(personalized, true);
 
 				return {
 					campaignId,
@@ -230,17 +304,19 @@ export const sendCampaign = inngest.createFunction(
 					phone: c.phone,
 					segments: smsCalc ? smsCalc.segments : 1,
 					status: "queued" as const,
+					waParams,
 				};
 			});
 
-			await prisma.message.createMany({ data: rows });
+			const dbRows = rows.map(({ waParams: _p, ...dbRow }) => dbRow);
+			await prisma.message.createMany({ data: dbRows });
 			await prisma.campaign.update({
-				data: { totalMessages: rows.length },
+				data: { totalMessages: dbRows.length },
 				where: { id: campaignId },
 			});
 
 			logger.info(
-				`[Campaign] Inserted ${rows.length} message rows for campaign ${campaignId}`
+				`[Campaign] Inserted ${dbRows.length} message rows for campaign ${campaignId}`
 			);
 			return rows;
 		});
@@ -280,6 +356,9 @@ export const sendCampaign = inngest.createFunction(
 				segments: m.segments,
 				senderId: campaignMeta.senderId,
 				userId,
+				waTemplateLanguage: waTemplateLanguage ?? "en",
+				waTemplateName,
+				waTemplateParams: m.waParams,
 			},
 			name: "Velocast/campaign.send-single" as const,
 		}));
@@ -361,14 +440,11 @@ async function reconcileOnWorkerFailure({
 	const finalStatus =
 		campaign.failedMessages === campaign.totalMessages ? "failed" : "completed";
 
-	const sentMessages = await prisma.message.findMany({
-		select: { costKobo: true },
+	const aggregateResult = await prisma.message.aggregate({
+		_sum: { costKobo: true },
 		where: { campaignId, status: "sent" },
 	});
-	const actualCostKobo = sentMessages.reduce(
-		(sum, m) => sum + (m.costKobo ?? 0),
-		0
-	);
+	const actualCostKobo = aggregateResult._sum.costKobo ?? 0;
 
 	log.info(
 		`[onFailure Reconciliation] Reconciling hold for campaign ${campaignId}. Actual cost: ${actualCostKobo} kobo.`
@@ -474,6 +550,9 @@ export const sendSingleMessage = inngest.createFunction(
 			deliveryMode,
 			message,
 			senderId,
+			waTemplateName,
+			waTemplateLanguage,
+			waTemplateParams,
 		} = event.data as {
 			campaignId: string;
 			userId: string;
@@ -487,6 +566,9 @@ export const sendSingleMessage = inngest.createFunction(
 			senderId?: string;
 			segments?: number;
 			costKobo?: number;
+			waTemplateName?: string;
+			waTemplateLanguage?: string;
+			waTemplateParams?: string[];
 		};
 
 		const messageType = resolveMessageType(channel, deliveryMode);
@@ -555,6 +637,19 @@ export const sendSingleMessage = inngest.createFunction(
 		// ── Step 3: Send via Meta (WA) or Termii (SMS) ───────────────────────────
 		const result = await step.run("send-message", async () => {
 			if (channel === "whatsapp") {
+				if (waTemplateName) {
+					const r = await sendTemplateMessage(
+						phone,
+						waTemplateName,
+						waTemplateLanguage ?? "en",
+						waTemplateParams ?? []
+					);
+					return {
+						error: r.error,
+						externalId: r.messageId,
+						success: r.success,
+					};
+				}
 				const r = await sendWhatsAppMessage(phone, message);
 				return { error: r.error, externalId: r.messageId, success: r.success };
 			}
@@ -563,114 +658,128 @@ export const sendSingleMessage = inngest.createFunction(
 		});
 
 		// ── Step 4: Persist result ───────────────────────────────────────────────
-		await step.run("persist-result", async () => {
-			if (result.success) {
-				await prisma.message.update({
-					data: {
-						metaMessageId: channel === "whatsapp" ? result.externalId : null,
-						sentAt: new Date(),
-						status: "sent",
-						termiiMessageId: channel === "sms" ? result.externalId : null,
-					},
-					where: { id: messageId },
-				});
-				await prisma.campaign.update({
-					data: { sentMessages: { increment: 1 } },
-					where: { id: campaignId },
-				});
-				logger.info(
-					`[Send] Completed for ${contactName} via ${channel} (ID: ${result.externalId})`
-				);
-			} else {
-				await prisma.message.update({
-					data: { errorMessage: result.error, status: "failed" },
-					where: { id: messageId },
-				});
-				await prisma.campaign.update({
-					data: { failedMessages: { increment: 1 } },
-					where: { id: campaignId },
-				});
+		await step.run(
+			"persist-result",
+			async () =>
+				await startSpan(
+					{ name: "sendSingleMessage.persistResult", op: "db" },
+					async () => {
+						if (result.success) {
+							const updated = await prisma.message.updateMany({
+								data: {
+									metaMessageId:
+										channel === "whatsapp" ? result.externalId : null,
+									sentAt: new Date(),
+									status: "sent",
+									termiiMessageId: channel === "sms" ? result.externalId : null,
+								},
+								where: { id: messageId, status: { not: "sent" } },
+							});
+							if ((updated?.count ?? 0) > 0) {
+								await prisma.campaign.update({
+									data: { sentMessages: { increment: 1 } },
+									where: { id: campaignId },
+								});
+							}
+							logger.info(
+								`[Send] Completed for ${contactName} via ${channel} (ID: ${result.externalId})`
+							);
+						} else {
+							const updated = await prisma.message.updateMany({
+								data: { errorMessage: result.error, status: "failed" },
+								where: { id: messageId, status: { not: "failed" } },
+							});
+							if (updated.count > 0) {
+								await prisma.campaign.update({
+									data: { failedMessages: { increment: 1 } },
+									where: { id: campaignId },
+								});
 
-				if (!hasHold) {
-					await refundForMessage({
-						campaignId,
-						messageId,
-						messageType,
-						reason: `send failure: ${result.error}`,
-						userId,
-					});
-				}
+								if (!hasHold) {
+									await refundForMessage({
+										campaignId,
+										messageId,
+										messageType,
+										reason: `send failure: ${result.error}`,
+										userId,
+									});
+								}
+							}
 
-				logger.warn(
-					`[Send] Failed for ${contactName} via ${channel}: ${result.error}`
-				);
-			}
-		});
+							logger.warn(
+								`[Send] Failed for ${contactName} via ${channel}: ${result.error}`
+							);
+						}
+					}
+				)
+		);
 
 		// ── Step 5: Campaign completion and hold reconciliation ───────────────────
 		await step.run("check-complete", async () => {
-			const campaign = await prisma.campaign.findUnique({
-				select: {
-					failedMessages: true,
-					name: true,
-					sentMessages: true,
-					status: true,
-					totalMessages: true,
-				},
-				where: { id: campaignId },
-			});
-
-			if (campaign?.status !== "dispatching") {
-				return;
-			}
-
-			const done = campaign.sentMessages + campaign.failedMessages;
-			if (done >= campaign.totalMessages) {
-				// Atomically transition from dispatching to processing to ensure one worker reconciles
-				const claimed = await prisma.campaign.updateMany({
-					data: { status: "processing" },
-					where: { id: campaignId, status: "dispatching" },
-				});
-
-				if (claimed.count > 0) {
-					const finalStatus =
-						campaign.failedMessages === campaign.totalMessages
-							? "failed"
-							: "completed";
-
-					if (hasHold) {
-						// Query all sent messages to find exact billable cost
-						const sentMessages = await prisma.message.findMany({
-							select: { costKobo: true },
-							where: { campaignId, status: "sent" },
-						});
-						const actualCostKobo = sentMessages.reduce(
-							(sum, m) => sum + (m.costKobo ?? 0),
-							0
-						);
-
-						logger.info(
-							`[Reconciliation] Reconciling hold for campaign ${campaignId}. Actual cost: ${actualCostKobo} kobo.`
-						);
-
-						await commitCampaignDeduction({
-							actualCostKobo,
-							campaignId,
-							description: `Campaign broadcast debit: ${campaign.name || campaignId}`,
-							userId,
-						});
-					}
-
-					await prisma.campaign.update({
-						data: { completedAt: new Date(), status: finalStatus },
+			return await startSpan(
+				{ name: "sendSingleMessage.checkComplete", op: "db" },
+				async () => {
+					const campaign = await prisma.campaign.findUnique({
+						select: {
+							failedMessages: true,
+							name: true,
+							sentMessages: true,
+							status: true,
+							totalMessages: true,
+						},
 						where: { id: campaignId },
 					});
 
-					logger.info(
-						`[Campaign] Completed campaign ${campaignId} with status ${finalStatus} (${done}/${campaign.totalMessages})`
-					);
+					if (campaign?.status !== "dispatching") {
+						return;
+					}
+
+					const done = campaign.sentMessages + campaign.failedMessages;
+					if (done >= campaign.totalMessages) {
+						// Atomically transition from dispatching to processing to ensure one worker reconciles
+						const claimed = await prisma.campaign.updateMany({
+							data: { status: "processing" },
+							where: { id: campaignId, status: "dispatching" },
+						});
+
+						if (claimed.count > 0) {
+							const finalStatus =
+								campaign.failedMessages === campaign.totalMessages
+									? "failed"
+									: "completed";
+
+							if (hasHold) {
+								// Aggregate sent messages in database to find exact billable cost without memory exhaustion
+								const aggregateResult = await prisma.message.aggregate({
+									_sum: { costKobo: true },
+									where: { campaignId, status: "sent" },
+								});
+								const actualCostKobo = aggregateResult._sum.costKobo ?? 0;
+
+								logger.info(
+									`[Reconciliation] Reconciling hold for campaign ${campaignId}. Actual cost: ${actualCostKobo} kobo.`
+								);
+
+								await commitCampaignDeduction({
+									actualCostKobo,
+									campaignId,
+									description: `Campaign broadcast debit: ${campaign.name || campaignId}`,
+									userId,
+								});
+							}
+
+							await prisma.campaign.update({
+								data: { completedAt: new Date(), status: finalStatus },
+								where: { id: campaignId },
+							});
+
+							logger.info(
+								`[Campaign] Completed campaign ${campaignId} with status ${finalStatus} (${done}/${campaign.totalMessages})`
+							);
+						}
+					}
 				}
-			}
+			);
 		});
 
 		return {

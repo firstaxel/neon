@@ -29,6 +29,7 @@ export type {
 	MessageStatus,
 	ParseJob,
 	ParseJobStatus,
+	PrismaClient,
 	Scenario,
 	Transaction,
 	TransactionStatus,

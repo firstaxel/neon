@@ -2,6 +2,7 @@ import {
 	DeleteObjectCommand,
 	GetObjectCommand,
 	HeadObjectCommand,
+	PutBucketCorsCommand,
 	PutObjectCommand,
 	S3Client,
 } from "@aws-sdk/client-s3";
@@ -49,12 +50,38 @@ declare global {
 	var __r2Client: S3Client | undefined;
 }
 
-const r2 = globalThis.__r2Client ?? createR2Client();
+export const r2 = globalThis.__r2Client ?? createR2Client();
 if (process.env.NODE_ENV !== "production") {
 	globalThis.__r2Client = r2;
 }
 
 export const BUCKET = process.env.R2_BUCKET_NAME ?? "bulk-messaging";
+
+// ─── Configure Bucket CORS (allows direct browser uploads) ────────────────────
+
+export async function configureR2Cors(): Promise<void> {
+	await r2.send(
+		new PutBucketCorsCommand({
+			Bucket: BUCKET,
+			CORSConfiguration: {
+				CORSRules: [
+					{
+						AllowedHeaders: ["*"],
+						AllowedMethods: ["GET", "PUT", "POST", "HEAD", "DELETE"],
+						AllowedOrigins: [
+							"http://localhost:3000",
+							"http://127.0.0.1:3000",
+							"https://*.velocast.app",
+							"*",
+						],
+						ExposeHeaders: ["ETag"],
+						MaxAgeSeconds: 3600,
+					},
+				],
+			},
+		})
+	);
+}
 
 // ─── Helper: build deterministic R2 object key ───────────────────────────────
 

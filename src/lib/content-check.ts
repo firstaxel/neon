@@ -42,7 +42,7 @@ export async function checkContent(
 	channel: "whatsapp" | "sms" = "whatsapp"
 ): Promise<ContentCheckResult> {
 	try {
-		const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+		const model = genAI.getGenerativeModel({ model: "gemini-3.6-flash" });
 
 		const prompt = `You are a messaging compliance checker for a business messaging platform.
 Analyze this ${channel.toUpperCase()} message for compliance. Normal marketing and customer outreach is SAFE.

@@ -2086,6 +2086,7 @@ export type TransactionScalarFieldEnum =
 	(typeof TransactionScalarFieldEnum)[keyof typeof TransactionScalarFieldEnum];
 
 export const ParseJobScalarFieldEnum = {
+	candidates: "candidates",
 	completedAt: "completedAt",
 	confidence: "confidence",
 	createdAt: "createdAt",
@@ -2099,8 +2100,11 @@ export const ParseJobScalarFieldEnum = {
 	r2Bucket: "r2Bucket",
 	r2Key: "r2Key",
 	rawExtractedText: "rawExtractedText",
+	reviewStatus: "reviewStatus",
 	startedAt: "startedAt",
 	status: "status",
+	strategy: "strategy",
+	tagsApplied: "tagsApplied",
 	warnings: "warnings",
 } as const;
 
@@ -2151,6 +2155,7 @@ export type ContactScalarFieldEnum =
 	(typeof ContactScalarFieldEnum)[keyof typeof ContactScalarFieldEnum];
 
 export const CampaignScalarFieldEnum = {
+	channelTarget: "channelTarget",
 	completedAt: "completedAt",
 	createdAt: "createdAt",
 	deliveryMode: "deliveryMode",
@@ -2166,9 +2171,13 @@ export const CampaignScalarFieldEnum = {
 	smsTemplate: "smsTemplate",
 	startedAt: "startedAt",
 	status: "status",
+	templateId: "templateId",
+	templateParams: "templateParams",
 	totalMessages: "totalMessages",
 	useCustomTemplate: "useCustomTemplate",
 	userId: "userId",
+	waTemplateLanguage: "waTemplateLanguage",
+	waTemplateName: "waTemplateName",
 	whatsappTemplate: "whatsappTemplate",
 } as const;
 
@@ -2189,6 +2198,7 @@ export const MessageScalarFieldEnum = {
 	message: "message",
 	metaMessageId: "metaMessageId",
 	phone: "phone",
+	readAt: "readAt",
 	retryCount: "retryCount",
 	segments: "segments",
 	sentAt: "sentAt",
@@ -2503,6 +2513,18 @@ export type ListEnumParseJobStatusFieldRefInput<$PrismaModel> =
 	FieldRefInputType<$PrismaModel, "ParseJobStatus[]">;
 
 /**
+ * Reference to a field of type 'ParseJobReviewStatus'
+ */
+export type EnumParseJobReviewStatusFieldRefInput<$PrismaModel> =
+	FieldRefInputType<$PrismaModel, "ParseJobReviewStatus">;
+
+/**
+ * Reference to a field of type 'ParseJobReviewStatus[]'
+ */
+export type ListEnumParseJobReviewStatusFieldRefInput<$PrismaModel> =
+	FieldRefInputType<$PrismaModel, "ParseJobReviewStatus[]">;
+
+/**
  * Reference to a field of type 'Float'
  */
 export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<
@@ -2519,6 +2541,20 @@ export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<
 >;
 
 /**
+ * Reference to a field of type 'ImportStrategy'
+ */
+export type EnumImportStrategyFieldRefInput<$PrismaModel> = FieldRefInputType<
+	$PrismaModel,
+	"ImportStrategy"
+>;
+
+/**
+ * Reference to a field of type 'ImportStrategy[]'
+ */
+export type ListEnumImportStrategyFieldRefInput<$PrismaModel> =
+	FieldRefInputType<$PrismaModel, "ImportStrategy[]">;
+
+/**
  * Reference to a field of type 'ImportStatus'
  */
 export type EnumImportStatusFieldRefInput<$PrismaModel> = FieldRefInputType<
@@ -2533,20 +2569,6 @@ export type ListEnumImportStatusFieldRefInput<$PrismaModel> = FieldRefInputType<
 	$PrismaModel,
 	"ImportStatus[]"
 >;
-
-/**
- * Reference to a field of type 'ImportStrategy'
- */
-export type EnumImportStrategyFieldRefInput<$PrismaModel> = FieldRefInputType<
-	$PrismaModel,
-	"ImportStrategy"
->;
-
-/**
- * Reference to a field of type 'ImportStrategy[]'
- */
-export type ListEnumImportStrategyFieldRefInput<$PrismaModel> =
-	FieldRefInputType<$PrismaModel, "ImportStrategy[]">;
 
 /**
  * Reference to a field of type 'MessageChannel'

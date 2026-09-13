@@ -34,6 +34,7 @@ const ContactsListView = () => {
 						trigger={
 							<Button
 								className="gap-1.5 rounded-xl text-xs"
+								nativeButton={false}
 								size="sm"
 								variant="outline"
 							>

@@ -55,11 +55,13 @@ import { useTemplates, type WaTemplate } from "../hooks/use-templates";
 
 /** A single resolved template choice for one channel */
 export interface ChannelTemplate {
-	body: string; // the actual message text for this channel
+	body: string;
 	category: string;
 	displayName: string;
 	id: string;
-	vars: string[]; // named vars in body
+	language?: string;
+	name?: string;
+	vars: string[];
 }
 
 /** What the dialog hands back — each channel's template chosen independently */
@@ -451,6 +453,8 @@ export function TemplatePickerDialog({
 			category: t.category,
 			displayName: t.displayName,
 			id: t.id,
+			language: t.language,
+			name: t.name,
 			vars: ch === "whatsapp" ? t.bodyVars : t.smsVars,
 		};
 	}

@@ -21,7 +21,7 @@
     "email:dev": "email dev",
     "fix": "ultracite fix",
     "format": "biome format",
-    "inngest-cli": "inngest-cli dev",
+    "inngest-cli": "inngest-cli dev -u http://localhost:3000/api/inngest",
     "lint": "biome lint",
     "post-cta-init": "bunx --bun create-db@latest --user-agent tanstack/tsrouter",
     "prepare": "husky",

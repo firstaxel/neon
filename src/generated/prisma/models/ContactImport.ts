@@ -746,10 +746,6 @@ export type EnumImportStatusFieldUpdateOperationsInput = {
 	set?: $Enums.ImportStatus;
 };
 
-export type EnumImportStrategyFieldUpdateOperationsInput = {
-	set?: $Enums.ImportStrategy;
-};
-
 export type ContactImportUpdatetagsAppliedInput = {
 	set?: string[];
 	push?: string | string[];

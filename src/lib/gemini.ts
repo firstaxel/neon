@@ -5,19 +5,35 @@ import {
 } from "@google/generative-ai";
 import { v4 as uuidv4 } from "uuid";
 import { env } from "#/env";
+import { normalizePhoneNumber } from "#/features/contacts/utils/phone";
 import { downloadFromR2 } from "#/features/upload/lib/s3";
 
 export interface GeminiContact {
 	channel: "whatsapp" | "sms";
+	confidence?: number;
 	name: string;
 	notes?: string;
 	phone: string;
 	type: "new_contact" | "returning" | "contact" | "prospect";
 }
 
+export interface CandidateContact {
+	channel: "whatsapp" | "sms";
+	confidence: number;
+	hasWarning: boolean;
+	id: string;
+	included: boolean;
+	name: string;
+	notes?: string;
+	phone: string;
+	rawRow?: string;
+	type: "new_contact" | "returning" | "contact" | "prospect";
+	warnings: string[];
+}
+
 export interface GeminiParseResult {
 	confidence: number;
-	contacts: (GeminiContact & { id: string; rawRow?: string })[];
+	contacts: CandidateContact[];
 	rawText: string;
 	warnings: string[];
 }
@@ -69,7 +85,7 @@ export async function parseContactImageFromR2(
 			responseMimeType: "application/json",
 			temperature: 0.1,
 		},
-		model: "gemini-2.5-flash",
+		model: "gemini-3.6-flash",
 		safetySettings: [
 			{
 				category: HarmCategory.HARM_CATEGORY_HARASSMENT,
@@ -98,21 +114,54 @@ export async function parseContactImageFromR2(
 			.replace(/```\n?/g, "")
 			.trim();
 		raw = JSON.parse(cleaned);
-	} catch {
+	} catch (error) {
 		throw new Error(
-			`Gemini returned invalid JSON: ${responseText.slice(0, 300)}`
+			`Gemini returned invalid JSON: ${responseText.slice(0, 300)}`,
+			{ cause: error }
 		);
 	}
 
-	// 4. Enrich with IDs
-	const contacts = (raw.contacts ?? []).map((c) => ({
-		...c,
-		id: uuidv4(),
-		rawRow: c.notes,
-	}));
+	// 4. Enrich and validate contacts
+	const contacts: CandidateContact[] = (raw.contacts ?? []).map((c) => {
+		const warnings: string[] = [];
+		const itemConfidence =
+			typeof c.confidence === "number"
+				? c.confidence
+				: (raw.confidence ?? 0.85);
+
+		// Validate phone number
+		const normalized = normalizePhoneNumber(c.phone);
+		let finalPhone = c.phone;
+
+		if (normalized.success && normalized.phone) {
+			finalPhone = normalized.phone;
+		} else {
+			warnings.push(normalized.error ?? `Invalid phone format: ${c.phone}`);
+		}
+
+		if (itemConfidence < 0.7) {
+			warnings.push(
+				`Low OCR confidence (${Math.round(itemConfidence * 100)}%)`
+			);
+		}
+
+		return {
+			channel: c.channel ?? "whatsapp",
+			confidence: itemConfidence,
+			hasWarning: warnings.length > 0,
+			id: uuidv4(),
+			included: true,
+			name: c.name?.trim() || "Unknown",
+			notes: c.notes,
+			phone: finalPhone,
+			rawRow: c.notes,
+			type: c.type ?? "prospect",
+			warnings,
+		};
+	});
 
 	return {
-		confidence: raw.confidence ?? 0.8,
+		confidence: raw.confidence ?? 0.85,
 		contacts,
 		rawText: raw.rawText ?? "",
 		warnings: raw.warnings ?? [],

@@ -29,6 +29,23 @@ const ALLOWED_TYPES = new Set([
 
 const PARSE_POLL_INTERVAL_MS = 1500;
 
+function fileToBase64(file: File): Promise<string> {
+	return new Promise((resolve, reject) => {
+		const reader = new FileReader();
+		reader.onload = () => {
+			const result = reader.result as string;
+			const [, base64] = result.split(",");
+			if (base64) {
+				resolve(base64);
+			} else {
+				reject(new Error("Failed to encode file as base64"));
+			}
+		};
+		reader.onerror = () => reject(reader.error);
+		reader.readAsDataURL(file);
+	});
+}
+
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 
 /**
@@ -198,80 +215,103 @@ export function useRealUpload(
 				});
 
 				// ── Step 2: Upload file bytes directly to R2 with XHR progress ────────
-				await new Promise<void>((resolve, reject) => {
-					const xhr = new XMLHttpRequest();
-					xhrRefs.current.set(fileId, xhr);
+				let finalJobId = jobId;
+				let directUploadSucceeded = false;
 
-					// Real byte-level upload progress — maps to 0→90% of our progress bar
-					xhr.upload.addEventListener("progress", (event) => {
-						if (event.lengthComputable) {
-							const rawPercent = (event.loaded / event.total) * 100;
-							// Cap at 89 so we have room for the parse phase (90–100)
-							const displayProgress = Math.min(
-								Math.round(rawPercent * 0.9),
-								89
+				try {
+					await new Promise<void>((resolve, reject) => {
+						const xhr = new XMLHttpRequest();
+						xhrRefs.current.set(fileId, xhr);
+
+						// Real byte-level upload progress — maps to 0→90% of our progress bar
+						xhr.upload.addEventListener("progress", (event) => {
+							if (event.lengthComputable) {
+								const rawPercent = (event.loaded / event.total) * 100;
+								// Cap at 89 so we have room for the parse phase (90–100)
+								const displayProgress = Math.min(
+									Math.round(rawPercent * 0.9),
+									89
+								);
+								patch(fileId, { progress: displayProgress });
+							}
+						});
+
+						xhr.addEventListener("load", () => {
+							xhrRefs.current.delete(fileId);
+							if (xhr.status >= 200 && xhr.status < 300) {
+								resolve();
+							} else {
+								reject(new Error(`R2 upload failed: HTTP ${xhr.status}`));
+							}
+						});
+
+						xhr.addEventListener("error", () => {
+							xhrRefs.current.delete(fileId);
+							reject(
+								new Error("Direct R2 upload blocked (CORS or network error)")
 							);
-							patch(fileId, { progress: displayProgress });
-						}
+						});
+
+						xhr.addEventListener("abort", () => {
+							xhrRefs.current.delete(fileId);
+							reject(new Error("Upload was cancelled."));
+						});
+
+						// PUT directly to R2 presigned URL — no auth headers needed
+						xhr.open("PUT", presignedUrl);
+						xhr.setRequestHeader("Content-Type", file.type);
+						xhr.send(file);
 					});
 
-					xhr.addEventListener("load", () => {
-						xhrRefs.current.delete(fileId);
-						if (xhr.status >= 200 && xhr.status < 300) {
-							resolve();
-						} else {
-							reject(new Error(`R2 upload failed: HTTP ${xhr.status}`));
-						}
+					directUploadSucceeded = true;
+				} catch (uploadErr) {
+					console.warn(
+						"[Upload] Direct R2 upload failed, falling back to server-side upload:",
+						uploadErr
+					);
+
+					// Fallback: server-side upload via uploadContactImage
+					patch(fileId, { progress: 45 });
+					const fileBase64 = await fileToBase64(file);
+					const serverUploadResult = await client.upload.uploadContactImage({
+						fileBase64,
+						filename: file.name,
+						fileSizeBytes: file.size,
+						mimeType: file.type as
+							| "image/jpeg"
+							| "image/jpg"
+							| "image/png"
+							| "image/webp"
+							| "image/gif",
 					});
+					finalJobId = serverUploadResult.jobId;
+					patch(fileId, { jobId: finalJobId });
+				}
 
-					xhr.addEventListener("error", () => {
-						xhrRefs.current.delete(fileId);
-						reject(
-							new Error(
-								"Network error during upload. Please check your connection."
-							)
-						);
+				if (directUploadSucceeded) {
+					// ── Step 3: Notify server upload is done → fire Inngest parse job ─────
+					patch(fileId, { progress: 90 });
+					await client.upload.confirmDirectUpload({
+						filename: file.name,
+						fileSizeBytes: file.size,
+						jobId,
+						mimeType: file.type as
+							| "image/jpeg"
+							| "image/jpg"
+							| "image/png"
+							| "image/webp"
+							| "image/gif",
+						r2Key,
 					});
-
-					xhr.addEventListener("abort", () => {
-						xhrRefs.current.delete(fileId);
-						reject(new Error("Upload was cancelled."));
-					});
-
-					// PUT directly to R2 presigned URL — no auth headers needed
-					xhr.open("PUT", presignedUrl);
-					xhr.setRequestHeader("Content-Type", file.type);
-					xhr.send(file);
-				});
-
-				// ── Step 3: Notify server upload is done → fire Inngest parse job ─────
-				patch(fileId, { progress: 90 });
-				await client.upload.confirmDirectUpload({
-					filename: file.name,
-					fileSizeBytes: file.size,
-					jobId,
-					mimeType: file.type as
-						| "image/jpeg"
-						| "image/jpg"
-						| "image/png"
-						| "image/webp"
-						| "image/gif",
-					r2Key,
-				});
+				}
 
 				// ── Fire onUploadComplete immediately ─────────────────────────────────
 				// The file is now in R2 and the Inngest parse job is queued.
-				// This fires BEFORE Gemini finishes — use it to immediately refetch
-				// your existing contact list so the UI shows something right away
-				// while parsing runs in the background.
-				//
-				//   e.g. queryClient.invalidateQueries({ queryKey: ["contacts"] })
-				//        router.refresh()
-				//        mutate("/api/contacts")
-				optionsRef.current?.onUploadComplete?.(fileId, jobId);
+				patch(fileId, { progress: 90 });
+				optionsRef.current?.onUploadComplete?.(fileId, finalJobId);
 
 				// ── Phase 2: Start polling parse status ───────────────────────────────
-				startParsePoll(fileId, jobId);
+				startParsePoll(fileId, finalJobId);
 			} catch (err: unknown) {
 				const message =
 					err instanceof Error

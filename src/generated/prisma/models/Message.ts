@@ -56,6 +56,7 @@ export type MessageMinAggregateOutputType = {
 	retryCount: number | null;
 	sentAt: Date | null;
 	deliveredAt: Date | null;
+	readAt: Date | null;
 	createdAt: Date | null;
 };
 
@@ -77,6 +78,7 @@ export type MessageMaxAggregateOutputType = {
 	retryCount: number | null;
 	sentAt: Date | null;
 	deliveredAt: Date | null;
+	readAt: Date | null;
 	createdAt: Date | null;
 };
 
@@ -98,6 +100,7 @@ export type MessageCountAggregateOutputType = {
 	retryCount: number;
 	sentAt: number;
 	deliveredAt: number;
+	readAt: number;
 	createdAt: number;
 	_all: number;
 };
@@ -132,6 +135,7 @@ export type MessageMinAggregateInputType = {
 	retryCount?: true;
 	sentAt?: true;
 	deliveredAt?: true;
+	readAt?: true;
 	createdAt?: true;
 };
 
@@ -153,6 +157,7 @@ export type MessageMaxAggregateInputType = {
 	retryCount?: true;
 	sentAt?: true;
 	deliveredAt?: true;
+	readAt?: true;
 	createdAt?: true;
 };
 
@@ -174,6 +179,7 @@ export type MessageCountAggregateInputType = {
 	retryCount?: true;
 	sentAt?: true;
 	deliveredAt?: true;
+	readAt?: true;
 	createdAt?: true;
 	_all?: true;
 };
@@ -289,6 +295,7 @@ export type MessageGroupByOutputType = {
 	retryCount: number;
 	sentAt: Date | null;
 	deliveredAt: Date | null;
+	readAt: Date | null;
 	createdAt: Date;
 	_count: MessageCountAggregateOutputType | null;
 	_avg: MessageAvgAggregateOutputType | null;
@@ -331,6 +338,7 @@ export type MessageWhereInput = {
 	retryCount?: Prisma.IntFilter<"Message"> | number;
 	sentAt?: Prisma.DateTimeNullableFilter<"Message"> | Date | string | null;
 	deliveredAt?: Prisma.DateTimeNullableFilter<"Message"> | Date | string | null;
+	readAt?: Prisma.DateTimeNullableFilter<"Message"> | Date | string | null;
 	createdAt?: Prisma.DateTimeFilter<"Message"> | Date | string;
 	campaign?: Prisma.XOR<
 		Prisma.CampaignScalarRelationFilter,
@@ -356,6 +364,7 @@ export type MessageOrderByWithRelationInput = {
 	retryCount?: Prisma.SortOrder;
 	sentAt?: Prisma.SortOrderInput | Prisma.SortOrder;
 	deliveredAt?: Prisma.SortOrderInput | Prisma.SortOrder;
+	readAt?: Prisma.SortOrderInput | Prisma.SortOrder;
 	createdAt?: Prisma.SortOrder;
 	campaign?: Prisma.CampaignOrderByWithRelationInput;
 };
@@ -388,6 +397,7 @@ export type MessageWhereUniqueInput = Prisma.AtLeast<
 			| Date
 			| string
 			| null;
+		readAt?: Prisma.DateTimeNullableFilter<"Message"> | Date | string | null;
 		createdAt?: Prisma.DateTimeFilter<"Message"> | Date | string;
 		campaign?: Prisma.XOR<
 			Prisma.CampaignScalarRelationFilter,
@@ -415,6 +425,7 @@ export type MessageOrderByWithAggregationInput = {
 	retryCount?: Prisma.SortOrder;
 	sentAt?: Prisma.SortOrderInput | Prisma.SortOrder;
 	deliveredAt?: Prisma.SortOrderInput | Prisma.SortOrder;
+	readAt?: Prisma.SortOrderInput | Prisma.SortOrder;
 	createdAt?: Prisma.SortOrder;
 	_count?: Prisma.MessageCountOrderByAggregateInput;
 	_avg?: Prisma.MessageAvgOrderByAggregateInput;
@@ -475,6 +486,11 @@ export type MessageScalarWhereWithAggregatesInput = {
 		| Date
 		| string
 		| null;
+	readAt?:
+		| Prisma.DateTimeNullableWithAggregatesFilter<"Message">
+		| Date
+		| string
+		| null;
 	createdAt?: Prisma.DateTimeWithAggregatesFilter<"Message"> | Date | string;
 };
 
@@ -495,6 +511,7 @@ export type MessageCreateInput = {
 	retryCount?: number;
 	sentAt?: Date | string | null;
 	deliveredAt?: Date | string | null;
+	readAt?: Date | string | null;
 	createdAt?: Date | string;
 	campaign: Prisma.CampaignCreateNestedOneWithoutMessagesInput;
 };
@@ -517,6 +534,7 @@ export type MessageUncheckedCreateInput = {
 	retryCount?: number;
 	sentAt?: Date | string | null;
 	deliveredAt?: Date | string | null;
+	readAt?: Date | string | null;
 	createdAt?: Date | string;
 };
 
@@ -554,6 +572,11 @@ export type MessageUpdateInput = {
 		| string
 		| null;
 	deliveredAt?:
+		| Prisma.NullableDateTimeFieldUpdateOperationsInput
+		| Date
+		| string
+		| null;
+	readAt?:
 		| Prisma.NullableDateTimeFieldUpdateOperationsInput
 		| Date
 		| string
@@ -601,6 +624,11 @@ export type MessageUncheckedUpdateInput = {
 		| Date
 		| string
 		| null;
+	readAt?:
+		| Prisma.NullableDateTimeFieldUpdateOperationsInput
+		| Date
+		| string
+		| null;
 	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
@@ -622,6 +650,7 @@ export type MessageCreateManyInput = {
 	retryCount?: number;
 	sentAt?: Date | string | null;
 	deliveredAt?: Date | string | null;
+	readAt?: Date | string | null;
 	createdAt?: Date | string;
 };
 
@@ -659,6 +688,11 @@ export type MessageUpdateManyMutationInput = {
 		| string
 		| null;
 	deliveredAt?:
+		| Prisma.NullableDateTimeFieldUpdateOperationsInput
+		| Date
+		| string
+		| null;
+	readAt?:
 		| Prisma.NullableDateTimeFieldUpdateOperationsInput
 		| Date
 		| string
@@ -705,6 +739,11 @@ export type MessageUncheckedUpdateManyInput = {
 		| Date
 		| string
 		| null;
+	readAt?:
+		| Prisma.NullableDateTimeFieldUpdateOperationsInput
+		| Date
+		| string
+		| null;
 	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
@@ -736,6 +775,7 @@ export type MessageCountOrderByAggregateInput = {
 	retryCount?: Prisma.SortOrder;
 	sentAt?: Prisma.SortOrder;
 	deliveredAt?: Prisma.SortOrder;
+	readAt?: Prisma.SortOrder;
 	createdAt?: Prisma.SortOrder;
 };
 
@@ -763,6 +803,7 @@ export type MessageMaxOrderByAggregateInput = {
 	retryCount?: Prisma.SortOrder;
 	sentAt?: Prisma.SortOrder;
 	deliveredAt?: Prisma.SortOrder;
+	readAt?: Prisma.SortOrder;
 	createdAt?: Prisma.SortOrder;
 };
 
@@ -784,6 +825,7 @@ export type MessageMinOrderByAggregateInput = {
 	retryCount?: Prisma.SortOrder;
 	sentAt?: Prisma.SortOrder;
 	deliveredAt?: Prisma.SortOrder;
+	readAt?: Prisma.SortOrder;
 	createdAt?: Prisma.SortOrder;
 };
 
@@ -908,6 +950,7 @@ export type MessageCreateWithoutCampaignInput = {
 	retryCount?: number;
 	sentAt?: Date | string | null;
 	deliveredAt?: Date | string | null;
+	readAt?: Date | string | null;
 	createdAt?: Date | string;
 };
 
@@ -928,6 +971,7 @@ export type MessageUncheckedCreateWithoutCampaignInput = {
 	retryCount?: number;
 	sentAt?: Date | string | null;
 	deliveredAt?: Date | string | null;
+	readAt?: Date | string | null;
 	createdAt?: Date | string;
 };
 
@@ -995,6 +1039,7 @@ export type MessageScalarWhereInput = {
 	retryCount?: Prisma.IntFilter<"Message"> | number;
 	sentAt?: Prisma.DateTimeNullableFilter<"Message"> | Date | string | null;
 	deliveredAt?: Prisma.DateTimeNullableFilter<"Message"> | Date | string | null;
+	readAt?: Prisma.DateTimeNullableFilter<"Message"> | Date | string | null;
 	createdAt?: Prisma.DateTimeFilter<"Message"> | Date | string;
 };
 
@@ -1015,6 +1060,7 @@ export type MessageCreateManyCampaignInput = {
 	retryCount?: number;
 	sentAt?: Date | string | null;
 	deliveredAt?: Date | string | null;
+	readAt?: Date | string | null;
 	createdAt?: Date | string;
 };
 
@@ -1052,6 +1098,11 @@ export type MessageUpdateWithoutCampaignInput = {
 		| string
 		| null;
 	deliveredAt?:
+		| Prisma.NullableDateTimeFieldUpdateOperationsInput
+		| Date
+		| string
+		| null;
+	readAt?:
 		| Prisma.NullableDateTimeFieldUpdateOperationsInput
 		| Date
 		| string
@@ -1097,6 +1148,11 @@ export type MessageUncheckedUpdateWithoutCampaignInput = {
 		| Date
 		| string
 		| null;
+	readAt?:
+		| Prisma.NullableDateTimeFieldUpdateOperationsInput
+		| Date
+		| string
+		| null;
 	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
@@ -1138,6 +1194,11 @@ export type MessageUncheckedUpdateManyWithoutCampaignInput = {
 		| Date
 		| string
 		| null;
+	readAt?:
+		| Prisma.NullableDateTimeFieldUpdateOperationsInput
+		| Date
+		| string
+		| null;
 	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
@@ -1163,6 +1224,7 @@ export type MessageSelect<
 		retryCount?: boolean;
 		sentAt?: boolean;
 		deliveredAt?: boolean;
+		readAt?: boolean;
 		createdAt?: boolean;
 		campaign?: boolean | Prisma.CampaignDefaultArgs<ExtArgs>;
 	},
@@ -1191,6 +1253,7 @@ export type MessageSelectCreateManyAndReturn<
 		retryCount?: boolean;
 		sentAt?: boolean;
 		deliveredAt?: boolean;
+		readAt?: boolean;
 		createdAt?: boolean;
 		campaign?: boolean | Prisma.CampaignDefaultArgs<ExtArgs>;
 	},
@@ -1219,6 +1282,7 @@ export type MessageSelectUpdateManyAndReturn<
 		retryCount?: boolean;
 		sentAt?: boolean;
 		deliveredAt?: boolean;
+		readAt?: boolean;
 		createdAt?: boolean;
 		campaign?: boolean | Prisma.CampaignDefaultArgs<ExtArgs>;
 	},
@@ -1243,6 +1307,7 @@ export type MessageSelectScalar = {
 	retryCount?: boolean;
 	sentAt?: boolean;
 	deliveredAt?: boolean;
+	readAt?: boolean;
 	createdAt?: boolean;
 };
 
@@ -1267,6 +1332,7 @@ export type MessageOmit<
 	| "retryCount"
 	| "sentAt"
 	| "deliveredAt"
+	| "readAt"
 	| "createdAt",
 	ExtArgs["result"]["message"]
 >;
@@ -1316,6 +1382,7 @@ export type $MessagePayload<
 			retryCount: number;
 			sentAt: Date | null;
 			deliveredAt: Date | null;
+			readAt: Date | null;
 			createdAt: Date;
 		},
 		ExtArgs["result"]["message"]
@@ -1935,6 +2002,7 @@ export interface MessageFieldRefs {
 	readonly message: Prisma.FieldRef<"Message", "String">;
 	readonly metaMessageId: Prisma.FieldRef<"Message", "String">;
 	readonly phone: Prisma.FieldRef<"Message", "String">;
+	readonly readAt: Prisma.FieldRef<"Message", "DateTime">;
 	readonly retryCount: Prisma.FieldRef<"Message", "Int">;
 	readonly segments: Prisma.FieldRef<"Message", "Int">;
 	readonly sentAt: Prisma.FieldRef<"Message", "DateTime">;

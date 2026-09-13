@@ -427,6 +427,7 @@ export type MessageTemplateWhereInput = {
 	createdAt?: Prisma.DateTimeFilter<"MessageTemplate"> | Date | string;
 	updatedAt?: Prisma.DateTimeFilter<"MessageTemplate"> | Date | string;
 	user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>;
+	campaigns?: Prisma.CampaignListRelationFilter;
 };
 
 export type MessageTemplateOrderByWithRelationInput = {
@@ -460,6 +461,7 @@ export type MessageTemplateOrderByWithRelationInput = {
 	createdAt?: Prisma.SortOrder;
 	updatedAt?: Prisma.SortOrder;
 	user?: Prisma.UserOrderByWithRelationInput;
+	campaigns?: Prisma.CampaignOrderByRelationAggregateInput;
 };
 
 export type MessageTemplateWhereUniqueInput = Prisma.AtLeast<
@@ -527,6 +529,7 @@ export type MessageTemplateWhereUniqueInput = Prisma.AtLeast<
 		createdAt?: Prisma.DateTimeFilter<"MessageTemplate"> | Date | string;
 		updatedAt?: Prisma.DateTimeFilter<"MessageTemplate"> | Date | string;
 		user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>;
+		campaigns?: Prisma.CampaignListRelationFilter;
 	},
 	"id"
 >;
@@ -684,6 +687,7 @@ export type MessageTemplateCreateInput = {
 	createdAt?: Date | string;
 	updatedAt?: Date | string;
 	user: Prisma.UserCreateNestedOneWithoutMessageTemplatesInput;
+	campaigns?: Prisma.CampaignCreateNestedManyWithoutTemplateInput;
 };
 
 export type MessageTemplateUncheckedCreateInput = {
@@ -716,6 +720,7 @@ export type MessageTemplateUncheckedCreateInput = {
 	approvedAt?: Date | string | null;
 	createdAt?: Date | string;
 	updatedAt?: Date | string;
+	campaigns?: Prisma.CampaignUncheckedCreateNestedManyWithoutTemplateInput;
 };
 
 export type MessageTemplateUpdateInput = {
@@ -775,6 +780,7 @@ export type MessageTemplateUpdateInput = {
 	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 	updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 	user?: Prisma.UserUpdateOneRequiredWithoutMessageTemplatesNestedInput;
+	campaigns?: Prisma.CampaignUpdateManyWithoutTemplateNestedInput;
 };
 
 export type MessageTemplateUncheckedUpdateInput = {
@@ -834,6 +840,7 @@ export type MessageTemplateUncheckedUpdateInput = {
 		| null;
 	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 	updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+	campaigns?: Prisma.CampaignUncheckedUpdateManyWithoutTemplateNestedInput;
 };
 
 export type MessageTemplateCreateManyInput = {
@@ -993,6 +1000,11 @@ export type MessageTemplateListRelationFilter = {
 
 export type MessageTemplateOrderByRelationAggregateInput = {
 	_count?: Prisma.SortOrder;
+};
+
+export type MessageTemplateNullableScalarRelationFilter = {
+	is?: Prisma.MessageTemplateWhereInput | null;
+	isNot?: Prisma.MessageTemplateWhereInput | null;
 };
 
 export type MessageTemplateCountOrderByAggregateInput = {
@@ -1201,6 +1213,34 @@ export type MessageTemplateUncheckedUpdateManyWithoutUserNestedInput = {
 		| Prisma.MessageTemplateScalarWhereInput[];
 };
 
+export type MessageTemplateCreateNestedOneWithoutCampaignsInput = {
+	create?: Prisma.XOR<
+		Prisma.MessageTemplateCreateWithoutCampaignsInput,
+		Prisma.MessageTemplateUncheckedCreateWithoutCampaignsInput
+	>;
+	connectOrCreate?: Prisma.MessageTemplateCreateOrConnectWithoutCampaignsInput;
+	connect?: Prisma.MessageTemplateWhereUniqueInput;
+};
+
+export type MessageTemplateUpdateOneWithoutCampaignsNestedInput = {
+	create?: Prisma.XOR<
+		Prisma.MessageTemplateCreateWithoutCampaignsInput,
+		Prisma.MessageTemplateUncheckedCreateWithoutCampaignsInput
+	>;
+	connectOrCreate?: Prisma.MessageTemplateCreateOrConnectWithoutCampaignsInput;
+	upsert?: Prisma.MessageTemplateUpsertWithoutCampaignsInput;
+	disconnect?: Prisma.MessageTemplateWhereInput | boolean;
+	delete?: Prisma.MessageTemplateWhereInput | boolean;
+	connect?: Prisma.MessageTemplateWhereUniqueInput;
+	update?: Prisma.XOR<
+		Prisma.XOR<
+			Prisma.MessageTemplateUpdateToOneWithWhereWithoutCampaignsInput,
+			Prisma.MessageTemplateUpdateWithoutCampaignsInput
+		>,
+		Prisma.MessageTemplateUncheckedUpdateWithoutCampaignsInput
+	>;
+};
+
 export type MessageTemplateCreateheaderVarsInput = {
 	set: string[];
 };
@@ -1273,6 +1313,7 @@ export type MessageTemplateCreateWithoutUserInput = {
 	approvedAt?: Date | string | null;
 	createdAt?: Date | string;
 	updatedAt?: Date | string;
+	campaigns?: Prisma.CampaignCreateNestedManyWithoutTemplateInput;
 };
 
 export type MessageTemplateUncheckedCreateWithoutUserInput = {
@@ -1304,6 +1345,7 @@ export type MessageTemplateUncheckedCreateWithoutUserInput = {
 	approvedAt?: Date | string | null;
 	createdAt?: Date | string;
 	updatedAt?: Date | string;
+	campaigns?: Prisma.CampaignUncheckedCreateNestedManyWithoutTemplateInput;
 };
 
 export type MessageTemplateCreateOrConnectWithoutUserInput = {
@@ -1412,6 +1454,216 @@ export type MessageTemplateScalarWhereInput = {
 	updatedAt?: Prisma.DateTimeFilter<"MessageTemplate"> | Date | string;
 };
 
+export type MessageTemplateCreateWithoutCampaignsInput = {
+	id?: string;
+	name: string;
+	displayName: string;
+	language?: string;
+	category?: $Enums.WaTemplateCategory;
+	purpose?: $Enums.Purpose;
+	status?: $Enums.WaTemplateStatus;
+	waTemplateId?: string | null;
+	waAccountId?: string | null;
+	rejectionReason?: string | null;
+	headerFormat?: $Enums.WaHeaderFormat | null;
+	headerText?: string | null;
+	headerVars?: Prisma.MessageTemplateCreateheaderVarsInput | string[];
+	bodyText: string;
+	bodyVars?: Prisma.MessageTemplateCreatebodyVarsInput | string[];
+	footerText?: string | null;
+	buttons?: Prisma.JsonNullValueInput | runtime.InputJsonValue;
+	channel?: $Enums.MessageChannel;
+	smsBody: string;
+	smsVars?: Prisma.MessageTemplateCreatesmsVarsInput | string[];
+	scenarioId?: string | null;
+	isDefault?: boolean;
+	usageCount?: number;
+	lastUsedAt?: Date | string | null;
+	submittedAt?: Date | string | null;
+	approvedAt?: Date | string | null;
+	createdAt?: Date | string;
+	updatedAt?: Date | string;
+	user: Prisma.UserCreateNestedOneWithoutMessageTemplatesInput;
+};
+
+export type MessageTemplateUncheckedCreateWithoutCampaignsInput = {
+	id?: string;
+	userId: string;
+	name: string;
+	displayName: string;
+	language?: string;
+	category?: $Enums.WaTemplateCategory;
+	purpose?: $Enums.Purpose;
+	status?: $Enums.WaTemplateStatus;
+	waTemplateId?: string | null;
+	waAccountId?: string | null;
+	rejectionReason?: string | null;
+	headerFormat?: $Enums.WaHeaderFormat | null;
+	headerText?: string | null;
+	headerVars?: Prisma.MessageTemplateCreateheaderVarsInput | string[];
+	bodyText: string;
+	bodyVars?: Prisma.MessageTemplateCreatebodyVarsInput | string[];
+	footerText?: string | null;
+	buttons?: Prisma.JsonNullValueInput | runtime.InputJsonValue;
+	channel?: $Enums.MessageChannel;
+	smsBody: string;
+	smsVars?: Prisma.MessageTemplateCreatesmsVarsInput | string[];
+	scenarioId?: string | null;
+	isDefault?: boolean;
+	usageCount?: number;
+	lastUsedAt?: Date | string | null;
+	submittedAt?: Date | string | null;
+	approvedAt?: Date | string | null;
+	createdAt?: Date | string;
+	updatedAt?: Date | string;
+};
+
+export type MessageTemplateCreateOrConnectWithoutCampaignsInput = {
+	where: Prisma.MessageTemplateWhereUniqueInput;
+	create: Prisma.XOR<
+		Prisma.MessageTemplateCreateWithoutCampaignsInput,
+		Prisma.MessageTemplateUncheckedCreateWithoutCampaignsInput
+	>;
+};
+
+export type MessageTemplateUpsertWithoutCampaignsInput = {
+	update: Prisma.XOR<
+		Prisma.MessageTemplateUpdateWithoutCampaignsInput,
+		Prisma.MessageTemplateUncheckedUpdateWithoutCampaignsInput
+	>;
+	create: Prisma.XOR<
+		Prisma.MessageTemplateCreateWithoutCampaignsInput,
+		Prisma.MessageTemplateUncheckedCreateWithoutCampaignsInput
+	>;
+	where?: Prisma.MessageTemplateWhereInput;
+};
+
+export type MessageTemplateUpdateToOneWithWhereWithoutCampaignsInput = {
+	where?: Prisma.MessageTemplateWhereInput;
+	data: Prisma.XOR<
+		Prisma.MessageTemplateUpdateWithoutCampaignsInput,
+		Prisma.MessageTemplateUncheckedUpdateWithoutCampaignsInput
+	>;
+};
+
+export type MessageTemplateUpdateWithoutCampaignsInput = {
+	id?: Prisma.StringFieldUpdateOperationsInput | string;
+	name?: Prisma.StringFieldUpdateOperationsInput | string;
+	displayName?: Prisma.StringFieldUpdateOperationsInput | string;
+	language?: Prisma.StringFieldUpdateOperationsInput | string;
+	category?:
+		| Prisma.EnumWaTemplateCategoryFieldUpdateOperationsInput
+		| $Enums.WaTemplateCategory;
+	purpose?: Prisma.EnumPurposeFieldUpdateOperationsInput | $Enums.Purpose;
+	status?:
+		| Prisma.EnumWaTemplateStatusFieldUpdateOperationsInput
+		| $Enums.WaTemplateStatus;
+	waTemplateId?:
+		| Prisma.NullableStringFieldUpdateOperationsInput
+		| string
+		| null;
+	waAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	rejectionReason?:
+		| Prisma.NullableStringFieldUpdateOperationsInput
+		| string
+		| null;
+	headerFormat?:
+		| Prisma.NullableEnumWaHeaderFormatFieldUpdateOperationsInput
+		| $Enums.WaHeaderFormat
+		| null;
+	headerText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	headerVars?: Prisma.MessageTemplateUpdateheaderVarsInput | string[];
+	bodyText?: Prisma.StringFieldUpdateOperationsInput | string;
+	bodyVars?: Prisma.MessageTemplateUpdatebodyVarsInput | string[];
+	footerText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	buttons?: Prisma.JsonNullValueInput | runtime.InputJsonValue;
+	channel?:
+		| Prisma.EnumMessageChannelFieldUpdateOperationsInput
+		| $Enums.MessageChannel;
+	smsBody?: Prisma.StringFieldUpdateOperationsInput | string;
+	smsVars?: Prisma.MessageTemplateUpdatesmsVarsInput | string[];
+	scenarioId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	usageCount?: Prisma.IntFieldUpdateOperationsInput | number;
+	lastUsedAt?:
+		| Prisma.NullableDateTimeFieldUpdateOperationsInput
+		| Date
+		| string
+		| null;
+	submittedAt?:
+		| Prisma.NullableDateTimeFieldUpdateOperationsInput
+		| Date
+		| string
+		| null;
+	approvedAt?:
+		| Prisma.NullableDateTimeFieldUpdateOperationsInput
+		| Date
+		| string
+		| null;
+	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+	updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+	user?: Prisma.UserUpdateOneRequiredWithoutMessageTemplatesNestedInput;
+};
+
+export type MessageTemplateUncheckedUpdateWithoutCampaignsInput = {
+	id?: Prisma.StringFieldUpdateOperationsInput | string;
+	userId?: Prisma.StringFieldUpdateOperationsInput | string;
+	name?: Prisma.StringFieldUpdateOperationsInput | string;
+	displayName?: Prisma.StringFieldUpdateOperationsInput | string;
+	language?: Prisma.StringFieldUpdateOperationsInput | string;
+	category?:
+		| Prisma.EnumWaTemplateCategoryFieldUpdateOperationsInput
+		| $Enums.WaTemplateCategory;
+	purpose?: Prisma.EnumPurposeFieldUpdateOperationsInput | $Enums.Purpose;
+	status?:
+		| Prisma.EnumWaTemplateStatusFieldUpdateOperationsInput
+		| $Enums.WaTemplateStatus;
+	waTemplateId?:
+		| Prisma.NullableStringFieldUpdateOperationsInput
+		| string
+		| null;
+	waAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	rejectionReason?:
+		| Prisma.NullableStringFieldUpdateOperationsInput
+		| string
+		| null;
+	headerFormat?:
+		| Prisma.NullableEnumWaHeaderFormatFieldUpdateOperationsInput
+		| $Enums.WaHeaderFormat
+		| null;
+	headerText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	headerVars?: Prisma.MessageTemplateUpdateheaderVarsInput | string[];
+	bodyText?: Prisma.StringFieldUpdateOperationsInput | string;
+	bodyVars?: Prisma.MessageTemplateUpdatebodyVarsInput | string[];
+	footerText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	buttons?: Prisma.JsonNullValueInput | runtime.InputJsonValue;
+	channel?:
+		| Prisma.EnumMessageChannelFieldUpdateOperationsInput
+		| $Enums.MessageChannel;
+	smsBody?: Prisma.StringFieldUpdateOperationsInput | string;
+	smsVars?: Prisma.MessageTemplateUpdatesmsVarsInput | string[];
+	scenarioId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+	isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+	usageCount?: Prisma.IntFieldUpdateOperationsInput | number;
+	lastUsedAt?:
+		| Prisma.NullableDateTimeFieldUpdateOperationsInput
+		| Date
+		| string
+		| null;
+	submittedAt?:
+		| Prisma.NullableDateTimeFieldUpdateOperationsInput
+		| Date
+		| string
+		| null;
+	approvedAt?:
+		| Prisma.NullableDateTimeFieldUpdateOperationsInput
+		| Date
+		| string
+		| null;
+	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+	updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
 export type MessageTemplateCreateManyUserInput = {
 	id?: string;
 	name: string;
@@ -1499,6 +1751,7 @@ export type MessageTemplateUpdateWithoutUserInput = {
 		| null;
 	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 	updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+	campaigns?: Prisma.CampaignUpdateManyWithoutTemplateNestedInput;
 };
 
 export type MessageTemplateUncheckedUpdateWithoutUserInput = {
@@ -1557,6 +1810,7 @@ export type MessageTemplateUncheckedUpdateWithoutUserInput = {
 		| null;
 	createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 	updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+	campaigns?: Prisma.CampaignUncheckedUpdateManyWithoutTemplateNestedInput;
 };
 
 export type MessageTemplateUncheckedUpdateManyWithoutUserInput = {
@@ -1617,6 +1871,44 @@ export type MessageTemplateUncheckedUpdateManyWithoutUserInput = {
 	updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
+/**
+ * Count Type MessageTemplateCountOutputType
+ */
+
+export type MessageTemplateCountOutputType = {
+	campaigns: number;
+};
+
+export type MessageTemplateCountOutputTypeSelect<
+	ExtArgs extends
+		runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+	campaigns?: boolean | MessageTemplateCountOutputTypeCountCampaignsArgs;
+};
+
+/**
+ * MessageTemplateCountOutputType without action
+ */
+export type MessageTemplateCountOutputTypeDefaultArgs<
+	ExtArgs extends
+		runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+	/**
+	 * Select specific fields to fetch from the MessageTemplateCountOutputType
+	 */
+	select?: Prisma.MessageTemplateCountOutputTypeSelect<ExtArgs> | null;
+};
+
+/**
+ * MessageTemplateCountOutputType without action
+ */
+export type MessageTemplateCountOutputTypeCountCampaignsArgs<
+	ExtArgs extends
+		runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+	where?: Prisma.CampaignWhereInput;
+};
+
 export type MessageTemplateSelect<
 	ExtArgs extends
 		runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
@@ -1652,6 +1944,10 @@ export type MessageTemplateSelect<
 		createdAt?: boolean;
 		updatedAt?: boolean;
 		user?: boolean | Prisma.UserDefaultArgs<ExtArgs>;
+		campaigns?: boolean | Prisma.MessageTemplate$campaignsArgs<ExtArgs>;
+		_count?:
+			| boolean
+			| Prisma.MessageTemplateCountOutputTypeDefaultArgs<ExtArgs>;
 	},
 	ExtArgs["result"]["messageTemplate"]
 >;
@@ -1806,6 +2102,8 @@ export type MessageTemplateInclude<
 		runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
 	user?: boolean | Prisma.UserDefaultArgs<ExtArgs>;
+	campaigns?: boolean | Prisma.MessageTemplate$campaignsArgs<ExtArgs>;
+	_count?: boolean | Prisma.MessageTemplateCountOutputTypeDefaultArgs<ExtArgs>;
 };
 export type MessageTemplateIncludeCreateManyAndReturn<
 	ExtArgs extends
@@ -1827,6 +2125,7 @@ export type $MessageTemplatePayload<
 	name: "MessageTemplate";
 	objects: {
 		user: Prisma.$UserPayload<ExtArgs>;
+		campaigns: Prisma.$CampaignPayload<ExtArgs>[];
 	};
 	scalars: runtime.Types.Extensions.GetPayloadResult<
 		{
@@ -2419,6 +2718,17 @@ export interface Prisma__MessageTemplateClient<
 		runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 	GlobalOmitOptions = {},
 > extends Prisma.PrismaPromise<T> {
+	campaigns<T extends Prisma.MessageTemplate$campaignsArgs<ExtArgs> = {}>(
+		args?: Prisma.Subset<T, Prisma.MessageTemplate$campaignsArgs<ExtArgs>>
+	): Prisma.PrismaPromise<
+		| runtime.Types.Result.GetResult<
+				Prisma.$CampaignPayload<ExtArgs>,
+				T,
+				"findMany",
+				GlobalOmitOptions
+		  >
+		| Null
+	>;
 	/**
 	 * Attaches a callback for only the rejection of the Promise.
 	 * @param onrejected The callback to execute when the Promise is rejected.
@@ -2978,6 +3288,35 @@ export type MessageTemplateDeleteManyArgs<
 	 * Limit how many MessageTemplates to delete.
 	 */
 	limit?: number;
+};
+
+/**
+ * MessageTemplate.campaigns
+ */
+export type MessageTemplate$campaignsArgs<
+	ExtArgs extends
+		runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+	/**
+	 * Select specific fields to fetch from the Campaign
+	 */
+	select?: Prisma.CampaignSelect<ExtArgs> | null;
+	/**
+	 * Omit specific fields from the Campaign
+	 */
+	omit?: Prisma.CampaignOmit<ExtArgs> | null;
+	/**
+	 * Choose, which related nodes to fetch as well
+	 */
+	include?: Prisma.CampaignInclude<ExtArgs> | null;
+	where?: Prisma.CampaignWhereInput;
+	orderBy?:
+		| Prisma.CampaignOrderByWithRelationInput
+		| Prisma.CampaignOrderByWithRelationInput[];
+	cursor?: Prisma.CampaignWhereUniqueInput;
+	take?: number;
+	skip?: number;
+	distinct?: Prisma.CampaignScalarFieldEnum | Prisma.CampaignScalarFieldEnum[];
 };
 
 /**

@@ -28,7 +28,7 @@ export const parseContactList = inngest.createFunction(
 				return;
 			}
 
-			const jobId = (event.data.event.data as { jobId?: string })?.jobId;
+			const { jobId } = event.data.event.data as { jobId?: string };
 			if (!jobId) {
 				return;
 			}
@@ -54,15 +54,12 @@ export const parseContactList = inngest.createFunction(
 		logger.info(`[ParseJob] Starting jobId=${jobId} r2Key=${r2Key}`);
 
 		// ── Step 1: Mark ParseJob as "parsing" ────────────────────────────────────
-		const parseJob = await step.run("mark-parsing", () =>
+		await step.run("mark-parsing", () =>
 			prisma.parseJob.update({
 				data: { startedAt: new Date(), status: "parsing" },
-				select: { parsedBy: true },
 				where: { id: jobId },
 			})
 		);
-
-		const userId = parseJob.parsedBy;
 
 		// ── Step 2: Download from R2 + call Gemini Vision ─────────────────────────
 		const geminiResult = await step.run("gemini-parse", async () => {
@@ -74,93 +71,32 @@ export const parseContactList = inngest.createFunction(
 			return result;
 		});
 
-		// ── Step 3: Upsert contacts + update ParseJob row ─────────────────────────
-		const { inserted, updated } = await step.run(
-			"persist-to-postgres",
-			async () => {
-				let insertedCount = 0;
-				let updatedCount = 0;
+		// ── Step 3: Save candidate contacts to ParseJob for review ──────────────
+		await step.run("save-candidates-to-parse-job", async () => {
+			await prisma.parseJob.update({
+				data: {
+					candidates: geminiResult.contacts as unknown as object,
+					completedAt: new Date(),
+					confidence: geminiResult.confidence,
+					rawExtractedText: geminiResult.rawText,
+					reviewStatus: "pending_review",
+					status: "done",
+					warnings: geminiResult.warnings,
+				},
+				where: { id: jobId },
+			});
 
-				// Process each contact individually so we can track insert vs update.
-				// We use upsert on the @@unique([userId, phone]) constraint:
-				//   - New phone → INSERT a fresh Contact row
-				//   - Existing phone → UPDATE name / type / notes / parseJobId (most recent wins)
-				//     but leave optedOut alone — we never re-opt someone in on a fresh upload.
-				const results = await Promise.all(
-					geminiResult.contacts.map(async (c) => {
-						const existing = await prisma.contact.findUnique({
-							select: { id: true },
-							where: {
-								uploadedBy_phone: { phone: c.phone, uploadedBy: userId },
-							},
-						});
-
-						await prisma.contact.upsert({
-							create: {
-								channel: c.channel,
-								id: c.id,
-								name: c.name,
-								notes: c.notes ?? null,
-								parseJobId: jobId,
-								phone: c.phone,
-								rawRow: c.rawRow ?? null,
-								type: c.type,
-								uploadedBy: userId,
-							},
-							update: {
-								// Update mutable fields from the latest import
-								name: c.name,
-								notes: c.notes ?? null,
-								parseJobId: jobId, // attribute to the most recent import
-								rawRow: c.rawRow ?? null,
-								type: c.type,
-								// channel: intentionally not updated — changing whatsapp→sms
-								//   would silently break ongoing campaigns. Let the user edit manually.
-								// optedOut: intentionally not updated — never overwrite an opt-out.
-							},
-							where: {
-								uploadedBy_phone: { phone: c.phone, uploadedBy: userId },
-							},
-						});
-
-						return existing ? "updated" : "inserted";
-					})
-				);
-
-				for (const result of results) {
-					if (result === "updated") {
-						updatedCount += 1;
-					} else {
-						insertedCount += 1;
-					}
-				}
-
-				// Mark ParseJob done
-				await prisma.parseJob.update({
-					data: {
-						completedAt: new Date(),
-						confidence: geminiResult.confidence,
-						rawExtractedText: geminiResult.rawText,
-						status: "done",
-						warnings: geminiResult.warnings,
-					},
-					where: { id: jobId },
-				});
-
-				logger.info(
-					`[ParseJob] jobId=${jobId} — ${insertedCount} new, ${updatedCount} updated`
-				);
-
-				return { inserted: insertedCount, updated: updatedCount };
-			}
-		);
+			logger.info(
+				`[ParseJob] jobId=${jobId} saved ${geminiResult.contacts.length} candidates with reviewStatus=pending_review`
+			);
+		});
 
 		return {
+			candidatesCount: geminiResult.contacts.length,
 			confidence: geminiResult.confidence,
-			contactsFound: geminiResult.contacts.length,
-			inserted,
 			jobId,
-			updated,
+			reviewStatus: "pending_review",
+			status: "done",
 			warnings: geminiResult.warnings,
 		};
 	}

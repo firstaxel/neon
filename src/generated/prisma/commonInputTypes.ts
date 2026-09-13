@@ -398,6 +398,21 @@ export type EnumParseJobStatusFilter<$PrismaModel = never> = {
 		| $Enums.ParseJobStatus;
 };
 
+export type EnumParseJobReviewStatusFilter<$PrismaModel = never> = {
+	equals?:
+		| $Enums.ParseJobReviewStatus
+		| Prisma.EnumParseJobReviewStatusFieldRefInput<$PrismaModel>;
+	in?:
+		| $Enums.ParseJobReviewStatus[]
+		| Prisma.ListEnumParseJobReviewStatusFieldRefInput<$PrismaModel>;
+	notIn?:
+		| $Enums.ParseJobReviewStatus[]
+		| Prisma.ListEnumParseJobReviewStatusFieldRefInput<$PrismaModel>;
+	not?:
+		| Prisma.NestedEnumParseJobReviewStatusFilter<$PrismaModel>
+		| $Enums.ParseJobReviewStatus;
+};
+
 export type IntNullableFilter<$PrismaModel = never> = {
 	equals?: number | Prisma.IntFieldRefInput<$PrismaModel> | null;
 	in?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel> | null;
@@ -420,6 +435,21 @@ export type FloatNullableFilter<$PrismaModel = never> = {
 	not?: Prisma.NestedFloatNullableFilter<$PrismaModel> | number | null;
 };
 
+export type EnumImportStrategyFilter<$PrismaModel = never> = {
+	equals?:
+		| $Enums.ImportStrategy
+		| Prisma.EnumImportStrategyFieldRefInput<$PrismaModel>;
+	in?:
+		| $Enums.ImportStrategy[]
+		| Prisma.ListEnumImportStrategyFieldRefInput<$PrismaModel>;
+	notIn?:
+		| $Enums.ImportStrategy[]
+		| Prisma.ListEnumImportStrategyFieldRefInput<$PrismaModel>;
+	not?:
+		| Prisma.NestedEnumImportStrategyFilter<$PrismaModel>
+		| $Enums.ImportStrategy;
+};
+
 export type EnumParseJobStatusWithAggregatesFilter<$PrismaModel = never> = {
 	equals?:
 		| $Enums.ParseJobStatus
@@ -437,6 +467,25 @@ export type EnumParseJobStatusWithAggregatesFilter<$PrismaModel = never> = {
 	_min?: Prisma.NestedEnumParseJobStatusFilter<$PrismaModel>;
 	_max?: Prisma.NestedEnumParseJobStatusFilter<$PrismaModel>;
 };
+
+export type EnumParseJobReviewStatusWithAggregatesFilter<$PrismaModel = never> =
+	{
+		equals?:
+			| $Enums.ParseJobReviewStatus
+			| Prisma.EnumParseJobReviewStatusFieldRefInput<$PrismaModel>;
+		in?:
+			| $Enums.ParseJobReviewStatus[]
+			| Prisma.ListEnumParseJobReviewStatusFieldRefInput<$PrismaModel>;
+		notIn?:
+			| $Enums.ParseJobReviewStatus[]
+			| Prisma.ListEnumParseJobReviewStatusFieldRefInput<$PrismaModel>;
+		not?:
+			| Prisma.NestedEnumParseJobReviewStatusWithAggregatesFilter<$PrismaModel>
+			| $Enums.ParseJobReviewStatus;
+		_count?: Prisma.NestedIntFilter<$PrismaModel>;
+		_min?: Prisma.NestedEnumParseJobReviewStatusFilter<$PrismaModel>;
+		_max?: Prisma.NestedEnumParseJobReviewStatusFilter<$PrismaModel>;
+	};
 
 export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
 	equals?: number | Prisma.IntFieldRefInput<$PrismaModel> | null;
@@ -476,6 +525,24 @@ export type FloatNullableWithAggregatesFilter<$PrismaModel = never> = {
 	_max?: Prisma.NestedFloatNullableFilter<$PrismaModel>;
 };
 
+export type EnumImportStrategyWithAggregatesFilter<$PrismaModel = never> = {
+	equals?:
+		| $Enums.ImportStrategy
+		| Prisma.EnumImportStrategyFieldRefInput<$PrismaModel>;
+	in?:
+		| $Enums.ImportStrategy[]
+		| Prisma.ListEnumImportStrategyFieldRefInput<$PrismaModel>;
+	notIn?:
+		| $Enums.ImportStrategy[]
+		| Prisma.ListEnumImportStrategyFieldRefInput<$PrismaModel>;
+	not?:
+		| Prisma.NestedEnumImportStrategyWithAggregatesFilter<$PrismaModel>
+		| $Enums.ImportStrategy;
+	_count?: Prisma.NestedIntFilter<$PrismaModel>;
+	_min?: Prisma.NestedEnumImportStrategyFilter<$PrismaModel>;
+	_max?: Prisma.NestedEnumImportStrategyFilter<$PrismaModel>;
+};
+
 export type EnumImportStatusFilter<$PrismaModel = never> = {
 	equals?:
 		| $Enums.ImportStatus
@@ -487,21 +554,6 @@ export type EnumImportStatusFilter<$PrismaModel = never> = {
 		| $Enums.ImportStatus[]
 		| Prisma.ListEnumImportStatusFieldRefInput<$PrismaModel>;
 	not?: Prisma.NestedEnumImportStatusFilter<$PrismaModel> | $Enums.ImportStatus;
-};
-
-export type EnumImportStrategyFilter<$PrismaModel = never> = {
-	equals?:
-		| $Enums.ImportStrategy
-		| Prisma.EnumImportStrategyFieldRefInput<$PrismaModel>;
-	in?:
-		| $Enums.ImportStrategy[]
-		| Prisma.ListEnumImportStrategyFieldRefInput<$PrismaModel>;
-	notIn?:
-		| $Enums.ImportStrategy[]
-		| Prisma.ListEnumImportStrategyFieldRefInput<$PrismaModel>;
-	not?:
-		| Prisma.NestedEnumImportStrategyFilter<$PrismaModel>
-		| $Enums.ImportStrategy;
 };
 
 export type EnumImportStatusWithAggregatesFilter<$PrismaModel = never> = {
@@ -520,24 +572,6 @@ export type EnumImportStatusWithAggregatesFilter<$PrismaModel = never> = {
 	_count?: Prisma.NestedIntFilter<$PrismaModel>;
 	_min?: Prisma.NestedEnumImportStatusFilter<$PrismaModel>;
 	_max?: Prisma.NestedEnumImportStatusFilter<$PrismaModel>;
-};
-
-export type EnumImportStrategyWithAggregatesFilter<$PrismaModel = never> = {
-	equals?:
-		| $Enums.ImportStrategy
-		| Prisma.EnumImportStrategyFieldRefInput<$PrismaModel>;
-	in?:
-		| $Enums.ImportStrategy[]
-		| Prisma.ListEnumImportStrategyFieldRefInput<$PrismaModel>;
-	notIn?:
-		| $Enums.ImportStrategy[]
-		| Prisma.ListEnumImportStrategyFieldRefInput<$PrismaModel>;
-	not?:
-		| Prisma.NestedEnumImportStrategyWithAggregatesFilter<$PrismaModel>
-		| $Enums.ImportStrategy;
-	_count?: Prisma.NestedIntFilter<$PrismaModel>;
-	_min?: Prisma.NestedEnumImportStrategyFilter<$PrismaModel>;
-	_max?: Prisma.NestedEnumImportStrategyFilter<$PrismaModel>;
 };
 
 export type EnumMessageChannelFilter<$PrismaModel = never> = {
@@ -1342,6 +1376,21 @@ export type NestedEnumParseJobStatusFilter<$PrismaModel = never> = {
 		| $Enums.ParseJobStatus;
 };
 
+export type NestedEnumParseJobReviewStatusFilter<$PrismaModel = never> = {
+	equals?:
+		| $Enums.ParseJobReviewStatus
+		| Prisma.EnumParseJobReviewStatusFieldRefInput<$PrismaModel>;
+	in?:
+		| $Enums.ParseJobReviewStatus[]
+		| Prisma.ListEnumParseJobReviewStatusFieldRefInput<$PrismaModel>;
+	notIn?:
+		| $Enums.ParseJobReviewStatus[]
+		| Prisma.ListEnumParseJobReviewStatusFieldRefInput<$PrismaModel>;
+	not?:
+		| Prisma.NestedEnumParseJobReviewStatusFilter<$PrismaModel>
+		| $Enums.ParseJobReviewStatus;
+};
+
 export type NestedFloatNullableFilter<$PrismaModel = never> = {
 	equals?: number | Prisma.FloatFieldRefInput<$PrismaModel> | null;
 	in?: number[] | Prisma.ListFloatFieldRefInput<$PrismaModel> | null;
@@ -1351,6 +1400,21 @@ export type NestedFloatNullableFilter<$PrismaModel = never> = {
 	gt?: number | Prisma.FloatFieldRefInput<$PrismaModel>;
 	gte?: number | Prisma.FloatFieldRefInput<$PrismaModel>;
 	not?: Prisma.NestedFloatNullableFilter<$PrismaModel> | number | null;
+};
+
+export type NestedEnumImportStrategyFilter<$PrismaModel = never> = {
+	equals?:
+		| $Enums.ImportStrategy
+		| Prisma.EnumImportStrategyFieldRefInput<$PrismaModel>;
+	in?:
+		| $Enums.ImportStrategy[]
+		| Prisma.ListEnumImportStrategyFieldRefInput<$PrismaModel>;
+	notIn?:
+		| $Enums.ImportStrategy[]
+		| Prisma.ListEnumImportStrategyFieldRefInput<$PrismaModel>;
+	not?:
+		| Prisma.NestedEnumImportStrategyFilter<$PrismaModel>
+		| $Enums.ImportStrategy;
 };
 
 export type NestedEnumParseJobStatusWithAggregatesFilter<$PrismaModel = never> =
@@ -1371,6 +1435,26 @@ export type NestedEnumParseJobStatusWithAggregatesFilter<$PrismaModel = never> =
 		_min?: Prisma.NestedEnumParseJobStatusFilter<$PrismaModel>;
 		_max?: Prisma.NestedEnumParseJobStatusFilter<$PrismaModel>;
 	};
+
+export type NestedEnumParseJobReviewStatusWithAggregatesFilter<
+	$PrismaModel = never,
+> = {
+	equals?:
+		| $Enums.ParseJobReviewStatus
+		| Prisma.EnumParseJobReviewStatusFieldRefInput<$PrismaModel>;
+	in?:
+		| $Enums.ParseJobReviewStatus[]
+		| Prisma.ListEnumParseJobReviewStatusFieldRefInput<$PrismaModel>;
+	notIn?:
+		| $Enums.ParseJobReviewStatus[]
+		| Prisma.ListEnumParseJobReviewStatusFieldRefInput<$PrismaModel>;
+	not?:
+		| Prisma.NestedEnumParseJobReviewStatusWithAggregatesFilter<$PrismaModel>
+		| $Enums.ParseJobReviewStatus;
+	_count?: Prisma.NestedIntFilter<$PrismaModel>;
+	_min?: Prisma.NestedEnumParseJobReviewStatusFilter<$PrismaModel>;
+	_max?: Prisma.NestedEnumParseJobReviewStatusFilter<$PrismaModel>;
+};
 
 export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
 	equals?: number | Prisma.IntFieldRefInput<$PrismaModel> | null;
@@ -1410,6 +1494,25 @@ export type NestedFloatNullableWithAggregatesFilter<$PrismaModel = never> = {
 	_max?: Prisma.NestedFloatNullableFilter<$PrismaModel>;
 };
 
+export type NestedEnumImportStrategyWithAggregatesFilter<$PrismaModel = never> =
+	{
+		equals?:
+			| $Enums.ImportStrategy
+			| Prisma.EnumImportStrategyFieldRefInput<$PrismaModel>;
+		in?:
+			| $Enums.ImportStrategy[]
+			| Prisma.ListEnumImportStrategyFieldRefInput<$PrismaModel>;
+		notIn?:
+			| $Enums.ImportStrategy[]
+			| Prisma.ListEnumImportStrategyFieldRefInput<$PrismaModel>;
+		not?:
+			| Prisma.NestedEnumImportStrategyWithAggregatesFilter<$PrismaModel>
+			| $Enums.ImportStrategy;
+		_count?: Prisma.NestedIntFilter<$PrismaModel>;
+		_min?: Prisma.NestedEnumImportStrategyFilter<$PrismaModel>;
+		_max?: Prisma.NestedEnumImportStrategyFilter<$PrismaModel>;
+	};
+
 export type NestedEnumImportStatusFilter<$PrismaModel = never> = {
 	equals?:
 		| $Enums.ImportStatus
@@ -1421,21 +1524,6 @@ export type NestedEnumImportStatusFilter<$PrismaModel = never> = {
 		| $Enums.ImportStatus[]
 		| Prisma.ListEnumImportStatusFieldRefInput<$PrismaModel>;
 	not?: Prisma.NestedEnumImportStatusFilter<$PrismaModel> | $Enums.ImportStatus;
-};
-
-export type NestedEnumImportStrategyFilter<$PrismaModel = never> = {
-	equals?:
-		| $Enums.ImportStrategy
-		| Prisma.EnumImportStrategyFieldRefInput<$PrismaModel>;
-	in?:
-		| $Enums.ImportStrategy[]
-		| Prisma.ListEnumImportStrategyFieldRefInput<$PrismaModel>;
-	notIn?:
-		| $Enums.ImportStrategy[]
-		| Prisma.ListEnumImportStrategyFieldRefInput<$PrismaModel>;
-	not?:
-		| Prisma.NestedEnumImportStrategyFilter<$PrismaModel>
-		| $Enums.ImportStrategy;
 };
 
 export type NestedEnumImportStatusWithAggregatesFilter<$PrismaModel = never> = {
@@ -1455,25 +1543,6 @@ export type NestedEnumImportStatusWithAggregatesFilter<$PrismaModel = never> = {
 	_min?: Prisma.NestedEnumImportStatusFilter<$PrismaModel>;
 	_max?: Prisma.NestedEnumImportStatusFilter<$PrismaModel>;
 };
-
-export type NestedEnumImportStrategyWithAggregatesFilter<$PrismaModel = never> =
-	{
-		equals?:
-			| $Enums.ImportStrategy
-			| Prisma.EnumImportStrategyFieldRefInput<$PrismaModel>;
-		in?:
-			| $Enums.ImportStrategy[]
-			| Prisma.ListEnumImportStrategyFieldRefInput<$PrismaModel>;
-		notIn?:
-			| $Enums.ImportStrategy[]
-			| Prisma.ListEnumImportStrategyFieldRefInput<$PrismaModel>;
-		not?:
-			| Prisma.NestedEnumImportStrategyWithAggregatesFilter<$PrismaModel>
-			| $Enums.ImportStrategy;
-		_count?: Prisma.NestedIntFilter<$PrismaModel>;
-		_min?: Prisma.NestedEnumImportStrategyFilter<$PrismaModel>;
-		_max?: Prisma.NestedEnumImportStrategyFilter<$PrismaModel>;
-	};
 
 export type NestedEnumMessageChannelFilter<$PrismaModel = never> = {
 	equals?:

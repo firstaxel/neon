@@ -210,33 +210,45 @@ enum ParseJobStatus {
   error
 }
 
+enum ParseJobReviewStatus {
+  pending_review
+  committed
+  dismissed
+}
+
 model ParseJob {
-  id               String         @id @default(uuid())
-  status           ParseJobStatus @default(pending)
+  id               String               @id @default(uuid())
+  status           ParseJobStatus       @default(pending)
+  reviewStatus     ParseJobReviewStatus @default(pending_review) @map("review_status")
 
-  r2Key            String         @map("r2_key")
-  r2Bucket         String         @map("r2_bucket")
-  originalFilename String?        @map("original_filename")
-  mimeType         String         @map("mime_type")
-  fileSizeBytes    Int?           @map("file_size_bytes")
+  r2Key            String               @map("r2_key")
+  r2Bucket         String               @map("r2_bucket")
+  originalFilename String?              @map("original_filename")
+  mimeType         String               @map("mime_type")
+  fileSizeBytes    Int?                 @map("file_size_bytes")
 
-  rawExtractedText String?        @map("raw_extracted_text") @db.Text
+  rawExtractedText String?              @map("raw_extracted_text") @db.Text
   confidence       Float?
-  warnings         String[]       @default([])
-  errorMessage     String?        @map("error_message")
+  warnings         String[]             @default([])
+  errorMessage     String?              @map("error_message")
 
-  inngestEventId   String?        @map("inngest_event_id")
+  candidates       Json?
+  tagsApplied      String[]             @default([]) @map("tags_applied")
+  strategy         ImportStrategy       @default(skip_duplicates)
 
-  createdAt        DateTime       @default(now()) @map("created_at")
-  startedAt        DateTime?      @map("started_at")
-  completedAt      DateTime?      @map("completed_at")
+  inngestEventId   String?              @map("inngest_event_id")
 
-  parsedBy         String         @map("parsed_by")
-  user             User           @relation(fields: [parsedBy], references: [id], onDelete: Cascade)
+  createdAt        DateTime             @default(now()) @map("created_at")
+  startedAt        DateTime?            @map("started_at")
+  completedAt      DateTime?            @map("completed_at")
+
+  parsedBy         String               @map("parsed_by")
+  user             User                 @relation(fields: [parsedBy], references: [id], onDelete: Cascade)
 
   contacts         Contact[]
 
   @@index([status])
+  @@index([reviewStatus])
   @@index([parsedBy])
   @@index([createdAt(sort: Desc)])
   @@map("parse_jobs")
@@ -363,6 +375,13 @@ model Campaign {
   deliveryMode      DeliveryMode      @default(marketing) @map("delivery_mode")
   senderId          String?           @map("sender_id")
 
+  templateId        String?           @map("template_id")
+  template          MessageTemplate?  @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  waTemplateName    String?           @map("wa_template_name")
+  waTemplateLanguage String?          @map("wa_template_language")
+  templateParams    Json?             @map("template_params")
+  channelTarget     String            @default("smart") @map("channel_target")
+
   whatsappTemplate  String            @map("whatsapp_template") @db.Text
   smsTemplate       String            @map("sms_template") @db.Text
   useCustomTemplate Boolean           @default(false) @map("use_custom_template")
@@ -386,6 +405,7 @@ model Campaign {
 
   @@index([userId])
   @@index([status])
+  @@index([templateId])
   @@index([scheduledAt])
   @@index([createdAt(sort: Desc)])
   @@map("campaigns")
@@ -415,6 +435,7 @@ model Message {
 
   sentAt          DateTime?      @map("sent_at")
   deliveredAt     DateTime?      @map("delivered_at")
+  readAt          DateTime?      @map("read_at")
   createdAt       DateTime       @default(now()) @map("created_at")
 
   @@index([campaignId])
@@ -559,6 +580,8 @@ model MessageTemplate {
   lastUsedAt      DateTime?          @map("last_used_at")
   submittedAt     DateTime?          @map("submitted_at")
   approvedAt      DateTime?          @map("approved_at")
+
+  campaigns       Campaign[]
 
   createdAt       DateTime           @default(now()) @map("created_at")
   updatedAt       DateTime           @updatedAt      @map("updated_at")

@@ -44,6 +44,23 @@ export function useCreateSmsCampaign() {
 	);
 }
 
+export function useEstimateWhatsappCost() {
+	return useMutation(orpc.campaign.estimateWhatsappCost.mutationOptions());
+}
+
+export function useCreateWhatsappCampaign() {
+	const queryClient = useQueryClient();
+
+	return useMutation(
+		orpc.campaign.createWhatsappCampaign.mutationOptions({
+			onSuccess: () => {
+				queryClient.invalidateQueries({ queryKey: ["campaigns"] });
+				queryClient.invalidateQueries({ queryKey: ["wallet"] });
+			},
+		})
+	);
+}
+
 export function useCancelScheduledCampaign() {
 	const queryClient = useQueryClient();
 
